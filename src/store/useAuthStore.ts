@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
             activeTenant: { 
               id: '00101', 
               name: 'Demo SaaS Tenant', 
-              activeModules: ['dashboard', 'students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'analytics', 'whatsapp', 'settings'] 
+              activeModules: ['dashboard', 'students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'analytics', 'whatsapp', 'settings', 'hostel', 'leave'] 
             }
           });
         }

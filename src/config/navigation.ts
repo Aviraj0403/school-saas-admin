@@ -59,7 +59,7 @@ export const navigationConfig: NavItem[] = [
   },
   {
     label: 'Exams & Results',
-    icon: PrimeIcons.FILE_EDIT,
+    icon: PrimeIcons.PENCIL,
     path: '/exams',
     module: 'exams',
   },
@@ -71,7 +71,7 @@ export const navigationConfig: NavItem[] = [
   },
   {
     label: 'Communication',
-    icon: PrimeIcons.MEGAPHONE,
+    icon: PrimeIcons.SEND,
     path: '/communication',
     module: 'communication',
   },
@@ -98,6 +98,19 @@ export const navigationConfig: NavItem[] = [
       { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants' },
       { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans' },
     ]
+  },
+  {
+    label: 'Hostel Management',
+    icon: PrimeIcons.HOME,
+    path: '/hostel',
+    module: 'hostel',
+    roles: ['SuperAdmin', 'Principal']
+  },
+  {
+    label: 'Leave Management',
+    icon: PrimeIcons.CALENDAR_MINUS,
+    path: '/leave',
+    module: 'leave',
   },
   {
     label: 'Settings',

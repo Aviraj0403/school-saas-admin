@@ -7,28 +7,37 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   const { tenant, fetchTenant } = useTenantStore();
 
   useEffect(() => {
-    // Determine subdomain
+    // Determine subdomain from hostname
     const hostname = window.location.hostname;
     const parts = hostname.split('.');
-    
-    // For local testing, we assume 'demo.localhost' -> 'demo'
-    // If just 'localhost', default to 'demo' or 'superadmin' logic
-    let subdomain = 'demo'; 
-    if (parts.length >= 2 && parts[0] !== 'www' && parts[0] !== 'localhost') {
+
+    // localhost → use 'demo' as default subdomain for dev
+    // demo.school.com → 'demo'
+    // school.com → skip (no subdomain)
+    let subdomain = '';
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      subdomain = 'demo';
+    } else if (parts.length >= 3 && parts[0] !== 'www') {
       subdomain = parts[0];
     }
 
-    fetchTenant(subdomain);
+    // Only fetch if we have a subdomain — silently skip on bare domain
+    if (subdomain) {
+      fetchTenant(subdomain).catch(() => {
+        // Non-fatal: theme just won't be applied
+      });
+    }
   }, [fetchTenant]);
 
   useEffect(() => {
     if (tenant?.theme) {
       const root = document.documentElement;
-      if (tenant.theme.primaryColor) {
-        root.style.setProperty('--primary-color', tenant.theme.primaryColor);
+      const theme = tenant.theme as any;
+      if (theme.primaryColor) {
+        root.style.setProperty('--primary-color', theme.primaryColor);
       }
-      if (tenant.theme.secondaryColor) {
-        root.style.setProperty('--secondary-color', tenant.theme.secondaryColor);
+      if (theme.secondaryColor) {
+        root.style.setProperty('--secondary-color', theme.secondaryColor);
       }
     }
   }, [tenant]);

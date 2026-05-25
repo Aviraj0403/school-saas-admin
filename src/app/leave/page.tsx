@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -16,11 +17,12 @@ import { useLeavesList, useApplyLeave, useApproveLeave, useRejectLeave } from '@
 
 export default function LeavePage() {
   const toast = useRef<Toast>(null);
-  
+
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  
-  const { data: leavesData, isLoading } = useLeavesList(page, limit);
+  const [limit] = useState(10);
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const { data: leavesData, isLoading } = useLeavesList(page, limit, statusFilter ? { status: statusFilter } : undefined);
   const applyMutation = useApplyLeave();
   const approveMutation = useApproveLeave();
   const rejectMutation = useRejectLeave();
@@ -31,140 +33,178 @@ export default function LeavePage() {
     applicantType: 'STUDENT',
     startDate: null,
     endDate: null,
-    reason: ''
+    reason: '',
   });
 
   const applicantTypes = [
     { label: 'Student', value: 'STUDENT' },
-    { label: 'Staff', value: 'STAFF' }
+    { label: 'Staff', value: 'STAFF' },
+  ];
+
+  const statusOptions = [
+    { label: 'All', value: '' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Approved', value: 'APPROVED' },
+    { label: 'Rejected', value: 'REJECTED' },
   ];
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     if (!applyForm.startDate || !applyForm.endDate) return;
-
-    applyMutation.mutate({
-      ...applyForm,
-      startDate: applyForm.startDate.toISOString(),
-      endDate: applyForm.endDate.toISOString()
-    }, {
-      onSuccess: () => {
-        setShowApplyDialog(false);
-        setApplyForm({ applicantId: '', applicantType: 'STUDENT', startDate: null, endDate: null, reason: '' });
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Leave applied successfully', life: 3000 });
+    applyMutation.mutate(
+      {
+        ...applyForm,
+        startDate: (applyForm.startDate as Date).toISOString(),
+        endDate: (applyForm.endDate as Date).toISOString(),
       },
-      onError: () => {
-        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to apply for leave', life: 3000 });
+      {
+        onSuccess: () => {
+          setShowApplyDialog(false);
+          setApplyForm({ applicantId: '', applicantType: 'STUDENT', startDate: null, endDate: null, reason: '' });
+          toast.current?.show({ severity: 'success', summary: 'Submitted', detail: 'Leave application submitted', life: 3000 });
+        },
+        onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to submit leave', life: 3000 }),
       }
-    });
+    );
   };
 
   const handleApprove = (id: string) => {
     approveMutation.mutate(id, {
-      onSuccess: () => {
-        toast.current?.show({ severity: 'success', summary: 'Approved', detail: 'Leave request approved', life: 3000 });
-      }
+      onSuccess: () => toast.current?.show({ severity: 'success', summary: 'Approved', detail: 'Leave approved', life: 3000 }),
     });
   };
 
   const handleReject = (id: string) => {
-    rejectMutation.mutate({ id, reason: 'Rejected by admin' }, {
-      onSuccess: () => {
-        toast.current?.show({ severity: 'warn', summary: 'Rejected', detail: 'Leave request rejected', life: 3000 });
-      }
-    });
+    rejectMutation.mutate(
+      { id, reason: 'Rejected by admin' },
+      { onSuccess: () => toast.current?.show({ severity: 'warn', summary: 'Rejected', detail: 'Leave rejected', life: 3000 }) }
+    );
   };
 
   const statusTemplate = (rowData: any) => {
-    let severity: 'success' | 'warning' | 'danger' | 'info' | null = null;
-    switch (rowData.status) {
-      case 'APPROVED': severity = 'success'; break;
-      case 'PENDING': severity = 'warning'; break;
-      case 'REJECTED': severity = 'danger'; break;
-      case 'CANCELLED': severity = 'info'; break;
-    }
-    return <Tag value={rowData.status} severity={severity as any} />;
+    const map: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+      APPROVED: 'success',
+      PENDING: 'warning',
+      REJECTED: 'danger',
+      CANCELLED: 'info',
+    };
+    return <Tag value={rowData.status} severity={map[rowData.status] || 'info'} />;
   };
 
   const actionsTemplate = (rowData: any) => {
     if (rowData.status !== 'PENDING') return null;
     return (
       <div className="flex gap-2">
-        <Button icon="pi pi-check" className="p-button-rounded p-button-success p-button-text" onClick={() => handleApprove(rowData.id)} tooltip="Approve" />
-        <Button icon="pi pi-times" className="p-button-rounded p-button-danger p-button-text" onClick={() => handleReject(rowData.id)} tooltip="Reject" />
+        <Button
+          icon="pi pi-check"
+          rounded
+          text
+          severity="success"
+          onClick={() => handleApprove(rowData.id)}
+          tooltip="Approve"
+          loading={approveMutation.isPending}
+        />
+        <Button
+          icon="pi pi-times"
+          rounded
+          text
+          severity="danger"
+          onClick={() => handleReject(rowData.id)}
+          tooltip="Reject"
+          loading={rejectMutation.isPending}
+        />
       </div>
     );
   };
 
   const dateTemplate = (rowData: any, field: string) => {
-    return new Date(rowData[field]).toLocaleDateString();
+    try {
+      return new Date(rowData[field]).toLocaleDateString('en-IN');
+    } catch {
+      return rowData[field];
+    }
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full">
+    <DashboardLayout>
       <Toast ref={toast} />
-      
-      <div className="flex justify-content-between align-items-center mb-5">
-        <h1 className="text-2xl font-semibold m-0 text-gray-800">Leave Management</h1>
-        <Button label="Apply Leave" icon="pi pi-plus" onClick={() => setShowApplyDialog(true)} />
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leave Management</h1>
+            <p className="text-gray-500 mt-1">Review and approve student & staff leave applications.</p>
+          </div>
+          <Button label="Apply Leave" icon="pi pi-plus" className="bg-primary text-white p-2 px-4" onClick={() => setShowApplyDialog(true)} />
+        </div>
+
+        {/* Filter bar */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Filter by status:</span>
+          <Dropdown
+            value={statusFilter}
+            options={statusOptions}
+            onChange={(e) => { setStatusFilter(e.value); setPage(1); }}
+            className="border border-gray-200 rounded-md text-sm"
+          />
+        </div>
+
+        <Card className="shadow-sm border border-gray-100 dark:border-slate-800">
+          <DataTable
+            value={leavesData?.data?.items || []}
+            loading={isLoading}
+            paginator
+            rows={limit}
+            totalRecords={leavesData?.data?.meta?.total || 0}
+            lazy
+            first={(page - 1) * limit}
+            onPage={(e) => setPage((e.page ?? 0) + 1)}
+            emptyMessage="No leave applications found."
+            stripedRows
+            className="p-datatable-sm"
+          >
+            <Column field="applicantName" header="Applicant" sortable />
+            <Column field="applicantType" header="Type" sortable />
+            <Column body={(data) => dateTemplate(data, 'startDate')} header="Start Date" />
+            <Column body={(data) => dateTemplate(data, 'endDate')} header="End Date" />
+            <Column field="reason" header="Reason" />
+            <Column body={statusTemplate} header="Status" />
+            <Column body={actionsTemplate} header="Actions" align="center" />
+          </DataTable>
+        </Card>
       </div>
 
-      <Card>
-        <DataTable 
-          value={leavesData?.data?.items || []} 
-          loading={isLoading} 
-          paginator 
-          rows={limit} 
-          totalRecords={leavesData?.data?.meta?.total || 0}
-          lazy
-          first={(page - 1) * limit}
-          onPage={(e) => {
-            setPage((e.page ?? 0) + 1);
-            setLimit(e.rows);
-          }}
-          emptyMessage="No leave applications found." 
-          stripedRows
-          className="p-datatable-sm"
-        >
-          <Column field="applicantName" header="Applicant" sortable></Column>
-          <Column field="applicantType" header="Type" sortable></Column>
-          <Column body={(data) => dateTemplate(data, 'startDate')} header="Start Date" sortable></Column>
-          <Column body={(data) => dateTemplate(data, 'endDate')} header="End Date" sortable></Column>
-          <Column field="reason" header="Reason"></Column>
-          <Column body={statusTemplate} header="Status" sortable></Column>
-          <Column body={actionsTemplate} header="Actions" align="center"></Column>
-        </DataTable>
-      </Card>
-
-      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} onHide={() => setShowApplyDialog(false)}>
-        <form onSubmit={handleApply} className="flex flex-column gap-3 mt-3">
-          <div className="field">
-            <label htmlFor="applicantType">Applicant Type</label>
-            <Dropdown id="applicantType" value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="w-full" />
+      {/* Dialog: Apply Leave */}
+      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} modal onHide={() => setShowApplyDialog(false)}>
+        <form onSubmit={handleApply} className="flex flex-col gap-4 mt-3">
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-gray-700 dark:text-gray-300">Applicant Type</label>
+            <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="border border-gray-200 rounded-md" />
           </div>
-          <div className="field">
-            <label htmlFor="applicantId">Applicant ID (Student/Staff ID)</label>
-            <InputText id="applicantId" value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="w-full" />
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-gray-700 dark:text-gray-300">Student / Staff ID</label>
+            <InputText value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="p-2 border border-gray-200 rounded-md" placeholder="UUID or Admission No" />
           </div>
-          <div className="field grid">
-            <div className="col-6">
-              <label htmlFor="startDate">Start Date</label>
-              <Calendar id="startDate" value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required className="w-full" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-gray-700 dark:text-gray-300">Start Date</label>
+              <Calendar value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 rounded-md" />
             </div>
-            <div className="col-6">
-              <label htmlFor="endDate">End Date</label>
-              <Calendar id="endDate" value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required className="w-full" />
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-gray-700 dark:text-gray-300">End Date</label>
+              <Calendar value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 rounded-md" />
             </div>
           </div>
-          <div className="field">
-            <label htmlFor="reason">Reason</label>
-            <InputTextarea id="reason" value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required className="w-full" rows={3} />
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-gray-700 dark:text-gray-300">Reason</label>
+            <InputTextarea value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required rows={3} className="p-2 border border-gray-200 rounded-md" placeholder="Reason for leave..." />
           </div>
-          <div className="flex justify-content-end mt-2">
-            <Button type="submit" label="Submit" loading={applyMutation.isPending} />
+          <div className="flex justify-end gap-2 mt-2">
+            <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowApplyDialog(false)} />
+            <Button type="submit" label="Submit Application" icon="pi pi-send" loading={applyMutation.isPending} className="bg-primary text-white p-2 px-4" />
           </div>
         </form>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 }

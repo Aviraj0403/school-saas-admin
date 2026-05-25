@@ -23,9 +23,16 @@ export interface PaginatedResponse<T> {
 
 // User & Auth Types
 export interface AuthResponse {
-  user: UserProfile;
-  token: string;
-  tenant: TenantConfig;
+  // Backend returns: { success: true, data: { accessToken, refreshToken, user } }
+  // The api interceptor gives us response.data = the full wrapper
+  // So we access response.data.data.accessToken
+  accessToken: string;
+  refreshToken: string;
+  user: UserProfile & {
+    tenantId: string | null;
+    isSuperAdmin: boolean;
+    roles: Array<{ id: string; slug: string; name: string }>;
+  };
 }
 
 export interface UserProfile {
@@ -99,9 +106,13 @@ export interface MarkAttendanceDto {
 export interface Tenant {
   id: string;
   name: string;
-  slug: string;
+  subdomain: string;
+  slug?: string;
+  projectCode?: string;
+  prefix?: string;
   adminEmail: string;
-  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+  isActive: boolean;
+  isSuspended: boolean;
   plan: 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
   activeModules: string[];
   createdAt: string;
@@ -109,9 +120,13 @@ export interface Tenant {
 
 export interface CreateTenantDto {
   name: string;
-  slug: string;
+  subdomain: string;
   adminEmail: string;
   plan: 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
+  adminPhone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
 }
 
 // Staff Module Types
@@ -154,6 +169,7 @@ export interface FeeCollection {
   status: 'PAID' | 'PENDING' | 'PARTIAL';
   date: string;
   paymentMethod: 'CASH' | 'ONLINE' | 'CHEQUE';
+  receiptNo?: string;
 }
 
 export interface CollectFeeDto {

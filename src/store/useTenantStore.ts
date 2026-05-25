@@ -28,10 +28,17 @@ export const useTenantStore = create<TenantState>((set) => ({
   fetchTenant: async (subdomain: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get(`/tenant/public/${subdomain}`);
-      set({ tenant: response.data, isLoading: false });
+      const response = await api.get(`/tenants/resolve/${subdomain}`);
+      // Backend returns { success: true, data: {...} } via ResponseInterceptor
+      const tenantData = response.data?.data ?? response.data;
+      set({ tenant: tenantData, isLoading: false });
     } catch (error: any) {
-      set({ error: error.response?.data?.message || 'Failed to load tenant', isLoading: false });
+      // Non-fatal — just clear loading state, don't block the UI
+      set({
+        error: error.response?.data?.message || 'Tenant not found',
+        isLoading: false,
+        tenant: null,
+      });
     }
   },
 }));

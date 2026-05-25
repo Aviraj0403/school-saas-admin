@@ -12,7 +12,6 @@ export function useTenantsList(page: number, limit: number, search?: string) {
 
 export function useCreateTenant() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: CreateTenantDto) => tenantService.createTenant(data),
     onSuccess: () => {
@@ -23,9 +22,40 @@ export function useCreateTenant() {
 
 export function useSuspendTenant() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) => tenantService.suspendTenant(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
+    },
+  });
+}
+
+export function useActivateTenant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => tenantService.activateTenant(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
+    },
+  });
+}
+
+export function useSetTenantModules() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, modules }: { id: string; modules: string[] }) =>
+      tenantService.setModules(id, modules),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
+    },
+  });
+}
+
+export function useSetTenantPlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, plan }: { id: string; plan: string }) =>
+      tenantService.setPlan(id, plan),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
     },

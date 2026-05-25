@@ -145,6 +145,7 @@ export default function FeePage() {
                 className="p-datatable-sm mt-3" 
                 emptyMessage="No collection logs found."
               >
+                <Column field="receiptNo" header="Receipt No."></Column>
                 <Column field="studentName" header="Student Name"></Column>
                 <Column field="amount" header="Amount" body={amountBodyTemplate}></Column>
                 <Column field="paymentMethod" header="Payment Method"></Column>

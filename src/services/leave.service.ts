@@ -1,22 +1,19 @@
 import { api } from './api';
-import { PaginatedResponse, LeaveApplication } from '@/types/api.types';
+import { LeaveApplication } from '@/types/api.types';
 
 export const leaveService = {
   apply: async (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string }) => {
     const response = await api.post<{ success: boolean; data: LeaveApplication }>('/leave/apply', data);
-    return response.data;
+    return response.data.data;
   },
 
   getLeaves: async (page = 1, limit = 10, filters?: { applicantId?: string; applicantType?: string; status?: string }) => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...(filters?.applicantId ? { applicantId: filters.applicantId } : {}),
-      ...(filters?.applicantType ? { applicantType: filters.applicantType } : {}),
-      ...(filters?.status ? { status: filters.status } : {})
-    });
-    const response = await api.get<PaginatedResponse<LeaveApplication>>(`/leave?${params.toString()}`);
-    return response.data;
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (filters?.applicantId) params.append('applicantId', filters.applicantId);
+    if (filters?.applicantType) params.append('applicantType', filters.applicantType);
+    if (filters?.status) params.append('status', filters.status);
+    const response = await api.get<{ success: boolean; data: LeaveApplication[]; meta: any }>(`/leave?${params}`);
+    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
   },
 
   approve: async (id: string) => {
@@ -38,5 +35,5 @@ export const leaveService = {
     const yr = year || new Date().getFullYear();
     const response = await api.get<{ success: boolean; data: any }>(`/leave/balance/${applicantId}?year=${yr}`);
     return response.data.data;
-  }
+  },
 };

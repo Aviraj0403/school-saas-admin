@@ -137,12 +137,12 @@ export default function StaffPage() {
             </div>
           ) : (
             <DataTable 
-              value={data?.data?.items || []} 
+              value={data?.data || []} 
               lazy 
               paginator 
               first={lazyState.first}
               rows={lazyState.rows}
-              totalRecords={data?.data?.meta.total || 0}
+              totalRecords={data?.meta?.total || 0}
               onPage={onPage}
               loading={isPending}
               className="p-datatable-sm"

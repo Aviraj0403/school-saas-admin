@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/useAuthStore';
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    skipAuthRedirect?: boolean;
+  }
+}
+
 // Create a configured axios instance
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://apischool.jdinfotechsolutions.in/api/v1',
@@ -20,7 +26,7 @@ api.interceptors.request.use(
       
       // Inject tenant ID if we have it in state
       const tenantId = useAuthStore.getState().activeTenant?.id;
-      if (tenantId) {
+      if (tenantId && tenantId !== 'superadmin') {
         config.headers['X-Tenant-Id'] = tenantId;
       }
     }
@@ -33,7 +39,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.skipAuthRedirect) {
       // Clear auth state on 401 Unauthorized
       useAuthStore.getState().logout();
       if (typeof window !== 'undefined') {

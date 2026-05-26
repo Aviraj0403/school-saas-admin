@@ -18,8 +18,16 @@ export function useLogin() {
       setAuthData(data);
 
       if (data.user.tenantId) {
+        setTenant({
+          id: data.user.tenantId,
+          name: 'School Admin',
+          activeModules: ALL_MODULES,
+        });
+
         try {
-          const tenantRes = await api.get(`/tenants/${data.user.tenantId}`);
+          const tenantRes = await api.get(`/tenants/${data.user.tenantId}`, {
+            skipAuthRedirect: true,
+          });
           const tenantData = tenantRes.data?.data ?? tenantRes.data;
           if (tenantData) {
             setTenant({

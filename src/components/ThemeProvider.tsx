@@ -17,6 +17,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     let subdomain = '';
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       subdomain = 'demo';
+    } else if (hostname === 'schooldemo.jdinfotechsolutions.in') {
+      subdomain = 'demo';
     } else if (parts.length >= 3 && parts[0] !== 'www') {
       subdomain = parts[0];
     }

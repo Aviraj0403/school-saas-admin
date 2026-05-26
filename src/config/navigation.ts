@@ -31,7 +31,7 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.ID_CARD,
     path: '/staff',
     module: 'staff',
-    roles: ['SuperAdmin', 'Principal'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
     label: 'Academics',
@@ -54,7 +54,7 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.MONEY_BILL,
     path: '/fee',
     module: 'fee',
-    roles: ['SuperAdmin', 'Principal', 'Accountant'],
+    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
   },
   {
     label: 'Exams & Results',
@@ -73,14 +73,14 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.HOME,
     path: '/hostel',
     module: 'hostel',
-    roles: ['SuperAdmin', 'Principal'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
     label: 'Transport',
     icon: PrimeIcons.CAR,
     path: '/transport',
     module: 'transport',
-    roles: ['SuperAdmin', 'Principal'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
     label: 'Leave Management',
@@ -99,14 +99,14 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.WHATSAPP,
     path: '/whatsapp',
     module: 'whatsapp',
-    roles: ['SuperAdmin', 'Principal'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
     label: 'Analytics',
     icon: PrimeIcons.CHART_BAR,
     path: '/analytics',
     module: 'analytics',
-    roles: ['SuperAdmin', 'Principal', 'Accountant'],
+    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
   },
   {
     label: 'Super Admin',
@@ -123,6 +123,6 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.COG,
     path: '/settings',
     module: 'settings',
-    roles: ['SuperAdmin', 'Principal'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
 ];

@@ -3,16 +3,20 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { api } from '@/services/api';
 
+const ALL_MODULES = [
+  'students', 'staff', 'academics', 'attendance', 'fee', 'exams',
+  'library', 'communication', 'analytics', 'whatsapp',
+  'hostel', 'leave', 'transport', 'homework', 'website', 'settings',
+];
+
 export function useLogin() {
   const { setAuthData, setTenant } = useAuthStore();
 
   return useMutation({
     mutationFn: authService.login,
     onSuccess: async (data) => {
-      // 1. Store auth data (token + user)
       setAuthData(data);
 
-      // 2. If user belongs to a tenant, fetch tenant details
       if (data.user.tenantId) {
         try {
           const tenantRes = await api.get(`/tenants/${data.user.tenantId}`);
@@ -21,22 +25,21 @@ export function useLogin() {
             setTenant({
               id: tenantData.id,
               name: tenantData.name,
-              activeModules: tenantData.activeModules ?? [],
+              activeModules: tenantData.activeModules ?? ALL_MODULES,
             });
           }
         } catch {
-          // Non-fatal — tenant info will be missing but user is still logged in
+          setTenant({
+            id: data.user.tenantId,
+            name: 'School Admin',
+            activeModules: ALL_MODULES,
+          });
         }
       } else if (data.user.isSuperAdmin) {
-        // SuperAdmin has no tenant — give them a virtual "platform" tenant with all modules
         setTenant({
           id: 'superadmin',
           name: 'Platform SuperAdmin',
-          activeModules: [
-            'students', 'staff', 'academics', 'attendance', 'fee', 'exams',
-            'library', 'communication', 'analytics', 'whatsapp',
-            'hostel', 'leave', 'transport', 'homework', 'website', 'settings',
-          ],
+          activeModules: ALL_MODULES,
         });
       }
     },

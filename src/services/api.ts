@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 // Create a configured axios instance
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || ' https://apischool.jdinfotechsolutions.in/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://apischool.jdinfotechsolutions.in/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },

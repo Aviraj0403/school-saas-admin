@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
@@ -66,7 +65,15 @@ export default function AdmissionsPage() {
           <Button label="New Admission" icon="pi pi-user-plus" className="bg-primary text-white p-2 px-4" onClick={() => setShowDialog(true)} />
         </div>
 
-        <Card className="shadow-sm border border-gray-100 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900/50 dark:backdrop-blur-md border border-slate-100 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm">
+          <style>{`
+            .p-datatable, .p-datatable-wrapper, .p-paginator {
+              background: transparent !important;
+            }
+            .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
+              background: transparent !important;
+            }
+          `}</style>
           <DataTable
             value={data?.data?.items || []}
             lazy
@@ -86,7 +93,7 @@ export default function AdmissionsPage() {
             <Column field="status" header="Status" body={statusTemplate} />
             <Column field="createdAt" header="Admitted On" body={(d) => d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN') : '—'} />
           </DataTable>
-        </Card>
+        </div>
       </div>
 
       <Dialog header="New Student Admission" visible={showDialog} style={{ width: '520px' }} modal onHide={() => setShowDialog(false)}>

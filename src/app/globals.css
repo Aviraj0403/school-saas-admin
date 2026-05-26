@@ -55,3 +55,205 @@ body {
   background: #cbd5e1;
   border-radius: 4px;
 }
+
+/* Dark Mode Overrides for PrimeReact */
+@media (prefers-color-scheme: dark) {
+  .p-tabview {
+    background: transparent !important;
+  }
+  .p-tabview-nav {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+  }
+  .p-tabview-nav li .p-tabview-nav-link {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+    color: #94a3b8 !important;
+  }
+  .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    background: #0f172a !important;
+    color: #6366f1 !important;
+    border-color: #6366f1 !important;
+  }
+  .p-tabview-panels {
+    background: transparent !important;
+    color: #f8fafc !important;
+  }
+  .p-datatable {
+    background: transparent !important;
+  }
+  .p-datatable-thead > tr > th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+  }
+  .p-datatable-tbody > tr {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+  }
+  .p-datatable-tbody > tr > td {
+    border-color: #1e293b !important;
+    background: transparent !important;
+    color: #cbd5e1 !important;
+  }
+  .p-datatable-tbody > tr:hover {
+    background: #1e293b/50 !important;
+  }
+  .p-dropdown {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+  .p-dropdown-label {
+    color: #f8fafc !important;
+  }
+  .p-dropdown-panel {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+  .p-dropdown-items .p-dropdown-item {
+    color: #cbd5e1 !important;
+  }
+  .p-dropdown-items .p-dropdown-item:hover {
+    background: #1e293b !important;
+  }
+  .p-dialog {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+  }
+  .p-dialog-header {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #1e293b !important;
+  }
+  .p-dialog-content {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+  }
+  .p-dialog-footer {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+  }
+  .p-multiselect {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+  }
+  .p-multiselect-panel {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+  }
+  .p-multiselect-items .p-multiselect-item {
+    color: #cbd5e1 !important;
+  }
+  .p-multiselect-items .p-multiselect-item:hover {
+    background: #1e293b !important;
+  }
+  .p-datepicker {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+}
+
+/* Fallback for explicit .dark class */
+.dark .p-tabview {
+  background: transparent !important;
+}
+.dark .p-tabview-nav {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+.dark .p-tabview-nav li .p-tabview-nav-link {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+.dark .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: #0f172a !important;
+  color: #6366f1 !important;
+  border-color: #6366f1 !important;
+}
+.dark .p-tabview-panels {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+.dark .p-datatable {
+  background: transparent !important;
+}
+.dark .p-datatable-thead > tr > th {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+.dark .p-datatable-tbody > tr {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+.dark .p-datatable-tbody > tr > td {
+  border-color: #1e293b !important;
+  background: transparent !important;
+  color: #cbd5e1 !important;
+}
+.dark .p-datatable-tbody > tr:hover {
+  background: #1e293b/50 !important;
+}
+.dark .p-dropdown {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark .p-dropdown-label {
+  color: #f8fafc !important;
+}
+.dark .p-dropdown-panel {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark .p-dropdown-items .p-dropdown-item {
+  color: #cbd5e1 !important;
+}
+.dark .p-dropdown-items .p-dropdown-item:hover {
+  background: #1e293b !important;
+}
+.dark .p-dialog {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+.dark .p-dialog-header {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+.dark .p-dialog-content {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+.dark .p-dialog-footer {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+.dark .p-multiselect {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+.dark .p-multiselect-panel {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+.dark .p-multiselect-items .p-multiselect-item {
+  color: #cbd5e1 !important;
+}
+.dark .p-multiselect-items .p-multiselect-item:hover {
+  background: #1e293b !important;
+}
+.dark .p-datepicker {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+
+
+

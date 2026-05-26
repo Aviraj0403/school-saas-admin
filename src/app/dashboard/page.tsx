@@ -166,7 +166,7 @@ export default function DashboardPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Fee Collection Bar Chart */}
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
             <div className="mb-6">
               <h3 className="font-bold text-slate-800 dark:text-white text-lg">Fee Collection Trend</h3>
               <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (₹)</p>
@@ -198,10 +198,10 @@ export default function DashboardPage() {
                 );
               })}
             </div>
-          </Card>
+          </div>
 
           {/* Attendance Trend */}
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
             <div className="mb-6">
               <h3 className="font-bold text-slate-800 dark:text-white text-lg">Daily Attendance Rate</h3>
               <p className="text-xs text-slate-400 mt-1">Active student participation index (%)</p>
@@ -232,11 +232,11 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
+        <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-6">Operations Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {[
@@ -257,7 +257,7 @@ export default function DashboardPage() {
               </a>
             ))}
           </div>
-        </Card>
+        </div>
       </div>
     </DashboardLayout>
   );

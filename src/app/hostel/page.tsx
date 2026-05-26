@@ -161,6 +161,14 @@ export default function HostelPage() {
 
         {/* Hostel and Rooms Split Board */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <style>{`
+            .p-datatable, .p-datatable-wrapper, .p-paginator {
+              background: transparent !important;
+            }
+            .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
+              background: transparent !important;
+            }
+          `}</style>
           
           {/* Hostel list panel */}
           <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col gap-4">

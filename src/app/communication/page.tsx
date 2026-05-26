@@ -121,6 +121,17 @@ export default function CommunicationPage() {
 
         {/* Tab Boards */}
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">
+          <style>{`
+            .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
+              background: transparent !important;
+            }
+            .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
+              background: transparent !important;
+            }
+            .p-tabview-nav li .p-tabview-nav-link {
+              background: transparent !important;
+            }
+          `}</style>
           <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
             
             {/* Announcements Panel */}

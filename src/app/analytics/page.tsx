@@ -148,7 +148,8 @@ export default function AnalyticsPage() {
         {/* Dynamic Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Revenue chart */}
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden" title="Revenue Inflow Trend (₹)">
+          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg">Revenue Inflow Trend (₹)</h3>
             <div className="relative flex items-end justify-between h-52 px-4 mt-6 border-b border-slate-100 dark:border-slate-800/60 pb-2">
               
               {/* Chart Grid Lines */}
@@ -179,17 +180,18 @@ export default function AnalyticsPage() {
                 );
               })}
             </div>
-          </Card>
+          </div>
 
           {/* Occupancy chart */}
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden" title="Occupancy Distribution">
+          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg">Occupancy Distribution</h3>
             <div className="flex flex-col gap-6 mt-6 justify-center h-36 px-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
                   <span>Boys Hostel A</span>
                   <span className="text-indigo-600 dark:text-indigo-400">88%</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
+                <div className="w-full bg-slate-100 dark:bg-slate-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
                   <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full" style={{ width: '88%' }} />
                 </div>
               </div>
@@ -199,16 +201,17 @@ export default function AnalyticsPage() {
                   <span>Girls Hostel B</span>
                   <span className="text-pink-600 dark:text-pink-400">74%</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
+                <div className="w-full bg-slate-100 dark:bg-slate-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
                   <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-full rounded-full" style={{ width: '74%' }} />
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Audit Log table */}
-        <Card className="shadow-sm border border-slate-100 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden" title="System Audit Logs">
+        <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
+          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">System Audit Logs</h3>
           <DataTable 
             value={logs?.items || []} 
             lazy 
@@ -226,7 +229,7 @@ export default function AnalyticsPage() {
             <Column field="subject" header="Subject" className="font-semibold text-xs text-slate-500"></Column>
             <Column field="createdAt" header="Timestamp" body={(data) => data.createdAt ? new Date(data.createdAt).toLocaleString() : 'Just now'}></Column>
           </DataTable>
-        </Card>
+        </div>
       </div>
     </DashboardLayout>
   );

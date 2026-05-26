@@ -270,6 +270,14 @@ export default function StaffPage() {
           </div>
         ) : (
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+            <style>{`
+              .p-datatable, .p-datatable-wrapper, .p-paginator {
+                background: transparent !important;
+              }
+              .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
+                background: transparent !important;
+              }
+            `}</style>
             <DataTable 
               value={staffList} 
               lazy 

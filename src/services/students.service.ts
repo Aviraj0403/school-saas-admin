@@ -3,11 +3,14 @@ import { Student, CreateStudentDto } from '@/types/api.types';
 
 // Backend ResponseInterceptor shape: { success, data: T[], meta: { total, page, limit, totalPages } }
 export const studentsService = {
-  getStudents: async (page = 1, limit = 10, search?: string) => {
+  getStudents: async (page = 1, limit = 10, search?: string, classId?: string) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
+    if (classId) params.append('classId', classId);
     const response = await api.get<{ success: boolean; data: Student[]; meta: any }>(`/students?${params}`);
-    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   getStudentById: async (id: string) => {

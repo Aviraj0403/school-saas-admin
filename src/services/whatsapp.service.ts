@@ -25,7 +25,9 @@ export const whatsappService = {
   getSessions: async (page = 1, limit = 20) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     const response = await api.get<{ success: boolean; data: WhatsAppSession[]; meta: any }>(`/whatsapp/sessions?${params}`);
-    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   getMessages: async (phone: string, page = 1, limit = 50) => {
@@ -37,7 +39,9 @@ export const whatsappService = {
   getBroadcasts: async (page = 1, limit = 20) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     const response = await api.get<{ success: boolean; data: any[]; meta: any }>(`/whatsapp/broadcasts?${params}`);
-    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   createBroadcast: async (data: { name: string; templateName: string; parameters?: any }) => {

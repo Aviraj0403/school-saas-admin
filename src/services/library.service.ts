@@ -6,7 +6,9 @@ export const libraryService = {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
     const response = await api.get<{ success: boolean; data: Book[]; meta: any }>(`/library/books?${params}`);
-    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   createBook: async (data: any) => {

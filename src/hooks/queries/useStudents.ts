@@ -3,11 +3,11 @@ import { studentsService } from '@/services/students.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CreateStudentDto } from '@/types/api.types';
 
-export function useStudentsList(page: number, limit: number, search?: string) {
+export function useStudentsList(page: number, limit: number, search?: string, classId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
-    queryKey: ['students', { page, limit, search }],
-    queryFn: () => studentsService.getStudents(page, limit, search),
+    queryKey: ['students', { page, limit, search, classId }],
+    queryFn: () => studentsService.getStudents(page, limit, search, classId),
     enabled: isAuthenticated,
     placeholderData: (previousData) => previousData,
     retry: false,

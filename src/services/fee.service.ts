@@ -23,7 +23,9 @@ export const feeService = {
     if (filters?.studentId) params.append('studentId', filters.studentId);
     if (filters?.status) params.append('status', filters.status);
     const response = await api.get<{ success: boolean; data: FeeCollection[]; meta: any }>(`/fee/collections?${params}`);
-    return { items: response.data.data ?? [], meta: response.data.meta ?? { total: 0, page, limit, totalPages: 0 } };
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   getStudentDues: async (studentId: string) => {

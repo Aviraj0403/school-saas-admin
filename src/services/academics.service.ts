@@ -3,8 +3,10 @@ import { AcademicClass, PaginatedResponse, Subject } from '@/types/api.types';
 
 export const academicsService = {
   getClasses: async (page = 1, limit = 10) => {
-    const response = await api.get<PaginatedResponse<AcademicClass>>(`/academics/classes?page=${page}&limit=${limit}`);
-    return response.data;
+    const response = await api.get<any>(`/academics/classes?page=${page}&limit=${limit}`);
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   createClass: async (data: { name: string; section: string; capacity: number; teacherId?: string }) => {

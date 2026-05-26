@@ -6,8 +6,10 @@ export const tenantService = {
   getTenants: async (page = 1, limit = 10, search?: string) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
-    const response = await api.get<PaginatedResponse<Tenant>>(`/tenants?${params.toString()}`);
-    return response.data;
+    const response = await api.get<any>(`/tenants?${params.toString()}`);
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   },
 
   createTenant: async (data: CreateTenantDto) => {

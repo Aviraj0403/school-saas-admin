@@ -42,7 +42,9 @@ export const analyticsService = {
       page: page.toString(),
       limit: limit.toString()
     });
-    const response = await api.get<PaginatedResponse<any>>(`/analytics/activity-log?${params.toString()}`);
-    return response.data;
+    const response = await api.get<any>(`/analytics/activity-log?${params.toString()}`);
+    const items = response.data.data ?? [];
+    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    return { items, meta, data: { items, meta } };
   }
 };

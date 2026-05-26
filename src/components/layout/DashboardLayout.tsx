@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -18,6 +19,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const loginMutation = useLogin();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -29,7 +32,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ email, password });
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          if (pathname !== '/dashboard') {
+            router.replace('/dashboard');
+          }
+        },
+      },
+    );
   };
 
   if (!mounted) return null;

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer tailwind-base, primereact, tailwind-utilities;
 
 :root {
@@ -253,7 +255,6 @@ body {
   border-color: #334155 !important;
   color: #f8fafc !important;
 }
-
 
 
 

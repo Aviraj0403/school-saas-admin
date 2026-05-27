@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTenantStore } from '@/store/useTenantStore';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -25,9 +26,29 @@ api.interceptors.request.use(
       }
       
       // Inject tenant ID if we have it in state
-      const tenantId = useAuthStore.getState().activeTenant?.id;
+      const tenantId = useAuthStore.getState().activeTenant?.id || useTenantStore.getState().tenant?.id;
       if (tenantId && tenantId !== 'superadmin') {
         config.headers['X-Tenant-Id'] = tenantId;
+      }
+
+      // Inject subdomain if available or derived
+      const subdomain = useTenantStore.getState().tenant?.subdomain;
+      if (subdomain) {
+        config.headers['X-Tenant-Subdomain'] = subdomain;
+      } else {
+        const hostname = window.location.hostname;
+        const parts = hostname.split('.');
+        let derivedSubdomain = '';
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          derivedSubdomain = 'demo';
+        } else if (hostname === 'schooldemo.jdinfotechsolutions.in') {
+          derivedSubdomain = 'demo';
+        } else if (parts.length >= 3 && parts[0] !== 'www') {
+          derivedSubdomain = parts[0];
+        }
+        if (derivedSubdomain) {
+          config.headers['X-Tenant-Subdomain'] = derivedSubdomain;
+        }
       }
     }
     return config;

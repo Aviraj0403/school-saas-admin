@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { DataTable, DataTablePageEvent } from 'primereact/datatable';
@@ -31,12 +31,26 @@ export default function TenantsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
   const [showDialog, setShowDialog] = useState(false);
+  const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
   const [formData, setFormData] = useState<CreateTenantDto>({
     name: '',
     subdomain: '',
     adminEmail: '',
     plan: 'BASIC',
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const parts = hostname.split('.');
+      if (parts.length >= 2) {
+        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+          const suffix = parts.slice(1).join('.');
+          setBaseDomain(`.${suffix}`);
+        }
+      }
+    }
+  }, []);
 
   const { data, isPending } = useTenantsList(lazyState.page, lazyState.rows);
   const createMutation = useCreateTenant();
@@ -254,7 +268,7 @@ export default function TenantsPage() {
                       </h4>
                       <p className="text-xs text-indigo-600/85 dark:text-indigo-400 mt-1 font-semibold flex items-center gap-1.5">
                         <i className="pi pi-link text-[10px]"></i>
-                        {tenant.subdomain}.aviraj.com
+                        {tenant.subdomain}{baseDomain}
                       </p>
                       
                       <div className="mt-4 flex flex-col gap-2.5 border-t border-slate-100 dark:border-slate-800/80 pt-4">
@@ -330,7 +344,7 @@ export default function TenantsPage() {
               <Column field="projectCode" header="Code" body={(d) => d.projectCode || '—'} className="font-bold text-xs" />
               <Column field="prefix" header="Prefix" body={(d) => d.prefix || '—'} className="font-semibold text-xs text-slate-500" />
               <Column field="name" header="School Name" sortable className="font-bold" />
-              <Column field="subdomain" header="Subdomain" body={(d) => <span className="text-primary font-semibold">{d.subdomain}.aviraj.com</span>} />
+              <Column field="subdomain" header="Subdomain" body={(d) => <span className="text-primary font-semibold">{d.subdomain}{baseDomain}</span>} />
               <Column field="adminEmail" header="Admin Email" />
               <Column field="plan" header="Plan" body={planTemplate} align="center" />
               <Column header="Status" body={statusTemplate} align="center" />
@@ -371,7 +385,7 @@ export default function TenantsPage() {
                 className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 font-semibold text-primary"
                 placeholder="e.g. oakridge (lowercase, hyphens only)"
               />
-              <small className="text-xs text-slate-400">School portal URL: <span className="text-primary font-bold">{formData.subdomain || 'subdomain'}.aviraj.com</span></small>
+              <small className="text-xs text-slate-400">School portal URL: <span className="text-primary font-bold">{formData.subdomain || 'subdomain'}{baseDomain}</span></small>
             </div>
 
             <div className="flex flex-col gap-2">

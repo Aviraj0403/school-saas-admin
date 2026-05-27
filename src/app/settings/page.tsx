@@ -33,6 +33,7 @@ const PLANS = [
 export default function SettingsPage() {
   const toast = useRef<Toast>(null);
   const queryClient = useQueryClient();
+  const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
 
   const [formData, setFormData] = useState<any>({
     name: '',
@@ -46,6 +47,19 @@ export default function SettingsPage() {
     queryKey: ['settings'],
     queryFn: settingsService.getTenantDetails,
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const parts = hostname.split('.');
+      if (parts.length >= 2) {
+        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+          const suffix = parts.slice(1).join('.');
+          setBaseDomain(`.${suffix}`);
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (tenant) {
@@ -140,7 +154,7 @@ export default function SettingsPage() {
                     className="p-3 w-full border border-slate-200 dark:border-slate-850 dark:bg-slate-800/50 rounded-xl cursor-not-allowed text-slate-400 font-mono text-xs pl-3 pr-28"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-indigo-550 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/40 p-1 px-2.5 rounded-lg border border-indigo-100/50 dark:border-indigo-900/30">
-                    .aviraj.com
+                    {baseDomain}
                   </span>
                 </div>
               </div>

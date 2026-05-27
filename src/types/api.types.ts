@@ -63,10 +63,25 @@ export interface Student {
 }
 
 export interface CreateStudentDto {
-  firstName: string;
-  lastName: string;
-  admissionNo: string;
-  classId: string;
+  name: string;
+  academicYear: string;
+  classId?: string;
+  dob?: string;
+  gender?: string;
+  bloodGroup?: string;
+  rollNo?: string;
+  address?: string;
+  city?: string;
+  pincode?: string;
+  parentName?: string;
+  parentPhone?: string;
+  parentEmail?: string;
+  alternatePhone?: string;
+  previousSchool?: string;
+  category?: string;
+  religion?: string;
+  motherTongue?: string;
+  aadharNo?: string;
 }
 
 // Academics Module Types

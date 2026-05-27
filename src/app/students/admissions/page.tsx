@@ -16,7 +16,7 @@ import { CreateStudentDto } from '@/types/api.types';
 export default function AdmissionsPage() {
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
   const [showDialog, setShowDialog] = useState(false);
-  const [form, setForm] = useState<CreateStudentDto & { section?: string; gender?: string; phone?: string; parentName?: string; parentPhone?: string }>({
+  const [form, setForm] = useState<any>({
     firstName: '',
     lastName: '',
     admissionNo: '',
@@ -37,8 +37,17 @@ export default function AdmissionsPage() {
   };
 
   const handleCreate = () => {
+    const payload: CreateStudentDto = {
+      name: `${form.firstName} ${form.lastName}`.trim(),
+      academicYear: new Date().getFullYear().toString(),
+      classId: form.classId || undefined,
+      gender: form.gender?.toLowerCase(), // backend enum is lowercase 'male'/'female'/'other'
+      parentName: form.parentName || undefined,
+      parentPhone: form.parentPhone || undefined,
+    };
+
     createMutation.mutate(
-      { firstName: form.firstName, lastName: form.lastName, admissionNo: form.admissionNo, classId: form.classId },
+      payload,
       {
         onSuccess: () => {
           setShowDialog(false);

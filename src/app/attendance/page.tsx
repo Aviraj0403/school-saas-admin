@@ -108,7 +108,7 @@ export default function AttendancePage() {
 
   const markAll = (status: 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY') => {
     const updated = { ...localAttendance };
-    students.forEach((student) => {
+    students.forEach((student: any) => {
       updated[student.id] = {
         ...updated[student.id],
         status,
@@ -321,7 +321,7 @@ export default function AttendancePage() {
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {students.map((student) => {
+              {students.map((student: any) => {
                 const record = localAttendance[student.id] || { status: 'PRESENT', note: '' };
                 const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
                 

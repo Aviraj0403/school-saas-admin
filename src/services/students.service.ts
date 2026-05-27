@@ -8,8 +8,8 @@ export const studentsService = {
     if (search) params.append('search', search);
     if (classId) params.append('classId', classId);
     const response = await api.get<{ success: boolean; data: Student[]; meta: any }>(`/students?${params}`);
-    const items = response.data.data ?? [];
-    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    const items = (response.data.data as any)?.data ?? [];
+    const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   },
 

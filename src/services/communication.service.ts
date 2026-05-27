@@ -6,8 +6,8 @@ export const communicationService = {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (targetRole) params.append('targetRole', targetRole);
     const response = await api.get<{ success: boolean; data: Announcement[]; meta: any }>(`/communication/announcements?${params}`);
-    const items = response.data.data ?? [];
-    const meta = response.data.meta ?? { total: 0, page, limit, totalPages: 0 };
+    const items = (response.data.data as any)?.data ?? [];
+    const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   },
 

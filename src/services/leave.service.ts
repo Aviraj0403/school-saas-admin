@@ -13,7 +13,7 @@ export const leaveService = {
     if (filters?.applicantType) params.append('applicantType', filters.applicantType);
     if (filters?.status) params.append('status', filters.status);
     const response = await api.get<{ success: boolean; data: LeaveApplication[]; meta: any }>(`/leave?${params}`);
-    const items = (response.data.data as any)?.data ?? [];
+    const items = (response.data.data as any)?.items ?? [];
     const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   },

@@ -7,7 +7,7 @@ export const tenantService = {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
     const response = await api.get<any>(`/tenants?${params.toString()}`);
-    const items = response.data.data?.data ?? [];
+    const items = response.data.data?.items ?? [];
     const meta = response.data.data?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   },

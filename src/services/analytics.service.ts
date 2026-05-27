@@ -43,7 +43,7 @@ export const analyticsService = {
       limit: limit.toString()
     });
     const response = await api.get<any>(`/analytics/activity-log?${params.toString()}`);
-    const items = response.data.data?.data ?? [];
+    const items = response.data.data?.items ?? [];
     const meta = response.data.data?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   }

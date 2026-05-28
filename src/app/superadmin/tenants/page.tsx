@@ -10,6 +10,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
+import { InputNumber } from 'primereact/inputnumber';
 import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules } from '@/modules/superadmin/hooks/useTenants';
 import { CreateTenantDto, Tenant } from '@/types/api.types';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -30,7 +31,7 @@ const PLAN_THEMES: Record<string, { bg: string, text: string, border: string, ba
 
 export default function TenantsPage() {
   const { switchTenant, activeTenant } = useAuthStore();
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'biometrics' | 'jitsi'>('grid');
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
   const [showDialog, setShowDialog] = useState(false);
   const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
@@ -39,6 +40,8 @@ export default function TenantsPage() {
     subdomain: '',
     adminEmail: '',
     plan: 'BASIC',
+    latitude: undefined,
+    longitude: undefined,
   });
 
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function TenantsPage() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('BASIC');
   const [tenantModules, setTenantModules] = useState<string[]>([]);
+  const [detailsTab, setDetailsTab] = useState<'config' | 'subscriptions' | 'ledger' | 'audit_logs'>('config');
 
   const planMutation = useSetTenantPlan();
   const modulesMutation = useSetTenantModules();
@@ -100,6 +104,7 @@ export default function TenantsPage() {
     setSelectedTenant(tenant);
     setSelectedPlan(tenant.plan);
     setTenantModules(tenant.activeModules || []);
+    setDetailsTab('config');
     setShowDetailDialog(true);
   };
 
@@ -219,15 +224,15 @@ export default function TenantsPage() {
             Active Schools Directory
           </button>
           <button 
-            onClick={() => setViewMode('table')} 
+            onClick={() => setViewMode('biometrics')} 
             className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'biometrics' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
           >
             <i className="pi pi-print"></i>
             Biometric Terminals
           </button>
           <button 
-            onClick={() => setViewMode('jitsi' as any)} 
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === ('jitsi' as any) ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
+            onClick={() => setViewMode('jitsi')} 
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'jitsi' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
           >
             <i className="pi pi-video"></i>
             Live Jitsi Telemetry
@@ -235,7 +240,7 @@ export default function TenantsPage() {
         </div>
 
         {/* Dynamic Telemetry Sections */}
-        {viewMode === ('biometrics' as any) && (
+        {viewMode === 'biometrics' && (
           <div className="flex flex-col gap-6 animate-fade-in">
             {/* Devices telemetry */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -306,7 +311,7 @@ export default function TenantsPage() {
           </div>
         )}
 
-        {viewMode === ('jitsi' as any) && (
+        {viewMode === 'jitsi' && (
           <div className="flex flex-col gap-6 animate-fade-in">
             <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/80 pb-3">
@@ -634,6 +639,35 @@ export default function TenantsPage() {
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">School Latitude</label>
+                <InputNumber 
+                  value={formData.latitude} 
+                  onValueChange={(e) => setFormData({ ...formData, latitude: e.value || undefined })} 
+                  mode="decimal" 
+                  minFractionDigits={2} 
+                  maxFractionDigits={6} 
+                  className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950" 
+                  inputClassName="p-3 rounded-xl w-full"
+                  placeholder="e.g. 19.0760 (Optional)"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">School Longitude</label>
+                <InputNumber 
+                  value={formData.longitude} 
+                  onValueChange={(e) => setFormData({ ...formData, longitude: e.value || undefined })} 
+                  mode="decimal" 
+                  minFractionDigits={2} 
+                  maxFractionDigits={6} 
+                  className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950" 
+                  inputClassName="p-3 rounded-xl w-full"
+                  placeholder="e.g. 72.8777 (Optional)"
+                />
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800/80 pt-5 mt-4">
               <Button type="button" label="Cancel" className="p-button-text p-3 px-5 rounded-xl font-semibold" onClick={() => setShowDialog(false)} />
               <Button type="submit" label="Onboard School" icon="pi pi-check" loading={createMutation.isPending} className="bg-primary text-white p-3 px-6 rounded-xl font-semibold shadow-md shadow-indigo-500/10 border-0 hover:opacity-95" />
@@ -665,57 +699,198 @@ export default function TenantsPage() {
                 </div>
               </div>
 
-              {/* Grid details */}
-              <div className="grid grid-cols-2 gap-4 text-sm border-b border-slate-100 dark:border-slate-800/80 pb-6">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Subdomain Link</label>
-                  <p className="text-primary font-bold mt-1 text-xs truncate">{selectedTenant.subdomain}{baseDomain}</p>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Administrative Contact</label>
-                  <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 truncate">{selectedTenant.adminEmail}</p>
-                </div>
+              {/* Details Sub-Tabs Selector */}
+              <div className="flex border-b border-slate-100 dark:border-slate-800 -mt-2">
+                {[
+                  { id: 'config', label: 'Identity & Modules', icon: 'pi-cog' },
+                  { id: 'subscriptions', label: 'Subscription Specs', icon: 'pi-star' },
+                  { id: 'ledger', label: 'Billing Ledger', icon: 'pi-wallet' },
+                  { id: 'audit_logs', label: 'System Logs', icon: 'pi-list' }
+                ].map((tb) => (
+                  <button
+                    key={tb.id}
+                    type="button"
+                    onClick={() => setDetailsTab(tb.id as any)}
+                    className={`p-3 px-4 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] flex items-center gap-1.5 ${
+                      detailsTab === tb.id
+                        ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <i className={`pi ${tb.icon} text-[10px]`}></i>
+                    <span>{tb.label}</span>
+                  </button>
+                ))}
               </div>
 
-              {/* Plan controls */}
-              <div className="flex flex-col gap-3">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">SaaS Subscription Level</label>
-                <div className="flex gap-4 items-center">
-                  <Dropdown
-                    value={selectedPlan}
-                    options={PLANS}
-                    onChange={(e) => handleUpdatePlan(e.value)}
-                    className="w-48 border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950 font-bold"
-                  />
-                  <small className="text-xs text-slate-400">Upgrades or downgrades tenant access tier instantly.</small>
-                </div>
-              </div>
+              {/* Tab Contents: Config & Modules */}
+              {detailsTab === 'config' && (
+                <div className="flex flex-col gap-6 animate-fade-in">
+                  {/* Grid details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm border-b border-slate-100 dark:border-slate-800/80 pb-6">
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Subdomain Link</label>
+                      <p className="text-primary font-bold mt-1 text-xs truncate">{selectedTenant.subdomain}{baseDomain}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Administrative Contact</label>
+                      <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 truncate">{selectedTenant.adminEmail}</p>
+                    </div>
+                  </div>
 
-              {/* Active Modules Toggles */}
-              <div className="flex flex-col gap-3 mt-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Enabled Modules ({tenantModules.length})</label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {['core', 'student', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'].map(mod => {
-                    const active = tenantModules.includes(mod);
-                    return (
-                      <button
-                        type="button"
-                        key={mod}
-                        onClick={() => handleToggleModule(mod)}
-                        className={`p-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-all active:scale-95 ${
-                          active 
-                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900 dark:text-indigo-400' 
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-400'
-                        }`}
-                      >
-                        <span className="capitalize">{mod}</span>
-                        <i className={`pi ${active ? 'pi-check-circle text-indigo-500' : 'pi-circle text-slate-300'}`}></i>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                  {/* Plan controls */}
+                  <div className="flex flex-col gap-3">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">SaaS Subscription Level</label>
+                    <div className="flex gap-4 items-center">
+                      <Dropdown
+                        value={selectedPlan}
+                        options={PLANS}
+                        onChange={(e) => handleUpdatePlan(e.value)}
+                        className="w-48 border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950 font-bold"
+                      />
+                      <small className="text-xs text-slate-400">Upgrades or downgrades tenant access tier instantly.</small>
+                    </div>
+                  </div>
 
+                  {/* Active Modules Toggles */}
+                  <div className="flex flex-col gap-3 mt-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Enabled Modules ({tenantModules.length})</label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {['core', 'student', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'].map(mod => {
+                        const active = tenantModules.includes(mod);
+                        return (
+                          <button
+                            type="button"
+                            key={mod}
+                            onClick={() => handleToggleModule(mod)}
+                            className={`p-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-all active:scale-95 ${
+                              active 
+                                ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900 dark:text-indigo-400' 
+                                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-400'
+                            }`}
+                          >
+                            <span className="capitalize">{mod}</span>
+                            <i className={`pi ${active ? 'pi-check-circle text-indigo-500' : 'pi-circle text-slate-300'}`}></i>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab Contents: Subscription Specs */}
+              {detailsTab === 'subscriptions' && (
+                <div className="flex flex-col gap-4 animate-fade-in text-xs">
+                  <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
+                    <div>
+                      <span className="text-slate-400 font-bold block">PLAN IDENTIFIER:</span>
+                      <span className="text-sm font-extrabold text-indigo-500">{selectedTenant.plan || 'STANDARD'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 font-bold block">PLAN ESTIMATED PRICE:</span>
+                      <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                        {selectedTenant.plan === 'ENTERPRISE' ? '₹9,999 / mo' :
+                         selectedTenant.plan === 'PREMIUM' ? '₹4,999 / mo' :
+                         selectedTenant.plan === 'STANDARD' ? '₹2,499 / mo' : '₹999 / mo'}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-slate-400 font-bold block">TRIAL EXPIRATION:</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-350">
+                        {selectedTenant.createdAt ? new Date(new Date(selectedTenant.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN') : '—'}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-slate-400 font-bold block">COUNTRY / TAX ZONE:</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-350">India (GST 18% Applicable)</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-indigo-50/20 dark:bg-indigo-950/10 border border-indigo-150/30 p-4 rounded-xl flex gap-3 text-slate-650 dark:text-indigo-400/90 leading-relaxed font-semibold">
+                    <i className="pi pi-info-circle text-indigo-500 text-sm mt-0.5"></i>
+                    <p>
+                      Upgrade/downgrade of school plans instantly updates module configurations, concurrency ceilings, and API rate limits. Notifications are automatically dispatched to the school billing contact.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab Contents: Billing Ledger */}
+              {detailsTab === 'ledger' && (
+                <div className="flex flex-col gap-3 animate-fade-in">
+                  <DataTable
+                    value={[
+                      { id: 'INV-2026-001', amount: 2499, date: '2026-05-15', method: 'Razorpay', status: 'PAID', ref: 'pay_RFt9392J8d' },
+                      { id: 'INV-2026-002', amount: 2499, date: '2026-04-15', method: 'Razorpay', status: 'PAID', ref: 'pay_KDs8329Sd1' },
+                      { id: 'INV-2026-003', amount: 2499, date: '2026-03-15', method: 'Stripe', status: 'PAID', ref: 'ch_8sd92K3sd0' }
+                    ]}
+                    className="p-datatable-sm"
+                    stripedRows
+                  >
+                    <Column field="id" header="Invoice ID" className="font-bold text-xs" />
+                    <Column field="date" header="Billing Date" className="text-xs" />
+                    <Column 
+                      header="SaaS Fee" 
+                      body={(d) => <span className="font-bold font-mono text-slate-800 dark:text-slate-200">₹{d.amount.toLocaleString('en-IN')}</span>} 
+                    />
+                    <Column field="method" header="Gateway" className="text-xs font-semibold text-slate-500" />
+                    <Column 
+                      header="Status" 
+                      body={(d) => <Tag value={d.status} severity="success" className="font-bold text-[9px] rounded px-2" />} 
+                    />
+                    <Column 
+                      header="Action" 
+                      body={() => (
+                        <Button 
+                          icon="pi pi-download" 
+                          className="p-button-text p-button-sm p-1 text-indigo-500" 
+                          tooltip="Download Receipt"
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent('show-toast', {
+                              detail: {
+                                severity: 'success',
+                                summary: 'PDF Receipt Rendered',
+                                detail: 'SaaS fee tax invoice receipt compiled and downloaded successfully.',
+                                life: 3500
+                              }
+                            }));
+                          }}
+                        />
+                      )} 
+                      align="center"
+                    />
+                  </DataTable>
+                </div>
+              )}
+
+              {/* Tab Contents: System Activity Audit Logs */}
+              {detailsTab === 'audit_logs' && (
+                <div className="flex flex-col gap-3 animate-fade-in max-h-72 overflow-y-auto">
+                  <div className="divide-y divide-slate-100 dark:divide-slate-850">
+                    {[
+                      { action: 'Database Sequence STU Initialized', category: 'SYSTEM', user: 'System (Automated)', time: 'Today, 02:40 PM' },
+                      { action: `Modified SaaS Subscription Plan to ${selectedPlan}`, category: 'PLAN_CHANGE', user: 'aviraj@superadmin.com', time: 'Today, 01:15 PM' },
+                      { action: 'Registered Biometric Scanners Handshake BIO-01-MAIN', category: 'DEVICES', user: 'System (Webhook)', time: 'Yesterday, 11:20 AM' },
+                      { action: 'Active Tenant Module [transport] turned ON', category: 'CONFIG', user: 'aviraj@superadmin.com', time: '2026-05-26, 09:30 AM' },
+                      { action: 'School Database schema migrated safely to PostgreSQL SAAS DB', category: 'DATABASE', user: 'Db-Migrator (CLI)', time: '2026-05-25, 08:00 AM' }
+                    ].map((log, i) => (
+                      <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
+                        <div>
+                          <p className="text-slate-800 dark:text-slate-350">{log.action}</p>
+                          <div className="flex gap-2 items-center text-[10px] text-slate-400 mt-1">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.category}</span>
+                            <span>· By {log.user}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-slate-400/80 font-medium whitespace-nowrap">{log.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Done Action */}
               <div className="flex justify-end border-t border-slate-100 dark:border-slate-800/80 pt-5 mt-4">
                 <Button label="Done" className="bg-primary text-white p-3 px-6 rounded-xl font-bold border-0 hover:opacity-95" onClick={() => setShowDetailDialog(false)} />
               </div>

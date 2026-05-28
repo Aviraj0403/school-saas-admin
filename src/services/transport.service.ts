@@ -12,23 +12,65 @@ export const transportService = {
   },
 
   getBuses: async () => {
-    const response = await api.get<{ success: boolean; data: any[] }>('/transport/buses');
-    return response.data.data;
+    try {
+      const response = await api.get<{ success: boolean; data: any[] }>('/transport/vehicles');
+      return response.data.data;
+    } catch (e) {
+      const response = await api.get<{ success: boolean; data: any[] }>('/transport/buses').catch(() => ({ data: { data: [] } }));
+      return response.data.data;
+    }
   },
 
   createBus: async (data: { registrationNo: string; capacity: number; routeId?: string; driverName?: string; driverPhone?: string }) => {
-    const response = await api.post<{ success: boolean; data: any }>('/transport/buses', data);
-    return response.data;
+    // Map registrationNo to vehicleNo for the backend DTO
+    const backendData = {
+      vehicleNo: data.registrationNo,
+      capacity: data.capacity,
+      driverName: data.driverName,
+      driverPhone: data.driverPhone,
+    };
+    try {
+      const response = await api.post<{ success: boolean; data: any }>('/transport/vehicles', backendData);
+      return response.data;
+    } catch (e) {
+      const response = await api.post<{ success: boolean; data: any }>('/transport/buses', data);
+      return response.data;
+    }
   },
 
   getBusLocations: async () => {
-    const response = await api.get<{ success: boolean; data: any[] }>('/transport/locations');
-    return response.data.data;
+    try {
+      const response = await api.get<{ success: boolean; data: any[] }>('/transport/locations');
+      return response.data.data;
+    } catch (e) {
+      return [];
+    }
   },
 
-  assignStudentToRoute: async (data: { studentId: string; routeId: string; stopName: string }) => {
-    const response = await api.post<{ success: boolean; data: any }>('/transport/assign', data);
-    return response.data;
+  assignStudentToRoute: async (data: { studentId: string; routeId: string; stopId?: string; academicYear?: string; feeAmount?: number }) => {
+    const payload = {
+      studentId: data.studentId,
+      routeId: data.routeId,
+      stopId: data.stopId,
+      academicYear: data.academicYear || '2025-2026',
+      feeAmount: data.feeAmount || 0,
+    };
+    try {
+      const response = await api.post<{ success: boolean; data: any }>('/transport/students/assign', payload);
+      return response.data;
+    } catch (e) {
+      const response = await api.post<{ success: boolean; data: any }>('/transport/assign', data);
+      return response.data;
+    }
+  },
+
+  getAssignments: async () => {
+    try {
+      const response = await api.get<{ success: boolean; data: any[] }>('/transport/students');
+      return response.data.data;
+    } catch (e) {
+      return [];
+    }
   },
 
   getStudentsByRoute: async (routeId: string) => {

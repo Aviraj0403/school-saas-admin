@@ -146,6 +146,8 @@ export interface Tenant {
   plan: 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
   activeModules: string[];
   createdAt: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface CreateTenantDto {
@@ -157,6 +159,8 @@ export interface CreateTenantDto {
   address?: string;
   city?: string;
   state?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 // Staff Module Types

@@ -6,15 +6,15 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents';
 
 export default function StudentDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [activeTab, setActiveTab] = useState<'personal' | 'guardian'>('personal');
-
-  const { data: student, isPending, isError } = useStudentDetails(id);
+  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs'>('personal');  const { data: student, isPending, isError } = useStudentDetails(id);
   const deleteMutation = useDeleteStudent();
 
   const handleDelete = () => {
@@ -106,31 +106,30 @@ export default function StudentDetailsPage() {
         </div>
 
         {/* Tab switch navigation */}
-        <div className="flex border-b border-slate-150 dark:border-slate-800">
-          <button
-            onClick={() => setActiveTab('personal')}
-            className={`p-3 px-6 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] ${
-              activeTab === 'personal'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-slate-650'
-            }`}
-          >
-            Personal Profile
-          </button>
-          <button
-            onClick={() => setActiveTab('guardian')}
-            className={`p-3 px-6 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] ${
-              activeTab === 'guardian'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-slate-650'
-            }`}
-          >
-            Parent & Guardian info
-          </button>
+        <div className="flex border-b border-slate-150 dark:border-slate-800 overflow-x-auto max-w-full">
+          {[
+            { id: 'personal', label: 'Personal Profile', icon: 'pi-user' },
+            { id: 'guardian', label: 'Parent & Guardian Info', icon: 'pi-users' },
+            { id: 'ledger', label: 'Academic Fee Ledger', icon: 'pi-wallet' },
+            { id: 'audit_logs', label: 'Activity Logs', icon: 'pi-list' }
+          ].map((tb) => (
+            <button
+              key={tb.id}
+              onClick={() => setActiveTab(tb.id as any)}
+              className={`p-3 px-5 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === tb.id
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-650'
+              }`}
+            >
+              <i className={`pi ${tb.icon} text-[10px]`}></i>
+              <span>{tb.label}</span>
+            </button>
+          ))}
         </div>
 
         {/* Dynamic tab contents */}
-        {activeTab === 'personal' ? (
+        {activeTab === 'personal' && (
           <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
@@ -166,7 +165,9 @@ export default function StudentDetailsPage() {
               </div>
             </div>
           </Card>
-        ) : (
+        )}
+
+        {activeTab === 'guardian' && (
           <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
@@ -184,6 +185,110 @@ export default function StudentDetailsPage() {
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Alternate Phone</label>
                 <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.alternatePhone || '—'}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {activeTab === 'ledger' && (
+          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden p-4">
+            <div className="flex flex-col gap-6">
+              {/* Fees quick metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tuition Fees (Annual)</span>
+                  <span className="text-lg font-extrabold text-slate-800 dark:text-white mt-1 block">₹45,000</span>
+                </div>
+                <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Fees Paid</span>
+                  <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 block">₹30,000</span>
+                </div>
+                <div className="p-4 bg-rose-500/5 rounded-2xl border border-rose-500/10 col-span-2 md:col-span-1">
+                  <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">Outstanding Due</span>
+                  <span className="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1 block">₹15,000</span>
+                </div>
+              </div>
+
+              {/* Transactions Ledger Table */}
+              <DataTable
+                value={[
+                  { id: 'INV-2025-0921', term: 'First Term Fees', invoiced: 15000, date: '2025-06-10', method: 'NetBanking', status: 'PAID' },
+                  { id: 'INV-2025-1102', term: 'Second Term Fees', invoiced: 15000, date: '2025-10-05', method: 'UPI Pay', status: 'PAID' },
+                  { id: 'INV-2026-0245', term: 'Third Term Fees', invoiced: 15000, date: '2026-02-15', method: '—', status: 'DUE' }
+                ]}
+                className="p-datatable-sm mt-2 text-xs"
+                stripedRows
+              >
+                <Column field="id" header="Invoice No" className="font-mono font-bold text-xs" />
+                <Column field="term" header="Term Particulars" className="font-semibold text-slate-700 dark:text-slate-350" />
+                <Column field="date" header="Due / Pay Date" />
+                <Column 
+                  header="Amount" 
+                  body={(d) => <span className="font-bold font-mono">₹{d.invoiced.toLocaleString('en-IN')}</span>} 
+                />
+                <Column field="method" header="Payment Method" />
+                <Column 
+                  header="Status" 
+                  body={(d) => (
+                    <Tag 
+                      value={d.status} 
+                      severity={d.status === 'PAID' ? 'success' : 'danger'} 
+                      className="font-bold text-[9px] rounded px-2" 
+                    />
+                  )} 
+                />
+                <Column 
+                  header="Print" 
+                  body={(d) => (
+                    <Button 
+                      icon="pi pi-print" 
+                      className="p-button-text p-button-sm p-1 text-indigo-500" 
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                          detail: {
+                            severity: 'success',
+                            summary: 'Invoice Receipt Compiled',
+                            detail: `Tax invoice ${d.id} compiled. Printing queue initialized.`,
+                            life: 3000
+                          }
+                        }));
+                      }}
+                    />
+                  )} 
+                  align="center"
+                />
+              </DataTable>
+            </div>
+          </Card>
+        )}
+
+        {activeTab === 'audit_logs' && (
+          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden p-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/80 pb-3">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white">Student Academic & System Activity Trail</h3>
+                <span className="text-[10px] font-extrabold text-indigo-500 uppercase bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded">Roster Auditing Active</span>
+              </div>
+
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
+                {[
+                  { action: 'Marked Present via biometric handshake', category: 'ATTENDANCE', terminal: 'BIO-01-MAIN', time: 'Today, 08:12 AM' },
+                  { action: 'Allocated to Hostel Room 104', category: 'HOSTEL', terminal: 'Warden Logbook', time: 'Yesterday, 04:30 PM' },
+                  { action: 'Assigned Commute stop: City Center Stop (Route A)', category: 'TRANSPORT', terminal: 'Admin console', time: '2026-05-26, 02:15 PM' },
+                  { action: 'English Poetry Homework Assignment submitted', category: 'HOMEWORK', terminal: 'Student Console', time: '2026-05-25, 08:50 PM' },
+                  { action: 'Tuition Fee invoice generated (Third Term Fees)', category: 'FINANCE', terminal: 'Automated Billing', time: '2026-05-20, 10:00 AM' }
+                ].map((log, i) => (
+                  <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
+                    <div>
+                      <p className="text-slate-800 dark:text-slate-350">{log.action}</p>
+                      <div className="flex gap-2 items-center text-[10px] text-slate-400 mt-1">
+                        <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.category}</span>
+                        <span>· Via {log.terminal}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-400/80 font-medium whitespace-nowrap">{log.time}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </Card>

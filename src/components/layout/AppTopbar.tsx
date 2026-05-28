@@ -6,24 +6,52 @@ import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { Tag } from 'primereact/tag';
+import { useTenantsList } from '@/modules/superadmin/hooks/useTenants';
+
+interface SwitchableSchool {
+  id: string;
+  name: string;
+  plan: string;
+  activeModules: string[];
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+  };
+}
 
 export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }) {
   const { activeUser, activeTenant, isDemoMode, toggleDemoMode, logout, switchTenant } = useAuthStore();
   const userMenuRef = useRef<Menu>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // List of demo/onboarded schools to switch between
-  const schools = [
-    { id: '00101', name: 'Delhi Public School', plan: 'PREMIUM', activeModules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'settings'] },
-    { id: '00102', name: 'Oakridge International', plan: 'ENTERPRISE', activeModules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'hostel', 'transport', 'homework', 'settings'] },
-    { id: '00103', name: 'St. Xavier Academy', plan: 'STANDARD', activeModules: ['students', 'staff', 'academics', 'attendance', 'exams', 'library', 'homework', 'settings'] },
+  // Fetch the list of schools dynamically from the database!
+  const isSuper = activeUser?.role === 'SuperAdmin';
+  const { data: dbTenantsData } = useTenantsList(1, 50);
+
+  // Parse server schools or fall back to preset offline demo schools
+  const offlineSchools: SwitchableSchool[] = [
+    { id: '00101', name: 'Delhi Public School', plan: 'PREMIUM', activeModules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'settings'], theme: { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' } },
+    { id: '00102', name: 'Oakridge International', plan: 'ENTERPRISE', activeModules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'hostel', 'transport', 'homework', 'settings'], theme: { primaryColor: '#f59e0b', secondaryColor: '#fef3c7' } },
+    { id: '00103', name: 'St. Xavier Academy', plan: 'STANDARD', activeModules: ['students', 'staff', 'academics', 'attendance', 'exams', 'library', 'homework', 'settings'], theme: { primaryColor: '#8b5cf6', secondaryColor: '#f3e8ff' } },
   ];
 
-  const handleTenantSwitch = (school: typeof schools[0]) => {
+  const dbTenants = dbTenantsData?.data?.items || [];
+  const schools: SwitchableSchool[] = dbTenants.length > 0
+    ? dbTenants.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        plan: t.plan,
+        activeModules: t.activeModules || ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'settings'],
+        theme: t.theme || { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' }
+      }))
+    : offlineSchools;
+
+  const handleTenantSwitch = (school: SwitchableSchool) => {
     switchTenant({
       id: school.id,
       name: school.name,
       activeModules: school.activeModules,
+      theme: school.theme,
     });
     setDropdownOpen(false);
 

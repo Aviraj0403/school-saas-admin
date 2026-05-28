@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
@@ -14,6 +14,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { Dropdown } from 'primereact/dropdown';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transportService } from '@/services/transport.service';
+import { studentsService } from '@/services/students.service';
 
 export default function TransportPage() {
   const queryClient = useQueryClient();
@@ -25,7 +26,19 @@ export default function TransportPage() {
 
   const [routeForm, setRouteForm] = useState({ name: '', startPoint: '', endPoint: '', stops: '' });
   const [busForm, setBusForm] = useState({ registrationNo: '', capacity: 40, routeId: '', driverName: '', driverPhone: '' });
-  const [assignForm, setAssignForm] = useState({ studentId: '', routeId: '', stopName: '' });
+  const [assignForm, setAssignForm] = useState({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYear: '2025-2026' });
+
+  // URL search parameter synchronization for smooth tab changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'routes') setActiveTab(0);
+      else if (tabParam === 'vehicles') setActiveTab(1);
+      else if (tabParam === 'live') setActiveTab(2);
+      else if (tabParam === 'students') setActiveTab(3);
+    }
+  }, []);
 
   const { data: routes, isPending: loadingRoutes } = useQuery({
     queryKey: ['transport-routes'],
@@ -43,25 +56,64 @@ export default function TransportPage() {
     refetchInterval: 30000, // refresh every 30s for live tracking
   });
 
+  const { data: assignments, isPending: loadingAssignments } = useQuery({
+    queryKey: ['transport-assignments'],
+    queryFn: transportService.getAssignments,
+  });
+
+  const { data: studentsResponse } = useQuery({
+    queryKey: ['students-options'],
+    queryFn: () => studentsService.getStudents(1, 100),
+  });
+
   const createRouteMutation = useMutation({
     mutationFn: (data: any) => transportService.createRoute({ ...data, stops: data.stops.split(',').map((s: string) => s.trim()) }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['transport-routes'] }); setShowRouteDialog(false); setRouteForm({ name: '', startPoint: '', endPoint: '', stops: '' }); },
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['transport-routes'] }); 
+      setShowRouteDialog(false); 
+      setRouteForm({ name: '', startPoint: '', endPoint: '', stops: '' }); 
+    },
   });
 
   const createBusMutation = useMutation({
     mutationFn: transportService.createBus,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['transport-buses'] }); setShowBusDialog(false); setBusForm({ registrationNo: '', capacity: 40, routeId: '', driverName: '', driverPhone: '' }); },
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['transport-buses'] }); 
+      setShowBusDialog(false); 
+      setBusForm({ registrationNo: '', capacity: 40, routeId: '', driverName: '', driverPhone: '' }); 
+    },
   });
 
   const assignMutation = useMutation({
     mutationFn: transportService.assignStudentToRoute,
-    onSuccess: () => { setShowAssignDialog(false); setAssignForm({ studentId: '', routeId: '', stopName: '' }); },
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['transport-assignments'] });
+      setShowAssignDialog(false); 
+      setAssignForm({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYear: '2025-2026' }); 
+    },
   });
 
   const activeRoutes = Array.isArray(routes) ? routes : [];
   const activeBuses = Array.isArray(buses) ? buses : [];
   const activeLocations = Array.isArray(locations) ? locations : [];
+  const activeAssignments = Array.isArray(assignments) ? assignments : [];
+  const studentsList = studentsResponse?.items ?? [];
+
   const routeOptions = activeRoutes.map((r: any) => ({ label: r.name, value: r.id }));
+  const studentOptions = studentsList.map((s: any) => ({
+    label: `${s.name} (Admission: ${s.admissionNo}, Roll: ${s.rollNo || 'N/A'})`,
+    value: s.id
+  }));
+
+  // Resolve stops dynamically for selected route in dialog
+  const selectedRouteObj = activeRoutes.find((r: any) => r.id === assignForm.routeId);
+  const stopOptions = selectedRouteObj && Array.isArray(selectedRouteObj.stops)
+    ? selectedRouteObj.stops.map((s: any) => {
+        const name = typeof s === 'object' && s !== null ? s.name : s;
+        const id = typeof s === 'object' && s !== null ? s.id : s;
+        return { label: name, value: id };
+      })
+    : [];
 
   return (
     <DashboardLayout>
@@ -299,9 +351,7 @@ export default function TransportPage() {
                   </DataTable>
                 )}
               </div>
-            </TabPanel>
-
-            {/* Live locations Tab */}
+            </TabPanel>            {/* Live locations Tab */}
             <TabPanel header="GPS Live Feeds">
               <div className="p-4">
                 {activeLocations.length > 0 ? (
@@ -323,6 +373,96 @@ export default function TransportPage() {
               </div>
             </TabPanel>
 
+            {/* Student Commute Mappings Tab */}
+            <TabPanel header="Student Commute Mappings">
+              <div className="p-4">
+                {loadingAssignments ? (
+                  <div className="p-12 flex flex-col items-center justify-center gap-3">
+                    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-semibold text-slate-400">Loading student transport mappings...</span>
+                  </div>
+                ) : activeAssignments.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-12 text-slate-450 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/20">
+                    <i className="pi pi-users text-4xl mb-3 text-indigo-400"></i>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No Student COMMUTE Mappings Registered</p>
+                    <p className="text-xs text-slate-400 mt-1">Map students to vehicles and route stops using the "Assign Student" panel.</p>
+                  </div>
+                ) : (
+                  <DataTable
+                    value={activeAssignments}
+                    className="p-datatable-sm"
+                    stripedRows
+                    paginator
+                    rows={10}
+                    emptyMessage="No assignments found."
+                  >
+                    <Column 
+                      header="Student Name" 
+                      body={(d) => (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{d.student?.name || '—'}</span>
+                          <span className="text-[10px] text-slate-400">ID: {d.studentId?.substring(0, 8)}...</span>
+                        </div>
+                      )} 
+                    />
+                    <Column 
+                      header="Admission / Roll" 
+                      body={(d) => (
+                        <div className="flex flex-col text-xs font-mono">
+                          <span className="text-slate-700 dark:text-slate-300">Adm: {d.student?.admissionNo || '—'}</span>
+                          {d.student?.rollNo && <span className="text-slate-400">Roll: {d.student?.rollNo}</span>}
+                        </div>
+                      )} 
+                    />
+                    <Column 
+                      header="Commute Route Line" 
+                      body={(d) => (
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{d.route?.name || '—'}</span>
+                        </div>
+                      )} 
+                    />
+                    <Column 
+                      header="Vehicle No" 
+                      body={(d) => (
+                        <span className="text-xs font-bold bg-amber-500/10 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400 px-2.5 py-1 rounded-full font-mono">
+                          {d.route?.vehicle?.vehicleNo || 'Unassigned'}
+                        </span>
+                      )} 
+                    />
+                    <Column 
+                      header="Commute Stop" 
+                      body={(d) => (
+                        <div className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-355 font-medium">
+                          <i className="pi pi-map-marker text-indigo-500 text-[10px]"></i>
+                          <span>{d.pickupStop?.name || d.stopId || '—'}</span>
+                        </div>
+                      )} 
+                    />
+                    <Column 
+                      header="Commute Fees" 
+                      body={(d) => (
+                        <span className="font-extrabold text-slate-900 dark:text-emerald-400 font-mono text-sm">
+                          ₹{d.feeAmount !== null ? Number(d.feeAmount).toLocaleString('en-IN') : '0'}
+                        </span>
+                      )} 
+                    />
+                    <Column 
+                      header="Commute Status" 
+                      body={(d) => (
+                        <Tag 
+                          value={d.isActive ? 'ACTIVE' : 'SUSPENDED'} 
+                          severity={d.isActive ? 'success' : 'danger'} 
+                          className="font-bold text-[10px] rounded-full px-2.5" 
+                        />
+                      )} 
+                    />
+                  </DataTable>
+                )}
+              </div>
+            </TabPanel>
+
           </TabView>
         </div>
 
@@ -337,13 +477,13 @@ export default function TransportPage() {
         onHide={() => setShowRouteDialog(false)}
         className="dialog-custom rounded-3xl"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowRouteDialog(false)} />
+          <div className="flex justify-end gap-2 p-3 border-t border-slate-105 dark:border-slate-800">
+            <Button label="Cancel" className="p-button-text p-2 text-slate-500" onClick={() => setShowRouteDialog(false)} />
             <Button 
               label="Create Route" 
               icon="pi pi-check" 
               loading={createRouteMutation.isPending} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl font-bold" 
               onClick={() => createRouteMutation.mutate(routeForm)} 
             />
           </div>
@@ -351,22 +491,22 @@ export default function TransportPage() {
       >
         <div className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Route Name *</label>
-            <InputText value={routeForm.name} onChange={(e) => setRouteForm({ ...routeForm, name: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. Route A — North Campus" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Route Name *</label>
+            <InputText value={routeForm.name} onChange={(e) => setRouteForm({ ...routeForm, name: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="e.g. Route A — North Campus" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Start Point *</label>
-              <InputText value={routeForm.startPoint} onChange={(e) => setRouteForm({ ...routeForm, startPoint: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. School Gate" />
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Start Point *</label>
+              <InputText value={routeForm.startPoint} onChange={(e) => setRouteForm({ ...routeForm, startPoint: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="e.g. School Gate" />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">End Point *</label>
-              <InputText value={routeForm.endPoint} onChange={(e) => setRouteForm({ ...routeForm, endPoint: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. City Center" />
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">End Point *</label>
+              <InputText value={routeForm.endPoint} onChange={(e) => setRouteForm({ ...routeForm, endPoint: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="e.g. City Center" />
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Stops (comma-separated)</label>
-            <InputText value={routeForm.stops} onChange={(e) => setRouteForm({ ...routeForm, stops: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="Stop 1, Stop 2, Stop 3" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Stops (comma-separated)</label>
+            <InputText value={routeForm.stops} onChange={(e) => setRouteForm({ ...routeForm, stops: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="Stop 1, Stop 2, Stop 3" />
           </div>
         </div>
       </Dialog>
@@ -380,13 +520,13 @@ export default function TransportPage() {
         onHide={() => setShowBusDialog(false)}
         className="dialog-custom rounded-3xl"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowBusDialog(false)} />
+          <div className="flex justify-end gap-2 p-3 border-t border-slate-105 dark:border-slate-800">
+            <Button label="Cancel" className="p-button-text p-2 text-slate-500" onClick={() => setShowBusDialog(false)} />
             <Button 
               label="Register Bus" 
               icon="pi pi-check" 
               loading={createBusMutation.isPending} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl font-bold" 
               onClick={() => createBusMutation.mutate(busForm)} 
             />
           </div>
@@ -394,25 +534,25 @@ export default function TransportPage() {
       >
         <div className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Registration Number *</label>
-            <InputText value={busForm.registrationNo} onChange={(e) => setBusForm({ ...busForm, registrationNo: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. MH-12-AB-1234" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Registration Number *</label>
+            <InputText value={busForm.registrationNo} onChange={(e) => setBusForm({ ...busForm, registrationNo: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="e.g. MH-12-AB-1234" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Seating Capacity</label>
-            <InputNumber value={busForm.capacity} onValueChange={(e) => setBusForm({ ...busForm, capacity: e.value || 40 })} className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Seating Capacity</label>
+            <InputNumber value={busForm.capacity} onValueChange={(e) => setBusForm({ ...busForm, capacity: e.value || 40 })} className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" inputClassName="p-2.5 rounded-xl w-full" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Assign Route Line</label>
-            <Dropdown value={busForm.routeId} options={routeOptions} onChange={(e) => setBusForm({ ...busForm, routeId: e.value })} placeholder="Select route" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl animate-none" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Assign Route Line</label>
+            <Dropdown value={busForm.routeId} options={routeOptions} onChange={(e) => setBusForm({ ...busForm, routeId: e.value })} placeholder="Select route" className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Driver Name</label>
-              <InputText value={busForm.driverName} onChange={(e) => setBusForm({ ...busForm, driverName: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="Driver full name" />
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Driver Name</label>
+              <InputText value={busForm.driverName} onChange={(e) => setBusForm({ ...busForm, driverName: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="Driver full name" />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Driver Phone</label>
-              <InputText value={busForm.driverPhone} onChange={(e) => setBusForm({ ...busForm, driverPhone: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="+91 98765 43210" />
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Driver Phone</label>
+              <InputText value={busForm.driverPhone} onChange={(e) => setBusForm({ ...busForm, driverPhone: e.target.value })} className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" placeholder="+91 98765 43210" />
             </div>
           </div>
         </div>
@@ -420,20 +560,20 @@ export default function TransportPage() {
 
       {/* Dialog: Assign Student */}
       <Dialog 
-        header="Assign Student to Route" 
+        header="Assign Student to Transport" 
         visible={showAssignDialog} 
-        style={{ width: '420px' }} 
+        style={{ width: '450px' }} 
         modal 
         onHide={() => setShowAssignDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-3xl animate-none"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAssignDialog(false)} />
+          <div className="flex justify-end gap-2 p-3 border-t border-slate-105 dark:border-slate-800">
+            <Button label="Cancel" className="p-button-text p-2 text-slate-500" onClick={() => setShowAssignDialog(false)} />
             <Button 
-              label="Assign" 
+              label="Assign Commute" 
               icon="pi pi-check" 
               loading={assignMutation.isPending} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl font-bold" 
               onClick={() => assignMutation.mutate(assignForm)} 
             />
           </div>
@@ -441,16 +581,72 @@ export default function TransportPage() {
       >
         <div className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student ID *</label>
-            <InputText value={assignForm.studentId} onChange={(e) => setAssignForm({ ...assignForm, studentId: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="Student UUID or Admission No" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Select Enrolled Student *</label>
+            <Dropdown 
+              value={assignForm.studentId} 
+              options={studentOptions} 
+              onChange={(e) => setAssignForm({ ...assignForm, studentId: e.value })} 
+              filter 
+              placeholder="Search student by name/admission" 
+              className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" 
+            />
           </div>
+          
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Select Route *</label>
-            <Dropdown value={assignForm.routeId} options={routeOptions} onChange={(e) => setAssignForm({ ...assignForm, routeId: e.value })} placeholder="Select route" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Assign Commute Route *</label>
+            <Dropdown 
+              value={assignForm.routeId} 
+              options={routeOptions} 
+              onChange={(e) => setAssignForm({ ...assignForm, routeId: e.value, stopId: '', stopName: '' })} 
+              placeholder="Select active route line" 
+              className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" 
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Boarding Stop *</label>
-            <InputText value={assignForm.stopName} onChange={(e) => setAssignForm({ ...assignForm, stopName: e.target.value })} className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. City Center Stop" />
+
+          {assignForm.routeId && (
+            <div className="flex flex-col gap-1">
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Select Commute Stop *</label>
+              {stopOptions.length > 0 ? (
+                <Dropdown 
+                  value={assignForm.stopId} 
+                  options={stopOptions} 
+                  onChange={(e) => {
+                    const selStop = stopOptions.find((st: any) => st.value === e.value);
+                    setAssignForm({ ...assignForm, stopId: e.value, stopName: selStop ? selStop.label : '' });
+                  }} 
+                  placeholder="Select designated boarding stop" 
+                  className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" 
+                />
+              ) : (
+                <InputText 
+                  value={assignForm.stopName} 
+                  onChange={(e) => setAssignForm({ ...assignForm, stopName: e.target.value, stopId: e.target.value })} 
+                  className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" 
+                  placeholder="Type boarding stop name" 
+                />
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Academic Commute Fee (₹)</label>
+              <InputNumber 
+                value={assignForm.feeAmount} 
+                onValueChange={(e) => setAssignForm({ ...assignForm, feeAmount: e.value || 0 })} 
+                className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl" 
+                inputClassName="p-2.5 rounded-xl w-full" 
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-bold text-xs text-slate-500 dark:text-slate-400">Academic Session</label>
+              <InputText 
+                value={assignForm.academicYear} 
+                onChange={(e) => setAssignForm({ ...assignForm, academicYear: e.target.value })} 
+                className="p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none" 
+                placeholder="e.g. 2025-2026" 
+              />
+            </div>
           </div>
         </div>
       </Dialog>

@@ -2,9 +2,11 @@
 
 import React, { useEffect } from 'react';
 import { useTenantStore } from '@/store/useTenantStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { tenant, fetchTenant } = useTenantStore();
+  const { activeTenant } = useAuthStore();
 
   useEffect(() => {
     // Determine subdomain from hostname
@@ -12,8 +14,6 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     const parts = hostname.split('.');
 
     // localhost → use 'demo' as default subdomain for dev
-    // demo.school.com → 'demo'
-    // school.com → skip (no subdomain)
     let subdomain = '';
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       subdomain = 'demo';
@@ -31,10 +31,12 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     }
   }, [fetchTenant]);
 
+  // Apply theme dynamically from both subdomain resolver AND live active workspace switches!
   useEffect(() => {
-    if (tenant?.theme) {
+    const resolvedTheme = activeTenant?.theme || tenant?.theme;
+    if (resolvedTheme) {
       const root = document.documentElement;
-      const theme = tenant.theme as any;
+      const theme = resolvedTheme as any;
       if (theme.primaryColor) {
         root.style.setProperty('--primary-color', theme.primaryColor);
       }
@@ -42,7 +44,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         root.style.setProperty('--secondary-color', theme.secondaryColor);
       }
     }
-  }, [tenant]);
+  }, [tenant, activeTenant]);
 
   return <>{children}</>;
 }

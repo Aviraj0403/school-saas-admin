@@ -25,6 +25,7 @@ export const navigationConfig: NavItem[] = [
       { label: 'New Admission', icon: PrimeIcons.USER_PLUS, path: '/students/admissions', module: 'student' },
       { label: 'Attendance logs', icon: PrimeIcons.CHECK_SQUARE, path: '/attendance', module: 'attendance' },
       { label: 'Assignments & Homework', icon: PrimeIcons.UPLOAD, path: '/assignments', module: 'homework' },
+      { label: 'Exams & Results', icon: PrimeIcons.PENCIL, path: '/exams', module: 'exams' },
     ],
   },
   {
@@ -36,15 +37,16 @@ export const navigationConfig: NavItem[] = [
       { label: 'Teacher Directory', icon: PrimeIcons.LIST, path: '/staff', module: 'staff' },
       { label: 'Leave Applications', icon: PrimeIcons.CALENDAR_MINUS, path: '/leave', module: 'leave' },
       { label: 'Classes & Timetable', icon: PrimeIcons.CALENDAR, path: '/academics/classes', module: 'academics' },
+      { label: 'HR Payroll & Salary', icon: PrimeIcons.MONEY_BILL, path: '/staff/payroll', module: 'staff' },
     ],
   },
   {
-    label: 'Library Management',
+    label: 'Library Catalog',
     icon: PrimeIcons.BOOK,
     path: '/library',
     module: 'library',
     children: [
-      { label: 'Book Catalog', icon: PrimeIcons.BOOKMARK, path: '/library', module: 'library' },
+      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library', module: 'library' },
       { label: 'Book Issue / Returns', icon: PrimeIcons.REPLAY, path: '/library/issues', module: 'library' },
       { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library/fines', module: 'library' },
     ],
@@ -61,7 +63,7 @@ export const navigationConfig: NavItem[] = [
     ],
   },
   {
-    label: 'Hostel Management',
+    label: 'Hostel Registry',
     icon: PrimeIcons.BUILDING,
     path: '/hostel',
     module: 'hostel',
@@ -106,6 +108,17 @@ export const navigationConfig: NavItem[] = [
     children: [
       { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants' },
       { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans' },
+    ],
+  },
+  {
+    label: 'Website CMS',
+    icon: PrimeIcons.DESKTOP,
+    path: '/website',
+    module: 'website',
+    children: [
+      { label: 'Homepage Banners', icon: PrimeIcons.IMAGES, path: '/website/banners', module: 'website' },
+      { label: 'Download Center', icon: PrimeIcons.DOWNLOAD, path: '/website/downloads', module: 'website' },
+      { label: 'Admission Inquiries', icon: PrimeIcons.ENVELOPE, path: '/website/inquiries', module: 'website' },
     ],
   },
   {

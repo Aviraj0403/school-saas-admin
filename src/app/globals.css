@@ -9,6 +9,10 @@
   --foreground: #0f172a;
   --primary-color: #6366f1;
   --secondary-color: #8b5cf6;
+  
+  /* Dynamic Tailwind CSS v4 theme color mapping */
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
 }
 
 @media (prefers-color-scheme: dark) {

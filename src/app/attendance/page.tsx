@@ -218,8 +218,6 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        </div>
-
         {/* Dynamic Tab Selector Bar */}
         <div className="flex bg-slate-100/50 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/40 dark:border-slate-800 w-max">
           <button

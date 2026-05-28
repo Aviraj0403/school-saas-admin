@@ -18,6 +18,11 @@ export interface TenantConfig {
   id: string;
   name: string;
   activeModules: string[];
+  theme?: {
+    logo?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+  };
 }
 
 interface AuthState {

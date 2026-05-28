@@ -8,6 +8,8 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 interface Assignment {
   id: string;
@@ -20,15 +22,54 @@ interface Assignment {
   totalStudents: number;
 }
 
+interface Submission {
+  id: string;
+  studentName: string;
+  submittedAt: string;
+  status: 'SUBMITTED' | 'PENDING' | 'GRADED';
+  fileName: string;
+  grade: string;
+}
+
 export default function AssignmentsPage() {
-  const [showDialog, setShowDialog] = useState(false);
+  const [roleMode, setRoleMode] = useState<'TEACHER' | 'STUDENT'>('TEACHER');
+  
+  // Dialog controls
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showSubmissionsDialog, setShowSubmissionsDialog] = useState(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [showGradeDialog, setShowGradeDialog] = useState(false);
+  
+  // Active selections
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  
+  // Form values
+  const [gradeValue, setGradeValue] = useState('');
+  const [submittedFileName, setSubmittedFileName] = useState('');
+  
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   
+  // State datasets
   const [assignments, setAssignments] = useState<Assignment[]>([
     { id: '1', title: 'Quadratic Equations Practice Set', subject: 'Mathematics', className: 'Grade 10-A', dueDate: '2026-06-05', status: 'ACTIVE', submissions: 18, totalStudents: 25 },
     { id: '2', title: 'Newton\'s Laws of Motion Lab Report', subject: 'Physics', className: 'Grade 11-B', dueDate: '2026-06-02', status: 'ACTIVE', submissions: 12, totalStudents: 22 },
     { id: '3', title: 'Cell Structure and Functions Diagram', subject: 'Biology', className: 'Grade 9-C', dueDate: '2026-05-24', status: 'GRADED', submissions: 28, totalStudents: 28 },
     { id: '4', title: 'Modern History Renaissance Essay', subject: 'Social Studies', className: 'Grade 10-B', dueDate: '2026-06-10', status: 'DRAFT', submissions: 0, totalStudents: 24 },
+  ]);
+
+  const [submissionsList, setSubmissionsList] = useState<Submission[]>([
+    { id: 'sub-1', studentName: 'Aditya Sen', submittedAt: '2026-05-28 10:15', status: 'SUBMITTED', fileName: 'quadratic_solutions.pdf', grade: '' },
+    { id: 'sub-2', studentName: 'Rohan Gupta', submittedAt: '2026-05-28 11:30', status: 'GRADED', fileName: 'equations_rohan.docx', grade: '90/100' },
+    { id: 'sub-3', studentName: 'Neha Verma', submittedAt: '—', status: 'PENDING', fileName: '—', grade: '' },
+    { id: 'sub-4', studentName: 'Aarav Mehta', submittedAt: '2026-05-27 15:40', status: 'SUBMITTED', fileName: 'quadratic_maths_final.pdf', grade: '' },
+  ]);
+
+  // Student specific view homework states
+  const [studentHomework, setStudentHomework] = useState([
+    { id: 'hw-1', title: 'Quadratic Equations Practice Set', subject: 'Mathematics', dueDate: '2026-06-05', status: 'PENDING_SUBMISSION', fileName: '—', grade: '' },
+    { id: 'hw-2', title: 'Newton\'s Laws of Motion Lab Report', subject: 'Physics', dueDate: '2026-06-02', status: 'SUBMITTED', fileName: 'physics_laws_lab.pdf', grade: '' },
+    { id: 'hw-3', title: 'Cell Structure and Functions Diagram', subject: 'Biology', dueDate: '2026-05-24', status: 'GRADED', fileName: 'biology_cell_diagram.pdf', grade: 'A+' },
   ]);
 
   const [formData, setFormData] = useState({
@@ -54,7 +95,7 @@ export default function AssignmentsPage() {
       totalStudents: 25,
     };
     setAssignments([newAssignment, ...assignments]);
-    setShowDialog(false);
+    setShowCreateDialog(false);
     setFormData({ title: '', subject: '', className: '', dueDate: '' });
 
     window.dispatchEvent(new CustomEvent('show-toast', {
@@ -67,6 +108,51 @@ export default function AssignmentsPage() {
     }));
   };
 
+  const handleGradeSubmission = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubmission) return;
+    setSubmissionsList(prev => prev.map(sub => 
+      sub.id === selectedSubmission.id ? { ...sub, status: 'GRADED', grade: gradeValue } : sub
+    ));
+    setShowGradeDialog(false);
+    setGradeValue('');
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { severity: 'success', summary: 'Homework Graded', detail: `Graded homework for ${selectedSubmission.studentName}.`, life: 3000 }
+    }));
+  };
+
+  const handleStudentUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAssignment) return;
+    
+    // Update student view task
+    setStudentHomework(prev => prev.map(hw => 
+      hw.title === selectedAssignment.title ? { ...hw, status: 'SUBMITTED', fileName: submittedFileName || 'homework_solution.pdf' } : hw
+    ));
+    
+    // Add to submissions list for teachers
+    const newSub: Submission = {
+      id: `sub-${Date.now()}`,
+      studentName: 'Demo Student (You)',
+      submittedAt: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().split(' ')[0].substring(0, 5),
+      status: 'SUBMITTED',
+      fileName: submittedFileName || 'homework_solution.pdf',
+      grade: ''
+    };
+    setSubmissionsList([newSub, ...submissionsList]);
+    
+    // Increment submission count
+    setAssignments(prev => prev.map(a => 
+      a.id === selectedAssignment.id ? { ...a, submissions: a.submissions + 1 } : a
+    ));
+    
+    setShowSubmitDialog(false);
+    setSubmittedFileName('');
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { severity: 'success', summary: 'Homework Submitted', detail: 'Your assignment solution was uploaded successfully.', life: 3000 }
+    }));
+  };
+
   const filteredAssignments = filterStatus 
     ? assignments.filter(a => a.status === filterStatus)
     : assignments;
@@ -75,219 +161,350 @@ export default function AssignmentsPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6 pb-10 font-sans">
         
-        {/* Header */}
-        <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 dark:border-slate-900 pb-5">
+        {/* Header with Role Mode Toggle Switch */}
+        <div className="flex justify-between items-center flex-wrap gap-4 border-b border-slate-100 dark:border-slate-900 pb-5">
           <div>
             <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight bg-gradient-to-r from-indigo-500 to-violet-600 bg-clip-text text-transparent">
               Assignments & Homework
             </h1>
             <p className="text-slate-400 mt-1 text-sm">
-              Publish student curriculum tasks, track live online uploads, and manage evaluations seamlessly.
+              {roleMode === 'TEACHER' 
+                ? 'Teacher Portal: Publish curriculum tasks, evaluate logs, and grade student submissions.' 
+                : 'Student Portal: Review pending assignments, submit completed homework files, and view grades.'}
             </p>
           </div>
-          <Button
-            label="Create New Assignment"
-            icon="pi pi-plus"
-            className="bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold p-3 px-5 border-0 rounded-xl shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/20 active:scale-[0.98] transition-all"
-            onClick={() => setShowDialog(true)}
-          />
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Active Tasks</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
-                  {assignments.filter(a => a.status === 'ACTIVE').length}
-                </h3>
-              </div>
-              <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl">
-                <i className="pi pi-list text-lg"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Total Submissions</p>
-                <h3 className="text-2xl font-black text-emerald-600 mt-1">
-                  {assignments.reduce((sum, a) => sum + a.submissions, 0)}
-                </h3>
-              </div>
-              <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
-                <i className="pi pi-cloud-upload text-lg"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Pending Evaluation</p>
-                <h3 className="text-2xl font-black text-amber-500 mt-1">
-                  {assignments.filter(a => a.status === 'ACTIVE' && a.submissions > 0).length}
-                </h3>
-              </div>
-              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
-                <i className="pi pi-pencil text-lg"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Submission Rate</p>
-                <h3 className="text-2xl font-black text-purple-500 mt-1">82.5%</h3>
-              </div>
-              <div className="p-3 bg-purple-500/10 text-purple-500 rounded-xl">
-                <i className="pi pi-percentage text-lg"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Toolbar */}
-        <div className="flex gap-2 bg-slate-100/50 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/40 dark:border-slate-800 w-max">
-          <button
-            onClick={() => setFilterStatus(null)}
-            className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${!filterStatus ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilterStatus('ACTIVE')}
-            className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'ACTIVE' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setFilterStatus('GRADED')}
-            className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'GRADED' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
-          >
-            Graded
-          </button>
-          <button
-            onClick={() => setFilterStatus('DRAFT')}
-            className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'DRAFT' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
-          >
-            Drafts
-          </button>
-        </div>
-
-        {/* Assignments List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredAssignments.map((assignment) => {
-            const submissionPercent = Math.round((assignment.submissions / assignment.totalStudents) * 100);
-            return (
-              <div 
-                key={assignment.id}
-                className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 hover:border-indigo-500/80 rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md"
+          
+          <div className="flex items-center gap-3">
+            {/* Toggle Role */}
+            <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/50 dark:border-slate-800">
+              <button 
+                onClick={() => setRoleMode('TEACHER')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${roleMode === 'TEACHER' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-500'}`}
               >
-                <div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded-full border border-slate-100 dark:border-slate-900">
-                      {assignment.subject}
-                    </span>
-                    <Tag 
-                      value={assignment.status} 
-                      severity={
-                        assignment.status === 'ACTIVE' ? 'success' :
-                        assignment.status === 'GRADED' ? 'info' : 'warning'
-                      }
-                      className="text-[9px] font-bold"
-                    />
-                  </div>
-                  <h3 className="text-md font-bold text-slate-800 dark:text-slate-100 mt-2 hover:text-indigo-500 transition-colors cursor-pointer">
-                    {assignment.title}
-                  </h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-400 mt-3 font-semibold">
-                    <span className="flex items-center gap-1"><i className="pi pi-users text-[10px]"></i> {assignment.className}</span>
-                    <span className="flex items-center gap-1"><i className="pi pi-calendar text-[10px]"></i> Due: {assignment.dueDate}</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1 flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-slate-500">Submissions Logged</span>
-                    <span className="font-bold text-slate-800 dark:text-white">{assignment.submissions} / {assignment.totalStudents} ({submissionPercent}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-1.5 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        assignment.status === 'GRADED' ? 'bg-indigo-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${submissionPercent}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                Teacher Mode
+              </button>
+              <button 
+                onClick={() => setRoleMode('STUDENT')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${roleMode === 'STUDENT' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-500'}`}
+              >
+                Student Mode
+              </button>
+            </div>
+            
+            {roleMode === 'TEACHER' && (
+              <Button
+                label="Post Assignment"
+                icon="pi pi-plus"
+                className="bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold p-2.5 px-4 border-0 rounded-xl shadow-md transition-all text-xs"
+                onClick={() => setShowCreateDialog(true)}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Post Modal Dialog */}
+        {/* Stats Summary Rows depending on Selected Mode */}
+        {roleMode === 'TEACHER' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Active Tasks</span>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
+                {assignments.filter(a => a.status === 'ACTIVE').length}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Total Submissions</span>
+              <h3 className="text-2xl font-black text-emerald-600 mt-1">
+                {assignments.reduce((sum, a) => sum + a.submissions, 0)}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Pending Evaluation</span>
+              <h3 className="text-2xl font-black text-amber-500 mt-1">
+                {submissionsList.filter(s => s.status === 'SUBMITTED').length}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Submission Rate</span>
+              <h3 className="text-2xl font-black text-indigo-500 mt-1">82.5%</h3>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Pending Solutions</span>
+              <h3 className="text-2xl font-black text-rose-650 mt-1">
+                {studentHomework.filter(h => h.status === 'PENDING_SUBMISSION').length}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Submitted Homework</span>
+              <h3 className="text-2xl font-black text-indigo-600 mt-1">
+                {studentHomework.filter(h => h.status === 'SUBMITTED').length}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">Graded Tasks</span>
+              <h3 className="text-2xl font-black text-emerald-650 mt-1">
+                {studentHomework.filter(h => h.status === 'GRADED').length}
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase text-slate-450 tracking-wider">GPA Average Grade</span>
+              <h3 className="text-2xl font-black text-indigo-650 mt-1">A-</h3>
+            </div>
+          </div>
+        )}
+
+        {/* TEACHER MODE DISPLAY */}
+        {roleMode === 'TEACHER' && (
+          <div className="flex flex-col gap-4">
+            {/* Filter Toolbar */}
+            <div className="flex gap-2 bg-slate-100/50 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/40 dark:border-slate-800 w-max">
+              <button onClick={() => setFilterStatus(null)} className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${!filterStatus ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}>All</button>
+              <button onClick={() => setFilterStatus('ACTIVE')} className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'ACTIVE' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}>Active</button>
+              <button onClick={() => setFilterStatus('GRADED')} className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'GRADED' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}>Graded</button>
+              <button onClick={() => setFilterStatus('DRAFT')} className={`p-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterStatus === 'DRAFT' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}>Drafts</button>
+            </div>
+
+            {/* Assignments list */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredAssignments.map((assignment) => {
+                const submissionPercent = Math.round((assignment.submissions / assignment.totalStudents) * 100);
+                return (
+                  <div key={assignment.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded-full border border-slate-100 dark:border-slate-900">{assignment.subject}</span>
+                        <Tag value={assignment.status} severity={assignment.status === 'ACTIVE' ? 'success' : assignment.status === 'GRADED' ? 'info' : 'warning'} className="text-[9px] font-bold" />
+                      </div>
+                      <h3 className="text-md font-bold text-slate-800 dark:text-slate-100 mt-2">{assignment.title}</h3>
+                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-3 font-semibold">
+                        <span className="flex items-center gap-1"><i className="pi pi-users text-[10px]"></i> {assignment.className}</span>
+                        <span className="flex items-center gap-1"><i className="pi pi-calendar text-[10px]"></i> Due: {assignment.dueDate}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1 flex flex-col gap-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">Submissions Logged</span>
+                        <span className="font-bold text-slate-850 dark:text-white">{assignment.submissions} / {assignment.totalStudents} ({submissionPercent}%)</span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-500 ${assignment.status === 'GRADED' ? 'bg-indigo-500' : 'bg-emerald-500'}`} style={{ width: `${submissionPercent}%` }} />
+                      </div>
+                      <div className="flex justify-end mt-1">
+                        <button 
+                          onClick={() => {
+                            setSelectedAssignment(assignment);
+                            setShowSubmissionsDialog(true);
+                          }}
+                          className="text-xs font-bold text-indigo-650 hover:text-indigo-800 dark:text-indigo-400 flex items-center gap-1"
+                        >
+                          <i className="pi pi-search-plus"></i> View Submissions & Grade
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* STUDENT MODE DISPLAY */}
+        {roleMode === 'STUDENT' && (
+          <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-slate-850 dark:text-white mt-1">Your Assigned Tasks</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {studentHomework.map((hw) => {
+                const globalAssignment = assignments.find(a => a.title === hw.title);
+                return (
+                  <div key={hw.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded-full border border-slate-100 dark:border-slate-900">{hw.subject}</span>
+                        <Tag 
+                          value={hw.status === 'PENDING_SUBMISSION' ? 'PENDING' : hw.status} 
+                          severity={hw.status === 'GRADED' ? 'success' : hw.status === 'SUBMITTED' ? 'info' : 'danger'} 
+                          className="text-[9px] font-bold" 
+                        />
+                      </div>
+                      <h3 className="text-md font-bold text-slate-800 dark:text-slate-100 mt-2">{hw.title}</h3>
+                      <p className="text-xs text-slate-400 mt-2 font-semibold">Due: {hw.dueDate}</p>
+                    </div>
+
+                    <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1 flex flex-col gap-1.5 text-xs">
+                      {hw.status === 'PENDING_SUBMISSION' ? (
+                        <div className="flex justify-between items-center">
+                          <span className="text-rose-650 font-bold">Not submitted yet</span>
+                          <button 
+                            onClick={() => {
+                              setSelectedAssignment(globalAssignment || null);
+                              setShowSubmitDialog(true);
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-750 text-white font-bold p-1.5 px-3 rounded-lg text-[11px] border-0"
+                          >
+                            Submit Homework
+                          </button>
+                        </div>
+                      ) : hw.status === 'SUBMITTED' ? (
+                        <div className="flex flex-col gap-1 text-[11px] text-slate-450">
+                          <div className="flex justify-between">
+                            <span>Uploaded Solution:</span>
+                            <span className="font-mono font-bold text-slate-800 dark:text-white">{hw.fileName}</span>
+                          </div>
+                          <span className="text-indigo-600 dark:text-indigo-400 font-bold mt-1">Awaiting evaluation by teacher...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-slate-450 font-bold">Uploaded File:</span>
+                            <span className="font-mono text-slate-800 dark:text-white">{hw.fileName}</span>
+                          </div>
+                          <div className="bg-emerald-500/10 text-emerald-650 p-2 rounded-xl flex justify-between items-center font-bold">
+                            <span>Grade Awarded:</span>
+                            <span className="text-base font-black">{hw.grade}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Dialog: Create Assignment (Teacher Only) */}
         <Dialog
           header="Post New Assignment"
-          visible={showDialog}
-          style={{ width: '480px' }}
+          visible={showCreateDialog}
+          style={{ width: '450px' }}
           modal
-          onHide={() => setShowDialog(false)}
-          className="rounded-2xl shadow-xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-          contentClassName="p-5"
-          headerClassName="border-b border-slate-100 dark:border-slate-800 p-5 font-bold text-slate-800 dark:text-white"
+          onHide={() => setShowCreateDialog(false)}
+          className="dialog-custom rounded-2xl"
         >
           <form onSubmit={handleCreate} className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500 uppercase">Assignment Title *</label>
+              <InputText value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required placeholder="e.g. Periodic Table Worksheet" className="p-2.5 border border-slate-200 dark:border-slate-800 rounded-xl" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500 uppercase">Subject Category *</label>
+              <Dropdown value={formData.subject} options={subjects} onChange={(e) => setFormData({ ...formData, subject: e.value })} placeholder="Select Subject" className="border border-slate-200 dark:border-slate-800 rounded-xl" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500 uppercase">Target Class *</label>
+              <Dropdown value={formData.className} options={classes} onChange={(e) => setFormData({ ...formData, className: e.value })} placeholder="Select Class" className="border border-slate-200 dark:border-slate-800 rounded-xl" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500 uppercase">Due Date *</label>
+              <InputText type="date" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} required className="p-2.5 border border-slate-200 dark:border-slate-800 rounded-xl" />
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
+              <Button type="button" label="Discard" className="p-button-text p-2 text-xs" onClick={() => setShowCreateDialog(false)} />
+              <Button type="submit" label="Publish Assignment" className="bg-indigo-600 hover:bg-indigo-750 text-white p-2 px-4 text-xs font-bold rounded-xl" />
+            </div>
+          </form>
+        </Dialog>
+
+        {/* Dialog: View Submissions & Grade (Teacher Only) */}
+        <Dialog
+          header={`Submissions Log — ${selectedAssignment?.title}`}
+          visible={showSubmissionsDialog}
+          style={{ width: '700px' }}
+          modal
+          onHide={() => setShowSubmissionsDialog(false)}
+          className="dialog-custom rounded-2xl"
+        >
+          <div className="mt-2">
+            <DataTable value={submissionsList} className="p-datatable-sm" emptyMessage="No student submissions logged.">
+              <Column field="studentName" header="Student Name" className="font-bold" />
+              <Column field="submittedAt" header="Submitted Date" />
+              <Column field="fileName" header="Uploaded Document" className="font-mono text-xs text-slate-400" />
+              <Column 
+                field="status" 
+                header="Status" 
+                body={(d) => (
+                  <Tag 
+                    value={d.status} 
+                    severity={d.status === 'GRADED' ? 'success' : d.status === 'SUBMITTED' ? 'info' : 'warning'} 
+                    className="font-bold text-[9px]" 
+                  />
+                )} 
+              />
+              <Column field="grade" header="Grade" body={(d) => d.grade || '—'} className="font-bold text-center" />
+              <Column 
+                header="Evaluation" 
+                align="center"
+                body={(d) => (
+                  d.status === 'SUBMITTED' && (
+                    <Button 
+                      label="Grade" 
+                      icon="pi pi-pencil" 
+                      size="small" 
+                      className="bg-indigo-600 text-white p-1 px-2.5 text-xs rounded-xl"
+                      onClick={() => {
+                        setSelectedSubmission(d);
+                        setShowGradeDialog(true);
+                      }}
+                    />
+                  )
+                )}
+              />
+            </DataTable>
+          </div>
+        </Dialog>
+
+        {/* Dialog: Grade Submission (Teacher Only) */}
+        <Dialog
+          header={`Evaluate Homework — ${selectedSubmission?.studentName}`}
+          visible={showGradeDialog}
+          style={{ width: '380px' }}
+          modal
+          onHide={() => setShowGradeDialog(false)}
+          className="dialog-custom rounded-2xl shadow-xl"
+        >
+          <form onSubmit={handleGradeSubmission} className="flex flex-col gap-4 mt-2">
             <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Assignment Title *</label>
-              <InputText
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-                placeholder="e.g. Periodic Table Worksheet"
-                className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 text-sm"
+              <label className="font-semibold text-xs text-slate-500">Document Submitted</label>
+              <span className="text-xs font-mono bg-slate-50 dark:bg-slate-900 border p-2 rounded-lg text-slate-450">{selectedSubmission?.fileName}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500">Grade / Score (e.g. A+, 95/100) *</label>
+              <InputText value={gradeValue} onChange={(e) => setGradeValue(e.target.value)} required placeholder="e.g. 95/100 or A+" className="p-2 border rounded-xl dark:bg-slate-950" />
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
+              <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowGradeDialog(false)} />
+              <Button type="submit" label="Save Evaluation" className="bg-indigo-600 text-white p-2 px-4 rounded-xl text-xs font-bold" />
+            </div>
+          </form>
+        </Dialog>
+
+        {/* Dialog: Submit Homework (Student Only) */}
+        <Dialog
+          header={`Upload Assignment Solution — ${selectedAssignment?.title}`}
+          visible={showSubmitDialog}
+          style={{ width: '400px' }}
+          modal
+          onHide={() => setShowSubmitDialog(false)}
+          className="dialog-custom rounded-2xl shadow-xl"
+        >
+          <form onSubmit={handleStudentUpload} className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-xs text-slate-500">Document Filename to Submit *</label>
+              <InputText 
+                value={submittedFileName} 
+                onChange={(e) => setSubmittedFileName(e.target.value)} 
+                required 
+                placeholder="e.g. maths_hw_solution_aditya.pdf" 
+                className="p-2.5 border rounded-xl dark:bg-slate-950 text-sm" 
               />
             </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Subject Category *</label>
-              <Dropdown
-                value={formData.subject}
-                options={subjects}
-                onChange={(e) => setFormData({ ...formData, subject: e.value })}
-                placeholder="Select Subject"
-                className="border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Target Class *</label>
-              <Dropdown
-                value={formData.className}
-                options={classes}
-                onChange={(e) => setFormData({ ...formData, className: e.value })}
-                placeholder="Select Class Roster"
-                className="border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Due Date *</label>
-              <InputText
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                required
-                className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 text-sm"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-4 mt-3">
-              <Button type="button" label="Discard" className="p-button-text p-2.5 px-4 rounded-xl text-xs font-bold" onClick={() => setShowDialog(false)} />
-              <Button type="submit" label="Post Task" icon="pi pi-check" className="bg-indigo-500 text-white p-2.5 px-5 rounded-xl text-xs font-bold border-0 shadow-md shadow-indigo-500/10 hover:opacity-95" />
+            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
+              <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowSubmitDialog(false)} />
+              <Button type="submit" label="Upload & Submit" className="bg-emerald-600 text-white p-2 px-4 rounded-xl text-xs font-bold" />
             </div>
           </form>
         </Dialog>

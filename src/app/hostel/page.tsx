@@ -20,11 +20,12 @@ export default function HostelPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam === 'rooms') setActiveTab(0);
-      else if (tabParam === 'allocations') setActiveTab(1);
-      else if (tabParam === 'wardens') setActiveTab(2);
+      if (pathname.includes('/rooms') || tabParam === 'rooms') setActiveTab(0);
+      else if (pathname.includes('/allocations') || tabParam === 'allocations') setActiveTab(1);
+      else if (pathname.includes('/wardens') || tabParam === 'wardens') setActiveTab(2);
     }
   }, []);
 
@@ -216,8 +217,8 @@ export default function HostelPage() {
           
           <TabView activeIndex={activeTab} onTabChange={(e) => {
             setActiveTab(e.index);
-            const tabNames = ['rooms', 'allocations', 'wardens'];
-            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+            const tabPaths = ['/hostel/rooms', '/hostel/allocations', '/hostel/wardens'];
+            window.history.pushState({}, '', tabPaths[e.index]);
           }}>
             
             {/* Tab 0: Hostel Rooms & Blocks split board */}

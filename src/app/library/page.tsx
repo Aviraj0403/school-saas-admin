@@ -17,11 +17,12 @@ export default function LibraryPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam === 'books') setActiveTab(0);
-      else if (tabParam === 'issues') setActiveTab(1);
-      else if (tabParam === 'fines') setActiveTab(2);
+      if (pathname.includes('/books') || tabParam === 'books') setActiveTab(0);
+      else if (pathname.includes('/issues') || tabParam === 'issues') setActiveTab(1);
+      else if (pathname.includes('/fines') || tabParam === 'fines') setActiveTab(2);
     }
   }, []);
 
@@ -193,8 +194,8 @@ export default function LibraryPage() {
           `}</style>
           <TabView activeIndex={activeTab} onTabChange={(e) => {
             setActiveTab(e.index);
-            const tabNames = ['books', 'issues', 'fines'];
-            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+            const tabPaths = ['/library/books', '/library/issues', '/library/fines'];
+            window.history.pushState({}, '', tabPaths[e.index]);
           }}>
             
             {/* Book directory Panel */}

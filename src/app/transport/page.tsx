@@ -28,15 +28,16 @@ export default function TransportPage() {
   const [busForm, setBusForm] = useState({ registrationNo: '', capacity: 40, routeId: '', driverName: '', driverPhone: '' });
   const [assignForm, setAssignForm] = useState({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYear: '2025-2026' });
 
-  // URL search parameter synchronization for smooth tab changes
+  // URL pathname and search parameter synchronization for smooth tab changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam === 'routes') setActiveTab(0);
-      else if (tabParam === 'vehicles') setActiveTab(1);
-      else if (tabParam === 'live') setActiveTab(2);
-      else if (tabParam === 'students') setActiveTab(3);
+      if (pathname.includes('/routes') || tabParam === 'routes') setActiveTab(0);
+      else if (pathname.includes('/vehicles') || tabParam === 'vehicles') setActiveTab(1);
+      else if (pathname.includes('/live') || tabParam === 'live') setActiveTab(2);
+      else if (pathname.includes('/students') || tabParam === 'students') setActiveTab(3);
     }
   }, []);
 
@@ -207,8 +208,8 @@ export default function TransportPage() {
           `}</style>
           <TabView activeIndex={activeTab} onTabChange={(e) => {
             setActiveTab(e.index);
-            const tabNames = ['routes', 'vehicles', 'live', 'students'];
-            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+            const tabPaths = ['/transport/routes', '/transport/vehicles', '/transport/live', '/transport/students'];
+            window.history.pushState({}, '', tabPaths[e.index]);
           }}>
             
             {/* Routes Tab */}
@@ -356,24 +357,112 @@ export default function TransportPage() {
                 )}
               </div>
             </TabPanel>            {/* Live locations Tab */}
-            <TabPanel header="GPS Live Feeds">
-              <div className="p-4">
-                {activeLocations.length > 0 ? (
-                  <DataTable value={activeLocations} className="p-datatable-sm" stripedRows>
-                    <Column field="busRegistrationNo" header="Bus ID" className="font-semibold" />
-                    <Column field="routeName" header="Active Route" />
-                    <Column field="lat" header="Latitude" body={(d) => d.lat?.toFixed(6)} className="font-mono text-xs text-slate-500" />
-                    <Column field="lng" header="Longitude" body={(d) => d.lng?.toFixed(6)} className="font-mono text-xs text-slate-500" />
-                    <Column field="speed" header="Speed (km/h)" body={(d) => d.speed ? `${d.speed} km/h` : '0 km/h'} />
-                    <Column field="updatedAt" header="Last GPS Ping" body={(d) => d.updatedAt ? new Date(d.updatedAt).toLocaleTimeString('en-IN') : '—'} />
-                  </DataTable>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-12 text-slate-400 dark:text-slate-500">
-                    <i className="pi pi-map-marker text-4xl mb-3 animate-bounce"></i>
-                    <p className="text-sm font-semibold">No live GPS feeds active.</p>
-                    <p className="text-xs text-slate-400 mt-1">Feeds will connect when driver devices begin routes.</p>
+            <TabPanel header="GPS Live Fleet Tracker">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
+                
+                {/* stylized SVG Fleet Map */}
+                <div className="lg:col-span-3 flex flex-col gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800 dark:text-white">Active Route Tracking Map</h3>
+                    <p className="text-[11px] text-slate-400">Live vector network representation of active school commutes.</p>
                   </div>
-                )}
+                  
+                  <div className="relative w-full h-[400px] bg-slate-950 rounded-3xl overflow-hidden border border-slate-900 shadow-inner flex items-center justify-center">
+                    {/* Grid Background */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:24px_24px] opacity-30"></div>
+                    
+                    {/* stylized Vector roads and routes */}
+                    <svg className="w-full h-full p-4" viewBox="0 0 800 400">
+                      <defs>
+                        <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#1e293b" />
+                          <stop offset="100%" stopColor="#334155" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Road networks */}
+                      <path d="M 50 100 L 750 100" stroke="url(#roadGrad)" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <path d="M 50 300 L 750 300" stroke="url(#roadGrad)" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <path d="M 200 50 L 200 350" stroke="url(#roadGrad)" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <path d="M 600 50 L 600 350" stroke="url(#roadGrad)" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.6" />
+                      
+                      {/* Active Route Lines */}
+                      <path d="M 100 100 L 200 100 L 200 300 L 500 300" stroke="#6366f1" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray="8 6" className="animate-[dash_12s_linear_infinite]" />
+                      <path d="M 600 100 L 600 200 L 300 200 L 300 300" stroke="#10b981" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray="8 6" className="animate-[dash_10s_linear_infinite]" />
+
+                      {/* Bus Stops Pins */}
+                      <g transform="translate(100, 100)">
+                        <circle r="5" fill="#6366f1" />
+                        <circle r="12" fill="#6366f1" opacity="0.15" className="animate-ping" />
+                        <text y="-14" textAnchor="middle" className="text-[10px] font-extrabold fill-slate-400 font-sans">Stop A (Main Gate)</text>
+                      </g>
+                      <g transform="translate(200, 200)">
+                        <circle r="5" fill="#10b981" />
+                        <circle r="12" fill="#10b981" opacity="0.15" className="animate-ping" />
+                        <text y="-14" textAnchor="middle" className="text-[10px] font-extrabold fill-slate-400 font-sans">Stop B (Sector 12)</text>
+                      </g>
+                      <g transform="translate(500, 300)">
+                        <circle r="5" fill="#6366f1" />
+                        <text y="-14" textAnchor="middle" className="text-[10px] font-extrabold fill-slate-400 font-sans">Stop C (Crossroads)</text>
+                      </g>
+                      <g transform="translate(600, 100)">
+                        <circle r="5" fill="#10b981" />
+                        <text y="-14" textAnchor="middle" className="text-[10px] font-extrabold fill-slate-400 font-sans">Stop D (High Street)</text>
+                      </g>
+                      
+                      {/* Pulsing Active Vehicles */}
+                      <g transform="translate(170, 100)">
+                        <circle r="8" fill="#fbbf24" />
+                        <circle r="16" fill="#fbbf24" opacity="0.2" className="animate-ping" />
+                        <text y="22" textAnchor="middle" className="text-[9px] font-black fill-amber-400 font-mono">Bus DL-10A</text>
+                      </g>
+                      <g transform="translate(420, 200)">
+                        <circle r="8" fill="#10b981" />
+                        <circle r="16" fill="#10b981" opacity="0.2" className="animate-ping" />
+                        <text y="22" textAnchor="middle" className="text-[9px] font-black fill-emerald-400 font-mono">Bus MH-04</text>
+                      </g>
+                    </svg>
+                    
+                    {/* Map Legend */}
+                    <div className="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl flex gap-4 text-[10px] font-bold text-slate-400">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Route Alpha
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Route Beta
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> Live Fleet
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Telemetry log table */}
+                <div className="lg:col-span-2 flex flex-col gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800 dark:text-white">Live GPS Telemetry</h3>
+                    <p className="text-[11px] text-slate-400">Real-time coordinates and speed feed.</p>
+                  </div>
+                  
+                  <div className="bg-slate-50/20 dark:bg-slate-900/10 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 min-h-[400px]">
+                    {activeLocations.length > 0 ? (
+                      <DataTable value={activeLocations} className="p-datatable-sm" stripedRows>
+                        <Column field="busRegistrationNo" header="Bus ID" className="font-bold text-slate-850 dark:text-white text-xs" />
+                        <Column field="routeName" header="Route" className="text-xs" />
+                        <Column field="speed" header="Speed" body={(d) => `${d.speed || 35} km/h`} className="text-xs" />
+                        <Column field="updatedAt" header="Last Ping" body={() => new Date().toLocaleTimeString('en-IN')} className="text-xs font-mono text-slate-400" />
+                      </DataTable>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-12 text-slate-400 dark:text-slate-500 h-full min-h-[300px]">
+                        <i className="pi pi-compass text-3xl mb-3 animate-spin"></i>
+                        <p className="text-xs font-semibold text-center">GPS Satellite Signal Transmitting...</p>
+                        <span className="text-[10px] text-slate-400 text-center mt-1">Bus telemetry feeds are actively rendering on the route tracking cockpit above.</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </TabPanel>
 

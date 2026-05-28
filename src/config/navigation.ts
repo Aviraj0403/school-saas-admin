@@ -34,10 +34,10 @@ export const navigationConfig: NavItem[] = [
     path: '/staff',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
     children: [
-      { label: 'Teacher Directory', icon: PrimeIcons.LIST, path: '/staff?tab=directory', module: 'staff' },
+      { label: 'Teacher Directory', icon: PrimeIcons.LIST, path: '/staff/directory', module: 'staff' },
       { label: 'Leave Applications', icon: PrimeIcons.CALENDAR_MINUS, path: '/leave', module: 'leave' },
       { label: 'Classes & Timetable', icon: PrimeIcons.CALENDAR, path: '/academics/classes', module: 'academics' },
-      { label: 'HR Payroll & Salary', icon: PrimeIcons.MONEY_BILL, path: '/staff?tab=payroll', module: 'staff' },
+      { label: 'HR Payroll & Salary', icon: PrimeIcons.MONEY_BILL, path: '/fee/payroll', module: 'staff' },
     ],
   },
   {
@@ -46,9 +46,9 @@ export const navigationConfig: NavItem[] = [
     path: '/library',
     module: 'library',
     children: [
-      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library?tab=books', module: 'library' },
-      { label: 'Book Issue / Returns', icon: PrimeIcons.REPLAY, path: '/library?tab=issues', module: 'library' },
-      { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library?tab=fines', module: 'library' },
+      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library/books', module: 'library' },
+      { label: 'Book Issue / Returns', icon: PrimeIcons.REPLAY, path: '/library/issues', module: 'library' },
+      { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library/fines', module: 'library' },
     ],
   },
   {
@@ -57,9 +57,9 @@ export const navigationConfig: NavItem[] = [
     path: '/transport',
     module: 'transport',
     children: [
-      { label: 'Vehicle Directory', icon: PrimeIcons.CAR, path: '/transport?tab=vehicles', module: 'transport' },
-      { label: 'Bus Routes & Stops', icon: PrimeIcons.MAP_MARKER, path: '/transport?tab=routes', module: 'transport' },
-      { label: 'Driver Allocations', icon: PrimeIcons.USER, path: '/transport?tab=vehicles', module: 'transport' },
+      { label: 'Vehicle Directory', icon: PrimeIcons.CAR, path: '/transport/vehicles', module: 'transport' },
+      { label: 'Bus Routes & Stops', icon: PrimeIcons.MAP_MARKER, path: '/transport/routes', module: 'transport' },
+      { label: 'Driver Allocations', icon: PrimeIcons.USER, path: '/transport/vehicles', module: 'transport' },
     ],
   },
   {
@@ -68,9 +68,9 @@ export const navigationConfig: NavItem[] = [
     path: '/hostel',
     module: 'hostel',
     children: [
-      { label: 'Hostel Rooms', icon: PrimeIcons.HOME, path: '/hostel?tab=rooms', module: 'hostel' },
-      { label: 'Room Allocations', icon: PrimeIcons.KEY, path: '/hostel?tab=allocations', module: 'hostel' },
-      { label: 'Warden Logbook', icon: PrimeIcons.BOOK, path: '/hostel?tab=wardens', module: 'hostel' },
+      { label: 'Hostel Rooms', icon: PrimeIcons.HOME, path: '/hostel/rooms', module: 'hostel' },
+      { label: 'Room Allocations', icon: PrimeIcons.KEY, path: '/hostel/allocations', module: 'hostel' },
+      { label: 'Warden Logbook', icon: PrimeIcons.BOOK, path: '/hostel/wardens', module: 'hostel' },
     ],
   },
   {
@@ -79,8 +79,8 @@ export const navigationConfig: NavItem[] = [
     path: '/fee',
     roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
     children: [
-      { label: 'Fee Invoices', icon: PrimeIcons.TICKET, path: '/fee?tab=slabs', module: 'fee' },
-      { label: 'Online Collections', icon: PrimeIcons.CREDIT_CARD, path: '/fee?tab=collections', module: 'fee' },
+      { label: 'Fee Invoices', icon: PrimeIcons.TICKET, path: '/fee/slabs', module: 'fee' },
+      { label: 'Online Collections', icon: PrimeIcons.CREDIT_CARD, path: '/fee/ledgers', module: 'fee' },
     ],
   },
   {
@@ -116,9 +116,9 @@ export const navigationConfig: NavItem[] = [
     path: '/website',
     module: 'website',
     children: [
-      { label: 'Homepage Banners', icon: PrimeIcons.IMAGES, path: '/website?tab=banners', module: 'website' },
-      { label: 'Download Center', icon: PrimeIcons.DOWNLOAD, path: '/website?tab=downloads', module: 'website' },
-      { label: 'Admission Inquiries', icon: PrimeIcons.ENVELOPE, path: '/website?tab=inquiries', module: 'website' },
+      { label: 'Homepage Banners', icon: PrimeIcons.IMAGES, path: '/website/banners', module: 'website' },
+      { label: 'Download Center', icon: PrimeIcons.DOWNLOAD, path: '/website/downloads', module: 'website' },
+      { label: 'Admission Inquiries', icon: PrimeIcons.ENVELOPE, path: '/website/inquiries', module: 'website' },
     ],
   },
   {

@@ -81,24 +81,63 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   };
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const card = cardRef.current;
+    const box = card.getBoundingClientRect();
+    const x = e.clientX - box.left - box.width / 2;
+    const y = e.clientY - box.top - box.height / 2;
+    // Rotate maximum of 8 degrees
+    const rotateX = -(y / (box.height / 2)) * 6;
+    const rotateY = (x / (box.width / 2)) * 6;
+    setTilt({ x: rotateY, y: rotateX });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
   if (!mounted) return null;
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
+        style={{ backgroundImage: `url('/neural_network_bg.png')` }}
+      >
+        {/* Particle Canvas Animation */}
+        <NeuralNetworkCanvas />
+
+        {/* Ambient Overlay Layer */}
+        <div className="absolute inset-0 bg-slate-950/40 backdrop-brightness-75 z-0 pointer-events-none" />
+
         {/* Soft Luminous Backdrop Orbs */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/0 blur-[120px] pointer-events-none animate-pulse duration-[8000ms]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-violet-500/20 to-pink-500/0 blur-[120px] pointer-events-none animate-pulse duration-[10000ms]"></div>
         
-        {/* Sleek Glassmorphic Form Card */}
-        <div className="relative z-10 backdrop-blur-xl bg-slate-900/60 dark:bg-slate-900/40 border border-slate-800/80 rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10 flex flex-col gap-6">
-          
+        {/* Sleek Glassmorphic Form Card with 3D Interaction */}
+        <div 
+          ref={cardRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale3d(1.01, 1.01, 1.01)`,
+            transition: 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease',
+          }}
+          className="relative z-10 backdrop-blur-2xl bg-slate-900/65 border border-slate-700/40 hover:border-indigo-500/45 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-md w-full p-8 md:p-10 flex flex-col gap-6"
+        >
           {/* Glowing Premium Logo & Branding */}
           <div className="flex flex-col items-center mb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/30 border border-indigo-400/20 animate-bounce duration-[3000ms]">
-              <i className="pi pi-graduation-cap text-white text-3xl"></i>
+            <div className="relative group">
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+              <div className="relative w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 border border-indigo-400/20 shadow-inner">
+                <i className="pi pi-graduation-cap text-indigo-400 text-3xl"></i>
+              </div>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-indigo-100 to-indigo-200 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-indigo-100 to-indigo-200 bg-clip-text text-transparent mt-2">
               School SaaS Admin
             </h1>
             <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
@@ -108,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
             {loginMutation.isError && (
-              <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-400 text-xs font-semibold">
+              <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold">
                 <i className="pi pi-exclamation-circle text-base"></i>
                 <span>
                   {(loginMutation.error as any)?.response?.data?.message ||
@@ -130,7 +169,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-11 p-3.5 bg-slate-950/50 border border-slate-800 rounded-xl outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white text-sm placeholder-slate-650"
+                  className="w-full pl-11 p-3.5 bg-slate-950/60 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white text-sm placeholder-slate-650 rounded-xl"
                   placeholder="admin@school.com"
                   autoComplete="email"
                 />
@@ -149,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full [&>input]:w-full [&>input]:pl-11 [&>input]:p-3.5 [&>input]:bg-slate-950/50 [&>input]:border [&>input]:border-slate-800 [&>input]:rounded-xl [&>input]:outline-none [&>input]:focus:border-indigo-500 [&>input]:focus:ring-1 [&>input]:focus:ring-indigo-500 [&>input]:transition-all [&>input]:text-white [&>input]:text-sm [&>input]:placeholder-slate-650"
+                  className="w-full [&>input]:w-full [&>input]:pl-11 [&>input]:p-3.5 [&>input]:bg-slate-950/60 [&>input]:border [&>input]:border-slate-800 [&>input]:hover:[&>input]:border-slate-700 [&>input]:focus:[&>input]:border-indigo-500 [&>input]:focus:[&>input]:ring-1 [&>input]:focus:[&>input]:ring-indigo-500 [&>input]:transition-all [&>input]:text-white [&>input]:text-sm [&>input]:placeholder-slate-650 [&>input]:rounded-xl"
                   toggleMask
                   feedback={false}
                   placeholder="••••••••"
@@ -164,14 +203,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               label="Sign In to Dashboard"
               icon="pi pi-sign-in"
               loading={loginMutation.isPending}
-              className="mt-2 w-full bg-gradient-to-r from-indigo-600 to-violet-650 hover:from-indigo-700 hover:to-violet-750 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.98] transition-all"
+              className="mt-2 w-full bg-gradient-to-r from-indigo-600 to-violet-650 hover:from-indigo-750 hover:to-violet-800 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/25 active:scale-[0.98] transition-all"
             />
           </form>
 
           {/* Styled Premium Demo Credentials Card */}
-          <div className="mt-2 p-4.5 bg-slate-950/60 border border-slate-800/80 rounded-2xl flex flex-col gap-2.5">
+          <div className="mt-2 p-4.5 bg-slate-950/70 border border-slate-800/85 rounded-2xl flex flex-col gap-2.5">
             <div className="flex items-center gap-2 border-b border-slate-800/50 pb-2">
-              <i className="pi pi-info-circle text-amber-500 text-xs"></i>
+              <i className="pi pi-info-circle text-amber-400 text-xs"></i>
               <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Demo Credentials</p>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -187,6 +226,107 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Neural Network Particle Canvas Background Component
+  function NeuralNetworkCanvas() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let animationFrameId: number;
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      const handleResize = () => {
+        if (!canvas) return;
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      };
+      window.addEventListener('resize', handleResize);
+
+      const particleCount = 45;
+      const particles: {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        radius: number;
+        glow: number;
+      }[] = [];
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          radius: Math.random() * 1.8 + 0.8,
+          glow: Math.random() * 8 + 4,
+        });
+      }
+
+      const animate = () => {
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw connections
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < particleCount; i++) {
+          const p1 = particles[i];
+          for (let j = i + 1; j < particleCount; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+            if (dist < 150) {
+              const alpha = (1 - dist / 150) * 0.16;
+              ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw particles
+        for (let i = 0; i < particleCount; i++) {
+          const p = particles[i];
+          
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          ctx.fillStyle = 'rgba(165, 180, 252, 0.7)';
+          ctx.shadowBlur = p.glow;
+          ctx.shadowColor = '#818cf8';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        animationFrameId = requestAnimationFrame(animate);
+      };
+
+      animate();
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        cancelAnimationFrame(animationFrameId);
+      };
+    }, []);
+
+    return (
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-60"
+      />
     );
   }
 

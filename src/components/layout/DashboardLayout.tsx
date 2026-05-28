@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
   const pathname = usePathname();
   const router = useRouter();
@@ -181,19 +182,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
                 Password
               </label>
-              <div className="relative flex items-center group [&>span]:w-full">
-                <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-200 z-10"></i>
-                <Password
-                  inputId="password"
+              <div className="relative flex items-center group w-full">
+                <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-200 z-10 pointer-events-none"></i>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full [&>input]:w-full [&>input]:pl-11 [&>input]:p-3.5 [&>input]:bg-slate-950/60 [&>input]:border [&>input]:border-slate-800 [&>input]:hover:[&>input]:border-slate-700 [&>input]:focus:[&>input]:border-indigo-500 [&>input]:focus:[&>input]:ring-1 [&>input]:focus:[&>input]:ring-indigo-500 [&>input]:transition-all [&>input]:text-white [&>input]:text-sm [&>input]:placeholder-slate-650 [&>input]:rounded-xl"
-                  toggleMask
-                  feedback={false}
+                  className="w-full pl-11 pr-12 p-3.5 bg-slate-950/60 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white text-sm placeholder-slate-650 rounded-xl outline-none"
                   placeholder="••••••••"
                   autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
+                >
+                  <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
+                </button>
               </div>
             </div>
 
@@ -345,7 +352,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       <div
-        className="transition-all duration-300 ease-in-out pt-16"
+        className="transition-all duration-300 ease-in-out pt-16 smooth-sidebar-transition"
         style={{ marginLeft: sidebarOpen ? '240px' : '0' }}
       >
         <main className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-64px)] max-w-[1600px] mx-auto">

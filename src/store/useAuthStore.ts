@@ -35,6 +35,7 @@ interface AuthState {
   setTenant: (tenant: TenantConfig) => void;
   logout: () => void;
   toggleDemoMode: () => void;
+  switchTenant: (tenant: TenantConfig | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -133,6 +134,10 @@ export const useAuthStore = create<AuthState>()(
             },
           });
         }
+      },
+
+      switchTenant: (tenant: TenantConfig | null) => {
+        set({ activeTenant: tenant });
       },
     }),
     {

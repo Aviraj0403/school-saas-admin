@@ -18,24 +18,40 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
 
   if (!activeUser || !activeTenant) return null;
 
-  // Filter navigation based on user role and tenant active modules
-  const filteredNav = navigationConfig.filter((item) => {
-    // Dashboard has no module requirement
-    if (!item.module && !item.roles) return true;
-    // SuperAdmin-only items (no module, but role-restricted)
-    if (!item.module && item.roles) {
-      return item.roles.includes(activeUser.role);
-    }
-    // Check if module is active for tenant
-    if (item.module && !activeTenant.activeModules.includes(item.module)) {
-      return false;
-    }
-    // Check if user role is permitted
+  // Filter navigation based on user role and tenant active modules recursively
+  const filterNavItem = (item: NavItem): NavItem | null => {
+    // Check role restriction
     if (item.roles && !item.roles.includes(activeUser.role)) {
-      return false;
+      return null;
     }
-    return true;
-  });
+    // Check module restriction
+    if (item.module && !activeTenant.activeModules.includes(item.module)) {
+      return null;
+    }
+
+    // If has children, filter them recursively
+    if (item.children && item.children.length > 0) {
+      const filteredChildren = item.children
+        .map(filterNavItem)
+        .filter((child): child is NavItem => child !== null);
+      
+      // If all children were filtered out, hide this entire category
+      if (filteredChildren.length === 0) {
+        return null;
+      }
+      
+      return {
+        ...item,
+        children: filteredChildren,
+      };
+    }
+
+    return item;
+  };
+
+  const filteredNav = navigationConfig
+    .map(filterNavItem)
+    .filter((item): item is NavItem => item !== null);
 
   const toggleExpand = (path: string) => {
     setExpandedItems((prev) =>

@@ -54,12 +54,27 @@ export interface Student {
   admissionNo: string;
   firstName: string;
   lastName: string;
+  name?: string;
   email?: string;
   phone?: string;
   classId: string;
   className: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
+  dob?: string;
+  gender?: string;
+  bloodGroup?: string;
+  aadharNo?: string;
+  motherTongue?: string;
+  previousSchool?: string;
+  address?: string;
+  city?: string;
+  pincode?: string;
+  parentName?: string;
+  parentPhone?: string;
+  parentEmail?: string;
+  alternatePhone?: string;
+  academicYear?: string;
 }
 
 export interface CreateStudentDto {

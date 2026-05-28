@@ -46,15 +46,17 @@ export default function StudentsPage() {
 
   const actionsTemplate = (rowData: any) => (
     <div className="flex gap-2 justify-center">
-      <Button 
-        icon="pi pi-eye" 
-        rounded 
-        text 
-        severity="info" 
-        size="small" 
-        tooltip="View Profile" 
-        className="hover:scale-105 active:scale-95 transition-all"
-      />
+      <Link href={`/students/${rowData.id}`}>
+        <Button 
+          icon="pi pi-eye" 
+          rounded 
+          text 
+          severity="info" 
+          size="small" 
+          tooltip="View Profile" 
+          className="hover:scale-105 active:scale-95 transition-all"
+        />
+      </Link>
       <Button 
         icon="pi pi-trash" 
         rounded 
@@ -202,11 +204,13 @@ export default function StudentsPage() {
                     <span className="font-bold text-slate-800 dark:text-slate-300">{student.className || 'Not Assigned'}</span>
                   </div>
                   <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
-                    <button 
-                      className="px-3.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/60 rounded-xl transition-all active:scale-95"
-                    >
-                      View Profile
-                    </button>
+                    <Link href={`/students/${student.id}`}>
+                      <button 
+                        className="px-3.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/60 rounded-xl transition-all active:scale-95 cursor-pointer"
+                      >
+                        View Profile
+                      </button>
+                    </Link>
                     <button 
                       onClick={() => handleDelete(student.id)}
                       className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20 rounded-xl transition-all active:scale-95"

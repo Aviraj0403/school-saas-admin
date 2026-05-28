@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
@@ -9,12 +9,15 @@ import { useLogin } from '@/hooks/queries/useAuth';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
-import { Message } from 'primereact/message';
+import { Toast } from 'primereact/toast';
+
+let globalMounted = false;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(globalMounted);
+  const toastRef = useRef<Toast>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,10 +26,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   useEffect(() => {
+    globalMounted = true;
     setMounted(true);
     // Collapse sidebar on mobile by default
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setSidebarOpen(false);
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+
+      const handleShowToast = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (toastRef.current && customEvent.detail) {
+          toastRef.current.show({
+            severity: customEvent.detail.severity || 'info',
+            summary: customEvent.detail.summary || 'Notification',
+            detail: customEvent.detail.detail || '',
+            life: customEvent.detail.life || 4000,
+            content: (props) => (
+              <div className="flex flex-col gap-1 w-full">
+                <div className="flex items-center gap-2">
+                  <i className={`pi ${
+                    customEvent.detail.severity === 'success' ? 'pi-check-circle text-emerald-500' :
+                    customEvent.detail.severity === 'error' ? 'pi-times-circle text-rose-500' :
+                    customEvent.detail.severity === 'warn' ? 'pi-exclamation-triangle text-amber-500' :
+                    'pi-info-circle text-indigo-500'
+                  } text-lg`}></i>
+                  <span className="font-bold text-sm text-slate-800 dark:text-white">{props.message.summary}</span>
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 pl-7">{props.message.detail}</div>
+              </div>
+            )
+          });
+        }
+      };
+
+      window.addEventListener('show-toast', handleShowToast);
+      return () => {
+        window.removeEventListener('show-toast', handleShowToast);
+      };
     }
   }, []);
 
@@ -155,6 +192,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+      <Toast ref={toastRef} position="top-right" />
       <AppTopbar onToggleMenu={() => setSidebarOpen(!sidebarOpen)} />
       <AppSidebar isOpen={sidebarOpen} />
 
@@ -168,7 +206,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div
         className="transition-all duration-300 ease-in-out pt-16"
-        style={{ marginLeft: sidebarOpen ? '256px' : '0' }}
+        style={{ marginLeft: sidebarOpen ? '240px' : '0' }}
       >
         <main className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-64px)] max-w-[1600px] mx-auto">
           {children}

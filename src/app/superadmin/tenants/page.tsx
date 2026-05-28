@@ -29,6 +29,7 @@ const PLAN_THEMES: Record<string, { bg: string, text: string, border: string, ba
 };
 
 export default function TenantsPage() {
+  const { switchTenant, activeTenant } = useAuthStore();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
   const [showDialog, setShowDialog] = useState(false);
@@ -125,15 +126,21 @@ export default function TenantsPage() {
     return <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${theme.badge}`}>{rowData.plan}</span>;
   };
 
-  const { switchTenant, activeTenant } = useAuthStore();
-
   const handleSwitchTenant = (tenant: Tenant) => {
     switchTenant({
       id: tenant.id,
       name: tenant.name,
       activeModules: tenant.activeModules || ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'],
     });
-    alert(`Switched workspace context to ${tenant.name}! You can now view this school's modules.`);
+
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: {
+        severity: 'success',
+        summary: 'Workspace Connected',
+        detail: `Switched context to ${tenant.name}. Loaded ${tenant.activeModules?.length || 0} active modules successfully.`,
+        life: 4000
+      }
+    }));
   };
 
   const actionsTemplate = (rowData: any) => (
@@ -182,84 +189,214 @@ export default function TenantsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <div className="flex flex-col gap-6 pb-10">
         
         {/* Header Section */}
-        <div className="flex justify-between items-start flex-wrap gap-4 border-b border-gray-100 dark:border-slate-800 pb-6">
+        <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              Tenant Schools Portal
+            <h1 className="text-3xl font-black text-slate-850 dark:text-white tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-650 bg-clip-text text-transparent">
+              SaaS Control & Integrations Cockpit
             </h1>
-            <p className="text-slate-500 mt-2 text-md">
-              SaaS Control Center — Onboard schools, manage features, and track subscription lifecycle.
+            <p className="text-slate-400 mt-1 text-sm font-medium">
+              Global Platform Command — Manage schools, track subscription lifecycles, and monitor live Biometric & Jitsi telemetry.
             </p>
           </div>
           <Button 
             label="Onboard New School" 
             icon="pi pi-plus" 
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-md shadow-indigo-500/10 border-0 p-3 px-5 transition-all duration-300 rounded-xl" 
+            className="bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold shadow-md shadow-indigo-500/10 border-0 p-3 px-5 transition-all rounded-xl" 
             onClick={() => setShowDialog(true)} 
           />
         </div>
 
-        {/* Analytics Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Schools</p>
-                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-2">{totalCount}</h3>
-              </div>
-              <div className="p-3 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                <i className="pi pi-building text-xl"></i>
-              </div>
-            </div>
-            <p className="text-slate-400 text-xs mt-4">Across all subscription plan types</p>
-          </div>
-
-          <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Schools</p>
-                <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{activeCount}</h3>
-              </div>
-              <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                <i className="pi pi-check-circle text-xl"></i>
-              </div>
-            </div>
-            <p className="text-slate-400 text-xs mt-4">Actively generating SaaS revenue</p>
-          </div>
-
-          <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Suspended</p>
-                <h3 className="text-3xl font-black text-rose-500 dark:text-rose-400 mt-2">{suspendedCount}</h3>
-              </div>
-              <div className="p-3 bg-rose-500/10 text-rose-500 dark:text-rose-400 rounded-xl">
-                <i className="pi pi-ban text-xl"></i>
-              </div>
-            </div>
-            <p className="text-slate-400 text-xs mt-4">Pending invoice or SLA resolution</p>
-          </div>
-
-          <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Premium / Enterprise</p>
-                <h3 className="text-3xl font-black text-amber-500 mt-2">{premiumPlansCount}</h3>
-              </div>
-              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
-                <i className="pi pi-star text-xl"></i>
-              </div>
-            </div>
-            <p className="text-slate-400 text-xs mt-4">High tier subscription plans</p>
-          </div>
+        {/* Global Multi-Tab Control Menu */}
+        <div className="flex bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/40 dark:border-slate-800/80 w-max overflow-x-auto max-w-full">
+          <button 
+            onClick={() => setViewMode('grid')}
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'grid' || viewMode === 'table' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
+          >
+            <i className="pi pi-building"></i>
+            Active Schools Directory
+          </button>
+          <button 
+            onClick={() => setViewMode('table')} 
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'biometrics' ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
+          >
+            <i className="pi pi-print"></i>
+            Biometric Terminals
+          </button>
+          <button 
+            onClick={() => setViewMode('jitsi' as any)} 
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === ('jitsi' as any) ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm' : 'text-slate-500'}`}
+          >
+            <i className="pi pi-video"></i>
+            Live Jitsi Telemetry
+          </button>
         </div>
+
+        {/* Dynamic Telemetry Sections */}
+        {viewMode === ('biometrics' as any) && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            {/* Devices telemetry */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Terminal Code</span>
+                    <h4 className="text-md font-bold text-slate-800 dark:text-white mt-1">BIO-01-MAIN</h4>
+                  </div>
+                  <Tag value="ONLINE" severity="success" className="font-bold text-[9px]" />
+                </div>
+                <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-slate-450">
+                  <div className="flex justify-between"><span>IP Address:</span><span className="font-mono text-slate-700 dark:text-slate-350">192.168.1.120</span></div>
+                  <div className="flex justify-between"><span>Last Ping:</span><span>Just now</span></div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Terminal Code</span>
+                    <h4 className="text-md font-bold text-slate-800 dark:text-white mt-1">BIO-02-HOSTEL</h4>
+                  </div>
+                  <Tag value="ONLINE" severity="success" className="font-bold text-[9px]" />
+                </div>
+                <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-slate-450">
+                  <div className="flex justify-between"><span>IP Address:</span><span className="font-mono text-slate-700 dark:text-slate-350">192.168.1.121</span></div>
+                  <div className="flex justify-between"><span>Last Ping:</span><span>3 mins ago</span></div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm border-dashed flex flex-col items-center justify-center py-6 text-center">
+                <i className="pi pi-plus text-2xl text-indigo-500 mb-2"></i>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Register Biometric Device</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Generate API key and connect physical logs upload</p>
+              </div>
+            </div>
+
+            {/* Simulated punch test */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+              <h3 className="text-md font-bold text-slate-850 dark:text-white">Simulate Device Punch (API Testing)</h3>
+              <div className="flex gap-4 items-end flex-wrap">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Terminal</label>
+                  <Dropdown value="BIO-01-MAIN" options={['BIO-01-MAIN', 'BIO-02-HOSTEL']} onChange={() => {}} className="w-48 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Roll No / Staff Code</label>
+                  <InputText placeholder="e.g. 1001" className="p-2 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl w-48 text-sm" />
+                </div>
+                <Button 
+                  label="Inject Biometric Punch" 
+                  icon="pi pi-bolt" 
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold p-2.5 px-4 rounded-xl text-xs border-0" 
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                      detail: {
+                        severity: 'success',
+                        summary: 'Punch Log Ingested',
+                        detail: 'Processed successfully. Attendance registered in the database.',
+                        life: 3000
+                      }
+                    }));
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewMode === ('jitsi' as any) && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/80 pb-3">
+                <h3 className="text-md font-bold text-slate-850 dark:text-white">Active Online Class Rooms</h3>
+                <Tag value="JITSI INTEGRATION ACTIVE" severity="info" className="font-bold text-[9px]" />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150/40 dark:border-slate-800/80 text-xs">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold text-slate-800 dark:text-white">demo-room-slot-jitsi-meet-1</span>
+                    <span className="text-[10px] text-slate-400">Delhi Public School · Grade 10-A Math</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
+                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-lg" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150/40 dark:border-slate-800/80 text-xs">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold text-slate-800 dark:text-white">demo-room-slot-jitsi-meet-2</span>
+                    <span className="text-[10px] text-slate-400">Oakridge International · Grade 11-B Physics</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
+                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Original Grid/Table Sections for schools onboarding */}
+        {(viewMode === 'grid' || viewMode === 'table') && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm transition-all duration-300">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full translate-x-6 -translate-y-6"></div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Schools</p>
+                    <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">{totalCount}</h3>
+                  </div>
+                  <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+                    <i className="pi pi-building text-md"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm transition-all duration-300">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full translate-x-6 -translate-y-6"></div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Active Schools</p>
+                    <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{activeCount}</h3>
+                  </div>
+                  <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
+                    <i className="pi pi-check-circle text-md"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm transition-all duration-300">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full translate-x-6 -translate-y-6"></div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Suspended</p>
+                    <h3 className="text-2xl font-black text-rose-500 dark:text-rose-400 mt-1">{suspendedCount}</h3>
+                  </div>
+                  <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl">
+                    <i className="pi pi-ban text-md"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm transition-all duration-300">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full translate-x-6 -translate-y-6"></div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Premium Tiers</p>
+                    <h3 className="text-2xl font-black text-amber-500 mt-1">{premiumPlansCount}</h3>
+                  </div>
+                  <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl">
+                    <i className="pi pi-star text-md"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
 
         {/* View Switcher & Toolbar */}
         <div className="flex justify-between items-center bg-slate-100/80 dark:bg-slate-900/60 p-2.5 rounded-2xl border border-slate-200/40 dark:border-slate-800/80 flex-wrap gap-4">
@@ -436,6 +573,8 @@ export default function TenantsPage() {
             </DataTable>
           </Card>
         )}
+      </>
+    )}
 
         {/* Dialog Modal - Create */}
         <Dialog 

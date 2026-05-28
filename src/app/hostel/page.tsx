@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
@@ -11,10 +12,50 @@ import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
-import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder } from '@/hooks/queries/useHostel';
+import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder } from '@/hooks/queries/useHostel';
 
 export default function HostelPage() {
   const toast = useRef<Toast>(null);
+  const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'rooms') setActiveTab(0);
+      else if (tabParam === 'allocations') setActiveTab(1);
+      else if (tabParam === 'wardens') setActiveTab(2);
+    }
+  }, []);
+
+  const [wardensList, setWardensList] = useState([
+    { id: 'w-1', name: 'Rakesh Kumar', hostelBlock: 'Boys Hostel Block A', phone: '+91 98765 00112', email: 'rakesh.kumar@school.edu', status: 'ON_DUTY' },
+    { id: 'w-2', name: 'Sarita Devi', hostelBlock: 'Girls Hostel Block B', phone: '+91 91234 88776', email: 'sarita.d@school.edu', status: 'ON_DUTY' },
+    { id: 'w-3', name: 'Vijay Pratap', hostelBlock: 'Co-ed Block C', phone: '+91 99887 55443', email: 'vijay.p@school.edu', status: 'OFF_DUTY' },
+  ]);
+
+  const [wardenLogs, setWardenLogs] = useState([
+    { id: 'log-1', boarderName: 'Amit Sharma', roomNo: 'A-102', action: 'CHECK_OUT', time: '2026-05-28 18:30', remarks: 'Weekend home visit' },
+    { id: 'log-2', boarderName: 'Rohit Sen', roomNo: 'A-105', action: 'CHECK_IN', time: '2026-05-28 21:15', remarks: 'Late entry approved by warden' },
+    { id: 'log-3', boarderName: 'Pooja Mehta', roomNo: 'B-201', action: 'CHECK_OUT', time: '2026-05-28 17:00', remarks: 'Library group study' },
+    { id: 'log-4', boarderName: 'Pooja Mehta', roomNo: 'B-201', action: 'CHECK_IN', time: '2026-05-28 20:30', remarks: 'Returned' },
+  ]);
+
+  const [boardersList, setBoardersList] = useState([
+    { id: 'stud-1', studentName: 'Aditya Sen', hostelName: 'Boys Hostel Block A', roomNo: 'A-102', academicYear: '2025-2026', joinDate: '2025-06-15' },
+    { id: 'stud-2', studentName: 'Rohan Gupta', hostelName: 'Boys Hostel Block A', roomNo: 'A-105', academicYear: '2025-2026', joinDate: '2025-06-15' },
+    { id: 'stud-3', studentName: 'Ananya Roy', hostelName: 'Girls Hostel Block B', roomNo: 'B-201', academicYear: '2025-2026', joinDate: '2025-06-18' },
+    { id: 'stud-4', studentName: 'Priya Patel', hostelName: 'Girls Hostel Block B', roomNo: 'B-204', academicYear: '2025-2026', joinDate: '2025-06-19' },
+  ]);
+
+  const dischargeBoarderMutation = useDischargeBoarder();
+
+  const handleDischarge = (studentId: string) => {
+    if (confirm('Are you sure you want to discharge this resident boarder?')) {
+      setBoardersList(prev => prev.filter(b => b.id !== studentId));
+      toast.current?.show({ severity: 'success', summary: 'Discharged', detail: 'Resident boarder discharged successfully', life: 3000 });
+    }
+  };
 
   const { data: dashboard } = useHostelDashboard();
   const { data: hostels, isLoading: isLoadingHostels } = useHostels();
@@ -159,83 +200,192 @@ export default function HostelPage() {
           </div>
         </div>
 
-        {/* Hostel and Rooms Split Board */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Tabbed view for Hostel registry sections */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">
           <style>{`
-            .p-datatable, .p-datatable-wrapper, .p-paginator {
+            .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
               background: transparent !important;
             }
             .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
               background: transparent !important;
             }
+            .p-tabview-nav li .p-tabview-nav-link {
+              background: transparent !important;
+            }
           `}</style>
           
-          {/* Hostel list panel */}
-          <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col gap-4">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Hostel Blocks</h2>
-              <p className="text-xs text-slate-400">Select a block to inspect room allotments.</p>
-            </div>
+          <TabView activeIndex={activeTab} onTabChange={(e) => {
+            setActiveTab(e.index);
+            const tabNames = ['rooms', 'allocations', 'wardens'];
+            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+          }}>
             
-            <DataTable
-              value={hostelList}
-              loading={isLoadingHostels}
-              selectionMode="single"
-              selection={selectedHostel}
-              onSelectionChange={(e) => setSelectedHostel(e.value)}
-              dataKey="id"
-              emptyMessage="No hostels found."
-              className="p-datatable-sm"
-              rowClassName={(data: any) => `cursor-pointer transition-all duration-100 ${selectedHostel?.id === data.id ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : ''}`}
-            >
-              <Column field="name" header="Block Name" sortable className="font-semibold text-slate-800 dark:text-white" />
-              <Column field="type" header="Type" sortable body={(d) => <Tag value={d.type} className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold text-[9px] px-2.5 py-0.5 rounded-full" />} />
-              <Column field="capacity" header="Bed Capacity" sortable />
-            </DataTable>
-          </div>
+            {/* Tab 0: Hostel Rooms & Blocks split board */}
+            <TabPanel header="Hostel Rooms & Blocks">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
+                {/* Hostel list panel */}
+                <div className="lg:col-span-3 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">Hostel Blocks</h2>
+                    <p className="text-xs text-slate-400">Select a block to inspect room allotments.</p>
+                  </div>
+                  
+                  <DataTable
+                    value={hostelList}
+                    loading={isLoadingHostels}
+                    selectionMode="single"
+                    selection={selectedHostel}
+                    onSelectionChange={(e) => setSelectedHostel(e.value)}
+                    dataKey="id"
+                    emptyMessage="No hostels found."
+                    className="p-datatable-sm"
+                    rowClassName={(data: any) => `cursor-pointer transition-all duration-100 ${selectedHostel?.id === data.id ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : ''}`}
+                  >
+                    <Column field="name" header="Block Name" sortable className="font-semibold text-slate-800 dark:text-white" />
+                    <Column field="type" header="Type" sortable body={(d) => <Tag value={d.type} className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold text-[9px] px-2.5 py-0.5 rounded-full" />} />
+                    <Column field="capacity" header="Bed Capacity" sortable />
+                  </DataTable>
+                </div>
 
-          {/* Rooms List Panel */}
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col gap-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-                  {selectedHostel ? `Rooms — ${selectedHostel.name}` : 'Rooms Allotment'}
-                </h2>
-                <p className="text-xs text-slate-400">
-                  {selectedHostel ? 'Beds configuration details.' : 'Select block to view rooms list.'}
-                </p>
+                {/* Rooms List Panel */}
+                <div className="lg:col-span-2 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                        {selectedHostel ? `Rooms — ${selectedHostel.name}` : 'Rooms Allotment'}
+                      </h2>
+                      <p className="text-xs text-slate-400">
+                        {selectedHostel ? 'Beds configuration details.' : 'Select block to view rooms list.'}
+                      </p>
+                    </div>
+                    {selectedHostel && (
+                      <button 
+                        onClick={() => setShowRoomDialog(true)}
+                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                      >
+                        <i className="pi pi-plus text-[10px]"></i>
+                        Add Room
+                      </button>
+                    )}
+                  </div>
+
+                  {selectedHostel ? (
+                    <DataTable
+                      value={roomList}
+                      loading={isLoadingRooms}
+                      emptyMessage="No rooms mapped to this hostel block yet."
+                      className="p-datatable-sm mt-1"
+                    >
+                      <Column field="roomNo" header="Room" className="font-semibold text-slate-800 dark:text-white" />
+                      <Column field="type" header="Room Type" />
+                      <Column field="occupied" header="Occupied" body={(d) => `${d.occupied}/${d.capacity} beds`} />
+                      <Column body={statusBodyTemplate} header="Status" />
+                    </DataTable>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-12 text-slate-400 border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                      <i className="pi pi-home text-3xl mb-2"></i>
+                      <p className="text-xs font-semibold">No Hostel Selected</p>
+                    </div>
+                  )}
+                </div>
               </div>
-              {selectedHostel && (
-                <button 
-                  onClick={() => setShowRoomDialog(true)}
-                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                >
-                  <i className="pi pi-plus text-[10px]"></i>
-                  Add Room
-                </button>
-              )}
-            </div>
+            </TabPanel>
 
-            {selectedHostel ? (
-              <DataTable
-                value={roomList}
-                loading={isLoadingRooms}
-                emptyMessage="No rooms mapped to this hostel block yet."
-                className="p-datatable-sm mt-1"
-              >
-                <Column field="roomNo" header="Room" className="font-semibold text-slate-800 dark:text-white" />
-                <Column field="type" header="Room Type" />
-                <Column field="occupied" header="Occupied" body={(d) => `${d.occupied}/${d.capacity} beds`} />
-                <Column body={statusBodyTemplate} header="Status" />
-              </DataTable>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-12 text-slate-400 border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
-                <i className="pi pi-home text-3xl mb-2"></i>
-                <p className="text-xs font-semibold">No Hostel Selected</p>
+            {/* Tab 1: Room Allocations list & management */}
+            <TabPanel header="Room Allocations">
+              <div className="p-4 flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">Active Resident Boarders</h2>
+                    <p className="text-xs text-slate-400">Manage all student allocations across residential block beds.</p>
+                  </div>
+                </div>
+
+                <DataTable value={boardersList} className="p-datatable-sm" emptyMessage="No resident boarders found.">
+                  <Column field="studentName" header="Student Name" className="font-semibold text-slate-800 dark:text-white" />
+                  <Column field="hostelName" header="Hostel Block" />
+                  <Column field="roomNo" header="Room No" className="font-mono" />
+                  <Column field="academicYear" header="Academic Term" />
+                  <Column field="joinDate" header="Admission Date" />
+                  <Column 
+                    header="Actions" 
+                    align="center"
+                    body={(d) => (
+                      <Button 
+                        label="Discharge" 
+                        icon="pi pi-sign-out" 
+                        size="small" 
+                        severity="danger" 
+                        className="bg-rose-600 text-white p-1 px-2.5 text-xs rounded-xl"
+                        onClick={() => handleDischarge(d.id)}
+                      />
+                    )}
+                  />
+                </DataTable>
               </div>
-            )}
-          </div>
+            </TabPanel>
 
+            {/* Tab 2: Warden Logbook */}
+            <TabPanel header="Warden Logbook & Entry Logs">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
+                
+                {/* Wardens List */}
+                <div className="lg:col-span-2 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-800 dark:text-white">Hostel Wardens</h2>
+                    <p className="text-[11px] text-slate-400">Assigned wardens for safety & oversight.</p>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3">
+                    {wardensList.map(warden => (
+                      <div key={warden.id} className="p-3 border border-slate-100 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 flex justify-between items-center">
+                        <div>
+                          <h4 className="font-bold text-slate-800 dark:text-white text-xs">{warden.name}</h4>
+                          <span className="text-[10px] text-slate-450">{warden.hostelBlock}</span>
+                          <div className="text-[9px] text-slate-400 mt-1 flex flex-col">
+                            <span>Phone: {warden.phone}</span>
+                            <span>Email: {warden.email}</span>
+                          </div>
+                        </div>
+                        <Tag 
+                          value={warden.status === 'ON_DUTY' ? 'On Duty' : 'Off Duty'} 
+                          className={warden.status === 'ON_DUTY' ? 'bg-emerald-500/10 text-emerald-650 font-bold text-[9px]' : 'bg-slate-500/10 text-slate-500 font-bold text-[9px]'}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Entry/Exit logs */}
+                <div className="lg:col-span-3 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-800 dark:text-white">Access Entry & Exit Logbook</h2>
+                    <p className="text-[11px] text-slate-400">Real-time gate check logs managed by wardens.</p>
+                  </div>
+                  
+                  <DataTable value={wardenLogs} className="p-datatable-sm" emptyMessage="No gate logs recorded today.">
+                    <Column field="boarderName" header="Student" className="font-bold text-slate-850 dark:text-white text-xs" />
+                    <Column field="roomNo" header="Room" className="font-mono text-xs" />
+                    <Column 
+                      field="action" 
+                      header="Action" 
+                      body={(d) => (
+                        <Tag 
+                          value={d.action} 
+                          className={`font-bold text-[9px] px-2 py-0.5 rounded-full ${
+                            d.action === 'CHECK_IN' ? 'bg-emerald-500/10 text-emerald-650' : 'bg-amber-500/10 text-amber-650'
+                          }`}
+                        />
+                      )}
+                    />
+                    <Column field="time" header="Time Logged" className="text-slate-450 text-[10px]" />
+                    <Column field="remarks" header="Remarks" className="text-slate-450 text-[10px]" />
+                  </DataTable>
+                </div>
+              </div>
+            </TabPanel>
+
+          </TabView>
         </div>
 
       </div>

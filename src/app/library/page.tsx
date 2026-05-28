@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable, DataTablePageEvent } from 'primereact/datatable';
@@ -14,6 +14,31 @@ import { useBooksList, useCreateBook, useIssueBook, useReturnBook, useActiveIssu
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'books') setActiveTab(0);
+      else if (tabParam === 'issues') setActiveTab(1);
+      else if (tabParam === 'fines') setActiveTab(2);
+    }
+  }, []);
+
+  const [finesList, setFinesList] = useState([
+    { id: 'f-1', studentName: 'Aarav Sharma', bookTitle: 'Introduction to Algorithms', fineAmount: 250, daysOverdue: 10, status: 'UNPAID', date: '2026-05-24' },
+    { id: 'f-2', studentName: 'Neha Verma', bookTitle: 'Concepts of Physics Vol 1', fineAmount: 120, daysOverdue: 6, status: 'UNPAID', date: '2026-05-26' },
+    { id: 'f-3', studentName: 'Raj Malhotra', bookTitle: 'Higher Engineering Mathematics', fineAmount: 500, daysOverdue: 20, status: 'PAID', date: '2026-05-15' },
+    { id: 'f-4', studentName: 'Aditi Rao', bookTitle: 'Principles of Chemistry', fineAmount: 0, daysOverdue: 0, status: 'WAIVED', date: '2026-05-28' },
+  ]);
+
+  const handlePayFine = (id: string) => {
+    setFinesList(prev => prev.map(f => f.id === id ? { ...f, status: 'PAID' } : f));
+  };
+
+  const handleWaiveFine = (id: string) => {
+    setFinesList(prev => prev.map(f => f.id === id ? { ...f, status: 'WAIVED', fineAmount: 0 } : f));
+  };
   const [showAddBookDialog, setShowAddBookDialog] = useState(false);
   const [showIssueDialog, setShowIssueDialog] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -166,7 +191,11 @@ export default function LibraryPage() {
               background: transparent !important;
             }
           `}</style>
-          <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
+          <TabView activeIndex={activeTab} onTabChange={(e) => {
+            setActiveTab(e.index);
+            const tabNames = ['books', 'issues', 'fines'];
+            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+          }}>
             
             {/* Book directory Panel */}
             <TabPanel header="Book Directory">
@@ -317,6 +346,114 @@ export default function LibraryPage() {
                         className="bg-emerald-600 text-white p-1 px-2 text-xs"
                         onClick={() => handleReturnBook(d.id)}
                       />
+                    )} align="center"></Column>
+                  </DataTable>
+                )}
+              </div>
+            </TabPanel>
+
+            {/* Fine Collections Panel */}
+            <TabPanel header="Fine Collections & Overdues">
+              <div className="p-4">
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                    {finesList.map((fine: any) => (
+                      <div 
+                        key={fine.id} 
+                        className="border border-slate-105 dark:border-slate-800 p-5 rounded-3xl bg-slate-50/30 dark:bg-slate-900/40 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="text-[9px] font-bold text-red-650 dark:text-red-400 uppercase tracking-widest">Fine Notice</span>
+                            <h3 className="font-extrabold text-slate-850 dark:text-white text-sm leading-snug mt-0.5">{fine.studentName}</h3>
+                          </div>
+                          <Tag 
+                            value={fine.status} 
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${
+                              fine.status === 'PAID' 
+                                ? 'bg-emerald-500/10 text-emerald-650' 
+                                : fine.status === 'WAIVED' 
+                                  ? 'bg-slate-500/10 text-slate-500' 
+                                  : 'bg-rose-500/10 text-rose-650'
+                            }`} 
+                          />
+                        </div>
+
+                        <div className="bg-slate-100/50 dark:bg-slate-850 p-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1.5 border border-slate-150/40 text-slate-400">
+                          <div className="flex justify-between">
+                            <span>Overdue Book:</span>
+                            <span className="text-slate-850 dark:text-slate-300 font-extrabold">{fine.bookTitle}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Days Overdue:</span>
+                            <span className="text-rose-650 dark:text-rose-450 font-extrabold">{fine.daysOverdue} days</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Fine Penalty:</span>
+                            <span className="text-slate-850 dark:text-white font-extrabold">₹{fine.fineAmount}</span>
+                          </div>
+                        </div>
+
+                        {fine.status === 'UNPAID' && (
+                          <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-850 pt-3 mt-1">
+                            <button 
+                              onClick={() => handleWaiveFine(fine.id)}
+                              className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+                            >
+                              Waive Fine
+                            </button>
+                            <button 
+                              onClick={() => handlePayFine(fine.id)}
+                              className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all active:scale-95 flex items-center gap-1"
+                            >
+                              <i className="pi pi-check text-[10px]"></i>
+                              Clear & Pay
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <DataTable 
+                    value={finesList} 
+                    className="p-datatable-sm mt-1" 
+                  >
+                    <Column field="studentName" header="Student Name" className="font-semibold text-slate-850 dark:text-white"></Column>
+                    <Column field="bookTitle" header="Book Title"></Column>
+                    <Column field="daysOverdue" header="Days Overdue" body={(d) => `${d.daysOverdue} days`}></Column>
+                    <Column field="fineAmount" header="Fine Amount" body={(d) => `₹${d.fineAmount}`}></Column>
+                    <Column field="status" header="Status" body={(d) => (
+                      <Tag 
+                        value={d.status} 
+                        className={`px-2.5 py-1 text-xs font-bold rounded-full ${
+                          d.status === 'PAID' 
+                            ? 'bg-emerald-500/10 text-emerald-650' 
+                            : d.status === 'WAIVED' 
+                              ? 'bg-slate-500/10 text-slate-500' 
+                              : 'bg-rose-500/10 text-rose-650'
+                        }`} 
+                      />
+                    )}></Column>
+                    <Column header="Actions" body={(d) => (
+                      d.status === 'UNPAID' && (
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            label="Waive" 
+                            size="small" 
+                            className="p-button-text text-xs p-1"
+                            onClick={() => handleWaiveFine(d.id)}
+                          />
+                          <Button 
+                            label="Pay Fine" 
+                            icon="pi pi-check" 
+                            size="small" 
+                            severity="success"
+                            className="bg-emerald-600 text-white p-1 px-2 text-xs"
+                            onClick={() => handlePayFine(d.id)}
+                          />
+                        </div>
+                      )
                     )} align="center"></Column>
                   </DataTable>
                 )}

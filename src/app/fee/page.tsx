@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -16,6 +16,16 @@ import { useFeeStructures, useCreateFeeStructure, useCollectFee, useFeeCollectio
 
 export default function FeePage() {
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'slabs') setActiveTab(0);
+      else if (tabParam === 'collections') setActiveTab(1);
+    }
+  }, []);
+
   const [showAddStructureDialog, setShowAddStructureDialog] = useState(false);
   const [showCollectFeeDialog, setShowCollectFeeDialog] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -173,7 +183,11 @@ export default function FeePage() {
               background: transparent !important;
             }
           `}</style>
-          <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
+          <TabView activeIndex={activeTab} onTabChange={(e) => {
+            setActiveTab(e.index);
+            const tabNames = ['slabs', 'collections'];
+            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+          }}>
             
             {/* Fee Structures Panel */}
             <TabPanel header="Fee Slabs & Structures">

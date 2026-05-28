@@ -205,7 +205,11 @@ export default function TransportPage() {
               background: transparent !important;
             }
           `}</style>
-          <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
+          <TabView activeIndex={activeTab} onTabChange={(e) => {
+            setActiveTab(e.index);
+            const tabNames = ['routes', 'vehicles', 'live', 'students'];
+            window.history.pushState({}, '', `?tab=${tabNames[e.index]}`);
+          }}>
             
             {/* Routes Tab */}
             <TabPanel header="Bus Routes">

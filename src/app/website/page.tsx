@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
@@ -39,6 +39,16 @@ interface Inquiry {
 
 export default function WebsiteCMSPage() {
   const [activeTab, setActiveTab] = useState<'banners' | 'downloads' | 'inquiries'>('banners');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'banners') setActiveTab('banners');
+      else if (tabParam === 'downloads') setActiveTab('downloads');
+      else if (tabParam === 'inquiries') setActiveTab('inquiries');
+    }
+  }, []);
   
   // Modals state
   const [showBannerDialog, setShowBannerDialog] = useState(false);

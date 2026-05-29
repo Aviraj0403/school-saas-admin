@@ -13,6 +13,8 @@ interface SwitchableSchool {
   name: string;
   plan: string;
   activeModules: string[];
+  projectCode?: string;
+  subdomain?: string;
   theme: {
     primaryColor: string;
     secondaryColor: string;
@@ -42,7 +44,9 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         name: t.name,
         plan: t.plan,
         activeModules: t.activeModules || ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'settings'],
-        theme: t.theme || { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' }
+        theme: t.theme || { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' },
+        projectCode: t.projectCode,
+        subdomain: t.subdomain,
       }))
     : offlineSchools;
 
@@ -52,6 +56,8 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
       name: school.name,
       activeModules: school.activeModules,
       theme: school.theme,
+      projectCode: school.projectCode,
+      subdomain: school.subdomain,
     });
     setDropdownOpen(false);
 
@@ -70,6 +76,10 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         life: 4000
       }
     }));
+
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 400);
   };
 
   const userMenuItems = [

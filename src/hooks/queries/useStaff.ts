@@ -54,3 +54,13 @@ export function useDepartments() {
   });
 }
 
+export function useResetStaffPassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => staffService.resetPassword(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
+    },
+  });
+}
+

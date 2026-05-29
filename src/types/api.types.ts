@@ -46,6 +46,8 @@ export interface TenantConfig {
   id: string;
   name: string;
   activeModules: string[];
+  projectCode?: string;
+  subdomain?: string;
 }
 
 // Student Module Types

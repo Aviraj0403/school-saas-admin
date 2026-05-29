@@ -10,6 +10,7 @@ interface TenantData {
   id: string;
   name: string;
   subdomain: string;
+  projectCode?: string;
   theme: TenantTheme | null;
   activeModules: string[];
 }

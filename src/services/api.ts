@@ -26,13 +26,20 @@ api.interceptors.request.use(
       }
       
       // Inject tenant ID if we have it in state
-      const tenantId = useAuthStore.getState().activeTenant?.id || useTenantStore.getState().tenant?.id;
+      const activeTenant = useAuthStore.getState().activeTenant || useTenantStore.getState().tenant;
+      const tenantId = activeTenant?.id;
       if (tenantId && tenantId !== 'superadmin') {
         config.headers['X-Tenant-Id'] = tenantId;
       }
 
+      // Inject project code if available in either auth store or tenant store
+      const projectCode = activeTenant?.projectCode || (useTenantStore.getState().tenant as any)?.projectCode;
+      if (projectCode) {
+        config.headers['X-Project-Code'] = projectCode;
+      }
+
       // Inject subdomain if available or derived
-      const subdomain = useTenantStore.getState().tenant?.subdomain;
+      const subdomain = activeTenant?.subdomain || useTenantStore.getState().tenant?.subdomain;
       if (subdomain) {
         config.headers['X-Tenant-Subdomain'] = subdomain;
       } else {

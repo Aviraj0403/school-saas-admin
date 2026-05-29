@@ -17,14 +17,16 @@ export const navigationConfig: NavItem[] = [
     path: '/dashboard',
   },
   {
-    label: 'Academic Control',
-    icon: PrimeIcons.BOOK,
+    label: 'School Administration',
+    icon: PrimeIcons.COG,
     path: '/academics/classes',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
     children: [
-      { label: 'Classes & Syllabus', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics' },
-      { label: 'Academic Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics' },
       { label: 'Academic Years & Terms', icon: PrimeIcons.CALENDAR, path: '/academics/terms', module: 'academics' },
+      { label: 'Academic Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics' },
+      { label: 'Classes & Syllabus', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics' },
+      { label: 'Class Timetable', icon: PrimeIcons.CLOCK, path: '/academics/timetable', module: 'academics' },
+      { label: 'Onboarding Setup Guide', icon: PrimeIcons.COMPASS, path: '/academics/guide', module: 'academics' },
     ],
   },
   {
@@ -117,6 +119,7 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin'],
     children: [
       { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants' },
+      { label: 'Tenant Onboarding Graph', icon: PrimeIcons.COMPASS, path: '/superadmin/roadmap' },
       { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans' },
     ],
   },

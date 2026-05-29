@@ -16,7 +16,7 @@ export function useClasses(page = 1, limit = 10) {
 export function useCreateClass() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; section: string; capacity: number; teacherId?: string }) =>
+    mutationFn: (data: { name: string; section: string; maxStrength: number; academicYearId: string; teacherId?: string }) =>
       academicsService.createClass(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academics', 'classes'] });
@@ -71,3 +71,60 @@ export function useCreateTimetableEntry() {
     },
   });
 }
+
+export function useAcademicYears() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'academic-years'],
+    queryFn: () => academicsService.getAcademicYears(),
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}
+
+export function useCurrentAcademicYear() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'academic-years', 'current'],
+    queryFn: () => academicsService.getCurrentAcademicYear(),
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}
+
+export function useDepartmentsList() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'departments'],
+    queryFn: () => academicsService.getDepartments(),
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}
+
+export function useCreateDepartment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; headId?: string }) => academicsService.createDepartment(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'departments'] });
+      // Invalidate the staff's departments list query as well!
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
+    },
+  });
+}
+
+export function useCreateAcademicYear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; startDate: string; endDate: string; isCurrent?: boolean }) =>
+      academicsService.createAcademicYear(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'academic-years'] });
+      queryClient.invalidateQueries({ queryKey: ['academics', 'academic-years', 'current'] });
+    },
+  });
+}
+
+
+

@@ -16,7 +16,7 @@ export const staffService = {
     return response.data.data;
   },
 
-  createStaff: async (data: CreateStaffDto) => {
+  createStaff: async (data: any) => {
     const response = await api.post<{ success: boolean; data: Staff }>('/staff', data);
     return response.data.data;
   },
@@ -34,5 +34,15 @@ export const staffService = {
   resetPassword: async (id: string) => {
     const response = await api.patch<{ success: boolean }>(`/staff/${id}/reset-password`);
     return response.data;
+  },
+
+  getRoles: async () => {
+    const response = await api.get<{ success: boolean; data: any[] }>('/rbac/roles');
+    return response.data.data;
+  },
+
+  getDepartments: async () => {
+    const response = await api.get<{ success: boolean; data: any[] }>('/academics/departments');
+    return response.data.data;
   },
 };

@@ -13,7 +13,7 @@ export function useApplyLeave() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string }) => 
+    mutationFn: (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string; leaveType?: string }) => 
       leaveService.apply(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leaves'] });

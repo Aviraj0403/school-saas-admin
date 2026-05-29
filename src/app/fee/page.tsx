@@ -11,7 +11,9 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
-import { useFeeStructures, useCreateFeeStructure, useCollectFee, useFeeCollections, useRevenueSummary } from '@/hooks/queries/useFee';
+import { useFeeStructures, useCreateFeeStructure, useCollectFee, useFeeCollections, useRevenueSummary, useStudentDues } from '@/hooks/queries/useFee';
+import { useClasses } from '@/hooks/queries/useAcademics';
+import { useStudentsList } from '@/hooks/queries/useStudents';
 import { useStaffList } from '@/hooks/queries/useStaff';
 import { 
   useSalaryStructure, 
@@ -41,6 +43,7 @@ export default function FeePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   // Form states
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [newStructure, setNewStructure] = useState({ name: '', amount: 1000, type: 'TUITION', classId: '' });
   const [collectFee, setCollectFee] = useState({ studentId: '', amount: 0, paymentMethod: 'CASH' as 'CASH' | 'ONLINE' | 'CHEQUE', remarks: '' });
 
@@ -78,6 +81,16 @@ export default function FeePage() {
   const { data: collections, isPending: loadingCollections } = useFeeCollections(1, 10);
   const { data: revenueSummary } = useRevenueSummary();
   const { data: staffData } = useStaffList(1, 100);
+
+  const { data: classesData } = useClasses(1, 100);
+  const classesList = classesData?.data?.items || classesData?.items || [];
+  const classOptions = classesList.map((c: any) => ({ label: `${c.name} - ${c.section}`, value: c.id }));
+
+  const { data: studentsData } = useStudentsList(1, 100, undefined, selectedClassId || undefined);
+  const studentsList = studentsData?.data?.items || studentsData?.items || [];
+  const studentOptions = studentsList.map((s: any) => ({ label: `${s.name} (${s.rollNo ? 'Roll: ' + s.rollNo : s.admissionNo})`, value: s.id }));
+
+  const { data: duesData } = useStudentDues(collectFee.studentId);
   
   const { data: payslips, isPending: loadingPayslips } = usePayslips({ month: selectedMonth, year: selectedYear });
   const { data: financeSummary } = useFinanceSummary(selectedYear.toString());
@@ -519,31 +532,78 @@ export default function FeePage() {
         visible={showCollectFeeDialog} 
         style={{ width: '400px' }} 
         modal 
-        onHide={() => setShowCollectFeeDialog(false)}
+        onHide={() => {
+          setShowCollectFeeDialog(false);
+          setSelectedClassId('');
+          setCollectFee({ studentId: '', amount: 0, paymentMethod: 'CASH', remarks: '' });
+        }}
         className="dialog-custom rounded-3xl"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowCollectFeeDialog(false)} />
+            <Button label="Cancel" className="p-button-text p-2" onClick={() => {
+              setShowCollectFeeDialog(false);
+              setSelectedClassId('');
+              setCollectFee({ studentId: '', amount: 0, paymentMethod: 'CASH', remarks: '' });
+            }} />
             <Button 
               label="Record Receipt" 
               icon="pi pi-dollar" 
               onClick={handleCollectFee} 
               loading={collectFeeMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              disabled={!collectFee.studentId}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl disabled:opacity-50" 
             />
           </div>
         }
       >
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student ID or Name *</label>
-            <InputText 
-              value={collectFee.studentId} 
-              onChange={(e) => setCollectFee({ ...collectFee, studentId: e.target.value })} 
-              placeholder="e.g., Aarav Mehta"
-              className="p-2 border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Class *</label>
+            <Dropdown 
+              value={selectedClassId} 
+              options={classOptions} 
+              onChange={(e) => {
+                setSelectedClassId(e.value);
+                setCollectFee({ ...collectFee, studentId: '' });
+              }} 
+              placeholder="Select Class"
+              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
             />
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student *</label>
+            <Dropdown 
+              value={collectFee.studentId} 
+              options={studentOptions} 
+              onChange={(e) => setCollectFee({ ...collectFee, studentId: e.value })} 
+              disabled={!selectedClassId}
+              placeholder={selectedClassId ? "Select Student" : "First select a class"}
+              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+            />
+          </div>
+
+          {collectFee.studentId && duesData && (
+            <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 p-4 rounded-2xl text-xs flex flex-col gap-2 shadow-sm">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-slate-500 uppercase tracking-widest text-[9px]">Total Outstanding Dues:</span>
+                <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400">
+                  ₹{Number(duesData.totalDue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              {duesData.outstanding && duesData.outstanding.length > 0 && (
+                <div className="mt-1 border-t border-indigo-100 dark:border-indigo-900/30 pt-2 flex flex-col gap-1">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dues breakdown:</span>
+                  {duesData.outstanding.map((out: any) => (
+                    <div key={out.id} className="flex justify-between text-[11px] text-slate-600 dark:text-slate-350">
+                      <span>{out.name}</span>
+                      <span className="font-semibold">₹{Number(out.amount).toLocaleString('en-IN')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Collected Amount (₹) *</label>
             <InputNumber 

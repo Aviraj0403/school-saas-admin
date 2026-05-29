@@ -10,12 +10,11 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
-import { useStaffList, useCreateStaff, useDeleteStaff } from '@/hooks/queries/useStaff';
+import { useStaffList, useCreateStaff, useDeleteStaff, useRoles, useDepartments } from '@/hooks/queries/useStaff';
 import { 
   useSalaryStructure, 
   useUpsertSalaryStructure
 } from '@/hooks/queries/usePayroll';
-import { Role } from '@/store/useAuthStore';
 
 export default function StaffPage() {
   const [selectedUserForSalary, setSelectedUserForSalary] = useState<string>('');
@@ -64,10 +63,21 @@ export default function StaffPage() {
     name: '',
     email: '',
     phone: '',
-    role: 'Teacher' as Role,
-    department: '',
+    roleId: '',
+    departmentId: '',
     designation: '',
   });
+
+  const { data: rolesData } = useRoles();
+  const { data: deptsData } = useDepartments();
+
+  const roleOptions = (rolesData || []).map((r: any) => ({ label: r.name, value: r.id }));
+  const deptOptions = (deptsData || []).map((d: any) => ({ label: d.name, value: d.id }));
+
+  const getDeptName = (deptId: string) => {
+    const dept = (deptsData || []).find((d: any) => d.id === deptId);
+    return dept?.name || 'General';
+  };
 
   const { data, isPending, isError, error } = useStaffList(lazyState.page, lazyState.rows, lazyState.search);
   const createMutation = useCreateStaff();
@@ -92,15 +102,23 @@ export default function StaffPage() {
   };
 
   const handleAddStaff = () => {
-    createMutation.mutate(newStaff, {
+    const payload = {
+      name: newStaff.name,
+      email: newStaff.email,
+      phone: newStaff.phone || undefined,
+      designation: newStaff.designation || undefined,
+      departmentId: newStaff.departmentId || undefined,
+      roleIds: newStaff.roleId ? [newStaff.roleId] : undefined,
+    };
+    createMutation.mutate(payload, {
       onSuccess: () => {
         setShowAddDialog(false);
         setNewStaff({
           name: '',
           email: '',
           phone: '',
-          role: 'Teacher',
-          department: '',
+          roleId: '',
+          departmentId: '',
           designation: '',
         });
       }
@@ -117,18 +135,22 @@ export default function StaffPage() {
     let severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' = 'info';
     let style = 'bg-blue-500/10 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400';
     
-    if (rowData.role === 'SuperAdmin') {
+    const roleObj = rowData.roles?.[0]?.role;
+    const roleName = roleObj?.name || rowData.role || 'Teacher';
+    const roleSlug = roleObj?.slug || '';
+    
+    if (roleSlug === 'school_admin' || roleName === 'School Admin' || roleName === 'SuperAdmin') {
       severity = 'danger';
       style = 'bg-rose-500/10 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400';
-    } else if (rowData.role === 'Principal') {
+    } else if (roleSlug === 'teacher' || roleName === 'Teacher') {
       severity = 'success';
       style = 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400';
-    } else if (rowData.role === 'Accountant') {
+    } else if (roleSlug === 'accountant' || roleName === 'Accountant') {
       severity = 'warning';
       style = 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400';
     }
     
-    return <Tag value={rowData.role} severity={severity} className={`px-2.5 py-1 text-xs font-bold rounded-full ${style}`} />;
+    return <Tag value={roleName} severity={severity} className={`px-2.5 py-1 text-xs font-bold rounded-full ${style}`} />;
   };
 
   const actionsBodyTemplate = (rowData: any) => {
@@ -146,12 +168,6 @@ export default function StaffPage() {
       </div>
     );
   };
-
-  const roleOptions = [
-    { label: 'Teacher', value: 'Teacher' },
-    { label: 'Principal', value: 'Principal' },
-    { label: 'Accountant', value: 'Accountant' },
-  ];
 
   const staffList = data?.items || (data as any)?.data?.items || [];
   const totalRecords = data?.meta?.total || (data as any)?.data?.meta?.total || 0;
@@ -283,7 +299,7 @@ export default function StaffPage() {
                             {member.name}
                           </h3>
                           <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-                            {member.designation || 'Faculty Member'} · <span className="text-slate-500 dark:text-slate-400">{member.department || 'General'}</span>
+                            {member.designation || 'Faculty Member'} · <span className="text-slate-500 dark:text-slate-400">{getDeptName(member.departmentId)}</span>
                           </p>
                         </div>
                       </div>
@@ -340,7 +356,7 @@ export default function StaffPage() {
               <Column field="email" header="Email"></Column>
               <Column field="phone" header="Phone"></Column>
               <Column field="role" header="Role" body={roleBodyTemplate}></Column>
-              <Column field="department" header="Department"></Column>
+              <Column header="Department" body={(d) => getDeptName(d.departmentId)}></Column>
               <Column field="designation" header="Designation"></Column>
               <Column 
                 header="Salary Structure" 
@@ -419,9 +435,9 @@ export default function StaffPage() {
             <label htmlFor="staffRole" className="font-semibold text-xs text-gray-500 dark:text-gray-400">System Role</label>
             <Dropdown 
               id="staffRole" 
-              value={newStaff.role} 
+              value={newStaff.roleId} 
               options={roleOptions} 
-              onChange={(e) => setNewStaff({ ...newStaff, role: e.value })} 
+              onChange={(e) => setNewStaff({ ...newStaff, roleId: e.value })} 
               placeholder="Select a Role"
               className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
             />
@@ -429,12 +445,13 @@ export default function StaffPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label htmlFor="staffDept" className="font-semibold text-xs text-gray-500 dark:text-gray-400">Department</label>
-              <InputText 
+              <Dropdown 
                 id="staffDept" 
-                value={newStaff.department} 
-                onChange={(e) => setNewStaff({ ...newStaff, department: e.target.value })} 
-                placeholder="e.g., Science"
-                className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                value={newStaff.departmentId} 
+                options={deptOptions} 
+                onChange={(e) => setNewStaff({ ...newStaff, departmentId: e.value })} 
+                placeholder="Select Dept"
+                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
               />
             </div>
             <div className="flex flex-col gap-1">

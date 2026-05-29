@@ -58,3 +58,14 @@ export function useRevenueSummary(academicYear?: string) {
     retry: false,
   });
 }
+
+export function useStudentDues(studentId: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['student-dues', studentId],
+    queryFn: () => feeService.getStudentDues(studentId),
+    enabled: isAuthenticated && !!studentId,
+    retry: false,
+  });
+}
+

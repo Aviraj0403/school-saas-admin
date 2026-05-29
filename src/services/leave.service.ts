@@ -2,8 +2,16 @@ import { api } from './api';
 import { LeaveApplication } from '@/types/api.types';
 
 export const leaveService = {
-  apply: async (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string }) => {
-    const response = await api.post<{ success: boolean; data: LeaveApplication }>('/leave/apply', data);
+  apply: async (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string; leaveType?: string }) => {
+    const payload = {
+      applicantId: data.applicantId,
+      applicantType: data.applicantType.toLowerCase(),
+      leaveType: data.leaveType || 'sick',
+      fromDate: data.startDate,
+      toDate: data.endDate,
+      reason: data.reason,
+    };
+    const response = await api.post<{ success: boolean; data: LeaveApplication }>('/leave/apply', payload);
     return response.data.data;
   },
 

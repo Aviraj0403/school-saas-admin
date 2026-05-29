@@ -31,6 +31,7 @@ export default function LeavePage() {
   const [applyForm, setApplyForm] = useState<any>({
     applicantId: '',
     applicantType: 'STUDENT',
+    leaveType: 'sick',
     startDate: null,
     endDate: null,
     reason: '',
@@ -60,7 +61,7 @@ export default function LeavePage() {
       {
         onSuccess: () => {
           setShowApplyDialog(false);
-          setApplyForm({ applicantId: '', applicantType: 'STUDENT', startDate: null, endDate: null, reason: '' });
+          setApplyForm({ applicantId: '', applicantType: 'STUDENT', leaveType: 'sick', startDate: null, endDate: null, reason: '' });
           toast.current?.show({ severity: 'success', summary: 'Submitted', detail: 'Leave application submitted', life: 3000 });
         },
         onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to submit leave', life: 3000 }),
@@ -271,6 +272,21 @@ export default function LeavePage() {
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Applicant Type *</label>
             <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Leave Type *</label>
+            <Dropdown 
+              value={applyForm.leaveType} 
+              options={[
+                { label: 'Sick Leave', value: 'sick' },
+                { label: 'Casual Leave', value: 'casual' },
+                { label: 'Earned Leave', value: 'earned' },
+                { label: 'Maternity Leave', value: 'maternity' },
+                { label: 'Other', value: 'other' }
+              ]} 
+              onChange={(e) => setApplyForm({ ...applyForm, leaveType: e.value })} 
+              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl" 
+            />
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student / Staff ID *</label>

@@ -9,7 +9,7 @@ export const academicsService = {
     return { items, meta, data: { items, meta } };
   },
 
-  createClass: async (data: { name: string; section: string; capacity: number; teacherId?: string }) => {
+  createClass: async (data: any) => {
     const response = await api.post<{ success: boolean; data: AcademicClass }>('/academics/classes', data);
     return response.data;
   },
@@ -33,4 +33,30 @@ export const academicsService = {
     const response = await api.post<{ success: boolean; data: any }>('/academics/timetable', data);
     return response.data;
   },
+
+  getAcademicYears: async () => {
+    const response = await api.get<{ success: boolean; data: any[] }>('/academics/academic-years');
+    return response.data.data;
+  },
+
+  getCurrentAcademicYear: async () => {
+    const response = await api.get<{ success: boolean; data: any }>('/academics/academic-years/current');
+    return response.data.data;
+  },
+
+  getDepartments: async () => {
+    const response = await api.get<{ success: boolean; data: any[] }>('/academics/departments');
+    return response.data.data;
+  },
+
+  createDepartment: async (data: { name: string; headId?: string }) => {
+    const response = await api.post<{ success: boolean; data: any }>('/academics/departments', data);
+    return response.data;
+  },
+
+  createAcademicYear: async (data: { name: string; startDate: string; endDate: string; isCurrent?: boolean }) => {
+    const response = await api.post<{ success: boolean; data: any }>('/academics/academic-years', data);
+    return response.data;
+  },
 };
+

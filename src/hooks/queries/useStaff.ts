@@ -17,7 +17,7 @@ export function useStaffList(page: number, limit: number, search?: string) {
 export function useCreateStaff() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateStaffDto) => staffService.createStaff(data),
+    mutationFn: (data: any) => staffService.createStaff(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
     },
@@ -33,3 +33,24 @@ export function useDeleteStaff() {
     },
   });
 }
+
+export function useRoles() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['roles'],
+    queryFn: () => staffService.getRoles(),
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}
+
+export function useDepartments() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['departments'],
+    queryFn: () => staffService.getDepartments(),
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}
+

@@ -17,6 +17,17 @@ export const navigationConfig: NavItem[] = [
     path: '/dashboard',
   },
   {
+    label: 'Academic Control',
+    icon: PrimeIcons.BOOK,
+    path: '/academics/classes',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    children: [
+      { label: 'Classes & Syllabus', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics' },
+      { label: 'Academic Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics' },
+      { label: 'Academic Years & Terms', icon: PrimeIcons.CALENDAR, path: '/academics/terms', module: 'academics' },
+    ],
+  },
+  {
     label: 'Student Portal',
     icon: PrimeIcons.USER,
     path: '/students',
@@ -36,7 +47,6 @@ export const navigationConfig: NavItem[] = [
     children: [
       { label: 'Teacher Directory', icon: PrimeIcons.LIST, path: '/staff/directory', module: 'staff' },
       { label: 'Leave Applications', icon: PrimeIcons.CALENDAR_MINUS, path: '/leave', module: 'leave' },
-      { label: 'Classes & Timetable', icon: PrimeIcons.CALENDAR, path: '/academics/classes', module: 'academics' },
       { label: 'HR Payroll & Salary', icon: PrimeIcons.MONEY_BILL, path: '/fee/payroll', module: 'staff' },
     ],
   },

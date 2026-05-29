@@ -36,4 +36,9 @@ export const tenantService = {
     const response = await api.patch<{ success: boolean }>(`/tenants/${id}/plan`, { plan });
     return response.data;
   },
+
+  updateTenant: async (id: string, data: { theme?: Record<string, any>; name?: string }) => {
+    const response = await api.patch<{ success: boolean }>(`/tenants/${id}`, data);
+    return response.data;
+  },
 };

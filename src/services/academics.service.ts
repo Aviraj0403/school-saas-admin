@@ -15,19 +15,56 @@ export const academicsService = {
     return response.data;
   },
 
-  getSubjects: async (classId: string) => {
-    const response = await api.get<{ success: boolean; data: Subject[] }>(`/academics/classes/${classId}/subjects`);
-    return response.data.data;
+  updateClass: async (id: string, data: any) => {
+    const response = await api.patch<{ success: boolean; data: AcademicClass }>(`/academics/classes/${id}`, data);
+    return response.data;
   },
 
-  createSubject: async (data: { name: string; code: string; classId: string; teacherId?: string }) => {
+  deleteClass: async (id: string) => {
+    const response = await api.delete<{ success: boolean }>(`/academics/classes/${id}`);
+    return response.data;
+  },
+
+  // Get all subjects for a class (via timetable slots - backend alias route)
+  getSubjectsByClass: async (classId: string) => {
+    const response = await api.get<{ success: boolean; data: Subject[] }>(`/academics/classes/${classId}/subjects`);
+    return response.data.data ?? [];
+  },
+
+  // Get subjects globally (optionally filtered by department)
+  getSubjects: async (departmentId?: string) => {
+    const url = departmentId
+      ? `/academics/subjects?departmentId=${departmentId}`
+      : '/academics/subjects';
+    const response = await api.get<{ success: boolean; data: Subject[] }>(url);
+    return response.data.data ?? [];
+  },
+
+  createSubject: async (data: {
+    name: string;
+    code: string;
+    type?: string;
+    departmentId?: string;
+    maxMarks?: number;
+    passMarks?: number;
+  }) => {
     const response = await api.post<{ success: boolean; data: Subject }>('/academics/subjects', data);
     return response.data;
   },
 
+  updateSubject: async (id: string, data: any) => {
+    const response = await api.patch<{ success: boolean; data: Subject }>(`/academics/subjects/${id}`, data);
+    return response.data;
+  },
+
+  deleteSubject: async (id: string) => {
+    const response = await api.delete<{ success: boolean }>(`/academics/subjects/${id}`);
+    return response.data;
+  },
+
   getTimetable: async (classId: string) => {
-    const response = await api.get<{ success: boolean; data: any[] }>(`/academics/timetable/${classId}`);
-    return response.data.data;
+    const response = await api.get<{ success: boolean; data: any[] }>(`/academics/timetable/class/${classId}`);
+    return response.data.data ?? [];
   },
 
   createTimetableEntry: async (data: { classId: string; subjectId: string; teacherId: string; dayOfWeek: number; startTime: string; endTime: string }) => {
@@ -37,7 +74,7 @@ export const academicsService = {
 
   getAcademicYears: async () => {
     const response = await api.get<{ success: boolean; data: any[] }>('/academics/academic-years');
-    return response.data.data;
+    return response.data.data ?? [];
   },
 
   getCurrentAcademicYear: async () => {
@@ -47,7 +84,7 @@ export const academicsService = {
 
   getDepartments: async () => {
     const response = await api.get<{ success: boolean; data: any[] }>('/academics/departments');
-    return response.data.data;
+    return response.data.data ?? [];
   },
 
   createDepartment: async (data: { name: string; headId?: string }) => {
@@ -55,9 +92,28 @@ export const academicsService = {
     return response.data;
   },
 
+  updateDepartment: async (id: string, data: { name: string; headId?: string }) => {
+    const response = await api.patch<{ success: boolean; data: any }>(`/academics/departments/${id}`, data);
+    return response.data;
+  },
+
+  deleteDepartment: async (id: string) => {
+    const response = await api.delete<{ success: boolean }>(`/academics/departments/${id}`);
+    return response.data;
+  },
+
   createAcademicYear: async (data: { name: string; startDate: string; endDate: string; isCurrent?: boolean }) => {
     const response = await api.post<{ success: boolean; data: any }>('/academics/academic-years', data);
     return response.data;
   },
-};
 
+  updateAcademicYear: async (id: string, data: { name?: string; startDate?: string; endDate?: string; isCurrent?: boolean }) => {
+    const response = await api.patch<{ success: boolean; data: any }>(`/academics/academic-years/${id}`, data);
+    return response.data;
+  },
+
+  deleteTimetableSlot: async (id: string) => {
+    const response = await api.delete<{ success: boolean }>(`/academics/timetable/${id}`);
+    return response.data;
+  },
+};

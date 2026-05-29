@@ -150,6 +150,7 @@ export interface Tenant {
   createdAt: string;
   latitude?: number;
   longitude?: number;
+  theme?: Record<string, any>;
 }
 
 export interface CreateTenantDto {

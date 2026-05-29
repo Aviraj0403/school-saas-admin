@@ -28,7 +28,11 @@ export const hostelService = {
   },
 
   admitBoarder: async (data: { studentId: string; hostelRoomId: string; academicYear: string }) => {
-    const response = await api.post<{ success: boolean; data: HostelBoarder }>('/hostel/boarders/admit', data);
+    const response = await api.post<{ success: boolean; data: HostelBoarder }>('/hostel/boarders/admit', {
+      studentId: data.studentId,
+      roomId: data.hostelRoomId,   // backend expects 'roomId', not 'hostelRoomId'
+      academicYear: data.academicYear,
+    });
     return response.data;
   },
 

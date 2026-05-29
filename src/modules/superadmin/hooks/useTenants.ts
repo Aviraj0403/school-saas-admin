@@ -61,3 +61,14 @@ export function useSetTenantPlan() {
     },
   });
 }
+
+export function useUpdateTenant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { theme?: Record<string, any>; name?: string } }) =>
+      tenantService.updateTenant(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
+    },
+  });
+}

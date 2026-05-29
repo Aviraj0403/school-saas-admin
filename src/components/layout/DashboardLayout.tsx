@@ -82,25 +82,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   };
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const card = cardRef.current;
-    const box = card.getBoundingClientRect();
-    const x = e.clientX - box.left - box.width / 2;
-    const y = e.clientY - box.top - box.height / 2;
-    // Rotate maximum of 8 degrees
-    const rotateX = -(y / (box.height / 2)) * 6;
-    const rotateY = (x / (box.width / 2)) * 6;
-    setTilt({ x: rotateY, y: rotateX });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 });
-  };
-
   if (!mounted) return null;
 
   if (!isAuthenticated) {
@@ -109,128 +90,151 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
         style={{ backgroundImage: `url('/neural_network_bg.png')` }}
       >
-        {/* Particle Canvas Animation */}
-        <NeuralNetworkCanvas />
-
         {/* Ambient Overlay Layer */}
-        <div className="absolute inset-0 bg-slate-950/40 backdrop-brightness-75 z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[3px] z-0 pointer-events-none" />
 
         {/* Soft Luminous Backdrop Orbs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/0 blur-[120px] pointer-events-none animate-pulse duration-[8000ms]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-violet-500/20 to-pink-500/0 blur-[120px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-600/30 to-indigo-600/0 blur-[130px] pointer-events-none animate-pulse duration-[8000ms]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-cyan-500/30 to-blue-500/0 blur-[130px] pointer-events-none animate-pulse duration-[10000ms]"></div>
         
-        {/* Sleek Glassmorphic Form Card with 3D Interaction */}
-        <div 
-          ref={cardRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale3d(1.01, 1.01, 1.01)`,
-            transition: 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease',
-          }}
-          className="relative z-10 backdrop-blur-2xl bg-slate-900/65 border border-slate-700/40 hover:border-indigo-500/45 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-md w-full p-8 md:p-10 flex flex-col gap-6"
-        >
-          {/* Glowing Premium Logo & Branding */}
-          <div className="flex flex-col items-center mb-2">
-            <div className="relative group">
-              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-              <div className="relative w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 border border-indigo-400/20 shadow-inner">
-                <i className="pi pi-graduation-cap text-indigo-400 text-3xl"></i>
+        {/* Responsive Side-by-Side Flex Container */}
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 max-w-4xl w-full items-stretch justify-center">
+          
+          {/* Static Glassmorphic Login Card */}
+          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col gap-6 transition-all duration-300">
+            {/* Glowing Premium Logo & Branding */}
+            <div className="flex flex-col items-center mb-2">
+              <div className="relative group">
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative w-16 h-16 bg-slate-950/80 rounded-2xl flex items-center justify-center mb-4 border border-blue-400/20 shadow-inner">
+                  <i className="pi pi-graduation-cap text-blue-450 text-3xl"></i>
+                </div>
               </div>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-blue-100 to-indigo-100 bg-clip-text text-transparent mt-2">
+                School SaaS Admin
+              </h1>
+              <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
+                Sign in to manage your school ecosystem
+              </p>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-indigo-100 to-indigo-200 bg-clip-text text-transparent mt-2">
-              School SaaS Admin
-            </h1>
-            <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
-              Sign in to manage your school ecosystem
-            </p>
+
+            <form onSubmit={handleLogin} className="flex flex-col gap-5">
+              {loginMutation.isError && (
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold">
+                  <i className="pi pi-exclamation-circle text-base text-rose-400"></i>
+                  <span>
+                    {(loginMutation.error as any)?.response?.data?.message ||
+                      'Login failed. Please check your credentials.'}
+                  </span>
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="email" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
+                  Email Address
+                </label>
+                <div className="relative flex items-center group w-full">
+                  <i className="pi pi-envelope absolute left-4 text-slate-400 group-focus-within:text-blue-405 transition-colors duration-200 z-10 pointer-events-none"></i>
+                  <InputText
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full pl-11 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl z-0"
+                    placeholder="admin@school.com"
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
+                  Password
+                </label>
+                <div className="relative flex items-center group w-full">
+                  <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-blue-405 transition-colors duration-200 z-10 pointer-events-none"></i>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full pl-11 pr-12 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
+                  >
+                    <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                label="Sign In to Dashboard"
+                icon="pi pi-sign-in"
+                loading={loginMutation.isPending}
+                className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-800 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/25 active:scale-[0.98] transition-all"
+              />
+            </form>
           </div>
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-5">
-            {loginMutation.isError && (
-              <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold">
-                <i className="pi pi-exclamation-circle text-base"></i>
-                <span>
-                  {(loginMutation.error as any)?.response?.data?.message ||
-                    'Login failed. Please check your credentials.'}
-                </span>
+          {/* Static Glassmorphic Demo Credentials Card (Side-by-Side) */}
+          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col justify-between gap-6 transition-all duration-300">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3 border-b border-slate-800/60 pb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-450/20 flex items-center justify-center">
+                  <i className="pi pi-info-circle text-blue-400 text-lg"></i>
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Workspace Demo Access</h2>
+                  <p className="text-slate-400 text-[10px] font-medium tracking-wide">Quick-copy credentials to preview distinct roles</p>
+                </div>
               </div>
-            )}
 
-            {/* Email Field with Left Icon */}
-            <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
-                Email Address
-              </label>
-              <div className="relative flex items-center group">
-                <i className="pi pi-envelope absolute left-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-200"></i>
-                <InputText
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full pl-11 p-3.5 bg-slate-950/60 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white text-sm placeholder-slate-650 rounded-xl"
-                  placeholder="admin@school.com"
-                  autoComplete="email"
-                />
+              <div className="flex flex-col gap-4 mt-2">
+                {/* SuperAdmin Item */}
+                <div className="p-4 bg-slate-950/40 border border-slate-850/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-blue-400 font-extrabold uppercase tracking-widest">SuperAdmin Role</span>
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[9px] font-bold">Platform Owner</span>
+                  </div>
+                  <div className="flex flex-col text-xs mt-1">
+                    <span className="text-slate-400 font-semibold">Email:</span>
+                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">superadmin@aviraj.com</span>
+                  </div>
+                </div>
+
+                {/* School Admin Item */}
+                <div className="p-4 bg-slate-950/40 border border-slate-850/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest">School Admin Role</span>
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[9px] font-bold">School Manager</span>
+                  </div>
+                  <div className="flex flex-col text-xs mt-1">
+                    <span className="text-slate-400 font-semibold">Email:</span>
+                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">admin@demo.com</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Password Field with Left Icon */}
-            <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
-                Password
-              </label>
-              <div className="relative flex items-center group w-full">
-                <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-200 z-10 pointer-events-none"></i>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-11 pr-12 p-3.5 bg-slate-950/60 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white text-sm placeholder-slate-650 rounded-xl outline-none"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
-                >
-                  <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
-                </button>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              label="Sign In to Dashboard"
-              icon="pi pi-sign-in"
-              loading={loginMutation.isPending}
-              className="mt-2 w-full bg-gradient-to-r from-indigo-600 to-violet-650 hover:from-indigo-750 hover:to-violet-800 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/25 active:scale-[0.98] transition-all"
-            />
-          </form>
-
-          {/* Styled Premium Demo Credentials Card */}
-          <div className="mt-2 p-4.5 bg-slate-950/70 border border-slate-800/85 rounded-2xl flex flex-col gap-2.5">
-            <div className="flex items-center gap-2 border-b border-slate-800/50 pb-2">
-              <i className="pi pi-info-circle text-amber-400 text-xs"></i>
-              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Demo Credentials</p>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-semibold">SuperAdmin:</span>
-                <span className="font-mono text-indigo-300 font-semibold select-all">superadmin@aviraj.com</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-semibold">School Admin:</span>
-                <span className="font-mono text-indigo-300 font-semibold select-all">admin@demo.com</span>
-              </div>
+            <div className="p-3 bg-blue-950/15 border border-blue-900/20 rounded-2xl flex items-center gap-3">
+              <i className="pi pi-shield text-blue-400 text-sm"></i>
+              <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
+                Shared default password for both accounts: <span className="font-mono text-blue-300 font-bold select-all bg-slate-900/50 px-1.5 py-0.5 rounded">123456</span>
+              </p>
             </div>
           </div>
+
         </div>
       </div>
     );

@@ -11,7 +11,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { InputNumber } from 'primereact/inputnumber';
-import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules } from '@/modules/superadmin/hooks/useTenants';
+import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules, useUpdateTenant } from '@/modules/superadmin/hooks/useTenants';
 import { CreateTenantDto, Tenant } from '@/types/api.types';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -95,17 +95,51 @@ export default function TenantsPage() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('BASIC');
   const [tenantModules, setTenantModules] = useState<string[]>([]);
-  const [detailsTab, setDetailsTab] = useState<'config' | 'subscriptions' | 'ledger' | 'audit_logs'>('config');
+  const [detailsTab, setDetailsTab] = useState<'config' | 'subscriptions' | 'ledger' | 'audit_logs' | 'theme'>('config');
+
+  const [primaryColor, setPrimaryColor] = useState('#6366f1');
+  const [secondaryColor, setSecondaryColor] = useState('#8b5cf6');
 
   const planMutation = useSetTenantPlan();
   const modulesMutation = useSetTenantModules();
+  const updateTenantMutation = useUpdateTenant();
 
   const handleOpenDetails = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     setSelectedPlan(tenant.plan);
     setTenantModules(tenant.activeModules || []);
+    
+    const theme = (tenant as any).theme || {};
+    setPrimaryColor(theme.primaryColor || '#6366f1');
+    setSecondaryColor(theme.secondaryColor || '#8b5cf6');
+    
     setDetailsTab('config');
     setShowDetailDialog(true);
+  };
+
+  const handleSaveTheme = () => {
+    if (!selectedTenant) return;
+    updateTenantMutation.mutate({
+      id: selectedTenant.id,
+      data: {
+        theme: {
+          primaryColor,
+          secondaryColor
+        }
+      }
+    }, {
+      onSuccess: () => {
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            severity: 'success',
+            summary: 'Theme Colors Saved',
+            detail: `School theme primary color is now ${primaryColor}.`,
+            life: 3000
+          }
+        }));
+        setSelectedTenant(prev => prev ? { ...prev, theme: { primaryColor, secondaryColor } } : null);
+      }
+    });
   };
 
   const handleUpdatePlan = (plan: string) => {
@@ -138,6 +172,7 @@ export default function TenantsPage() {
       activeModules: tenant.activeModules || ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'],
       projectCode: tenant.projectCode,
       subdomain: tenant.subdomain,
+      theme: tenant.theme as any,
     });
 
     window.dispatchEvent(new CustomEvent('show-toast', {
@@ -712,6 +747,7 @@ export default function TenantsPage() {
               <div className="flex border-b border-slate-100 dark:border-slate-800 -mt-2">
                 {[
                   { id: 'config', label: 'Identity & Modules', icon: 'pi-cog' },
+                  { id: 'theme', label: 'Theme Configuration', icon: 'pi-palette' },
                   { id: 'subscriptions', label: 'Subscription Specs', icon: 'pi-star' },
                   { id: 'ledger', label: 'Billing Ledger', icon: 'pi-wallet' },
                   { id: 'audit_logs', label: 'System Logs', icon: 'pi-list' }
@@ -784,6 +820,94 @@ export default function TenantsPage() {
                         );
                       })}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab Contents: Theme Configuration */}
+              {detailsTab === 'theme' && (
+                <div className="flex flex-col gap-6 animate-fade-in text-sm">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-150/40 dark:border-slate-800/80 flex flex-col gap-4">
+                    <h4 className="font-extrabold text-slate-800 dark:text-white uppercase tracking-wider text-xs">Color Scheme Customization</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-400">Primary Color</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="color" 
+                            value={primaryColor} 
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            className="w-10 h-10 border-0 rounded-lg cursor-pointer bg-transparent"
+                          />
+                          <InputText 
+                            value={primaryColor} 
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            className="p-2 border border-slate-200 dark:border-slate-850 rounded-lg text-xs font-mono w-full dark:bg-slate-950"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-400">Secondary Color</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="color" 
+                            value={secondaryColor} 
+                            onChange={(e) => setSecondaryColor(e.target.value)}
+                            className="w-10 h-10 border-0 rounded-lg cursor-pointer bg-transparent"
+                          />
+                          <InputText 
+                            value={secondaryColor} 
+                            onChange={(e) => setSecondaryColor(e.target.value)}
+                            className="p-2 border border-slate-200 dark:border-slate-850 rounded-lg text-xs font-mono w-full dark:bg-slate-950"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Theme Preview */}
+                  <div className="border border-slate-200 dark:border-slate-800/80 p-5 rounded-2xl flex flex-col gap-3">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Preview</label>
+                    <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-850 bg-slate-900/10 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black transition-all"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {selectedTenant.prefix || selectedTenant.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <span className="font-bold text-slate-850 dark:text-white block">{selectedTenant.name}</span>
+                          <span className="text-[10px] text-slate-400">Previewing custom school theme</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          className="p-2 px-4 rounded-lg text-white text-xs font-bold transition-all border-0"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          Primary
+                        </button>
+                        <button 
+                          className="p-2 px-4 rounded-lg text-white text-xs font-bold transition-all border-0"
+                          style={{ backgroundColor: secondaryColor }}
+                        >
+                          Secondary
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-3">
+                    <Button 
+                      label="Save Theme Colors" 
+                      icon="pi pi-check" 
+                      onClick={handleSaveTheme}
+                      loading={updateTenantMutation.isPending}
+                      className="bg-indigo-600 text-white p-3 px-6 rounded-xl font-bold border-0 hover:opacity-95 text-xs shadow-md shadow-indigo-500/10"
+                    />
                   </div>
                 </div>
               )}

@@ -33,7 +33,20 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   // Apply theme dynamically from both subdomain resolver AND live active workspace switches!
   useEffect(() => {
-    const resolvedTheme = activeTenant?.theme || tenant?.theme;
+    let resolvedTheme = activeTenant?.theme || tenant?.theme;
+    
+    // Auto-detect SP Anglo or Anglo schools to assign blue/white theme by default
+    const schoolName = (activeTenant?.name || tenant?.name || '').toLowerCase();
+    const subdomain = (activeTenant?.subdomain || tenant?.subdomain || '').toLowerCase();
+    const isAnglo = schoolName.includes('anglo') || subdomain.includes('anglo');
+    
+    if (isAnglo && (!resolvedTheme || Object.keys(resolvedTheme).length === 0)) {
+      resolvedTheme = {
+        primaryColor: '#1e40af', // Dark Blue
+        secondaryColor: '#f8fafc', // White/Light
+      };
+    }
+
     if (resolvedTheme) {
       const root = document.documentElement;
       const theme = resolvedTheme as any;

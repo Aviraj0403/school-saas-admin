@@ -81,7 +81,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
             className={classNames(
               'w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-150 text-left',
               {
-                'bg-indigo-500/10 text-indigo-650 dark:text-indigo-300 font-semibold': active,
+                'bg-primary/10 text-primary dark:text-primary font-bold': active,
                 'text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white': !active,
               }
             )}
@@ -96,7 +96,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
             className={classNames(
               'flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-150 no-underline',
               {
-                'bg-indigo-500/10 text-indigo-650 dark:text-indigo-300 font-semibold': active,
+                'bg-primary/10 text-primary dark:text-primary font-bold': active,
                 'text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white': !active,
               }
             )}
@@ -108,7 +108,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
 
         {/* Children */}
         {hasChildren && expanded && (
-          <ul className="mt-0.5 ml-1.5 border-l border-slate-200 dark:border-slate-800 pl-1.5 space-y-0.5">
+          <ul className="mt-0.5 space-y-0.5">
             {item.children!.map((child) => renderNavItem(child, true))}
           </ul>
         )}
@@ -119,9 +119,8 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed inset-y-0 left-0 z-10 w-60 bg-white dark:bg-slate-950 border-r border-slate-100 dark:border-slate-900 transition-transform duration-300 ease-in-out pt-16 flex flex-col',
+        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white dark:bg-slate-950 border-r border-slate-100 dark:border-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0',
         {
-          'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
         }
       )}
@@ -129,7 +128,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       {/* School branding strip */}
       <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-900">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: 'var(--primary-color)' }}>
             <i className="pi pi-graduation-cap text-white text-xs"></i>
           </div>
           <div className="min-w-0">

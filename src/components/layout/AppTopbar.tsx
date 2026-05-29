@@ -120,7 +120,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         />
         
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-650 rounded-lg flex items-center justify-center shadow-sm">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--primary-color)' }}>
             <i className="pi pi-graduation-cap text-white text-xs"></i>
           </div>
           <span className="font-bold text-slate-800 dark:text-white hidden sm:block">
@@ -135,7 +135,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-150/40 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all"
             >
-              <i className="pi pi-briefcase text-[10px] text-indigo-500"></i>
+              <i className="pi pi-briefcase text-[10px]" style={{ color: 'var(--primary-color)' }}></i>
               <span className="max-w-[140px] truncate">{activeTenant?.name || 'Select School'}</span>
               <i className="pi pi-chevron-down text-[9px] opacity-60"></i>
             </button>
@@ -159,12 +159,13 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
                               ? 'bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 font-bold'
                               : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-350'
                           }`}
+                          style={isActive ? { backgroundColor: 'color-mix(in srgb, var(--primary-color), transparent 90%)', color: 'var(--primary-color)' } : {}}
                         >
                           <div className="flex flex-col gap-0.5">
                             <span className="text-xs font-semibold">{school.name}</span>
                             <span className="text-[9px] opacity-60 uppercase tracking-wider">{school.plan} Plan</span>
                           </div>
-                          {isActive && <i className="pi pi-check text-xs text-indigo-500"></i>}
+                          {isActive && <i className="pi pi-check text-xs" style={{ color: 'var(--primary-color)' }}></i>}
                         </button>
                       );
                     })}
@@ -200,7 +201,8 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <Avatar
             icon="pi pi-user"
             shape="circle"
-            className="bg-indigo-500 text-white cursor-pointer w-8 h-8 shadow-sm"
+            className="text-white cursor-pointer w-8 h-8 shadow-sm"
+            style={{ backgroundColor: 'var(--primary-color)' }}
             onClick={(e) => userMenuRef.current?.toggle(e)}
           />
           <Menu ref={userMenuRef} model={userMenuItems} popup className="rounded-2xl shadow-xl dark:bg-slate-900 border border-slate-150/40 dark:border-slate-800" />

@@ -25,8 +25,17 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       return null;
     }
     // Check module restriction
-    if (item.module && !activeTenant.activeModules.includes(item.module)) {
-      return null;
+    if (item.module) {
+      const normalizedModule = item.module.endsWith('s') ? item.module : `${item.module}s`;
+      const singularModule = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
+      
+      const hasAccess = activeTenant.activeModules.includes(item.module) || 
+                        activeTenant.activeModules.includes(normalizedModule) ||
+                        activeTenant.activeModules.includes(singularModule);
+                        
+      if (!hasAccess) {
+        return null;
+      }
     }
 
     // If has children, filter them recursively

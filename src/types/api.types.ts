@@ -162,6 +162,8 @@ export interface CreateTenantDto {
   address?: string;
   city?: string;
   state?: string;
+  pincode?: string;
+  prefix?: string;
   latitude?: number;
   longitude?: number;
 }

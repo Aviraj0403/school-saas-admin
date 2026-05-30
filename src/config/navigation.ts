@@ -26,6 +26,7 @@ export const navigationConfig: NavItem[] = [
       { label: 'Academic Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics' },
       { label: 'Classes & Syllabus', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics' },
       { label: 'Class Timetable', icon: PrimeIcons.CLOCK, path: '/academics/timetable', module: 'academics' },
+      { label: 'Jitsi Online Classes', icon: PrimeIcons.VIDEO, path: '/academics/online-classes', module: 'academics' },
       { label: 'Onboarding Setup Guide', icon: PrimeIcons.COMPASS, path: '/academics/guide', module: 'academics' },
     ],
   },
@@ -113,7 +114,7 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
   },
   {
-    label: 'Super Admin Control',
+    label: 'System Admin Control',
     icon: PrimeIcons.SHIELD,
     path: '/superadmin',
     roles: ['SuperAdmin'],

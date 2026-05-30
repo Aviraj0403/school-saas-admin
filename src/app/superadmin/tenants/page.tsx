@@ -40,6 +40,12 @@ export default function TenantsPage() {
     subdomain: '',
     adminEmail: '',
     plan: 'BASIC',
+    adminPhone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    prefix: '',
     latitude: undefined,
     longitude: undefined,
   });
@@ -80,7 +86,20 @@ export default function TenantsPage() {
     createMutation.mutate(formData, {
       onSuccess: () => {
         setShowDialog(false);
-        setFormData({ name: '', subdomain: '', adminEmail: '', plan: 'BASIC' });
+        setFormData({
+          name: '',
+          subdomain: '',
+          adminEmail: '',
+          plan: 'BASIC',
+          adminPhone: '',
+          address: '',
+          city: '',
+          state: '',
+          pincode: '',
+          prefix: '',
+          latitude: undefined,
+          longitude: undefined,
+        });
       },
     });
   };
@@ -629,7 +648,7 @@ export default function TenantsPage() {
         <Dialog 
           header="Onboard New School" 
           visible={showDialog} 
-          style={{ width: '520px' }} 
+          style={{ width: '680px' }} 
           modal 
           onHide={() => setShowDialog(false)}
           className="rounded-3xl shadow-xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
@@ -637,50 +656,116 @@ export default function TenantsPage() {
           headerClassName="border-b border-gray-150 dark:border-slate-800 p-6 font-bold"
         >
           <form onSubmit={handleCreate} className="flex flex-col gap-6 mt-3">
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">School Name *</label>
-              <InputText
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950"
-                placeholder="e.g. Oakridge International School"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">School Name *</label>
+                <InputText
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="e.g. Oakridge International School"
+                />
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Subdomain *</label>
+                <InputText
+                  value={formData.subdomain}
+                  onChange={(e) => setFormData({ ...formData, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                  required
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 font-semibold text-primary text-sm"
+                  placeholder="e.g. oakridge"
+                />
+              </div>
             </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Subdomain *</label>
-              <InputText
-                value={formData.subdomain}
-                onChange={(e) => setFormData({ ...formData, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
-                required
-                className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 font-semibold text-primary"
-                placeholder="e.g. oakridge (lowercase, hyphens only)"
-              />
-              <small className="text-xs text-slate-400">School portal URL: <span className="text-primary font-bold">{formData.subdomain || 'subdomain'}{baseDomain}</span></small>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Admin Email *</label>
+                <InputText
+                  type="email"
+                  value={formData.adminEmail}
+                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                  required
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="admin@school.com"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Admin Phone (Contact) *</label>
+                <InputText
+                  value={formData.adminPhone || ''}
+                  onChange={(e) => setFormData({ ...formData, adminPhone: e.target.value })}
+                  required
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="e.g. +91 98765 43210"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">School Prefix Code (Optional)</label>
+                <InputText
+                  value={formData.prefix || ''}
+                  onChange={(e) => setFormData({ ...formData, prefix: e.target.value.toUpperCase().slice(0, 4) })}
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm uppercase font-mono"
+                  placeholder="e.g. OAKR (Max 4 letters)"
+                  maxLength={4}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Subscription Plan</label>
+                <Dropdown 
+                  value={formData.plan} 
+                  options={PLANS} 
+                  onChange={(e) => setFormData({ ...formData, plan: e.value })} 
+                  className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950 text-sm" 
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Admin Email *</label>
+              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Street Address</label>
               <InputText
-                type="email"
-                value={formData.adminEmail}
-                onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                required
-                className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950"
-                placeholder="admin@school.com"
+                value={formData.address || ''}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                placeholder="e.g. 123 Main Street, Sector 4"
               />
-              <small className="text-xs text-slate-400">Credentials will be generated. Default password: <span className="font-bold">School@123</span></small>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Subscription Plan</label>
-              <Dropdown 
-                value={formData.plan} 
-                options={PLANS} 
-                onChange={(e) => setFormData({ ...formData, plan: e.value })} 
-                className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950" 
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">City</label>
+                <InputText
+                  value={formData.city || ''}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="e.g. Mumbai"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">State</label>
+                <InputText
+                  value={formData.state || ''}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="e.g. Maharashtra"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-bold text-xs uppercase tracking-wider text-slate-500">Pincode</label>
+                <InputText
+                  value={formData.pincode || ''}
+                  onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                  className="p-3 border border-slate-200 dark:border-slate-850 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-slate-950 text-sm"
+                  placeholder="e.g. 400001"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -693,7 +778,7 @@ export default function TenantsPage() {
                   minFractionDigits={2} 
                   maxFractionDigits={6} 
                   className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950" 
-                  inputClassName="p-3 rounded-xl w-full"
+                  inputClassName="p-3 rounded-xl w-full text-sm"
                   placeholder="e.g. 19.0760 (Optional)"
                 />
               </div>
@@ -706,7 +791,7 @@ export default function TenantsPage() {
                   minFractionDigits={2} 
                   maxFractionDigits={6} 
                   className="border border-slate-200 dark:border-slate-850 rounded-xl dark:bg-slate-950" 
-                  inputClassName="p-3 rounded-xl w-full"
+                  inputClassName="p-3 rounded-xl w-full text-sm"
                   placeholder="e.g. 72.8777 (Optional)"
                 />
               </div>
@@ -714,7 +799,7 @@ export default function TenantsPage() {
 
             <div className="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800/80 pt-5 mt-4">
               <Button type="button" label="Cancel" className="p-button-text p-3 px-5 rounded-xl font-semibold" onClick={() => setShowDialog(false)} />
-              <Button type="submit" label="Onboard School" icon="pi pi-check" loading={createMutation.isPending} className="bg-primary text-white p-3 px-6 rounded-xl font-semibold shadow-md shadow-indigo-500/10 border-0 hover:opacity-95" />
+              <Button type="submit" label="Onboard School" icon="pi pi-check" loading={createMutation.isPending} className="bg-primary text-white p-3 px-6 rounded-xl font-semibold shadow-md shadow-indigo-500/10 border-0 hover:opacity-95 text-sm" />
             </div>
           </form>
         </Dialog>

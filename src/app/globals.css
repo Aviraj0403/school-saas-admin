@@ -5,10 +5,12 @@
 @layer tailwind-base, primereact, tailwind-utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
   --primary-color: #6366f1;
   --secondary-color: #8b5cf6;
+  
+  /* Dynamic premium tinted background matched to the school's primary brand color */
+  --background: color-mix(in srgb, var(--primary-color) 4%, #f8fafc);
+  --foreground: #0f172a;
   
   /* Dynamic Tailwind CSS v4 theme color mapping */
   --color-primary: var(--primary-color);
@@ -17,7 +19,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
+    --background: color-mix(in srgb, var(--primary-color) 8%, #0f172a);
     --foreground: #f8fafc;
   }
 }
@@ -68,16 +70,16 @@ body {
     background: transparent !important;
   }
   .p-tabview-nav {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #1e293b !important;
   }
   .p-tabview-nav li .p-tabview-nav-link {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #1e293b !important;
     color: #94a3b8 !important;
   }
   .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-    background: #0f172a !important;
+    background: var(--background) !important;
     color: #6366f1 !important;
     border-color: #6366f1 !important;
   }
@@ -94,7 +96,7 @@ body {
     border-color: #334155 !important;
   }
   .p-datatable-tbody > tr {
-    background: #0f172a !important;
+    background: var(--background) !important;
     color: #cbd5e1 !important;
   }
   .p-datatable-tbody > tr > td {
@@ -106,7 +108,7 @@ body {
     background: #1e293b/50 !important;
   }
   .p-dropdown {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
   }
@@ -114,7 +116,7 @@ body {
     color: #f8fafc !important;
   }
   .p-dropdown-panel {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
   }
@@ -125,28 +127,28 @@ body {
     background: #1e293b !important;
   }
   .p-dialog {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #1e293b !important;
   }
   .p-dialog-header {
-    background: #0f172a !important;
+    background: var(--background) !important;
     color: #f8fafc !important;
     border-color: #1e293b !important;
   }
   .p-dialog-content {
-    background: #0f172a !important;
+    background: var(--background) !important;
     color: #cbd5e1 !important;
   }
   .p-dialog-footer {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #1e293b !important;
   }
   .p-multiselect {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #334155 !important;
   }
   .p-multiselect-panel {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #334155 !important;
   }
   .p-multiselect-items .p-multiselect-item {
@@ -156,7 +158,7 @@ body {
     background: #1e293b !important;
   }
   .p-datepicker {
-    background: #0f172a !important;
+    background: var(--background) !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
   }
@@ -167,16 +169,16 @@ body {
   background: transparent !important;
 }
 .dark .p-tabview-nav {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #1e293b !important;
 }
 .dark .p-tabview-nav li .p-tabview-nav-link {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #1e293b !important;
   color: #94a3b8 !important;
 }
 .dark .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-  background: #0f172a !important;
+  background: var(--background) !important;
   color: #6366f1 !important;
   border-color: #6366f1 !important;
 }
@@ -193,7 +195,7 @@ body {
   border-color: #334155 !important;
 }
 .dark .p-datatable-tbody > tr {
-  background: #0f172a !important;
+  background: var(--background) !important;
   color: #cbd5e1 !important;
 }
 .dark .p-datatable-tbody > tr > td {
@@ -205,7 +207,7 @@ body {
   background: #1e293b/50 !important;
 }
 .dark .p-dropdown {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #334155 !important;
   color: #f8fafc !important;
 }
@@ -213,7 +215,7 @@ body {
   color: #f8fafc !important;
 }
 .dark .p-dropdown-panel {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #334155 !important;
   color: #f8fafc !important;
 }
@@ -224,28 +226,28 @@ body {
   background: #1e293b !important;
 }
 .dark .p-dialog {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #1e293b !important;
 }
 .dark .p-dialog-header {
-  background: #0f172a !important;
+  background: var(--background) !important;
   color: #f8fafc !important;
   border-color: #1e293b !important;
 }
 .dark .p-dialog-content {
-  background: #0f172a !important;
+  background: var(--background) !important;
   color: #cbd5e1 !important;
 }
 .dark .p-dialog-footer {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #1e293b !important;
 }
 .dark .p-multiselect {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #334155 !important;
 }
 .dark .p-multiselect-panel {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #334155 !important;
 }
 .dark .p-multiselect-items .p-multiselect-item {
@@ -255,7 +257,7 @@ body {
   background: #1e293b !important;
 }
 .dark .p-datepicker {
-  background: #0f172a !important;
+  background: var(--background) !important;
   border-color: #334155 !important;
   color: #f8fafc !important;
 }

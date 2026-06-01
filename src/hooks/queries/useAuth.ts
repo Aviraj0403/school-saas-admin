@@ -36,6 +36,7 @@ export function useLogin() {
               activeModules: tenantData.activeModules ?? ALL_MODULES,
               projectCode: tenantData.projectCode,
               subdomain: tenantData.subdomain,
+              prefix: tenantData.prefix,
             });
           }
         } catch {

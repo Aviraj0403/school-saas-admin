@@ -141,7 +141,9 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
             <i className="pi pi-graduation-cap text-white text-xs"></i>
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-normal">{activeTenant.name}</p>
+            <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-normal">
+              {activeTenant.name} {activeTenant.prefix ? `[${activeTenant.prefix}]` : ''}
+            </p>
             <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate leading-none mt-0.5 uppercase tracking-wider">{activeUser.role}</p>
           </div>
         </div>

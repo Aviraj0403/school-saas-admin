@@ -15,6 +15,7 @@ interface SwitchableSchool {
   activeModules: string[];
   projectCode?: string;
   subdomain?: string;
+  prefix?: string;
   theme: {
     primaryColor: string;
     secondaryColor: string;
@@ -47,6 +48,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         theme: t.theme || { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' },
         projectCode: t.projectCode,
         subdomain: t.subdomain,
+        prefix: t.prefix,
       }))
     : offlineSchools;
 
@@ -58,6 +60,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
       theme: school.theme,
       projectCode: school.projectCode,
       subdomain: school.subdomain,
+      prefix: school.prefix,
     });
     setDropdownOpen(false);
 

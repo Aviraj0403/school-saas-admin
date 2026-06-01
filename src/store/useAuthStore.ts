@@ -20,6 +20,7 @@ export interface TenantConfig {
   activeModules: string[];
   projectCode?: string;
   subdomain?: string;
+  prefix?: string;
   theme?: {
     logo?: string;
     primaryColor?: string;

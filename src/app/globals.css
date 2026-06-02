@@ -17,11 +17,9 @@
   --color-secondary: var(--secondary-color);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: color-mix(in srgb, var(--primary-color) 8%, #0f172a);
-    --foreground: #f8fafc;
-  }
+.dark {
+  --background: color-mix(in srgb, var(--primary-color) 8%, #0f172a);
+  --foreground: #f8fafc;
 }
 
 body {

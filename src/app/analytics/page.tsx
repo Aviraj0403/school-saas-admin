@@ -54,7 +54,7 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10 max-w-7xl mx-auto p-1">
+      <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-750 p-6 rounded-2xl shadow-xl text-white">

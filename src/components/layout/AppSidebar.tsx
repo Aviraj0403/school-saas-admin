@@ -128,8 +128,9 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white dark:bg-slate-950 border-r border-slate-100 dark:border-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0',
+        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white dark:bg-slate-950 border-r border-slate-100 dark:border-slate-900 flex flex-col transition-transform duration-300 ease-in-out',
         {
+          'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
         }
       )}

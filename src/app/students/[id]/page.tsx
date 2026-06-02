@@ -55,7 +55,7 @@ export default function StudentDetailsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto p-1 pb-10">
+      <div className="flex flex-col gap-8 pb-10">
         
         {/* Back Link */}
         <div className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors" onClick={() => router.push('/students')}>

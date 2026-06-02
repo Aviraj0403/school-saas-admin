@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 export default function SuperadminRoadmapPage() {
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto p-1 animate-fade-in">
+      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Section */}
         <div className="border-b border-slate-200 dark:border-slate-800 pb-5">

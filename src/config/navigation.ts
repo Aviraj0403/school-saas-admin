@@ -125,9 +125,16 @@ export const navigationConfig: NavItem[] = [
     path: '/superadmin',
     roles: ['SuperAdmin'],
     children: [
-      { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants' },
-      { label: 'Tenant Onboarding Graph', icon: PrimeIcons.COMPASS, path: '/superadmin/roadmap' },
-      { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans' },
+      {
+        label: 'School Registry',
+        icon: PrimeIcons.BUILDING,
+        path: '/superadmin/tenants',
+        children: [
+          { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants' },
+          { label: 'Tenant Onboarding Graph', icon: PrimeIcons.COMPASS, path: '/superadmin/roadmap' },
+          { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans' },
+        ],
+      },
     ],
   },
   {

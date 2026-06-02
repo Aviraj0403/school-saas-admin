@@ -127,7 +127,7 @@ export default function UsersRegistryPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto p-1 animate-fade-in">
+      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Title */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-700 via-indigo-650 to-purple-800 p-6 rounded-2xl shadow-xl text-white">

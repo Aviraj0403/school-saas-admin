@@ -321,7 +321,7 @@ export default function AdmissionsPage() {
   if (view === 'list') {
     return (
       <DashboardLayout>
-        <div className="flex flex-col gap-6 max-w-7xl mx-auto p-1">
+        <div className="flex flex-col gap-8 pb-10">
           
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 p-6 rounded-2xl shadow-xl text-white">
@@ -430,7 +430,7 @@ export default function AdmissionsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto p-1">
+      <div className="flex flex-col gap-8 pb-10">
 
         {/* Wizard Header */}
         <div className="flex items-center justify-between">

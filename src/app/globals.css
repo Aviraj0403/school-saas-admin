@@ -278,6 +278,11 @@ textarea:-webkit-autofill:focus {
 .smooth-sidebar-transition {
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+@media (max-width: 767px) {
+  .smooth-sidebar-transition {
+    margin-left: 0 !important;
+  }
+}
 .premium-glow-effect:hover {
   box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
   border-color: rgba(99, 102, 241, 0.45) !important;

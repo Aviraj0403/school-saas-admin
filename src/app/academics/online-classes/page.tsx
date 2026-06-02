@@ -178,7 +178,7 @@ export default function OnlineClassesPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto p-1 animate-fade-in">
+      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Area */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-indigo-650 via-purple-650 to-pink-700 p-6 rounded-2xl shadow-xl text-white">

@@ -61,24 +61,57 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         };
       }
 
+      // Get theme mode (dark is default)
+      let themeMode = 'dark';
+      try {
+        const savedMode = localStorage.getItem('theme-mode');
+        if (savedMode === 'light' || savedMode === 'dark') {
+          themeMode = savedMode;
+        }
+      } catch (e) {
+        // Safe fallback
+      }
+
+      const root = document.documentElement;
+      if (themeMode === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+
       if (resolvedTheme) {
-        const root = document.documentElement;
         const theme = resolvedTheme as any;
         if (theme.primaryColor) {
           root.style.setProperty('--primary-color', theme.primaryColor);
-          // Dynamically compute and apply a gorgeous brand-tinted soft premium white background!
-          root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 5%, #f8fafc)`);
-          root.style.setProperty('--foreground', '#0f172a');
+          
+          if (themeMode === 'dark') {
+            // Gorgeous brand-tinted premium dark background
+            root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 8%, #0f172a)`);
+            root.style.setProperty('--foreground', '#f8fafc');
+          } else {
+            // Gorgeous brand-tinted premium light background (combination with white)
+            root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 4%, #f8fafc)`);
+            root.style.setProperty('--foreground', '#0f172a');
+          }
         }
         if (theme.secondaryColor) {
           root.style.setProperty('--secondary-color', theme.secondaryColor);
+        }
+      } else {
+        // Fallbacks without loaded tenant/preset theme
+        if (themeMode === 'dark') {
+          root.style.setProperty('--background', 'color-mix(in srgb, var(--primary-color, #6366f1) 8%, #0f172a)');
+          root.style.setProperty('--foreground', '#f8fafc');
+        } else {
+          root.style.setProperty('--background', 'color-mix(in srgb, var(--primary-color, #6366f1) 4%, #f8fafc)');
+          root.style.setProperty('--foreground', '#0f172a');
         }
       }
     };
 
     applyTheme();
 
-    // Listen to live custom palette transitions
+    // Listen to live custom palette or mode transitions
     window.addEventListener('theme-changed', applyTheme);
     return () => {
       window.removeEventListener('theme-changed', applyTheme);

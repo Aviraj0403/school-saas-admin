@@ -42,6 +42,34 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   const userMenuRef = useRef<Menu>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('theme-mode') as 'light' | 'dark';
+      if (savedMode === 'light' || savedMode === 'dark') {
+        setThemeMode(savedMode);
+      }
+    }
+  }, []);
+
+  const toggleThemeMode = () => {
+    const newMode = themeMode === 'dark' ? 'light' : 'dark';
+    setThemeMode(newMode);
+    localStorage.setItem('theme-mode', newMode);
+    
+    // Dispatch event so ThemeProvider updates immediately
+    window.dispatchEvent(new CustomEvent('theme-changed'));
+    
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: {
+        severity: 'success',
+        summary: `${newMode === 'dark' ? 'Dark' : 'Light'} Mode Enabled`,
+        detail: `Switched dashboard style to ${newMode} theme.`,
+        life: 2000
+      }
+    }));
+  };
 
   const handleThemeSwitch = (theme: ThemePreset) => {
     localStorage.setItem('selected-theme', JSON.stringify({ primaryColor: theme.primaryColor, secondaryColor: theme.secondaryColor }));
@@ -249,6 +277,16 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
             </>
           )}
         </div>
+
+        {/* Theme Mode Toggle (Sun/Moon) */}
+        <Button
+          icon={themeMode === 'dark' ? 'pi pi-sun' : 'pi pi-moon'}
+          rounded
+          text
+          aria-label="Toggle Theme Mode"
+          className="text-slate-655 dark:text-slate-400 w-9 h-9"
+          onClick={toggleThemeMode}
+        />
 
         <Button
           icon="pi pi-bell"

@@ -17,12 +17,6 @@ export const navigationConfig: NavItem[] = [
     path: '/dashboard',
   },
   {
-    label: 'Global User Registry',
-    icon: PrimeIcons.USERS,
-    path: '/users',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
-  },
-  {
     label: 'School Administration',
     icon: PrimeIcons.COG,
     path: '/academics/classes',
@@ -125,6 +119,11 @@ export const navigationConfig: NavItem[] = [
     path: '/superadmin',
     roles: ['SuperAdmin'],
     children: [
+      {
+        label: 'Global User Registry',
+        icon: PrimeIcons.USERS,
+        path: '/users',
+      },
       {
         label: 'School Registry',
         icon: PrimeIcons.BUILDING,

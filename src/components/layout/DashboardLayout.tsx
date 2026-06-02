@@ -342,7 +342,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans">
       <Toast ref={toastRef} position="top-right" />
       <AppTopbar onToggleMenu={() => setSidebarOpen(!sidebarOpen)} />
       <AppSidebar isOpen={sidebarOpen} />

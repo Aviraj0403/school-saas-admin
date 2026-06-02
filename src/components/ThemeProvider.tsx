@@ -66,6 +66,9 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         const theme = resolvedTheme as any;
         if (theme.primaryColor) {
           root.style.setProperty('--primary-color', theme.primaryColor);
+          // Dynamically compute and apply a gorgeous brand-tinted soft premium white background!
+          root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 5%, #f8fafc)`);
+          root.style.setProperty('--foreground', '#0f172a');
         }
         if (theme.secondaryColor) {
           root.style.setProperty('--secondary-color', theme.secondaryColor);

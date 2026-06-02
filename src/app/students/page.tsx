@@ -79,7 +79,7 @@ export default function StudentsPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-premium-header p-6 rounded-2xl shadow-xl text-white">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Student Directory</h1>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
@@ -87,7 +87,7 @@ export default function StudentsPage() {
             </p>
           </div>
           <Link href="/students/admissions">
-            <button className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm">
+            <button className="px-5 py-2.5 bg-white text-primary hover:bg-slate-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm">
               <i className="pi pi-user-plus"></i>
               New Admission
             </button>

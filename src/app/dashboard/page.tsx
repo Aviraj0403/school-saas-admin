@@ -73,7 +73,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="border-b border-slate-100 dark:border-slate-800 pb-6 flex justify-between items-end flex-wrap gap-4">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white bg-gradient-to-r from-indigo-500 to-purple-650 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-extrabold tracking-tight text-premium-gradient">
               {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
             </h1>
             <p className="text-slate-500 mt-2 text-md">

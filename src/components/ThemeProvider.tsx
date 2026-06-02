@@ -33,30 +33,53 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   // Apply theme dynamically from both subdomain resolver AND live active workspace switches!
   useEffect(() => {
-    let resolvedTheme = activeTenant?.theme || tenant?.theme;
-    
-    // Auto-detect SP Anglo or Anglo schools to assign blue/white theme by default
-    const schoolName = (activeTenant?.name || tenant?.name || '').toLowerCase();
-    const subdomain = (activeTenant?.subdomain || tenant?.subdomain || '').toLowerCase();
-    const isAnglo = schoolName.includes('anglo') || subdomain.includes('anglo');
-    
-    if (isAnglo && (!resolvedTheme || Object.keys(resolvedTheme).length === 0)) {
-      resolvedTheme = {
-        primaryColor: '#1e40af', // Dark Blue
-        secondaryColor: '#f8fafc', // White/Light
-      };
-    }
+    const applyTheme = () => {
+      let resolvedTheme = activeTenant?.theme || tenant?.theme;
+      
+      // Override with user selected custom theme if saved in localStorage
+      try {
+        const localThemeStr = localStorage.getItem('selected-theme');
+        if (localThemeStr) {
+          const localTheme = JSON.parse(localThemeStr);
+          if (localTheme?.primaryColor) {
+            resolvedTheme = localTheme;
+          }
+        }
+      } catch (e) {
+        // Safe fallback
+      }
 
-    if (resolvedTheme) {
-      const root = document.documentElement;
-      const theme = resolvedTheme as any;
-      if (theme.primaryColor) {
-        root.style.setProperty('--primary-color', theme.primaryColor);
+      // Auto-detect SP Anglo or Anglo schools to assign blue/white theme by default
+      const schoolName = (activeTenant?.name || tenant?.name || '').toLowerCase();
+      const subdomain = (activeTenant?.subdomain || tenant?.subdomain || '').toLowerCase();
+      const isAnglo = schoolName.includes('anglo') || subdomain.includes('anglo');
+      
+      if (isAnglo && (!resolvedTheme || Object.keys(resolvedTheme).length === 0)) {
+        resolvedTheme = {
+          primaryColor: '#1e40af', // Dark Blue
+          secondaryColor: '#f8fafc', // White/Light
+        };
       }
-      if (theme.secondaryColor) {
-        root.style.setProperty('--secondary-color', theme.secondaryColor);
+
+      if (resolvedTheme) {
+        const root = document.documentElement;
+        const theme = resolvedTheme as any;
+        if (theme.primaryColor) {
+          root.style.setProperty('--primary-color', theme.primaryColor);
+        }
+        if (theme.secondaryColor) {
+          root.style.setProperty('--secondary-color', theme.secondaryColor);
+        }
       }
-    }
+    };
+
+    applyTheme();
+
+    // Listen to live custom palette transitions
+    window.addEventListener('theme-changed', applyTheme);
+    return () => {
+      window.removeEventListener('theme-changed', applyTheme);
+    };
   }, [tenant, activeTenant]);
 
   return <>{children}</>;

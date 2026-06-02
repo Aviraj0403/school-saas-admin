@@ -22,10 +22,41 @@ interface SwitchableSchool {
   };
 }
 
+export interface ThemePreset {
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  previewClass: string;
+}
+
+export const THEME_PRESETS: ThemePreset[] = [
+  { name: 'Classic Blue', primaryColor: '#1a73e8', secondaryColor: '#e8f0fe', previewClass: 'bg-blue-550' },
+  { name: 'Emerald Green', primaryColor: '#059669', secondaryColor: '#ecfdf5', previewClass: 'bg-emerald-550' },
+  { name: 'Royal Purple', primaryColor: '#7c3aed', secondaryColor: '#f5f3ff', previewClass: 'bg-purple-550' },
+  { name: 'Amber Gold', primaryColor: '#d97706', secondaryColor: '#fffbeb', previewClass: 'bg-amber-500' },
+  { name: 'Crimson Red', primaryColor: '#e11d48', secondaryColor: '#fff1f2', previewClass: 'bg-rose-500' },
+];
+
 export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }) {
   const { activeUser, activeTenant, isDemoMode, toggleDemoMode, logout, switchTenant } = useAuthStore();
   const userMenuRef = useRef<Menu>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+
+  const handleThemeSwitch = (theme: ThemePreset) => {
+    localStorage.setItem('selected-theme', JSON.stringify({ primaryColor: theme.primaryColor, secondaryColor: theme.secondaryColor }));
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: theme }));
+    setThemeDropdownOpen(false);
+    
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: {
+        severity: 'success',
+        summary: 'Color Palette Updated',
+        detail: `Switched overall brand styling to ${theme.name}!`,
+        life: 3000
+      }
+    }));
+  };
 
   // Fetch the list of schools dynamically from the database!
   const isSuper = activeUser?.role === 'SuperAdmin';
@@ -186,12 +217,45 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <Tag value="DEMO MODE" severity="danger" className="text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider" />
         )}
 
+        <div className="relative">
+          <Button
+            icon="pi pi-palette"
+            rounded
+            text
+            aria-label="Theme Customizer"
+            className="text-slate-655 dark:text-slate-400 w-9 h-9"
+            onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+          />
+          {themeDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setThemeDropdownOpen(false)} />
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-slate-900 border border-slate-150/40 dark:border-slate-800 shadow-xl z-40 p-2 animate-fade-in">
+                <div className="px-2.5 py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-500">Brand Color Theme</p>
+                </div>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {THEME_PRESETS.map((t) => (
+                    <button
+                      key={t.name}
+                      onClick={() => handleThemeSwitch(t)}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all text-xs font-semibold text-slate-700 dark:text-slate-350"
+                    >
+                      <span className={`w-3.5 h-3.5 rounded-full ${t.previewClass} border border-white/20`} />
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
         <Button
           icon="pi pi-bell"
           rounded
           text
           aria-label="Notifications"
-          className="text-slate-650 dark:text-slate-400 w-9 h-9 relative"
+          className="text-slate-655 dark:text-slate-400 w-9 h-9 relative"
         />
 
         <div className="flex items-center gap-2 pl-2 border-l border-slate-100 dark:border-slate-900 ml-1">

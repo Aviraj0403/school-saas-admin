@@ -49,22 +49,11 @@ export default function FeePage() {
 
   // Student Ledger datasets
   const [selectedStudentLedger, setSelectedStudentLedger] = useState<any>(null);
-  const [studentsLedgerData, setStudentsLedgerData] = useState([
-    { id: 'stud-1', name: 'Aarav Mehta', className: 'Grade 9-A', rollNo: '12', billed: 45000, paid: 35000, balance: 10000, transactions: [
-      { id: 't-1', date: '2026-04-01', description: 'Tuition Fee Invoice Q1', type: 'DEBIT', amount: 35000 },
-      { id: 't-2', date: '2026-04-01', description: 'Transport Bus Route A Invoice', type: 'DEBIT', amount: 10000 },
-      { id: 't-3', date: '2026-04-05', description: 'Cash Fee payment received', type: 'CREDIT', amount: 35000 },
-    ]},
-    { id: 'stud-2', name: 'Riya Sen', className: 'Grade 11-B', rollNo: '08', billed: 55000, paid: 55000, balance: 0, transactions: [
-      { id: 't-4', date: '2026-04-01', description: 'Tuition Fee Invoice Q1', type: 'DEBIT', amount: 45000 },
-      { id: 't-5', date: '2026-04-01', description: 'Exam Fee Invoice Term 1', type: 'DEBIT', amount: 10000 },
-      { id: 't-6', date: '2026-04-08', description: 'Online UPI Payout received', type: 'CREDIT', amount: 55000 },
-    ]},
-    { id: 'stud-3', name: 'Kabir Dev', className: 'Grade 10-A', rollNo: '21', billed: 40000, paid: 20000, balance: 20000, transactions: [
-      { id: 't-7', date: '2026-04-01', description: 'Tuition Fee Invoice Q1', type: 'DEBIT', amount: 40000 },
-      { id: 't-8', date: '2026-04-10', description: 'Cheque Payment received', type: 'CREDIT', amount: 20000 },
-    ]},
-  ]);
+  // Removed mock studentsLedgerData in favor of real studentsList
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  
+  // Real Student Ledger Query
+  const { data: ledgerDuesData, isPending: loadingLedger } = useStudentDues(selectedStudentId);
 
   // Staff Payroll section states
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -125,20 +114,10 @@ export default function FeePage() {
   const handleCollectFee = () => {
     collectFeeMutation.mutate(collectFee, {
       onSuccess: () => {
-        // Log receipt locally on selected student if matched
-        const matchedStud = studentsLedgerData.find(s => s.id === collectFee.studentId || s.name.toLowerCase() === collectFee.studentId.toLowerCase());
-        if (matchedStud) {
-          const newTx = {
-            id: `t-${Date.now()}`,
-            date: new Date().toISOString().split('T')[0],
-            description: `${collectFee.paymentMethod} payment - ${collectFee.remarks || 'Receipt recorded'}`,
-            type: 'CREDIT',
-            amount: collectFee.amount
-          };
-          setStudentsLedgerData(prev => prev.map(s => 
-            s.id === matchedStud.id ? { ...s, paid: s.paid + collectFee.amount, balance: Math.max(0, s.balance - collectFee.amount), transactions: [...s.transactions, newTx] } : s
-          ));
-        }
+        // Refresh is handled by invalidation in useCollectFee
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Fee Collected', detail: `Receipt recorded successfully.`, life: 3000 }
+        }));
         setShowCollectFeeDialog(false);
         setCollectFee({ studentId: '', amount: 0, paymentMethod: 'CASH', remarks: '' });
       }
@@ -328,17 +307,20 @@ export default function FeePage() {
                   </div>
                   
                   <DataTable
-                    value={studentsLedgerData}
+                    value={studentsList}
                     selectionMode="single"
                     selection={selectedStudentLedger}
-                    onSelectionChange={(e) => setSelectedStudentLedger(e.value)}
+                    onSelectionChange={(e) => {
+                      setSelectedStudentLedger(e.value);
+                      setSelectedStudentId(e.value?.id || '');
+                    }}
                     dataKey="id"
                     className="p-datatable-sm"
                     rowClassName={(data: any) => `cursor-pointer transition-all ${selectedStudentLedger?.id === data.id ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''}`}
+                    paginator rows={10}
                   >
                     <Column field="name" header="Name" className="font-bold text-xs" />
-                    <Column field="className" header="Class" className="text-xs" />
-                    <Column field="balance" header="Dues" body={(d) => `₹${d.balance.toLocaleString()}`} className="font-mono text-xs font-bold text-rose-500" />
+                    <Column field="admissionNo" header="Adm No" className="text-xs" />
                   </DataTable>
                 </div>
 
@@ -349,39 +331,63 @@ export default function FeePage() {
                       <div className="flex justify-between items-start flex-wrap gap-2">
                         <div>
                           <h2 className="text-lg font-bold text-slate-800 dark:text-white">{selectedStudentLedger.name} — Ledger Account</h2>
-                          <p className="text-xs text-slate-400">Roll No: {selectedStudentLedger.rollNo} · {selectedStudentLedger.className}</p>
+                          <p className="text-xs text-slate-400">Roll No: {selectedStudentLedger.rollNo || 'N/A'} · Adm No: {selectedStudentLedger.admissionNo}</p>
                         </div>
                         <div className="bg-slate-100/80 dark:bg-slate-900 p-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider flex gap-4 border border-slate-200/50">
                           <div>
                             <span className="text-slate-400 block">Total Billed:</span>
-                            <span className="text-slate-800 dark:text-white font-black text-xs">₹{selectedStudentLedger.billed.toLocaleString()}</span>
+                            <span className="text-slate-800 dark:text-white font-black text-xs">₹{((ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)).toLocaleString()}</span>
                           </div>
                           <div>
                             <span className="text-emerald-500 block">Total Paid:</span>
-                            <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs">₹{selectedStudentLedger.paid.toLocaleString()}</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs">₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}</span>
                           </div>
                           <div>
                             <span className="text-rose-500 block">Outs. Balance:</span>
-                            <span className="text-rose-600 dark:text-rose-450 font-black text-xs">₹{selectedStudentLedger.balance.toLocaleString()}</span>
+                            <span className="text-rose-600 dark:text-rose-450 font-black text-xs">₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
 
-                      <DataTable value={selectedStudentLedger.transactions} className="p-datatable-sm mt-1" stripedRows>
-                        <Column field="date" header="Transaction Date" className="text-xs text-slate-400 font-mono" />
-                        <Column field="description" header="Item Ledger Description" className="font-bold text-xs text-slate-700 dark:text-slate-300" />
-                        <Column 
-                          field="type" 
-                          header="Type" 
-                          body={(d) => (
-                            <Tag 
-                              value={d.type} 
-                              className={`font-bold text-[9px] ${d.type === 'DEBIT' ? 'bg-rose-500/10 text-rose-650' : 'bg-emerald-500/10 text-emerald-650'}`}
-                            />
-                          )}
-                        />
-                        <Column field="amount" header="Amount" body={(d) => `₹${d.amount.toLocaleString()}`} className="font-mono text-xs font-bold text-right" />
-                      </DataTable>
+                      {loadingLedger ? (
+                        <div className="p-8 text-center text-slate-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+                      ) : (
+                        <DataTable 
+                          value={[
+                            ...(ledgerDuesData?.outstanding || []).map((o: any) => ({
+                              id: `out-${o.id}`,
+                              date: o.createdAt,
+                              description: `${o.name} (Unpaid)`,
+                              type: 'DEBIT',
+                              amount: o.amount
+                            })),
+                            ...(ledgerDuesData?.paid || []).map((p: any) => ({
+                              id: `paid-${p.id}`,
+                              date: p.paidAt,
+                              description: `Paid: ${p.feeStructure?.name || 'Fee'} via ${p.paymentMethod}`,
+                              type: 'CREDIT',
+                              amount: p.totalAmount
+                            }))
+                          ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+                          className="p-datatable-sm mt-1" 
+                          stripedRows
+                          emptyMessage="No transactions found for this student."
+                        >
+                          <Column field="date" header="Transaction Date" body={(d) => new Date(d.date).toLocaleDateString()} className="text-xs text-slate-400 font-mono" />
+                          <Column field="description" header="Item Ledger Description" className="font-bold text-xs text-slate-700 dark:text-slate-300" />
+                          <Column 
+                            field="type" 
+                            header="Type" 
+                            body={(d) => (
+                              <Tag 
+                                value={d.type} 
+                                className={`font-bold text-[9px] ${d.type === 'DEBIT' ? 'bg-rose-500/10 text-rose-650' : 'bg-emerald-500/10 text-emerald-650'}`}
+                              />
+                            )}
+                          />
+                          <Column field="amount" header="Amount" body={(d) => `₹${Number(d.amount).toLocaleString()}`} className="font-mono text-xs font-bold text-right" />
+                        </DataTable>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full min-h-[300px]">

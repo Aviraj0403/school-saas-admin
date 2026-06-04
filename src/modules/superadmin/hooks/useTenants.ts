@@ -72,3 +72,19 @@ export function useUpdateTenant() {
     },
   });
 }
+
+export function useTenantInvoices(id: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: ['superadmin', 'tenants', id, 'invoices', { page, limit }],
+    queryFn: () => tenantService.getTenantInvoices(id, page, limit),
+    enabled: !!id,
+  });
+}
+
+export function useTenantActivityLogs(id: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: ['superadmin', 'tenants', id, 'activity-logs', { page, limit }],
+    queryFn: () => tenantService.getTenantActivityLogs(id, page, limit),
+    enabled: !!id,
+  });
+}

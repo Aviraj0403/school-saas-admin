@@ -36,6 +36,17 @@ export function useHostelRooms(hostelId: string) {
   });
 }
 
+export function useAllBoarders() {
+  return useQuery({
+    queryKey: ['hostel-boarders'],
+    queryFn: async () => {
+      const { api } = await import('@/services/api');
+      const res = await api.get('/hostel/boarders');
+      return res.data?.data || res.data || [];
+    },
+  });
+}
+
 export function useCreateHostelRoom() {
   const queryClient = useQueryClient();
 

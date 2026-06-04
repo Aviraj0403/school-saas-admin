@@ -61,8 +61,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         };
       }
 
-      // Get theme mode (dark is default)
-      let themeMode = 'dark';
+      // Get theme mode (light is default now)
+      let themeMode = 'light';
       try {
         const savedMode = localStorage.getItem('theme-mode');
         if (savedMode === 'light' || savedMode === 'dark') {

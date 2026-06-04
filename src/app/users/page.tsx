@@ -49,7 +49,7 @@ export default function UsersRegistryPage() {
     parentLinked: s.parentName || 'N/A',
   }));
 
-  // Fetch staff and parents with fallback mock matching backend data
+  // Fetch staff and parents from actual backend
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -57,21 +57,40 @@ export default function UsersRegistryPage() {
         api.get('/staff'),
         api.get('/parents')
       ]);
-      if (staffRes.data?.success) setStaffList(staffRes.data.data);
-      if (parentRes.data?.success) setParentsList(parentRes.data.data);
-    } catch {
-      // Premium Mock fallback matching real database records
-      setStaffList([
-        { id: 'st-1', name: 'Dr. Aviraj D\'souza', email: 'aviraj@superadmin.com', phone: '+919876543210', role: 'Principal', isActive: true, empIdOrAdmNo: 'EMP-2026-001' },
-        { id: 'st-2', name: 'Mrs. Anjali Mehta', email: 'anjali.math@school.com', phone: '+919876543211', role: 'Teacher', isActive: true, empIdOrAdmNo: 'EMP-2026-002' },
-        { id: 'st-3', name: 'Mr. Vivek Sharma', email: 'vivek.physics@school.com', phone: '+919876543212', role: 'Teacher', isActive: true, empIdOrAdmNo: 'EMP-2026-003' },
-        { id: 'st-4', name: 'Suresh Singhania', email: 'accounts@school.com', phone: '+919876543213', role: 'Accountant', isActive: true, empIdOrAdmNo: 'EMP-2026-004' }
-      ]);
-      setParentsList([
-        { id: 'pr-1', name: 'Suresh Sharma', email: 'parent.suresh@gmail.com', phone: '+919988776655', role: 'Parent', isActive: true, parentLinked: 'Rahul Sharma (Adm: SATY-STU-2026-00001)' },
-        { id: 'pr-2', name: 'Vikram Malhotra', email: 'vikram.m@yahoo.com', phone: '+919988776656', role: 'Parent', isActive: true, parentLinked: 'Priya Malhotra (Adm: SATY-STU-2026-00004)' },
-        { id: 'pr-3', name: 'Meena Iyer', email: 'meena.iyer@outlook.com', phone: '+919988776657', role: 'Parent', isActive: true, parentLinked: 'Aditya Iyer (Adm: SATY-STU-2026-00005)' }
-      ]);
+      
+      if (staffRes.data?.success) {
+        const mappedStaff = staffRes.data.data.map((s: any) => ({
+          id: s.id,
+          name: s.name || `${s.firstName} ${s.lastName}`,
+          email: s.email,
+          phone: s.phone || 'N/A',
+          role: s.role?.name || 'Staff',
+          isActive: s.isActive ?? true,
+          empIdOrAdmNo: s.employeeId || 'N/A',
+        }));
+        setStaffList(mappedStaff);
+      } else {
+        setStaffList([]);
+      }
+
+      if (parentRes.data?.success) {
+        const mappedParents = parentRes.data.data.map((p: any) => ({
+          id: p.id,
+          name: p.name || `${p.firstName} ${p.lastName}`,
+          email: p.email,
+          phone: p.phone || 'N/A',
+          role: 'Parent',
+          isActive: p.isActive ?? true,
+          parentLinked: p.students?.map((stu: any) => `${stu.name} (Adm: ${stu.admissionNo})`).join(', ') || 'N/A',
+        }));
+        setParentsList(mappedParents);
+      } else {
+        setParentsList([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      setStaffList([]);
+      setParentsList([]);
     } finally {
       setLoading(false);
     }

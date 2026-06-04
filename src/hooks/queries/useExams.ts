@@ -33,6 +33,16 @@ export function useExamResults(examId: string, classId: string) {
   });
 }
 
+export function useStudentExamResults(examId: string, studentId: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['student-exam-results', { examId, studentId }],
+    queryFn: () => examsService.getStudentResults(examId, studentId),
+    enabled: isAuthenticated && !!examId && !!studentId,
+    retry: false,
+  });
+}
+
 export function useAutoAssignSeating() {
   const queryClient = useQueryClient();
   return useMutation({

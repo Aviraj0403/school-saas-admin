@@ -12,7 +12,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
-import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder } from '@/hooks/queries/useHostel';
+import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder, useAllBoarders } from '@/hooks/queries/useHostel';
 
 export default function HostelPage() {
   const toast = useRef<Toast>(null);
@@ -29,37 +29,44 @@ export default function HostelPage() {
     }
   }, []);
 
-  const [wardensList, setWardensList] = useState([
-    { id: 'w-1', name: 'Rakesh Kumar', hostelBlock: 'Boys Hostel Block A', phone: '+91 98765 00112', email: 'rakesh.kumar@school.edu', status: 'ON_DUTY' },
-    { id: 'w-2', name: 'Sarita Devi', hostelBlock: 'Girls Hostel Block B', phone: '+91 91234 88776', email: 'sarita.d@school.edu', status: 'ON_DUTY' },
-    { id: 'w-3', name: 'Vijay Pratap', hostelBlock: 'Co-ed Block C', phone: '+91 99887 55443', email: 'vijay.p@school.edu', status: 'OFF_DUTY' },
-  ]);
+  const { data: dashboard } = useHostelDashboard();
+  const { data: hostels, isLoading: isLoadingHostels } = useHostels();
+  const { data: allBoardersData, isPending: isLoadingBoarders } = useAllBoarders();
+  
+  const hostelList = Array.isArray(hostels) ? hostels : (hostels?.data || []);
 
-  const [wardenLogs, setWardenLogs] = useState([
-    { id: 'log-1', boarderName: 'Amit Sharma', roomNo: 'A-102', action: 'CHECK_OUT', time: '2026-05-28 18:30', remarks: 'Weekend home visit' },
-    { id: 'log-2', boarderName: 'Rohit Sen', roomNo: 'A-105', action: 'CHECK_IN', time: '2026-05-28 21:15', remarks: 'Late entry approved by warden' },
-    { id: 'log-3', boarderName: 'Pooja Mehta', roomNo: 'B-201', action: 'CHECK_OUT', time: '2026-05-28 17:00', remarks: 'Library group study' },
-    { id: 'log-4', boarderName: 'Pooja Mehta', roomNo: 'B-201', action: 'CHECK_IN', time: '2026-05-28 20:30', remarks: 'Returned' },
-  ]);
+  const wardensList = hostelList.map((h: any) => ({
+    id: h.id,
+    name: h.wardenId || 'Unassigned',
+    hostelBlock: h.name,
+    phone: h.wardenPhone || 'N/A',
+    email: 'N/A',
+    status: 'ON_DUTY'
+  }));
 
-  const [boardersList, setBoardersList] = useState([
-    { id: 'stud-1', studentName: 'Aditya Sen', hostelName: 'Boys Hostel Block A', roomNo: 'A-102', academicYear: '2025-2026', joinDate: '2025-06-15' },
-    { id: 'stud-2', studentName: 'Rohan Gupta', hostelName: 'Boys Hostel Block A', roomNo: 'A-105', academicYear: '2025-2026', joinDate: '2025-06-15' },
-    { id: 'stud-3', studentName: 'Ananya Roy', hostelName: 'Girls Hostel Block B', roomNo: 'B-201', academicYear: '2025-2026', joinDate: '2025-06-18' },
-    { id: 'stud-4', studentName: 'Priya Patel', hostelName: 'Girls Hostel Block B', roomNo: 'B-204', academicYear: '2025-2026', joinDate: '2025-06-19' },
-  ]);
+  const wardenLogs: any[] = []; // Logs UI telemetry, waiting on backend logs module
+
+  const boardersList = (allBoardersData || []).map((b: any) => ({
+    id: b.studentId, // We use studentId for discharge action
+    studentName: b.student?.name || 'Unknown',
+    hostelName: b.room?.hostel?.name || 'Unknown',
+    roomNo: b.room?.roomNo || 'Unknown',
+    academicYear: b.academicYear,
+    joinDate: b.joinDate ? new Date(b.joinDate).toISOString().split('T')[0] : 'N/A',
+  }));
 
   const dischargeBoarderMutation = useDischargeBoarder();
 
-  const handleDischarge = (studentId: string) => {
+  const handleDischarge = (studentId: string, academicYear: string) => {
     if (confirm('Are you sure you want to discharge this resident boarder?')) {
-      setBoardersList(prev => prev.filter(b => b.id !== studentId));
-      toast.current?.show({ severity: 'success', summary: 'Discharged', detail: 'Resident boarder discharged successfully', life: 3000 });
+      dischargeBoarderMutation.mutate({ studentId, academicYear }, {
+        onSuccess: () => {
+          toast.current?.show({ severity: 'success', summary: 'Discharged', detail: 'Resident boarder discharged successfully', life: 3000 });
+        }
+      });
     }
   };
 
-  const { data: dashboard } = useHostelDashboard();
-  const { data: hostels, isLoading: isLoadingHostels } = useHostels();
   const createHostelMutation = useCreateHostel();
   const createRoomMutation = useCreateHostelRoom();
   const admitBoarderMutation = useAdmitBoarder();
@@ -134,7 +141,6 @@ export default function HostelPage() {
     );
   };
 
-  const hostelList = Array.isArray(hostels) ? hostels : (hostels?.data || []);
   const roomList = Array.isArray(rooms) ? rooms : (rooms?.data || []);
 
   return (
@@ -318,7 +324,7 @@ export default function HostelPage() {
                         size="small" 
                         severity="danger" 
                         className="bg-rose-600 text-white p-1 px-2.5 text-xs rounded-xl"
-                        onClick={() => handleDischarge(d.id)}
+                        onClick={() => handleDischarge(d.id, d.academicYear)}
                       />
                     )}
                   />

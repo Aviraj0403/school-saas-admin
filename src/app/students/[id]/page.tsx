@@ -9,12 +9,15 @@ import { Tag } from 'primereact/tag';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents';
+import { useStudentDues } from '@/hooks/queries/useFee';
 
 export default function StudentDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs'>('personal');  const { data: student, isPending, isError } = useStudentDetails(id);
+  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs'>('personal');
+  const { data: student, isPending, isError } = useStudentDetails(id);
+  const { data: ledgerDuesData, isPending: loadingLedger } = useStudentDues(id);
   const deleteMutation = useDeleteStudent();
 
   const handleDelete = () => {
@@ -196,68 +199,86 @@ export default function StudentDetailsPage() {
               {/* Fees quick metrics */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tuition Fees (Annual)</span>
-                  <span className="text-lg font-extrabold text-slate-800 dark:text-white mt-1 block">₹45,000</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Billed (Annual)</span>
+                  <span className="text-lg font-extrabold text-slate-800 dark:text-white mt-1 block">₹{((ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)).toLocaleString()}</span>
                 </div>
                 <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
                   <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Fees Paid</span>
-                  <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 block">₹30,000</span>
+                  <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 block">₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}</span>
                 </div>
                 <div className="p-4 bg-rose-500/5 rounded-2xl border border-rose-500/10 col-span-2 md:col-span-1">
                   <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">Outstanding Due</span>
-                  <span className="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1 block">₹15,000</span>
+                  <span className="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1 block">₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Transactions Ledger Table */}
-              <DataTable
-                value={[
-                  { id: 'INV-2025-0921', term: 'First Term Fees', invoiced: 15000, date: '2025-06-10', method: 'NetBanking', status: 'PAID' },
-                  { id: 'INV-2025-1102', term: 'Second Term Fees', invoiced: 15000, date: '2025-10-05', method: 'UPI Pay', status: 'PAID' },
-                  { id: 'INV-2026-0245', term: 'Third Term Fees', invoiced: 15000, date: '2026-02-15', method: '—', status: 'DUE' }
-                ]}
-                className="p-datatable-sm mt-2 text-xs"
-                stripedRows
-              >
-                <Column field="id" header="Invoice No" className="font-mono font-bold text-xs" />
-                <Column field="term" header="Term Particulars" className="font-semibold text-slate-700 dark:text-slate-350" />
-                <Column field="date" header="Due / Pay Date" />
-                <Column 
-                  header="Amount" 
-                  body={(d) => <span className="font-bold font-mono">₹{d.invoiced.toLocaleString('en-IN')}</span>} 
-                />
-                <Column field="method" header="Payment Method" />
-                <Column 
-                  header="Status" 
-                  body={(d) => (
-                    <Tag 
-                      value={d.status} 
-                      severity={d.status === 'PAID' ? 'success' : 'danger'} 
-                      className="font-bold text-[9px] rounded px-2" 
-                    />
-                  )} 
-                />
-                <Column 
-                  header="Print" 
-                  body={(d) => (
-                    <Button 
-                      icon="pi pi-print" 
-                      className="p-button-text p-button-sm p-1 text-indigo-500" 
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent('show-toast', {
-                          detail: {
-                            severity: 'success',
-                            summary: 'Invoice Receipt Compiled',
-                            detail: `Tax invoice ${d.id} compiled. Printing queue initialized.`,
-                            life: 3000
-                          }
-                        }));
-                      }}
-                    />
-                  )} 
-                  align="center"
-                />
-              </DataTable>
+              {loadingLedger ? (
+                <div className="p-8 text-center text-slate-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+              ) : (
+                <DataTable
+                  value={[
+                    ...(ledgerDuesData?.outstanding || []).map((o: any) => ({
+                      id: `out-${o.id}`,
+                      term: o.name,
+                      invoiced: o.amount,
+                      date: o.createdAt,
+                      method: '—',
+                      status: 'DUE'
+                    })),
+                    ...(ledgerDuesData?.paid || []).map((p: any) => ({
+                      id: `paid-${p.id}`,
+                      term: p.feeStructure?.name || 'Fee Collection',
+                      invoiced: p.totalAmount,
+                      date: p.paidAt,
+                      method: p.paymentMethod,
+                      status: 'PAID'
+                    }))
+                  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
+                  className="p-datatable-sm mt-2 text-xs"
+                  stripedRows
+                  emptyMessage="No fee transactions found for this student."
+                >
+                  <Column field="id" header="Transaction Ref" body={(d) => d.id.replace('out-', '').replace('paid-', '').substring(0,8).toUpperCase()} className="font-mono font-bold text-xs" />
+                  <Column field="term" header="Term Particulars" className="font-semibold text-slate-700 dark:text-slate-350" />
+                  <Column field="date" header="Due / Pay Date" body={(d) => new Date(d.date).toLocaleDateString()} />
+                  <Column 
+                    header="Amount" 
+                    body={(d) => <span className="font-bold font-mono">₹{Number(d.invoiced).toLocaleString('en-IN')}</span>} 
+                  />
+                  <Column field="method" header="Payment Method" />
+                  <Column 
+                    header="Status" 
+                    body={(d) => (
+                      <Tag 
+                        value={d.status} 
+                        severity={d.status === 'PAID' ? 'success' : 'danger'} 
+                        className="font-bold text-[9px] rounded px-2" 
+                      />
+                    )} 
+                  />
+                  <Column 
+                    header="Print" 
+                    body={(d) => d.status === 'PAID' && (
+                      <Button 
+                        icon="pi pi-print" 
+                        className="p-button-text p-button-sm p-1 text-indigo-500" 
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: {
+                              severity: 'success',
+                              summary: 'Invoice Receipt Compiled',
+                              detail: `Tax receipt generated. Printing queue initialized.`,
+                              life: 3000
+                            }
+                          }));
+                        }}
+                      />
+                    )} 
+                    align="center"
+                  />
+                </DataTable>
+              )}
             </div>
           </Card>
         )}

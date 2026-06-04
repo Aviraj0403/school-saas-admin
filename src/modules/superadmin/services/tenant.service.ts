@@ -41,4 +41,14 @@ export const tenantService = {
     const response = await api.patch<{ success: boolean }>(`/tenants/${id}`, data);
     return response.data;
   },
+
+  getTenantInvoices: async (id: string, page = 1, limit = 20) => {
+    const response = await api.get<PaginatedResponse<any>>(`/superadmin/schools/${id}/invoices?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  getTenantActivityLogs: async (id: string, page = 1, limit = 20) => {
+    const response = await api.get<PaginatedResponse<any>>(`/superadmin/schools/${id}/activity-logs?page=${page}&limit=${limit}`);
+    return response.data;
+  },
 };

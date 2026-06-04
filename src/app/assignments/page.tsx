@@ -10,6 +10,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { useAssignments, useStudentAssignments, useCreateAssignment, useSubmitAssignment, useGradeSubmission } from '@/hooks/queries/useHomework';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface Assignment {
   id: string;
@@ -50,27 +52,19 @@ export default function AssignmentsPage() {
   
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   
-  // State datasets
-  const [assignments, setAssignments] = useState<Assignment[]>([
-    { id: '1', title: 'Quadratic Equations Practice Set', subject: 'Mathematics', className: 'Grade 10-A', dueDate: '2026-06-05', status: 'ACTIVE', submissions: 18, totalStudents: 25 },
-    { id: '2', title: 'Newton\'s Laws of Motion Lab Report', subject: 'Physics', className: 'Grade 11-B', dueDate: '2026-06-02', status: 'ACTIVE', submissions: 12, totalStudents: 22 },
-    { id: '3', title: 'Cell Structure and Functions Diagram', subject: 'Biology', className: 'Grade 9-C', dueDate: '2026-05-24', status: 'GRADED', submissions: 28, totalStudents: 28 },
-    { id: '4', title: 'Modern History Renaissance Essay', subject: 'Social Studies', className: 'Grade 10-B', dueDate: '2026-06-10', status: 'DRAFT', submissions: 0, totalStudents: 24 },
-  ]);
+  const { user } = useAuthStore();
+  const studentIdForDemo = user?.id || 'demo-student-1'; // Ideally fetched from context
 
-  const [submissionsList, setSubmissionsList] = useState<Submission[]>([
-    { id: 'sub-1', studentName: 'Aditya Sen', submittedAt: '2026-05-28 10:15', status: 'SUBMITTED', fileName: 'quadratic_solutions.pdf', grade: '' },
-    { id: 'sub-2', studentName: 'Rohan Gupta', submittedAt: '2026-05-28 11:30', status: 'GRADED', fileName: 'equations_rohan.docx', grade: '90/100' },
-    { id: 'sub-3', studentName: 'Neha Verma', submittedAt: '—', status: 'PENDING', fileName: '—', grade: '' },
-    { id: 'sub-4', studentName: 'Aarav Mehta', submittedAt: '2026-05-27 15:40', status: 'SUBMITTED', fileName: 'quadratic_maths_final.pdf', grade: '' },
-  ]);
+  const { data: assignmentsData, isPending: loadingAssignments } = useAssignments();
+  const { data: studentHomeworkData, isPending: loadingStudentHw } = useStudentAssignments(studentIdForDemo);
 
-  // Student specific view homework states
-  const [studentHomework, setStudentHomework] = useState([
-    { id: 'hw-1', title: 'Quadratic Equations Practice Set', subject: 'Mathematics', dueDate: '2026-06-05', status: 'PENDING_SUBMISSION', fileName: '—', grade: '' },
-    { id: 'hw-2', title: 'Newton\'s Laws of Motion Lab Report', subject: 'Physics', dueDate: '2026-06-02', status: 'SUBMITTED', fileName: 'physics_laws_lab.pdf', grade: '' },
-    { id: 'hw-3', title: 'Cell Structure and Functions Diagram', subject: 'Biology', dueDate: '2026-05-24', status: 'GRADED', fileName: 'biology_cell_diagram.pdf', grade: 'A+' },
-  ]);
+  const createAssignmentMutation = useCreateAssignment();
+  const submitAssignmentMutation = useSubmitAssignment();
+  const gradeSubmissionMutation = useGradeSubmission();
+
+  const assignments: Assignment[] = assignmentsData || [];
+  const submissionsList: Submission[] = []; // Submissions are nested inside the assignments from backend, we will map them when selecting one
+  const studentHomework: any[] = studentHomeworkData || [];
 
   const [formData, setFormData] = useState({
     title: '',
@@ -84,73 +78,55 @@ export default function AssignmentsPage() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    const newAssignment: Assignment = {
-      id: String(assignments.length + 1),
+    createAssignmentMutation.mutate({
       title: formData.title,
-      subject: formData.subject,
-      className: formData.className,
-      dueDate: formData.dueDate,
-      status: 'ACTIVE',
-      submissions: 0,
-      totalStudents: 25,
-    };
-    setAssignments([newAssignment, ...assignments]);
-    setShowCreateDialog(false);
-    setFormData({ title: '', subject: '', className: '', dueDate: '' });
-
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: {
-        severity: 'success',
-        summary: 'Assignment Posted',
-        detail: `Successfully created and published "${newAssignment.title}" for ${newAssignment.className}.`,
-        life: 4000
+      subjectId: formData.subject, // Map to DB ID in real app
+      classId: formData.className,
+      dueDate: new Date(formData.dueDate).toISOString(),
+    }, {
+      onSuccess: () => {
+        setShowCreateDialog(false);
+        setFormData({ title: '', subject: '', className: '', dueDate: '' });
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Assignment Posted', detail: 'Successfully created and published.', life: 4000 }
+        }));
       }
-    }));
+    });
   };
 
   const handleGradeSubmission = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubmission) return;
-    setSubmissionsList(prev => prev.map(sub => 
-      sub.id === selectedSubmission.id ? { ...sub, status: 'GRADED', grade: gradeValue } : sub
-    ));
-    setShowGradeDialog(false);
-    setGradeValue('');
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Homework Graded', detail: `Graded homework for ${selectedSubmission.studentName}.`, life: 3000 }
-    }));
+    gradeSubmissionMutation.mutate({
+      submissionId: selectedSubmission.id,
+      payload: { marksAwarded: gradeValue, feedback: 'Graded via UI' }
+    }, {
+      onSuccess: () => {
+        setShowGradeDialog(false);
+        setGradeValue('');
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Homework Graded', detail: `Graded homework for ${selectedSubmission.studentName}.`, life: 3000 }
+        }));
+      }
+    });
   };
 
   const handleStudentUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAssignment) return;
     
-    // Update student view task
-    setStudentHomework(prev => prev.map(hw => 
-      hw.title === selectedAssignment.title ? { ...hw, status: 'SUBMITTED', fileName: submittedFileName || 'homework_solution.pdf' } : hw
-    ));
-    
-    // Add to submissions list for teachers
-    const newSub: Submission = {
-      id: `sub-${Date.now()}`,
-      studentName: 'Demo Student (You)',
-      submittedAt: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().split(' ')[0].substring(0, 5),
-      status: 'SUBMITTED',
-      fileName: submittedFileName || 'homework_solution.pdf',
-      grade: ''
-    };
-    setSubmissionsList([newSub, ...submissionsList]);
-    
-    // Increment submission count
-    setAssignments(prev => prev.map(a => 
-      a.id === selectedAssignment.id ? { ...a, submissions: a.submissions + 1 } : a
-    ));
-    
-    setShowSubmitDialog(false);
-    setSubmittedFileName('');
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Homework Submitted', detail: 'Your assignment solution was uploaded successfully.', life: 3000 }
-    }));
+    submitAssignmentMutation.mutate({
+      assignmentId: selectedAssignment.id,
+      payload: { studentId: studentIdForDemo, notes: submittedFileName }
+    }, {
+      onSuccess: () => {
+        setShowSubmitDialog(false);
+        setSubmittedFileName('');
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Homework Submitted', detail: 'Your assignment solution was uploaded successfully.', life: 3000 }
+        }));
+      }
+    });
   };
 
   const filteredAssignments = filterStatus 

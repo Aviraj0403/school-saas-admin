@@ -4,7 +4,7 @@ import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useFullDashboard } from '@/hooks/queries/useAnalytics';
+import { useFullDashboard, useFeeCollectionTrend, useAttendanceTrend } from '@/hooks/queries/useAnalytics';
 import { Skeleton } from 'primereact/skeleton';
 import { 
   useCurrentAcademicYear,
@@ -50,6 +50,8 @@ function StatCard({ label, value, icon, gradientClass, iconBgClass, iconColorCla
 export default function DashboardPage() {
   const { activeUser, activeTenant } = useAuthStore();
   const { data: dashboard, isPending } = useFullDashboard();
+  const { data: feeTrendData } = useFeeCollectionTrend();
+  const { data: attendanceTrendData } = useAttendanceTrend();
 
   // Current active term check
   const { data: currentAY } = useCurrentAcademicYear();
@@ -182,31 +184,32 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (₹)</p>
             </div>
             <div className="flex items-end justify-between h-44 px-2">
-              {[
-                { month: 'Jan', value: 12000 },
-                { month: 'Feb', value: 19000 },
-                { month: 'Mar', value: 8000 },
-                { month: 'Apr', value: 22000 },
-                { month: 'May', value: 30000 },
-                { month: 'Jun', value: 45000 },
-              ].map((item) => {
-                const pct = (item.value / 45000) * 100;
-                return (
-                  <div key={item.month} className="flex flex-col items-center gap-2 flex-1 group">
-                    <span className="text-[10px] text-slate-400 font-bold group-hover:text-slate-650 transition-colors">
-                      {item.value >= 1000 ? `${(item.value / 1000).toFixed(0)}k` : item.value}
-                    </span>
-                    <div className="w-full flex items-end justify-center h-32">
-                      <div
-                        className="w-8 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
-                        style={{ height: `${pct}%`, minHeight: '4px' }}
-                        title={`₹${item.value.toLocaleString('en-IN')}`}
-                      />
+              {feeTrendData && feeTrendData.length > 0 ? (
+                feeTrendData.map((item: any) => {
+                  const monthName = new Date(item.month + '-01').toLocaleString('default', { month: 'short' });
+                  const maxVal = Math.max(...feeTrendData.map((d:any) => d.amount), 10000);
+                  const pct = (item.amount / maxVal) * 100;
+                  return (
+                    <div key={item.month} className="flex flex-col items-center gap-2 flex-1 group">
+                      <span className="text-[10px] text-slate-400 font-bold group-hover:text-slate-650 transition-colors">
+                        {item.amount >= 1000 ? `${(item.amount / 1000).toFixed(0)}k` : item.amount}
+                      </span>
+                      <div className="w-full flex items-end justify-center h-32">
+                        <div
+                          className="w-8 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
+                          style={{ height: `${pct}%`, minHeight: '4px' }}
+                          title={`₹${item.amount.toLocaleString('en-IN')}`}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">{monthName}</span>
                     </div>
-                    <span className="text-xs font-bold text-slate-500">{item.month}</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                  No fee collection revenue data found.
+                </div>
+              )}
             </div>
           </div>
 
@@ -217,30 +220,35 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400 mt-1">Active student participation index (%)</p>
             </div>
             <div className="flex flex-col gap-4 mt-2">
-              {[
-                { day: 'Mon', rate: 94 },
-                { day: 'Tue', rate: 96 },
-                { day: 'Wed', rate: 91 },
-                { day: 'Thu', rate: 97 },
-                { day: 'Fri', rate: 89 },
-              ].map((item) => (
-                <div key={item.day} className="flex items-center gap-4">
-                  <span className="text-xs font-bold text-slate-500 w-8">{item.day}</span>
-                  <div className="flex-1 bg-slate-100 dark:bg-slate-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-200/40 dark:border-slate-800">
-                    <div
-                      className={`h-full rounded-full transition-all duration-550 ${
-                        item.rate >= 95 
-                          ? 'bg-gradient-to-r from-emerald-400 to-teal-500' 
-                          : item.rate >= 90 
-                          ? 'bg-gradient-to-r from-amber-400 to-orange-500' 
-                          : 'bg-gradient-to-r from-rose-400 to-red-500'
-                      }`}
-                      style={{ width: `${item.rate}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-extrabold text-slate-600 dark:text-slate-350 w-10 text-right">{item.rate}%</span>
+              {attendanceTrendData && attendanceTrendData.length > 0 ? (
+                attendanceTrendData.slice(-5).map((item: any) => {
+                  const dayName = new Date(item.date).toLocaleString('default', { weekday: 'short' });
+                  const total = item.PRESENT + item.ABSENT + item.LATE + item.LEAVE;
+                  const rate = total > 0 ? Math.round(((item.PRESENT + item.LATE) / total) * 100) : 0;
+                  return (
+                    <div key={item.date} className="flex items-center gap-4">
+                      <span className="text-xs font-bold text-slate-500 w-8">{dayName}</span>
+                      <div className="flex-1 bg-slate-100 dark:bg-slate-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-200/40 dark:border-slate-800">
+                        <div
+                          className={`h-full rounded-full transition-all duration-550 ${
+                            rate >= 95 
+                              ? 'bg-gradient-to-r from-emerald-400 to-teal-500' 
+                              : rate >= 90 
+                              ? 'bg-gradient-to-r from-amber-400 to-orange-500' 
+                              : 'bg-gradient-to-r from-rose-400 to-red-500'
+                          }`}
+                          style={{ width: `${rate}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-extrabold text-slate-600 dark:text-slate-350 w-10 text-right">{rate}%</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-10 mt-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                  No attendance data recorded yet.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

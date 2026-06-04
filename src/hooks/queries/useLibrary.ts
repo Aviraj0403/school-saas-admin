@@ -56,3 +56,19 @@ export function useActiveIssues() {
     retry: false,
   });
 }
+
+export function useOverdueIssues() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['library-overdue-issues'],
+    queryFn: async () => {
+      const res = await libraryService.getActiveIssues(); // Get active issues
+      // Filter overdue on frontend since we don't have getOverdueIssues exported in libraryService (or call it directly if it exists, let's call the api directly)
+      const { api } = await import('@/services/api');
+      const apiRes = await api.get('/library/issues/overdue');
+      return apiRes.data?.data || apiRes.data || [];
+    },
+    enabled: isAuthenticated,
+    retry: false,
+  });
+}

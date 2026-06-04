@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# School SaaS Admin Dashboard
+
+This is the central administrative frontend for the Multi-Tenant School SaaS Platform, built with **Next.js 14**, **React**, **TypeScript**, and **Tailwind CSS**. It serves both global superadmins (managing the platform) and school-specific administrators, teachers, and accountants (managing daily school operations).
+
+## Tech Stack
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (with custom themes & dark mode)
+- **UI Components:** PrimeReact
+- **State Management (Client):** Zustand
+- **Server State & Data Fetching:** React Query (`@tanstack/react-query`) + Axios
+- **Icons:** PrimeIcons (`pi`)
+
+## Architecture & Tenancy
+This frontend application is designed to be multi-tenant aware.
+- **`TenantCtx`**: Uses global state (Zustand) and API interceptors to securely attach the current workspace's `X-Tenant-Id` to every backend request.
+- **Module Toggling**: Navigation and features are dynamically rendered based on the active modules enabled for the current school's subscription plan.
+
+## Integrated Modules & Services
+
+### Superadmin Control Plane
+Global visibility into the entire SaaS ecosystem.
+- **Directory**: View all onboarded schools, filter by tier, and manage tenant lifecycles.
+- **Billing & Subscriptions**: Modify school subscription plans, view auto-generated SaaS invoices, and toggle specific module access per school.
+- **Telemetry & Auditing**: Monitor system-wide activity logs, webhook health (e.g., Biometrics), and active third-party integration statuses (e.g., Jitsi).
+
+### Core School Modules (Synced with Live Backend)
+The following school modules are fully integrated with the robust NestJS backend API:
+
+- **Dashboard**: Real-time analytics, charts, and trends for fee collections, attendance, and student enrollment (Powered by Recharts).
+- **Users**: Staff, Parent, and Student registries with detailed profiles and financial ledgers.
+- **Academics**: Homework, assignments, syllabus tracking, and library/book issue management.
+- **Attendance**: Biometric-compatible attendance logs and daily attendance trends.
+- **Operations & Facilities**: Real-time Hostel (Boarders, Wardens) and Transport (Routes, Telemetry) tracking.
+- **HR**: Leave applications and staff management workflows.
+
+## Project Structure
+```bash
+src/
+├── app/                  # Next.js App Router Pages
+│   ├── dashboard/        # Tenant Dashboards
+│   ├── superadmin/       # Superadmin Control Plane
+│   └── (modules)/        # Feature modules (hostel, library, leave, etc.)
+├── components/           # Reusable UI components & layouts
+├── hooks/                # React Query data fetching hooks (e.g. useFeeCollectionTrend)
+├── store/                # Zustand stores (useAuthStore)
+├── services/             # Axios API services and interceptors
+├── modules/              # Domain-driven features (Superadmin hooks/services)
+└── types/                # Shared TypeScript interfaces (api.types.ts)
+```
 
 ## Getting Started
 
-First, run the development server:
-
+First, install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Start the development server:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Ensure the backend API (`School-Backend-Phase1`) is also running on the correct port mapped in your local environment variables.

@@ -11,7 +11,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { InputNumber } from 'primereact/inputnumber';
-import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules, useUpdateTenant } from '@/modules/superadmin/hooks/useTenants';
+import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules, useUpdateTenant, useTenantInvoices, useTenantActivityLogs } from '@/modules/superadmin/hooks/useTenants';
 import { CreateTenantDto, Tenant } from '@/types/api.types';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -122,6 +122,18 @@ export default function TenantsPage() {
   const planMutation = useSetTenantPlan();
   const modulesMutation = useSetTenantModules();
   const updateTenantMutation = useUpdateTenant();
+
+  const { data: invoicesData, isPending: isLedgerPending } = useTenantInvoices(selectedTenant?.id || '');
+  const { data: logsData, isPending: isLogsPending } = useTenantActivityLogs(selectedTenant?.id || '');
+  
+  // Safely extract the array from the paginated response
+  const invoices: any[] = Array.isArray(invoicesData?.data) 
+    ? invoicesData.data 
+    : (invoicesData?.data?.items || (invoicesData as any)?.data?.data || (invoicesData as any)?.items || []);
+    
+  const activityLogs: any[] = Array.isArray(logsData?.data) 
+    ? logsData.data 
+    : (logsData?.data?.items || (logsData as any)?.data?.data || (logsData as any)?.items || []);
 
   const handleOpenDetails = (tenant: Tenant) => {
     setSelectedTenant(tenant);
@@ -1038,21 +1050,18 @@ export default function TenantsPage() {
               {detailsTab === 'ledger' && (
                 <div className="flex flex-col gap-3 animate-fade-in">
                   <DataTable
-                    value={[
-                      { id: 'INV-2026-001', amount: 2499, date: '2026-05-15', method: 'Razorpay', status: 'PAID', ref: 'pay_RFt9392J8d' },
-                      { id: 'INV-2026-002', amount: 2499, date: '2026-04-15', method: 'Razorpay', status: 'PAID', ref: 'pay_KDs8329Sd1' },
-                      { id: 'INV-2026-003', amount: 2499, date: '2026-03-15', method: 'Stripe', status: 'PAID', ref: 'ch_8sd92K3sd0' }
-                    ]}
+                    value={invoices}
+                    loading={isLedgerPending}
                     className="p-datatable-sm"
                     stripedRows
                   >
-                    <Column field="id" header="Invoice ID" className="font-bold text-xs" />
-                    <Column field="date" header="Billing Date" className="text-xs" />
+                    <Column field="invoiceNo" header="Invoice ID" className="font-bold text-xs" />
+                    <Column field="dueDate" header="Due Date" body={(d) => new Date(d.dueDate).toLocaleDateString()} className="text-xs" />
                     <Column 
                       header="SaaS Fee" 
                       body={(d) => <span className="font-bold font-mono text-slate-800 dark:text-slate-200">₹{d.amount.toLocaleString('en-IN')}</span>} 
                     />
-                    <Column field="method" header="Gateway" className="text-xs font-semibold text-slate-500" />
+                    <Column field="paymentMethod" header="Gateway" className="text-xs font-semibold text-slate-500" body={(d) => d.paymentMethod || 'Manual'} />
                     <Column 
                       header="Status" 
                       body={(d) => <Tag value={d.status} severity="success" className="font-bold text-[9px] rounded px-2" />} 
@@ -1085,26 +1094,26 @@ export default function TenantsPage() {
               {/* Tab Contents: System Activity Audit Logs */}
               {detailsTab === 'audit_logs' && (
                 <div className="flex flex-col gap-3 animate-fade-in max-h-72 overflow-y-auto">
-                  <div className="divide-y divide-slate-100 dark:divide-slate-850">
-                    {[
-                      { action: 'Database Sequence STU Initialized', category: 'SYSTEM', user: 'System (Automated)', time: 'Today, 02:40 PM' },
-                      { action: `Modified SaaS Subscription Plan to ${selectedPlan}`, category: 'PLAN_CHANGE', user: 'aviraj@superadmin.com', time: 'Today, 01:15 PM' },
-                      { action: 'Registered Biometric Scanners Handshake BIO-01-MAIN', category: 'DEVICES', user: 'System (Webhook)', time: 'Yesterday, 11:20 AM' },
-                      { action: 'Active Tenant Module [transport] turned ON', category: 'CONFIG', user: 'aviraj@superadmin.com', time: '2026-05-26, 09:30 AM' },
-                      { action: 'School Database schema migrated safely to PostgreSQL SAAS DB', category: 'DATABASE', user: 'Db-Migrator (CLI)', time: '2026-05-25, 08:00 AM' }
-                    ].map((log, i) => (
-                      <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
-                        <div>
-                          <p className="text-slate-800 dark:text-slate-350">{log.action}</p>
-                          <div className="flex gap-2 items-center text-[10px] text-slate-400 mt-1">
-                            <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.category}</span>
-                            <span>· By {log.user}</span>
+                  {isLogsPending ? (
+                    <div className="p-4 text-center text-slate-500 text-xs">Loading logs...</div>
+                  ) : activityLogs.length === 0 ? (
+                    <div className="p-4 text-center text-slate-500 text-xs">No activity logs found.</div>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-850">
+                      {activityLogs.map((log: any, i: number) => (
+                        <div key={log.id || i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
+                          <div>
+                            <p className="text-slate-800 dark:text-slate-350">{log.action} - {log.subject}</p>
+                            <div className="flex gap-2 items-center text-[10px] text-slate-400 mt-1">
+                              <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.subject}</span>
+                              <span>· By {log.user?.name || 'System'}</span>
+                            </div>
                           </div>
+                          <span className="text-[10px] text-slate-400/80 font-medium whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</span>
                         </div>
-                        <span className="text-[10px] text-slate-400/80 font-medium whitespace-nowrap">{log.time}</span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

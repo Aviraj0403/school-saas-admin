@@ -12,7 +12,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { useExamsList, useCreateExam, useAutoAssignSeating, useSeatingChart } from '@/hooks/queries/useExams';
+import { useExamsList, useCreateExam, useAutoAssignSeating, useSeatingChart, useStudentExamResults } from '@/hooks/queries/useExams';
 import { useClasses } from '@/hooks/queries/useAcademics';
 import { studentsService } from '@/services/students.service';
 import { useQuery } from '@tanstack/react-query';
@@ -27,6 +27,7 @@ export default function ExamsPage() {
   const [admitCardStudentId, setAdmitCardStudentId] = useState('');
   const [admitCardExamId, setAdmitCardExamId] = useState('');
   const [resultsSearchStudentId, setResultsSearchStudentId] = useState('');
+  const [resultsSearchExamId, setResultsSearchExamId] = useState('');
 
   // States
   const [newExam, setNewExam] = useState({ name: '', classId: '', startDate: '', endDate: '' });
@@ -37,6 +38,7 @@ export default function ExamsPage() {
   const { data: exams, isPending: loadingExams } = useExamsList();
   const { data: classes } = useClasses(1, 100);
   const { data: seatingChart, isPending: loadingSeating } = useSeatingChart(selectedExamId);
+  const { data: studentResults, isPending: loadingStudentResults } = useStudentExamResults(resultsSearchExamId, resultsSearchStudentId);
 
   // Load students for admit card selection dropdown
   const { data: studentsResponse } = useQuery({
@@ -413,6 +415,16 @@ export default function ExamsPage() {
               <div className="p-4 flex flex-col gap-6">
                 <div className="flex bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl gap-4 flex-wrap">
                   <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">Select Exam Term *</label>
+                    <Dropdown 
+                      value={resultsSearchExamId} 
+                      options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
+                      onChange={(e) => setResultsSearchExamId(e.value)} 
+                      placeholder="Select term"
+                      className="w-60 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">Search Student Profile *</label>
                     <Dropdown 
                       value={resultsSearchStudentId} 
@@ -425,36 +437,44 @@ export default function ExamsPage() {
                   </div>
                 </div>
 
-                {resultsSearchStudentId ? (
+                {resultsSearchStudentId && resultsSearchExamId ? (
                   (() => {
                     const selStudentObj = studentsList.find((s: any) => s.id === resultsSearchStudentId);
                     const fullName = selStudentObj ? selStudentObj.name || `${selStudentObj.firstName} ${selStudentObj.lastName}` : '—';
                     
+                    const totalMarks = studentResults?.reduce((acc: number, curr: any) => acc + (curr.marks || 0), 0) || 0;
+                    const maxMarks = studentResults?.reduce((acc: number, curr: any) => acc + (curr.maxMarks || 100), 0) || 1;
+                    const overallPct = studentResults?.length ? Math.round((totalMarks / maxMarks) * 100) : 0;
+                    const overallGrade = overallPct >= 90 ? 'A+' : overallPct >= 80 ? 'A' : overallPct >= 70 ? 'B' : overallPct >= 60 ? 'C' : 'F';
+                    const overallStatus = overallPct >= 40 ? 'PASS' : 'FAIL';
+
                     return (
                       <div className="flex flex-col gap-6 animate-fade-in">
                         {/* Report card overview banner */}
                         <div className="p-5 rounded-2xl bg-indigo-500/5 dark:bg-indigo-950/10 border border-indigo-150/30 flex justify-between items-center">
                           <div>
                             <h4 className="text-sm font-extrabold text-slate-800 dark:text-white">{fullName} Report Sheet</h4>
-                            <p className="text-[10px] text-slate-400 font-semibold mt-1">Class: {selStudentObj?.className || 'Class 10A'} · Roll Code: {selStudentObj?.admissionNo || '—'}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold mt-1">Class: {selStudentObj?.className || 'Class'} · Roll Code: {selStudentObj?.admissionNo || '—'}</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-slate-400 block">Report Card Grade</span>
-                            <span className="text-lg font-black text-emerald-500 block mt-0.5">A+ (PASS)</span>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-slate-400 block">Overall Grade</span>
+                            <span className={`text-lg font-black block mt-0.5 ${overallStatus === 'PASS' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {studentResults?.length ? `${overallGrade} (${overallStatus}) - ${overallPct}%` : 'N/A'}
+                            </span>
                           </div>
                         </div>
 
                         {/* Results DataTable */}
-                        <DataTable
-                          value={[
-                            { subject: 'English Core', marks: 88, maxMarks: 100, status: 'PASS', remarks: 'Excellent vocabulary' },
-                            { subject: 'Mathematics Advanced', marks: 95, maxMarks: 100, status: 'PASS', remarks: 'Out-standing analytical skills' },
-                            { subject: 'Science & Physics', marks: 91, maxMarks: 100, status: 'PASS', remarks: 'Superb practical experiments' }
-                          ]}
-                          className="p-datatable-sm"
-                          stripedRows
-                        >
-                          <Column field="subject" header="Subject Particulars" className="font-semibold" />
+                        {loadingStudentResults ? (
+                          <div className="p-8 text-center text-slate-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+                        ) : (
+                          <DataTable
+                            value={studentResults || []}
+                            className="p-datatable-sm"
+                            stripedRows
+                            emptyMessage="No results published for this student."
+                          >
+                            <Column field="subject" header="Subject Particulars" body={(d) => d.subject?.name || d.subjectName || 'Subject'} className="font-semibold" />
                           <Column 
                             header="Marks Obtained" 
                             body={(d) => (
@@ -489,7 +509,8 @@ export default function ExamsPage() {
                             align="center"
                           />
                           <Column field="remarks" header="Remarks / Feedback" className="text-xs text-slate-450" />
-                        </DataTable>
+                          </DataTable>
+                        )}
                       </div>
                     );
                   })()
@@ -497,7 +518,7 @@ export default function ExamsPage() {
                   <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/20 max-w-lg mx-auto">
                     <i className="pi pi-file text-4xl mb-2 text-indigo-400"></i>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-350">Academic Report Card</p>
-                    <p className="text-xs text-slate-400 mt-1">Search for a registered student to pull and inspect their subject-wise marks, final percentage calculations, grades, invigilator comments, and PASS/FAIL metrics.</p>
+                    <p className="text-xs text-slate-400 mt-1">Select an active exam term and a student to pull and inspect their live subject-wise marks, grades, and PASS/FAIL metrics.</p>
                   </div>
                 )}
               </div>

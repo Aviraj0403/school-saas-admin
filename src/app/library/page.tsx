@@ -10,7 +10,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
-import { useBooksList, useCreateBook, useIssueBook, useReturnBook, useActiveIssues } from '@/hooks/queries/useLibrary';
+import { useBooksList, useCreateBook, useIssueBook, useReturnBook, useActiveIssues, useOverdueIssues } from '@/hooks/queries/useLibrary';
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState(0);
@@ -26,20 +26,43 @@ export default function LibraryPage() {
     }
   }, []);
 
-  const [finesList, setFinesList] = useState([
-    { id: 'f-1', studentName: 'Aarav Sharma', bookTitle: 'Introduction to Algorithms', fineAmount: 250, daysOverdue: 10, status: 'UNPAID', date: '2026-05-24' },
-    { id: 'f-2', studentName: 'Neha Verma', bookTitle: 'Concepts of Physics Vol 1', fineAmount: 120, daysOverdue: 6, status: 'UNPAID', date: '2026-05-26' },
-    { id: 'f-3', studentName: 'Raj Malhotra', bookTitle: 'Higher Engineering Mathematics', fineAmount: 500, daysOverdue: 20, status: 'PAID', date: '2026-05-15' },
-    { id: 'f-4', studentName: 'Aditi Rao', bookTitle: 'Principles of Chemistry', fineAmount: 0, daysOverdue: 0, status: 'WAIVED', date: '2026-05-28' },
-  ]);
+  const { data: overdueIssuesData, isPending: loadingOverdues } = useOverdueIssues();
+  
+  // Local state for tracking paid/waived fines since backend doesn't persist fine payments yet
+  const [clearedFines, setClearedFines] = useState<Record<string, string>>({});
+
+  const finesList = (overdueIssuesData || []).map((issue: any) => {
+    // Calculate days overdue
+    const due = new Date(issue.dueDate);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - due.getTime());
+    const daysOverdue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const fineAmount = daysOverdue * 10; // Rs 10 per day
+
+    return {
+      id: issue.id,
+      studentName: issue.studentName || 'Unknown Student',
+      bookTitle: issue.bookTitle || issue.book?.title || 'Unknown Book',
+      fineAmount: clearedFines[issue.id] === 'WAIVED' ? 0 : fineAmount,
+      daysOverdue: daysOverdue,
+      status: clearedFines[issue.id] || 'UNPAID',
+    };
+  });
 
   const handlePayFine = (id: string) => {
-    setFinesList(prev => prev.map(f => f.id === id ? { ...f, status: 'PAID' } : f));
+    setClearedFines(prev => ({ ...prev, [id]: 'PAID' }));
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { severity: 'success', summary: 'Fine Paid', detail: 'Fine has been marked as paid.', life: 3000 }
+    }));
   };
 
   const handleWaiveFine = (id: string) => {
-    setFinesList(prev => prev.map(f => f.id === id ? { ...f, status: 'WAIVED', fineAmount: 0 } : f));
+    setClearedFines(prev => ({ ...prev, [id]: 'WAIVED' }));
+    window.dispatchEvent(new CustomEvent('show-toast', {
+      detail: { severity: 'info', summary: 'Fine Waived', detail: 'Penalty has been waived.', life: 3000 }
+    }));
   };
+
   const [showAddBookDialog, setShowAddBookDialog] = useState(false);
   const [showIssueDialog, setShowIssueDialog] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -356,7 +379,14 @@ export default function LibraryPage() {
             {/* Fine Collections Panel */}
             <TabPanel header="Fine Collections & Overdues">
               <div className="p-4">
-                {viewMode === 'grid' ? (
+                {loadingOverdues ? (
+                  <div className="p-12 flex flex-col items-center justify-center gap-3">
+                    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-semibold text-slate-400">Loading overdues...</span>
+                  </div>
+                ) : finesList.length === 0 ? (
+                  <p className="p-8 text-center text-slate-400">No overdue books or fines found.</p>
+                ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
                     {finesList.map((fine: any) => (
                       <div 

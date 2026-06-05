@@ -25,7 +25,7 @@ export const navigationConfig: NavItem[] = [
       { label: 'Academic Years & Terms', icon: PrimeIcons.CALENDAR, path: '/academics/terms', module: 'academics' },
       { label: 'Academic Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics' },
       { label: 'Classes & Syllabus', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics' },
-      { label: 'Lesson Planning', icon: PrimeIcons.FILE_EDIT, path: '/academics/lesson-plans', module: 'academics' },
+      { label: 'Lesson Planning', icon: 'pi pi-file-edit', path: '/academics/lesson-plans', module: 'academics' },
       { label: 'LMS Quizzes', icon: PrimeIcons.QUESTION_CIRCLE, path: '/academics/quizzes', module: 'academics' },
       { label: 'Class Timetable', icon: PrimeIcons.CLOCK, path: '/academics/timetable', module: 'academics' },
       { label: 'Jitsi Online Classes', icon: PrimeIcons.VIDEO, path: '/academics/online-classes', module: 'academics' },

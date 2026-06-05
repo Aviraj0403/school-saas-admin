@@ -181,10 +181,10 @@ export default function OnlineClassesPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Area */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-indigo-650 via-purple-650 to-pink-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight">Jitsi Meet Online Classrooms</h1>
-            <p className="text-indigo-100 mt-1.5 text-xs md:text-sm">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Jitsi Meet Online Classrooms</h1>
+            <p className="text-slate-500 mt-1.5 text-sm">
               Schedule premium zero-latency video lectures, track live attendance telemetry, and share records with students.
             </p>
           </div>
@@ -289,7 +289,7 @@ export default function OnlineClassesPage() {
                           setActiveJitsiRoom(c);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white font-extrabold rounded-xl shadow-md flex items-center justify-center gap-2 text-xs border-0 transition-all active:scale-[0.98]"
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 border-none text-white font-extrabold rounded-xl shadow-md flex items-center justify-center gap-2 text-xs border-0 transition-all active:scale-[0.98]"
                       >
                         <i className="pi pi-video animate-pulse"></i> Join Classroom Now
                       </button>

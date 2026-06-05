@@ -175,10 +175,10 @@ export default function AttendancePage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight">Attendance Management</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Attendance Management</h1>
             </div>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
               Mark, review, and synchronize student attendance status.
@@ -392,7 +392,7 @@ export default function AttendancePage() {
                 <button
                   onClick={handleSave}
                   disabled={loadingStudents || totalCount === 0 || markBulkMutation.isPending}
-                  className="px-6 py-2.5 text-xs md:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-md shadow-blue-500/20 transition-all duration-200 active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 border-none rounded-xl shadow-md shadow-blue-500/20 transition-all duration-200 active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {markBulkMutation.isPending ? (
                     <>

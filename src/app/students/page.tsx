@@ -1,27 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
-import { DataTable, DataTablePageEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { useStudentsList, useDeleteStudent } from '@/hooks/queries/useStudents';
 import Link from 'next/link';
+import { TanstackTable } from '@/components/TanstackTable';
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
 
 export default function StudentsPage() {
-  const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const { data, isPending, isError, error } = useStudentsList(lazyState.page, lazyState.rows, search || undefined);
+  const { data, isPending, isError, error } = useStudentsList(pagination.pageIndex + 1, pagination.pageSize, search || undefined);
   const deleteMutation = useDeleteStudent();
-
-  const onPage = (event: DataTablePageEvent) => {
-    setLazyState({ first: event.first, rows: event.rows, page: (event.page || 0) + 1 });
-  };
 
   const handleDelete = (id: string) => {
     if (confirm('Soft-delete this student? Their data will be retained.')) {
@@ -47,202 +43,246 @@ export default function StudentsPage() {
   const actionsTemplate = (rowData: any) => (
     <div className="flex gap-2 justify-center">
       <Link href={`/students/${rowData.id}`}>
-        <Button 
-          icon="pi pi-eye" 
-          rounded 
-          text 
-          severity="info" 
-          size="small" 
-          tooltip="View Profile" 
-          className="hover:scale-105 active:scale-95 transition-all"
-        />
+        <button className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-lg transition-all active:scale-95" title="View Profile">
+          <i className="pi pi-eye"></i>
+        </button>
       </Link>
-      <Button 
-        icon="pi pi-trash" 
-        rounded 
-        text 
-        severity="danger" 
-        size="small" 
-        tooltip="Remove" 
-        onClick={() => handleDelete(rowData.id)} 
-        loading={deleteMutation.isPending} 
-        className="hover:scale-105 active:scale-95 transition-all"
-      />
+      <button 
+        onClick={() => handleDelete(rowData.id)}
+        disabled={deleteMutation.isPending}
+        className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-lg transition-all active:scale-95 disabled:opacity-50"
+        title="Remove"
+      >
+        <i className={deleteMutation.isPending ? "pi pi-spin pi-spinner" : "pi pi-trash"}></i>
+      </button>
     </div>
   );
 
   const studentsList = data?.items || data?.data?.items || [];
   const totalRecords = data?.meta?.total || data?.data?.meta?.total || 0;
+  const pageCount = data?.meta?.totalPages || data?.data?.meta?.totalPages || Math.ceil(totalRecords / pagination.pageSize) || 0;
+
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: 'admissionNo',
+        header: 'Admission No.',
+        cell: (info) => <span className="font-semibold text-slate-700 dark:text-slate-300">{info.getValue() as string}</span>,
+      },
+      {
+        accessorKey: 'firstName',
+        header: 'First Name',
+      },
+      {
+        accessorKey: 'lastName',
+        header: 'Last Name',
+      },
+      {
+        accessorKey: 'className',
+        header: 'Class',
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: (info) => statusTemplate(info.row.original),
+      },
+      {
+        id: 'actions',
+        header: () => <div className="text-center">Actions</div>,
+        cell: (info) => actionsTemplate(info.row.original),
+      },
+    ],
+    [deleteMutation.isPending]
+  );
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <div className="flex flex-col gap-6 lg:gap-8 pb-10 max-w-[100vw] overflow-x-hidden">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-premium-header p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Student Directory</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage student profile catalogs, academic admissions, and structural data.
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Directory</h1>
+            <p className="text-slate-500 mt-1 text-sm">
+              Manage student profiles, academic admissions, and records.
             </p>
           </div>
-          <Link href="/students/admissions">
-            <button className="px-5 py-2.5 bg-white text-primary hover:bg-slate-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm">
-              <i className="pi pi-user-plus"></i>
+          <Link href="/students/admissions" className="w-full sm:w-auto">
+            <button className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm">
+              <i className="pi pi-plus text-xs"></i>
               New Admission
             </button>
           </Link>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Enrolled</span>
-            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">{isPending ? '...' : totalRecords}</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Enrolled</span>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">{isPending ? '...' : totalRecords}</h2>
           </div>
-          <div className="bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-900/20 p-5 rounded-2xl shadow-sm">
-            <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
-            <h2 className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-2">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
+            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Active</span>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
               {isPending ? '...' : studentsList.filter((s: any) => s.status === 'ACTIVE').length}
             </h2>
           </div>
-          <div className="bg-amber-50/50 dark:bg-amber-950/10 border border-amber-100/50 dark:border-amber-900/20 p-5 rounded-2xl shadow-sm">
-            <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Suspended</span>
-            <h2 className="text-3xl font-extrabold text-amber-700 dark:text-amber-400 mt-2">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
+            <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Suspended</span>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
               {isPending ? '...' : studentsList.filter((s: any) => s.status !== 'ACTIVE').length}
             </h2>
           </div>
-          <div className="bg-violet-50/50 dark:bg-violet-950/10 border border-violet-100/50 dark:border-violet-900/20 p-5 rounded-2xl shadow-sm">
-            <span className="text-sm font-semibold text-violet-600 dark:text-violet-400">Newly Added</span>
-            <h2 className="text-3xl font-extrabold text-violet-700 dark:text-violet-400 mt-2">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
+            <span className="text-sm font-medium text-violet-600 dark:text-violet-400">Newly Added</span>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
               {isPending ? '...' : Math.min(totalRecords, 5)}
             </h2>
           </div>
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
-              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
               <InputText
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setLazyState((p) => ({ ...p, page: 1, first: 0 })); }}
-                placeholder="Search by name or admission no..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition-all text-sm"
+                onChange={(e) => { setSearch(e.target.value); setPagination((p) => ({ ...p, pageIndex: 0 })); }}
+                placeholder="Search students..."
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
               />
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto justify-end bg-slate-100 dark:bg-slate-900 p-1 rounded-md border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm ${
                 viewMode === 'grid' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
-              title="Grid Cards"
             >
-              <i className="pi pi-th-large text-lg"></i>
+              <i className="pi pi-th-large text-sm"></i>
+              <span className="hidden sm:inline">Grid</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm ${
                 viewMode === 'table' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
-              title="Table View"
             >
-              <i className="pi pi-list text-lg"></i>
+              <i className="pi pi-list text-sm"></i>
+              <span className="hidden sm:inline">List</span>
             </button>
           </div>
         </div>
 
         {/* Dynamic Catalog Section */}
         {isError ? (
-          <div className="p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30">
-            Error loading students: {(error as any)?.message}
-          </div>
-        ) : isPending ? (
-          <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
-            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-400">Loading student directory...</span>
-          </div>
-        ) : studentsList.length === 0 ? (
-          <div className="p-20 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
-            <p className="text-slate-400 font-medium">No students found matching current filters.</p>
+          <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
+            <i className="pi pi-exclamation-circle text-2xl"></i>
+            <div>
+              <h3 className="font-bold">Failed to load</h3>
+              <p className="text-sm opacity-80">{(error as any)?.message}</p>
+            </div>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {studentsList.map((student: any) => {
-              const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
-              return (
-                <div 
-                  key={student.id} 
-                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-5 rounded-3xl shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700/80 transition-all duration-200 flex flex-col justify-between gap-4 group"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-extrabold text-base border border-indigo-100 dark:border-indigo-900/30 group-hover:scale-105 transition-all duration-300">
-                        {student.firstName ? student.firstName[0] : '?'}
-                        {student.lastName ? student.lastName[0] : ''}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {isPending ? (
+               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
+                 <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+                 <span className="text-sm font-medium text-slate-500">Loading directory...</span>
+               </div>
+            ) : studentsList.length === 0 ? (
+               <div className="col-span-full py-12 text-center border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
+                 <p className="text-slate-500 text-sm">No students found matching current filters.</p>
+               </div>
+            ) : (
+              studentsList.map((student: any) => {
+                const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
+                return (
+                  <div 
+                    key={student.id} 
+                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between gap-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm border border-slate-200 dark:border-slate-800">
+                          {student.firstName ? student.firstName[0] : '?'}
+                          {student.lastName ? student.lastName[0] : ''}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-1">
+                            {fullName}
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+                            {student.admissionNo}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-150">
-                          {fullName}
-                        </h3>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-                          Adm No: <span className="font-mono text-slate-600 dark:text-slate-400">{student.admissionNo}</span>
-                        </p>
-                      </div>
+                      {statusTemplate(student)}
                     </div>
-                    {statusTemplate(student)}
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-2xl text-xs flex justify-between items-center text-slate-600 dark:text-slate-400 border border-slate-100/50 dark:border-slate-800/50">
-                    <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Academic Class</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-300">{student.className || 'Not Assigned'}</span>
-                  </div>
-                  <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
-                    <Link href={`/students/${student.id}`}>
+                    
+                    <div className="flex items-center justify-between text-sm py-2 border-y border-slate-100 dark:border-slate-800/50">
+                      <span className="text-slate-500">Class</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-200">{student.className || 'Not Assigned'}</span>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <Link href={`/students/${student.id}`} className="flex-1">
+                        <button className="w-full px-3 py-1.5 text-sm font-medium text-slate-700 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors flex justify-center items-center gap-2">
+                          View
+                        </button>
+                      </Link>
                       <button 
-                        className="px-3.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/60 rounded-xl transition-all active:scale-95 cursor-pointer"
+                        onClick={() => handleDelete(student.id)}
+                        className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors"
+                        title="Delete Student"
                       >
-                        View Profile
+                        <i className="pi pi-trash text-xs"></i>
                       </button>
-                    </Link>
-                    <button 
-                      onClick={() => handleDelete(student.id)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20 rounded-xl transition-all active:scale-95"
-                    >
-                      Remove
-                    </button>
+                    </div>
                   </div>
+                );
+              })
+            )}
+            
+            {/* Grid Pagination */}
+            {!isPending && studentsList.length > 0 && (
+              <div className="col-span-full flex justify-between items-center pt-4">
+                <span className="text-sm font-medium text-slate-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
+                    disabled={pagination.pageIndex === 0}
+                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.min(pageCount - 1, p.pageIndex + 1) }))}
+                    disabled={pagination.pageIndex >= pageCount - 1}
+                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                  >
+                    Next
+                  </button>
                 </div>
-              );
-            })}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
-            <DataTable
-              value={studentsList}
-              lazy
-              paginator
-              first={lazyState.first}
-              rows={lazyState.rows}
-              totalRecords={totalRecords}
-              onPage={onPage}
-              loading={isPending}
-              className="p-datatable-sm"
-              emptyMessage="No students found."
-            >
-              <Column field="admissionNo" header="Admission No." className="font-semibold" />
-              <Column field="firstName" header="First Name" />
-              <Column field="lastName" header="Last Name" />
-              <Column field="className" header="Class" />
-              <Column field="status" header="Status" body={statusTemplate} />
-              <Column header="Actions" body={actionsTemplate} align="center" />
-            </DataTable>
+          <div className="w-full">
+            <TanstackTable 
+              data={studentsList} 
+              columns={columns} 
+              isLoading={isPending}
+              pagination={pagination}
+              setPagination={setPagination}
+              pageCount={pageCount}
+            />
           </div>
         )}
       </div>

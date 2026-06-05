@@ -324,9 +324,9 @@ export default function AdmissionsPage() {
         <div className="flex flex-col gap-8 pb-10">
           
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 p-6 rounded-2xl shadow-xl text-white">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
             <div>
-              <h1 className="text-3xl font-black tracking-tight">Student Admissions</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Admissions</h1>
               <p className="text-violet-100 mt-1.5 text-xs md:text-sm">
                 Register new students with full academic, hostel, transport & library enrollment.
               </p>

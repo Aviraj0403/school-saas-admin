@@ -140,7 +140,7 @@ export default function AssignmentsPage() {
         {/* Header with Role Mode Toggle Switch */}
         <div className="flex justify-between items-center flex-wrap gap-4 border-b border-slate-100 dark:border-slate-900 pb-5">
           <div>
-            <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight bg-gradient-to-r from-indigo-500 to-violet-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Assignments & Homework
             </h1>
             <p className="text-slate-400 mt-1 text-sm">
@@ -171,7 +171,7 @@ export default function AssignmentsPage() {
               <Button
                 label="Post Assignment"
                 icon="pi pi-plus"
-                className="bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold p-2.5 px-4 border-0 rounded-xl shadow-md transition-all text-xs"
+                className="bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold p-2.5 px-4 border-0 rounded-xl shadow-md transition-all text-xs"
                 onClick={() => setShowCreateDialog(true)}
               />
             )}

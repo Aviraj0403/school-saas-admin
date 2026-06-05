@@ -92,9 +92,9 @@ export default function ExamsPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Exams & Seat Allocations</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Exams & Seat Allocations</h1>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
               Establish exam dates, publish term sheets, and trigger automatic seat allocations.
             </p>
@@ -133,7 +133,7 @@ export default function ExamsPage() {
             }`}
             title="Grid Mode"
           >
-            <i className="pi pi-th-large text-lg"></i>
+            <i className="pi pi-th-large text-sm"></i>
           </button>
           <button
             onClick={() => setViewMode('table')}
@@ -144,7 +144,7 @@ export default function ExamsPage() {
             }`}
             title="Tabular View"
           >
-            <i className="pi pi-list text-lg"></i>
+            <i className="pi pi-list text-sm"></i>
           </button>
         </div>
 
@@ -391,7 +391,7 @@ export default function ExamsPage() {
                                 }
                               }));
                             }}
-                            className="p-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
+                            className="p-3 px-6 bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
                           >
                             <i className="pi pi-print"></i>
                             Print Admit Card

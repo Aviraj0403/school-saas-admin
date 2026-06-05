@@ -10,7 +10,7 @@ export default function SuperadminRoadmapPage() {
         
         {/* Header Section */}
         <div className="border-b border-slate-200 dark:border-slate-800 pb-5">
-          <h1 className="text-3xl font-black text-slate-850 dark:text-white tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-650 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Tenant Onboarding Workflow Pipeline
           </h1>
           <p className="text-slate-400 mt-1 text-sm font-medium">

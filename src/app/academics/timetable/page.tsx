@@ -113,10 +113,10 @@ export default function TimetablePage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight">Class Timetable Builder</h1>
-            <p className="text-blue-100 mt-1.5 text-xs md:text-sm">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Class Timetable Builder</h1>
+            <p className="text-slate-500 mt-1.5 text-sm">
               Configure weekly schedules, assign teachers to periods, and manage the academic calendar.
             </p>
           </div>

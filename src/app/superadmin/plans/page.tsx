@@ -103,9 +103,9 @@ export default function PlansPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-750 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">SaaS Plans & Module Control</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">SaaS Plans & Module Control</h1>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
               Manage subscription plans, configure active modules, and provision tenant school workspaces.
             </p>

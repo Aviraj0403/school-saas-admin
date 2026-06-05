@@ -146,10 +146,10 @@ export default function ClassesPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-650 to-indigo-800 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight">Classes & Subject Catalog</h1>
-            <p className="text-indigo-100 mt-1.5 text-xs md:text-sm">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Classes & Subject Catalog</h1>
+            <p className="text-slate-500 mt-1.5 text-sm">
               Setup active school grades, sections and manage the academic subject curriculum.
             </p>
           </div>

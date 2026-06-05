@@ -68,9 +68,9 @@ export default function CommunicationPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-2xl shadow-xl text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">School Communication</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">School Communication</h1>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
               Broadcast critical bulletins, publish announcement newsletters, and schedule calendar events.
             </p>
@@ -104,7 +104,7 @@ export default function CommunicationPage() {
             }`}
             title="Grid Cards"
           >
-            <i className="pi pi-th-large text-lg"></i>
+            <i className="pi pi-th-large text-sm"></i>
           </button>
           <button
             onClick={() => setViewMode('table')}
@@ -115,7 +115,7 @@ export default function CommunicationPage() {
             }`}
             title="Tabular View"
           >
-            <i className="pi pi-list text-lg"></i>
+            <i className="pi pi-list text-sm"></i>
           </button>
         </div>
 

@@ -272,7 +272,7 @@ export default function TenantsPage() {
         {/* Header Section */}
         <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h1 className="text-3xl font-black text-slate-850 dark:text-white tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-650 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               SaaS Control & Integrations Cockpit
             </h1>
             <p className="text-slate-400 mt-1 text-sm font-medium">
@@ -282,7 +282,7 @@ export default function TenantsPage() {
           <Button 
             label="Onboard New School" 
             icon="pi pi-plus" 
-            className="bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold shadow-md shadow-indigo-500/10 border-0 p-3 px-5 transition-all rounded-xl" 
+            className="bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold shadow-md shadow-indigo-500/10 border-0 p-3 px-5 transition-all rounded-xl" 
             onClick={() => setShowDialog(true)} 
           />
         </div>

@@ -86,90 +86,74 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthenticated) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
-        style={{ backgroundImage: `url('/neural_network_bg.png')` }}
-      >
-        {/* Ambient Overlay Layer */}
-        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[3px] z-0 pointer-events-none" />
-
-        {/* Soft Luminous Backdrop Orbs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-600/30 to-indigo-600/0 blur-[130px] pointer-events-none animate-pulse duration-[8000ms]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-cyan-500/30 to-blue-500/0 blur-[130px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 font-sans">
         
-        {/* Responsive Side-by-Side Flex Container */}
-        <div className="relative z-10 flex flex-col md:flex-row gap-6 max-w-4xl w-full items-stretch justify-center">
+        {/* Responsive Flex Container */}
+        <div className="w-full max-w-md flex flex-col items-center">
           
-          {/* Static Glassmorphic Login Card */}
-          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col gap-6 transition-all duration-300">
-            {/* Glowing Premium Logo & Branding */}
-            <div className="flex flex-col items-center mb-2">
-              <div className="relative group">
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative w-16 h-16 bg-slate-950/80 rounded-2xl flex items-center justify-center mb-4 border border-blue-400/20 shadow-inner">
-                  <i className="pi pi-graduation-cap text-blue-450 text-3xl"></i>
-                </div>
-              </div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-blue-100 to-indigo-100 bg-clip-text text-transparent mt-2">
-                School SaaS Admin
-              </h1>
-              <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
-                Sign in to manage your school ecosystem
-              </p>
+          {/* Logo & Branding */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-sm">
+              <i className="pi pi-box text-white text-xl"></i>
             </div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              School CRM
+            </h1>
+            <p className="text-slate-500 text-sm mt-1">
+              Sign in to your account
+            </p>
+          </div>
 
+          {/* Minimal Login Card */}
+          <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-8">
             <form onSubmit={handleLogin} className="flex flex-col gap-5">
               {loginMutation.isError && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold">
-                  <i className="pi pi-exclamation-circle text-base text-rose-400"></i>
+                <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg flex items-center gap-2 text-sm">
+                  <i className="pi pi-exclamation-circle"></i>
                   <span>
                     {(loginMutation.error as any)?.response?.data?.message ||
-                      'Login failed. Please check your credentials.'}
+                      'Invalid credentials. Please try again.'}
                   </span>
                 </div>
               )}
 
               {/* Email Field */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="email" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
-                  Email Address
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="font-medium text-sm text-slate-700 dark:text-slate-300">
+                  Email
                 </label>
-                <div className="relative flex items-center group w-full">
-                  <i className="pi pi-envelope absolute left-4 text-slate-400 group-focus-within:text-blue-405 transition-colors duration-200 z-10 pointer-events-none"></i>
-                  <InputText
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full pl-11 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl z-0"
-                    placeholder="admin@school.com"
-                    autoComplete="email"
-                  />
-                </div>
+                <InputText
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full p-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-slate-900 dark:text-white text-sm rounded-lg"
+                  placeholder="admin@school.com"
+                  autoComplete="email"
+                />
               </div>
 
               {/* Password Field */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="password" className="font-medium text-sm text-slate-700 dark:text-slate-300">
                   Password
                 </label>
-                <div className="relative flex items-center group w-full">
-                  <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-blue-405 transition-colors duration-200 z-10 pointer-events-none"></i>
+                <div className="relative w-full">
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full pl-11 pr-12 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
+                    className="w-full p-2.5 pr-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-slate-900 dark:text-white text-sm rounded-lg outline-none"
                     placeholder="••••••••"
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
                   </button>
@@ -179,170 +163,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Submit Button */}
               <Button
                 type="submit"
-                label="Sign In to Dashboard"
-                icon="pi pi-sign-in"
+                label="Sign In"
                 loading={loginMutation.isPending}
-                className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-800 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/25 active:scale-[0.98] transition-all"
+                className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium p-2.5 rounded-lg border-0 transition-colors"
               />
             </form>
           </div>
 
-          {/* Static Glassmorphic Demo Credentials Card (Side-by-Side) */}
-          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col justify-between gap-6 transition-all duration-300">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 border-b border-slate-800/60 pb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-450/20 flex items-center justify-center">
-                  <i className="pi pi-info-circle text-blue-400 text-lg"></i>
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Workspace Demo Access</h2>
-                  <p className="text-slate-400 text-[10px] font-medium tracking-wide">Quick-copy credentials to preview distinct roles</p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 mt-2">
-                {/* SuperAdmin Item */}
-                <div className="p-4 bg-slate-950/40 border border-slate-850/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-blue-400 font-extrabold uppercase tracking-widest">SuperAdmin Role</span>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[9px] font-bold">Platform Owner</span>
-                  </div>
-                  <div className="flex flex-col text-xs mt-1">
-                    <span className="text-slate-400 font-semibold">Email:</span>
-                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">superadmin@aviraj.com</span>
-                  </div>
-                </div>
-
-                {/* School Admin Item */}
-                <div className="p-4 bg-slate-950/40 border border-slate-850/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest">School Admin Role</span>
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[9px] font-bold">School Manager</span>
-                  </div>
-                  <div className="flex flex-col text-xs mt-1">
-                    <span className="text-slate-400 font-semibold">Email:</span>
-                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">admin@demo.com</span>
-                  </div>
-                </div>
-              </div>
+          {/* Demo Credentials */}
+          <div className="mt-8 text-center text-sm text-slate-500">
+            <p>Demo Accounts:</p>
+            <div className="mt-2 flex gap-4 justify-center">
+              <span>Admin: <b>admin@demo.com</b></span>
+              <span>SuperAdmin: <b>superadmin@aviraj.com</b></span>
             </div>
-
-            <div className="p-3 bg-blue-950/15 border border-blue-900/20 rounded-2xl flex items-center gap-3">
-              <i className="pi pi-shield text-blue-400 text-sm"></i>
-              <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-                Shared default password for both accounts: <span className="font-mono text-blue-300 font-bold select-all bg-slate-900/50 px-1.5 py-0.5 rounded">123456</span>
-              </p>
-            </div>
+            <p className="mt-1 text-xs">Password: 123456</p>
           </div>
-
         </div>
       </div>
     );
   }
 
-  // Neural Network Particle Canvas Background Component
-  function NeuralNetworkCanvas() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      let animationFrameId: number;
-      let width = (canvas.width = window.innerWidth);
-      let height = (canvas.height = window.innerHeight);
-
-      const handleResize = () => {
-        if (!canvas) return;
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      };
-      window.addEventListener('resize', handleResize);
-
-      const particleCount = 45;
-      const particles: {
-        x: number;
-        y: number;
-        vx: number;
-        vy: number;
-        radius: number;
-        glow: number;
-      }[] = [];
-
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.35,
-          vy: (Math.random() - 0.5) * 0.35,
-          radius: Math.random() * 1.8 + 0.8,
-          glow: Math.random() * 8 + 4,
-        });
-      }
-
-      const animate = () => {
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw connections
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < particleCount; i++) {
-          const p1 = particles[i];
-          for (let j = i + 1; j < particleCount; j++) {
-            const p2 = particles[j];
-            const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-            if (dist < 150) {
-              const alpha = (1 - dist / 150) * 0.16;
-              ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
-              ctx.beginPath();
-              ctx.moveTo(p1.x, p1.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        // Draw particles
-        for (let i = 0; i < particleCount; i++) {
-          const p = particles[i];
-          
-          p.x += p.vx;
-          p.y += p.vy;
-
-          if (p.x < 0 || p.x > width) p.vx *= -1;
-          if (p.y < 0 || p.y > height) p.vy *= -1;
-
-          ctx.fillStyle = 'rgba(165, 180, 252, 0.7)';
-          ctx.shadowBlur = p.glow;
-          ctx.shadowColor = '#818cf8';
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
-        animationFrameId = requestAnimationFrame(animate);
-      };
-
-      animate();
-
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        cancelAnimationFrame(animationFrameId);
-      };
-    }, []);
-
-    return (
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-60"
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden">
       <Toast ref={toastRef} position="top-right" />
       <AppTopbar onToggleMenu={() => setSidebarOpen(!sidebarOpen)} />
       <AppSidebar isOpen={sidebarOpen} />
@@ -350,16 +193,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-[9] bg-black/30 md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <div
-        className="transition-all duration-300 ease-in-out pt-16 smooth-sidebar-transition"
-        style={{ marginLeft: sidebarOpen ? '240px' : '0' }}
+        className={`transition-all duration-200 ease-in-out pt-16 ${sidebarOpen ? 'md:ml-[240px]' : 'ml-0'} w-full md:w-auto min-h-screen`}
       >
-        <main className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-64px)] max-w-[1600px] mx-auto">
+        <main className="p-6 lg:p-10 min-h-[calc(100vh-64px)] w-full max-w-[1600px] mx-auto overflow-x-hidden">
           {children}
         </main>
       </div>

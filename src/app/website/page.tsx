@@ -126,7 +126,7 @@ export default function WebsiteCMSPage() {
         {/* Header */}
         <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h1 className="text-3xl font-black text-slate-850 dark:text-white tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Headless Website CMS Portal
             </h1>
             <p className="text-slate-400 mt-1 text-sm">

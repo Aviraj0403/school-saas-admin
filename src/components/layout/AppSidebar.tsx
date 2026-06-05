@@ -128,7 +128,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-800/40 flex flex-col transition-transform duration-300 ease-in-out',
+        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white/70 dark:bg-slate-950/70 backdrop-blur-[24px] border-r border-white/20 dark:border-slate-800/40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[4px_0_24px_-4px_rgba(0,0,0,0.4)] flex flex-col transition-transform duration-300 ease-in-out',
         {
           'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
@@ -136,10 +136,10 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       )}
     >
       {/* School branding strip */}
-      <div className="px-3.5 py-2.5 border-b border-slate-200/50 dark:border-slate-800/40">
+      <div className="px-3.5 py-3 border-b border-slate-200/40 dark:border-slate-800/40 bg-gradient-to-r from-transparent via-slate-50/30 to-transparent dark:via-slate-900/30">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: 'var(--primary-color)' }}>
-            <i className="pi pi-graduation-cap text-white text-xs"></i>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-white/20" style={{ backgroundColor: 'var(--primary-color)' }}>
+            <i className="pi pi-graduation-cap text-white text-[13px] drop-shadow-sm"></i>
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-normal">

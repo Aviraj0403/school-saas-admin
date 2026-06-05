@@ -169,23 +169,26 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center px-4 sm:px-6 h-16 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/40 shadow-sm transition-colors duration-300">
+    <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center px-4 sm:px-6 h-16 bg-white/60 dark:bg-slate-950/60 backdrop-blur-[24px] border-b border-white/20 dark:border-slate-800/40 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] transition-colors duration-300">
       {/* Left: hamburger + brand + switcher */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <Button
           icon="pi pi-bars"
           rounded
           text
           aria-label="Toggle Menu"
           onClick={onToggleMenu}
-          className="text-slate-600 dark:text-slate-400 w-9 h-9"
+          className="text-slate-600 dark:text-slate-400 w-9 h-9 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
         />
         
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--primary-color)' }}>
-            <i className="pi pi-graduation-cap text-white text-xs"></i>
+        <div className="flex items-center gap-2.5">
+          <div className="relative group">
+            <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 opacity-60 blur-sm group-hover:opacity-100 transition duration-300"></div>
+            <div className="relative w-8 h-8 rounded-xl flex items-center justify-center shadow-inner border border-white/20" style={{ backgroundColor: 'var(--primary-color)' }}>
+              <i className="pi pi-graduation-cap text-white text-[14px] drop-shadow-md"></i>
+            </div>
           </div>
-          <span className="font-bold text-slate-800 dark:text-white hidden sm:block">
+          <span className="font-black tracking-tight text-slate-800 dark:text-white hidden sm:block bg-clip-text">
             School SaaS
           </span>
         </div>

@@ -5,34 +5,48 @@
 @layer tailwind-base, primereact, tailwind-utilities;
 
 :root {
-  /* Default Professional Slate-Blue for better 8-9 hour viewing (Low Fatigue) */
+  /* Ultra-Premium Royal Palette */
   --primary-color: #4f46e5;
   --secondary-color: #818cf8;
   
   /* Dynamic premium tinted background matched to primary brand color */
-  --background: color-mix(in srgb, var(--primary-color) 3%, #f8fafc);
-  --foreground: #1e293b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   
+  /* Modern Mesh Gradient Light */
+  --mesh-bg: radial-gradient(at 0% 0%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0px, transparent 50%),
+             radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary-color) 8%, transparent) 0px, transparent 50%),
+             radial-gradient(at 100% 100%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0px, transparent 50%),
+             radial-gradient(at 0% 100%, color-mix(in srgb, var(--secondary-color) 8%, transparent) 0px, transparent 50%);
+
   /* Dynamic Tailwind CSS v4 theme color mapping */
   --color-primary: var(--primary-color);
   --color-secondary: var(--secondary-color);
 }
 
 .dark {
-  --background: color-mix(in srgb, var(--primary-color) 6%, #0b0f19);
-  --foreground: #f1f5f9;
+  --background: #090e17;
+  --foreground: #f8fafc;
+  
+  /* Deep Space Royal Mesh Gradient Dark */
+  --mesh-bg: radial-gradient(at 0% 0%, color-mix(in srgb, var(--primary-color) 15%, transparent) 0px, transparent 50%),
+             radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary-color) 12%, transparent) 0px, transparent 50%),
+             radial-gradient(at 100% 100%, color-mix(in srgb, var(--primary-color) 15%, transparent) 0px, transparent 50%),
+             radial-gradient(at 0% 100%, color-mix(in srgb, var(--secondary-color) 12%, transparent) 0px, transparent 50%);
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
+  background-image: var(--mesh-bg);
+  background-attachment: fixed;
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   line-height: 1.6;
   letter-spacing: -0.01em;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.5s ease, background-image 0.5s ease, color 0.3s ease;
 }
 
 /* PrimeReact theme overrides */

@@ -8,34 +8,11 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
-
-interface Banner {
-  id: string;
-  title: string;
-  subtitle: string;
-  imageUrl: string;
-  linkUrl: string;
-  sortOrder: number;
-}
-
-interface Download {
-  id: string;
-  title: string;
-  category: string;
-  fileSize: string;
-  downloadCount: number;
-  isPublic: boolean;
-}
-
-interface Inquiry {
-  id: string;
-  studentName: string;
-  applyingClass: string;
-  parentName: string;
-  parentPhone: string;
-  status: 'PENDING' | 'CONTACTED' | 'ADMITTED' | 'REJECTED';
-  followUpDate: string;
-}
+import { 
+  useBanners, useCreateBanner, useDeleteBanner,
+  useDownloads, useCreateDownload, useDeleteDownload,
+  useInquiries, useUpdateInquiry 
+} from '@/hooks/queries/useWebsite';
 
 export default function WebsiteCMSPage() {
   const [activeTab, setActiveTab] = useState<'banners' | 'downloads' | 'inquiries'>('banners');
@@ -54,23 +31,21 @@ export default function WebsiteCMSPage() {
   const [showBannerDialog, setShowBannerDialog] = useState(false);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
-  // Hardcoded premium mock datasets
-  const [banners, setBanners] = useState<Banner[]>([
-    { id: '1', title: 'Empowering Future Leaders', subtitle: 'Onboard admissions are open for the academic session 2026-27', imageUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1200&q=80', linkUrl: '/admissions', sortOrder: 1 },
-    { id: '2', title: 'State-of-the-Art Science Labs', subtitle: 'Inspiring young minds through scientific discoveries', imageUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80', linkUrl: '/labs', sortOrder: 2 },
-  ]);
+  // Live queries
+  const { data: bannersData = [], isPending: bannersLoading } = useBanners();
+  const { data: downloadsData = [], isPending: downloadsLoading } = useDownloads();
+  const { data: inquiriesRes, isPending: inquiriesLoading } = useInquiries();
+  
+  const banners = Array.isArray(bannersData) ? bannersData : [];
+  const downloads = Array.isArray(downloadsData) ? downloadsData : [];
+  const inquiries = Array.isArray(inquiriesRes?.data) ? inquiriesRes.data : [];
 
-  const [downloads, setDownloads] = useState<Download[]>([
-    { id: '1', title: 'Annual Curriculum & Syllabus 2026', category: 'Syllabus', fileSize: '2.4 MB', downloadCount: 142, isPublic: true },
-    { id: '2', title: 'School Bus Routes Guide', category: 'Transport', fileSize: '1.2 MB', downloadCount: 88, isPublic: true },
-    { id: '3', title: 'Onboarding Enrollment Application Form', category: 'Admission', fileSize: '850 KB', downloadCount: 310, isPublic: true },
-  ]);
-
-  const [inquiries, setInquiries] = useState<Inquiry[]>([
-    { id: '1', studentName: 'Aarav Mehta', applyingClass: 'Grade 9-A', parentName: 'Sanjay Mehta', parentPhone: '+91 98765 43210', status: 'PENDING', followUpDate: '2026-06-01' },
-    { id: '2', studentName: 'Riya Sen', applyingClass: 'Grade 11-B', parentName: 'Priya Sen', parentPhone: '+91 91234 56789', status: 'CONTACTED', followUpDate: '2026-05-30' },
-    { id: '3', studentName: 'Kabir Dev', applyingClass: 'Grade 10-A', parentName: 'Amit Dev', parentPhone: '+91 95432 10987', status: 'ADMITTED', followUpDate: 'Completed' },
-  ]);
+  // Mutations
+  const createBanner = useCreateBanner();
+  const deleteBanner = useDeleteBanner();
+  const createDownload = useCreateDownload();
+  const deleteDownload = useDeleteDownload();
+  const updateInquiry = useUpdateInquiry();
 
   // Form states
   const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
@@ -78,45 +53,49 @@ export default function WebsiteCMSPage() {
 
   const handleCreateBanner = (e: React.FormEvent) => {
     e.preventDefault();
-    const newBanner: Banner = {
-      id: String(banners.length + 1),
+    createBanner.mutate({
       title: bannerForm.title,
       subtitle: bannerForm.subtitle,
       imageUrl: bannerForm.imageUrl || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1200&q=80',
       linkUrl: bannerForm.linkUrl || '/general',
       sortOrder: banners.length + 1,
-    };
-    setBanners([...banners, newBanner]);
-    setShowBannerDialog(false);
-    setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Banner Added', detail: `Published banner "${newBanner.title}" on homepage slider.`, life: 3000 }
-    }));
+    }, {
+      onSuccess: () => {
+        setShowBannerDialog(false);
+        setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Banner Added', detail: `Published banner on homepage slider.`, life: 3000 }
+        }));
+      }
+    });
   };
 
   const handleCreateDownload = (e: React.FormEvent) => {
     e.preventDefault();
-    const newDownload: Download = {
-      id: String(downloads.length + 1),
+    createDownload.mutate({
       title: downloadForm.title,
       category: downloadForm.category,
-      fileSize: downloadForm.fileSize,
-      downloadCount: 0,
+      fileUrl: 'placeholder-file-url-s3-key', // Hardcoded until we integrate S3 dropzone in UI
       isPublic: true,
-    };
-    setDownloads([newDownload, ...downloads]);
-    setShowDownloadDialog(false);
-    setDownloadForm({ title: '', category: 'Syllabus', fileSize: '1.5 MB' });
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'File Published', detail: `Successfully uploaded "${newDownload.title}" to the Download Center.`, life: 3000 }
-    }));
+    }, {
+      onSuccess: () => {
+        setShowDownloadDialog(false);
+        setDownloadForm({ title: '', category: 'Syllabus', fileSize: '1.5 MB' });
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'File Published', detail: `Successfully uploaded document.`, life: 3000 }
+        }));
+      }
+    });
   };
 
-  const handleInquiryStatusChange = (id: string, status: Inquiry['status']) => {
-    setInquiries(inquiries.map(inq => inq.id === id ? { ...inq, status } : inq));
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'info', summary: 'Lead Status Updated', detail: `Inquiry status changed to ${status.toLowerCase()}`, life: 3000 }
-    }));
+  const handleInquiryStatusChange = (id: string, status: 'NEW' | 'CONTACTED' | 'ADMITTED' | 'REJECTED') => {
+    updateInquiry.mutate({ id, status }, {
+      onSuccess: () => {
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'info', summary: 'Lead Status Updated', detail: `Inquiry status changed to ${status.toLowerCase()}`, life: 3000 }
+        }));
+      }
+    });
   };
 
   return (
@@ -152,7 +131,7 @@ export default function WebsiteCMSPage() {
           </button>
           <button onClick={() => setActiveTab('inquiries')} className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${activeTab === 'inquiries' ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' : 'text-slate-500'}`}>
             <i className="pi pi-envelope mr-2 text-[10px]"></i>
-            Admission Leads ({inquiries.filter(i => i.status === 'PENDING').length})
+            Admission Leads ({inquiries.filter(i => i.status === 'NEW').length})
           </button>
         </div>
 
@@ -174,7 +153,7 @@ export default function WebsiteCMSPage() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{banner.subtitle}</p>
                   <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 flex justify-between items-center text-[10px] text-slate-450 font-bold uppercase tracking-wider">
                     <span className="truncate max-w-[200px]">Link: {banner.linkUrl}</span>
-                    <button className="text-rose-500 hover:text-rose-600 flex items-center gap-1" onClick={() => setBanners(banners.filter(b => b.id !== banner.id))}>
+                    <button className="text-rose-500 hover:text-rose-600 flex items-center gap-1" onClick={() => deleteBanner.mutate(banner.id)}>
                       <i className="pi pi-trash"></i> Delete Slide
                     </button>
                   </div>
@@ -207,7 +186,7 @@ export default function WebsiteCMSPage() {
                       <td className="py-3 font-mono">{doc.fileSize}</td>
                       <td className="py-3 font-mono">{doc.downloadCount} dynamic clicks</td>
                       <td className="py-3 text-center">
-                        <button className="text-rose-500 hover:text-rose-600" onClick={() => setDownloads(downloads.filter(d => d.id !== doc.id))}>
+                        <button className="text-rose-500 hover:text-rose-600" onClick={() => deleteDownload.mutate(doc.id)}>
                           <i className="pi pi-trash"></i>
                         </button>
                       </td>
@@ -249,7 +228,7 @@ export default function WebsiteCMSPage() {
                       <td className="py-3 font-mono">{inq.followUpDate}</td>
                       <td className="py-3">
                         <Tag value={inq.status} severity={
-                          inq.status === 'PENDING' ? 'danger' :
+                          inq.status === 'NEW' ? 'danger' :
                           inq.status === 'CONTACTED' ? 'warning' :
                           inq.status === 'ADMITTED' ? 'success' : 'secondary'
                         } className="text-[9px] font-bold" />

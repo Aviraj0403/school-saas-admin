@@ -147,24 +147,24 @@ export default function LibraryPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Library Catalog</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
+            <p className="text-slate-400 mt-1 text-sm md:text-base">
               Catalog physical books, register student loans, and check return due dates.
             </p>
           </div>
           <button 
             onClick={() => setShowAddBookDialog(true)}
-            className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+            className="w-full md:w-auto px-5 py-3 bg-primary hover:opacity-95 text-white font-bold border-0 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm"
           >
-            <i className="pi pi-plus"></i>
+            <i className="pi pi-plus text-xs"></i>
             Add New Book
           </button>
         </div>
 
         {/* View mode bar */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-slate-100/50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="w-full md:w-80">
             <div className="relative">
               <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -172,17 +172,17 @@ export default function LibraryPage() {
                 value={lazyState.search} 
                 onChange={handleSearchChange} 
                 placeholder="Search catalog by title, author, or ISBN..." 
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition-all text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 outline-none focus:border-primary transition-all text-sm"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
               title="Catalog Grid"
             >
@@ -190,10 +190,10 @@ export default function LibraryPage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'table' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
               title="List View"
             >
@@ -234,34 +234,39 @@ export default function LibraryPage() {
                 ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-2">
                     {activeBooks.map((book: any) => (
-                      <div 
-                        key={book.id} 
-                        className="border border-slate-105 dark:border-slate-800 p-5 rounded-3xl bg-slate-50/50 dark:bg-slate-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200 group"
-                      >
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-extrabold text-slate-850 dark:text-white text-sm leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{book.title}</h3>
-                            {statusTemplate(book.status || 'AVAILABLE')}
-                          </div>
-                          <p className="text-[11px] text-slate-400 mt-1">Author: {book.author}</p>
+                    <div key={book.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-all group animate-fade-in">
+                      <div className="p-5 flex items-start gap-4">
+                        <div className="w-14 h-20 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-700 shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                          <i className="pi pi-book text-2xl"></i>
                         </div>
-                        
-                        <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
-                          <span className="font-mono text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full uppercase tracking-wider">{book.isbn || 'No ISBN'}</span>
-                          {book.status === 'AVAILABLE' && (
-                            <button 
-                              onClick={() => {
-                                setIssueBook((prev) => ({ ...prev, bookId: book.id }));
-                                setShowIssueDialog(true);
-                              }}
-                              className="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-650 hover:bg-indigo-700 rounded-xl transition-all active:scale-95 flex items-center gap-1"
-                            >
-                              <i className="pi pi-bookmark text-[10px]"></i>
-                              Issue
-                            </button>
-                          )}
+                        <div className="flex flex-col gap-1 w-full">
+                          <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-tight">
+                            {book.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 font-medium">By {book.author}</p>
+                          <p className="text-[10px] text-slate-400 font-mono mt-1">ISBN: {book.isbn}</p>
                         </div>
                       </div>
+                      
+                      <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Status</span>
+                          {statusTemplate(book.status || 'AVAILABLE')}
+                        </div>
+                        {book.status === 'AVAILABLE' && (
+                        <button 
+                          onClick={() => {
+                            setIssueBook({ ...issueBook, bookId: book.id });
+                            setShowIssueDialog(true);
+                          }}
+                          disabled={book.status !== 'AVAILABLE'}
+                          className="px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-lg hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        >
+                          Issue Book
+                        </button>
+                        )}
+                      </div>
+                    </div>
                     ))}
                   </div>
                 ) : (

@@ -5,12 +5,13 @@
 @layer tailwind-base, primereact, tailwind-utilities;
 
 :root {
-  --primary-color: #6366f1;
-  --secondary-color: #8b5cf6;
+  /* Default Professional Slate-Blue for better 8-9 hour viewing (Low Fatigue) */
+  --primary-color: #4f46e5;
+  --secondary-color: #818cf8;
   
-  /* Dynamic premium tinted background matched to the school's primary brand color */
-  --background: color-mix(in srgb, var(--primary-color) 4%, #f8fafc);
-  --foreground: #0f172a;
+  /* Dynamic premium tinted background matched to primary brand color */
+  --background: color-mix(in srgb, var(--primary-color) 3%, #f8fafc);
+  --foreground: #1e293b;
   
   /* Dynamic Tailwind CSS v4 theme color mapping */
   --color-primary: var(--primary-color);
@@ -18,17 +19,20 @@
 }
 
 .dark {
-  --background: color-mix(in srgb, var(--primary-color) 8%, #0f172a);
-  --foreground: #f8fafc;
+  --background: color-mix(in srgb, var(--primary-color) 6%, #0b0f19);
+  --foreground: #f1f5f9;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* PrimeReact theme overrides */
@@ -78,24 +82,30 @@ body {
   }
   .p-tabview-nav li.p-highlight .p-tabview-nav-link {
     background: var(--background) !important;
-    color: #6366f1 !important;
-    border-color: #6366f1 !important;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
   }
   .p-tabview-panels {
     background: transparent !important;
-    color: #f8fafc !important;
+    color: #f1f5f9 !important;
   }
   .p-datatable {
     background: transparent !important;
   }
   .p-datatable-thead > tr > th {
-    background: #1e293b !important;
+    background: #0f172a !important;
     color: #f8fafc !important;
-    border-color: #334155 !important;
+    border-color: #1e293b !important;
+    font-weight: 600 !important;
+    padding: 1rem 1.25rem !important;
   }
   .p-datatable-tbody > tr {
     background: var(--background) !important;
     color: #cbd5e1 !important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
+  }
+  .p-datatable-tbody > tr:hover {
+    background: color-mix(in srgb, var(--primary-color) 4%, #1e293b) !important;
   }
   .p-datatable-tbody > tr > td {
     border-color: #1e293b !important;

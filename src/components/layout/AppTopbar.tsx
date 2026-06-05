@@ -169,7 +169,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center px-4 sm:px-6 h-16 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center px-4 sm:px-6 h-16 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/40 shadow-sm transition-colors duration-300">
       {/* Left: hamburger + brand + switcher */}
       <div className="flex items-center gap-3">
         <Button
@@ -205,7 +205,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
             {dropdownOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
-                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-150/40 dark:border-slate-800 shadow-xl z-40 p-2 animate-fade-in">
+                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 shadow-xl z-40 p-2 animate-fade-in shadow-indigo-500/5">
                   <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-500">Switch Workspace</p>
                   </div>
@@ -257,7 +257,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           {themeDropdownOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setThemeDropdownOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-slate-900 border border-slate-150/40 dark:border-slate-800 shadow-xl z-40 p-2 animate-fade-in">
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 shadow-xl z-40 p-2 animate-fade-in shadow-indigo-500/5">
                 <div className="px-2.5 py-1.5 border-b border-slate-100 dark:border-slate-800/80">
                   <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-500">Brand Color Theme</p>
                 </div>

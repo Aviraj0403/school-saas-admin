@@ -101,15 +101,15 @@ export default function StudentsPage() {
       <div className="flex flex-col gap-6 lg:gap-8 pb-10 max-w-[100vw] overflow-x-hidden">
         
         {/* Header Block */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Directory</h1>
-            <p className="text-slate-500 mt-1 text-sm">
+            <p className="text-slate-400 mt-1 text-sm">
               Manage student profiles, academic admissions, and records.
             </p>
           </div>
           <Link href="/students/admissions" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm">
+            <button className="w-full sm:w-auto px-5 py-3 bg-primary hover:opacity-95 text-white font-bold border-0 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm">
               <i className="pi pi-plus text-xs"></i>
               New Admission
             </button>
@@ -157,39 +157,39 @@ export default function StudentsPage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-100/50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
-              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
               <InputText
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPagination((p) => ({ ...p, pageIndex: 0 })); }}
                 placeholder="Search students..."
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 text-sm outline-none focus:border-primary transition-all"
               />
             </div>
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end bg-slate-100 dark:bg-slate-900 p-1 rounded-md border border-slate-200 dark:border-slate-800">
+          <div className="flex gap-2 w-full md:w-auto justify-end">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm ${
+              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
+                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              <i className="pi pi-th-large text-sm"></i>
+              <i className="pi pi-th-large text-sm mr-2"></i>
               <span className="hidden sm:inline">Grid</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm ${
+              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'table' 
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
+                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              <i className="pi pi-list text-sm"></i>
+              <i className="pi pi-list text-sm mr-2"></i>
               <span className="hidden sm:inline">List</span>
             </button>
           </div>
@@ -219,46 +219,43 @@ export default function StudentsPage() {
               studentsList.map((student: any) => {
                 const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
                 return (
-                  <div 
-                    key={student.id} 
-                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between gap-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm border border-slate-200 dark:border-slate-800">
-                          {student.firstName ? student.firstName[0] : '?'}
-                          {student.lastName ? student.lastName[0] : ''}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-1">
-                            {fullName}
-                          </h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-                            {student.admissionNo}
-                          </p>
-                        </div>
+                  <div key={student.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
+                    <div className="p-5 flex items-center gap-4 border-b border-slate-100 dark:border-slate-800/80">
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl uppercase ring-2 ring-white dark:ring-slate-900 group-hover:scale-105 transition-transform">
+                        {student.firstName ? student.firstName[0] : '?'}
+                        {student.lastName ? student.lastName[0] : ''}
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-1">
+                          {fullName}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+                          {student.admissionNo}
+                        </p>
                       </div>
                       {statusTemplate(student)}
                     </div>
                     
-                    <div className="flex items-center justify-between text-sm py-2 border-y border-slate-100 dark:border-slate-800/50">
-                      <span className="text-slate-500">Class</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-200">{student.className || 'Not Assigned'}</span>
-                    </div>
+                    <div className="p-5 pt-0 flex flex-col gap-4">
+                      <div className="flex items-center justify-between text-sm py-3 border-b border-slate-100 dark:border-slate-800/80">
+                        <span className="text-slate-500">Class</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-200">{student.className || 'Not Assigned'}</span>
+                      </div>
 
-                    <div className="flex justify-end gap-2 pt-1">
-                      <Link href={`/students/${student.id}`} className="flex-1">
-                        <button className="w-full px-3 py-1.5 text-sm font-medium text-slate-700 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors flex justify-center items-center gap-2">
-                          View
+                      <div className="flex justify-end gap-2">
+                        <Link href={`/students/${student.id}`} className="flex-1">
+                          <button className="w-full px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors flex justify-center items-center gap-2">
+                            View Profile
+                          </button>
+                        </Link>
+                        <button 
+                          onClick={() => handleDelete(student.id)}
+                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors"
+                          title="Delete Student"
+                        >
+                          <i className="pi pi-trash"></i>
                         </button>
-                      </Link>
-                      <button 
-                        onClick={() => handleDelete(student.id)}
-                        className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors"
-                        title="Delete Student"
-                      >
-                        <i className="pi pi-trash text-xs"></i>
-                      </button>
+                      </div>
                     </div>
                   </div>
                 );

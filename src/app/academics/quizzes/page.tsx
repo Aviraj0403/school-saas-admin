@@ -14,11 +14,18 @@ import { useQuizzes, useCreateQuiz } from '@/hooks/queries/useAcademics';
 
 export default function QuizzesPage() {
   const [showDialog, setShowDialog] = useState(false);
+  const [search, setSearch] = useState('');
   
   const { data: quizzesData } = useQuizzes();
   const createMutation = useCreateQuiz();
   
   const quizzes = quizzesData || [];
+  
+  const filteredQuizzes = quizzes.filter((q: any) => 
+    q.title?.toLowerCase().includes(search.toLowerCase()) ||
+    q.subject?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    q.class?.name?.toLowerCase().includes(search.toLowerCase())
+  );
   
   const [formData, setFormData] = useState({
     title: '',
@@ -59,17 +66,17 @@ export default function QuizzesPage() {
       <div className="flex flex-col gap-6 animate-fade-in pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">LMS Quizzes & Assessments</h1>
-            <p className="text-slate-500 mt-1 text-sm">
+            <p className="text-slate-400 mt-1 text-sm md:text-base">
               Create interactive online quizzes and track student performance.
             </p>
           </div>
           <div className="flex gap-2">
             <button 
               onClick={() => setShowDialog(true)}
-              className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm"
+              className="px-4 py-2 bg-primary hover:opacity-95 text-white font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <i className="pi pi-plus text-xs"></i>
               Create Quiz
@@ -83,6 +90,8 @@ export default function QuizzesPage() {
             <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input 
               type="text" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search quizzes..." 
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
             />
@@ -97,7 +106,7 @@ export default function QuizzesPage() {
         {/* Table View */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
           <DataTable 
-            value={quizzes} 
+            value={filteredQuizzes} 
             className="p-datatable-sm" 
             emptyMessage="No quizzes found."
             paginator rows={10}

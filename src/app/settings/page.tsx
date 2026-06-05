@@ -148,10 +148,10 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">School Settings & Credentials Control</h1>
-            <p className="text-slate-500 mt-1.5 text-sm">
+            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
               Manage your institute's profile parameters, subscription plan levels, modules, and app login credentials.
             </p>
           </div>

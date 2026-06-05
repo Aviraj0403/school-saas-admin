@@ -128,7 +128,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white dark:bg-slate-950 border-r border-slate-100 dark:border-slate-900 flex flex-col transition-transform duration-300 ease-in-out',
+        'fixed top-16 bottom-0 left-0 z-10 w-[240px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-800/40 flex flex-col transition-transform duration-300 ease-in-out',
         {
           'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
@@ -136,7 +136,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       )}
     >
       {/* School branding strip */}
-      <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-900">
+      <div className="px-3.5 py-2.5 border-b border-slate-200/50 dark:border-slate-800/40">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: 'var(--primary-color)' }}>
             <i className="pi pi-graduation-cap text-white text-xs"></i>
@@ -158,8 +158,8 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       </div>
 
       {/* Bottom: version */}
-      <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800">
-        <p className="text-xs text-gray-400 text-center">School SaaS v1.0 · Phase 1</p>
+      <div className="px-4 py-3 border-t border-slate-200/50 dark:border-slate-800/40">
+        <p className="text-xs text-slate-400 text-center">School SaaS v1.0 · Phase 1</p>
       </div>
     </div>
   );

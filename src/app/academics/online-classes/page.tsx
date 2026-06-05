@@ -37,6 +37,13 @@ export default function OnlineClassesPage() {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeJitsiRoom, setActiveJitsiRoom] = useState<OnlineClass | null>(null);
+  const [search, setSearch] = useState('');
+  
+  const filteredClasses = classesList.filter((c: any) => 
+    c.title?.toLowerCase().includes(search.toLowerCase()) ||
+    c.className?.toLowerCase().includes(search.toLowerCase()) ||
+    c.subjectName?.toLowerCase().includes(search.toLowerCase())
+  );
 
   // Form state
   const [form, setForm] = useState({
@@ -101,10 +108,10 @@ export default function OnlineClassesPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Area */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Jitsi Meet Online Classrooms</h1>
-            <p className="text-slate-500 mt-1.5 text-sm">
+            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
               Schedule premium zero-latency video lectures, track live attendance telemetry, and share records with students.
             </p>
           </div>
@@ -154,24 +161,36 @@ export default function OnlineClassesPage() {
 
         {/* Classes List section */}
         <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Room Rosters</h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">Click "Join Room" to launch Jitsi Meet secure video stream.</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Room Rosters</h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">Click "Join Room" to launch Jitsi Meet secure video stream.</p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input 
+                type="text" 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search rooms..." 
+                className="w-full pl-9 pr-4 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
+              />
+            </div>
           </div>
 
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <i className="pi pi-spin pi-spinner text-3xl text-primary"></i>
             </div>
-          ) : classesList.length === 0 ? (
+          ) : filteredClasses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
               <i className="pi pi-video text-4xl mb-2"></i>
-              <p className="text-sm font-bold">No Classes Scheduled</p>
-              <p className="text-xs opacity-75 mt-0.5">Create your first Jitsi classroom session.</p>
+              <p className="text-sm font-bold">No Classes Found</p>
+              <p className="text-xs opacity-75 mt-0.5">Try a different search term or schedule a new class.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {classesList.map(c => (
+              {filteredClasses.map((c: any) => (
                 <div key={c.id} className="border border-slate-150 dark:border-slate-800/85 hover:border-indigo-400/80 dark:hover:border-indigo-500/80 rounded-2xl p-5 bg-slate-50/20 dark:bg-slate-950/20 shadow-sm transition-all duration-300 flex flex-col justify-between gap-4">
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-start gap-2">

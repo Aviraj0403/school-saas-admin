@@ -10,22 +10,24 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-
-const MOCK_INVENTORY = [
-  { id: '1', sku: 'IT-LT-001', name: 'Dell Latitude 3420', category: 'IT Assets', location: 'Staff Room', quantity: 15, status: 'ACTIVE' },
-  { id: '2', sku: 'LAB-CHEM-05', name: 'Microscope 400x', category: 'Lab Equipment', location: 'Science Lab', quantity: 8, status: 'ACTIVE' },
-  { id: '3', sku: 'SPORT-FB-01', name: 'Football (Size 5)', category: 'Sports', location: 'PE Store', quantity: 20, status: 'DAMAGED' }
-];
+import { useInventoryItems, useInventoryCategories, useCreateInventoryItem } from '@/hooks/queries/useInventory';
 
 export default function InventoryPage() {
   const [showDialog, setShowDialog] = useState(false);
-  const [items, setItems] = useState(MOCK_INVENTORY);
+  const [search, setSearch] = useState('');
   
+  // Queries
+  const { data: itemsData, isPending: itemsLoading } = useInventoryItems();
+  const { data: categoriesData, isPending: categoriesLoading } = useInventoryCategories();
+  const createMutation = useCreateInventoryItem();
+
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
+    categoryId: '',
     quantity: 1,
-    status: 'ACTIVE'
+    status: 'ACTIVE',
+    location: ''
   });
 
   const statusTemplate = (rowData: any) => {
@@ -39,32 +41,59 @@ export default function InventoryPage() {
   };
 
   const handleSave = () => {
-    const newItem = {
-      id: Math.random().toString(),
-      sku: formData.sku,
-      name: formData.name,
-      category: 'Selected Category',
-      location: 'Main Store',
-      quantity: formData.quantity,
-      status: formData.status
-    };
-    setItems([newItem, ...items]);
-    setShowDialog(false);
-    
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Success', detail: 'Asset added successfully.', life: 3000 }
-    }));
+    if (!formData.name || !formData.categoryId || !formData.sku) {
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'warn', summary: 'Missing Fields', detail: 'Please fill in SKU, Name and Category.', life: 3000 }
+      }));
+      return;
+    }
+
+    createMutation.mutate(
+      {
+        sku: formData.sku,
+        name: formData.name,
+        categoryId: formData.categoryId,
+        location: formData.location,
+        quantity: formData.quantity,
+        status: formData.status
+      },
+      {
+        onSuccess: () => {
+          setShowDialog(false);
+          setFormData({ sku: '', name: '', categoryId: '', quantity: 1, status: 'ACTIVE', location: '' });
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'success', summary: 'Success', detail: 'Asset added to inventory.', life: 3000 }
+          }));
+        },
+        onError: (err: any) => {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to add asset.', life: 3000 }
+          }));
+        }
+      }
+    );
   };
+
+  const categoryOptions = Array.isArray(categoriesData) 
+    ? categoriesData.map(c => ({ label: c.name, value: c.id })) 
+    : [];
+
+  const rawItems = Array.isArray(itemsData) ? itemsData : [];
+  const filteredItems = rawItems.filter(item => 
+    item.name.toLowerCase().includes(search.toLowerCase()) || 
+    item.sku.toLowerCase().includes(search.toLowerCase()) ||
+    (item.category?.name || '').toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6 animate-fade-in pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Inventory & Asset Tracking</h1>
-            <p className="text-slate-500 mt-1 text-sm">
+            <p className="text-slate-400 mt-1 text-sm md:text-base">
               Manage school assets, lab equipment, IT hardware, and track staff checkouts.
             </p>
           </div>
@@ -77,7 +106,7 @@ export default function InventoryPage() {
             </button>
             <button 
               onClick={() => setShowDialog(true)}
-              className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm"
+              className="px-4 py-2 bg-primary hover:opacity-95 text-white font-medium rounded-md transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <i className="pi pi-plus text-xs"></i>
               Add Asset
@@ -91,6 +120,8 @@ export default function InventoryPage() {
             <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input 
               type="text" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by SKU, name, category..." 
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
             />
@@ -108,7 +139,8 @@ export default function InventoryPage() {
         {/* Table View */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
           <DataTable 
-            value={items} 
+            value={filteredItems} 
+            loading={itemsLoading}
             className="p-datatable-sm" 
             emptyMessage="No items in inventory."
             paginator rows={10}
@@ -116,7 +148,7 @@ export default function InventoryPage() {
           >
             <Column field="sku" header="SKU" sortable className="text-xs font-mono text-slate-500" />
             <Column field="name" header="Asset Name" sortable className="text-sm font-semibold text-slate-900 dark:text-white" />
-            <Column field="category" header="Category" sortable className="text-sm" />
+            <Column field="category.name" header="Category" body={(d) => d.category?.name || '—'} sortable className="text-sm" />
             <Column field="location" header="Location" sortable className="text-sm" />
             <Column field="quantity" header="Quantity" sortable className="text-sm font-semibold" />
             <Column field="status" header="Status" body={statusTemplate} sortable className="w-32" />
@@ -183,9 +215,12 @@ export default function InventoryPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</label>
               <Dropdown 
-                options={[{label: 'IT Assets', value: '1'}, {label: 'Lab Equipment', value: '2'}, {label: 'Sports', value: '3'}]} 
+                value={formData.categoryId}
+                onChange={(e) => setFormData({...formData, categoryId: e.value})}
+                options={categoryOptions} 
                 placeholder="Select Category"
                 className="w-full border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-md text-sm" 
+                emptyMessage="No categories found. Please add in backend."
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -213,6 +248,8 @@ export default function InventoryPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Location</label>
               <InputText 
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
                 placeholder="e.g. Science Lab"
                 className="p-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
               />

@@ -121,37 +121,33 @@ export default function TransportPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Transport Management</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Monitor student commutes, manage routes, register buses, and track GPS feeds.
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Transport Command Center</h1>
+            <p className="text-slate-400 mt-1 text-sm md:text-base">
+              Manage school bus routes, track live fleet GPS, and allocate students to stops.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
             <button 
-              onClick={() => setShowAssignDialog(true)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition-all active:scale-95 text-xs md:text-sm"
+              onClick={() => setShowRouteDialog(true)}
+              className="flex-1 md:flex-none px-5 py-3 bg-white text-primary font-bold border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl shadow-sm transition-all hover:shadow-md text-sm flex items-center justify-center gap-2"
             >
-              Assign Student
+              <i className="pi pi-map-marker text-xs"></i>
+              Add Route
             </button>
             <button 
               onClick={() => setShowBusDialog(true)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition-all active:scale-95 text-xs md:text-sm"
+              className="flex-1 md:flex-none px-5 py-3 bg-primary hover:opacity-95 text-white font-bold border-0 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm"
             >
-              Register Bus
-            </button>
-            <button 
-              onClick={() => setShowRouteDialog(true)}
-              className="px-5 py-2 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm"
-            >
-              Create Route
+              <i className="pi pi-truck text-xs"></i>
+              Add Vehicle
             </button>
           </div>
         </div>
 
         {/* Live Status Tracker Alert */}
-        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-4 rounded-2xl flex items-center justify-between flex-wrap gap-3">
+        <div className="bg-emerald-50/50 dark:bg-emerald-950/10 backdrop-blur-sm border border-emerald-100/50 dark:border-emerald-900/30 p-4 rounded-2xl flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -168,7 +164,7 @@ export default function TransportPage() {
         </div>
 
         {/* Control Bar */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm flex justify-end gap-2">
+        <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex justify-end gap-2">
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition-all ${
@@ -193,8 +189,8 @@ export default function TransportPage() {
           </button>
         </div>
 
-        {/* Tab panels board */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">
+        {/* Tab Boards */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden mt-4">
           <style>{`
             .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
               background: transparent !important;
@@ -225,42 +221,33 @@ export default function TransportPage() {
                 ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
                     {activeRoutes.map((route: any) => (
-                      <div 
-                        key={route.id} 
-                        className="border border-slate-100 dark:border-slate-800/80 p-5 rounded-3xl bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4 shadow-sm hover:shadow-md transition-all duration-200"
-                      >
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-extrabold text-slate-800 dark:text-white text-base">{route.name}</h3>
-                          <Tag value="Route Line" className="bg-indigo-500/10 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400 px-2.5 py-1 text-[10px] font-bold rounded-full" />
-                        </div>
-                        
-                        {/* Stops Timeline Visualizer */}
-                        <div className="flex flex-col gap-2 relative pl-4 mt-2">
-                          <div className="absolute left-1.5 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-850"></div>
-                          
-                          <div className="flex items-center gap-2 relative">
-                            <span className="absolute -left-[14px] w-2 h-2 rounded-full bg-blue-500 border border-white"></span>
-                            <span className="text-xs font-semibold text-slate-400">Start Point:</span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-350">{route.startPoint}</span>
-                          </div>
-
-                          {(route.stops || []).map((stop: any, index: number) => {
-                            const name = typeof stop === 'object' && stop !== null ? stop.name : stop;
-                            return (
-                              <div key={index} className="flex items-center gap-2 relative my-1">
-                                <span className="absolute -left-[14px] w-2 h-2 rounded-full bg-slate-300 border border-white"></span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">{name}</span>
+                        <div key={route.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-all group animate-fade-in">
+                          <div className="p-5 flex items-start gap-4">
+                            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                              <i className="pi pi-map-marker text-xl"></i>
+                            </div>
+                            <div className="flex flex-col w-full">
+                              <div className="flex justify-between items-start">
+                                <h3 className="font-bold text-sm text-slate-900 dark:text-white">{route.name}</h3>
+                                <Tag value={route.status} severity={route.status === 'ACTIVE' ? 'success' : 'warning'} className="text-[9px] px-2 py-0.5 rounded-full" />
                               </div>
-                            );
-                          })}
-
-                          <div className="flex items-center gap-2 relative">
-                            <span className="absolute -left-[14px] w-2 h-2 rounded-full bg-violet-600 border border-white"></span>
-                            <span className="text-xs font-semibold text-slate-400">End Point:</span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-350">{route.endPoint}</span>
+                              <p className="text-xs text-slate-500 font-medium mt-1 truncate">
+                                {route.startPoint} <i className="pi pi-arrow-right mx-1 text-[8px]"></i> {route.endPoint}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-2">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Stops Timeline</span>
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                              {route.stops.map((stop: string, i: number) => (
+                                <span key={i} className="text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md whitespace-nowrap">
+                                  {stop}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
                     ))}
                   </div>
                 ) : (

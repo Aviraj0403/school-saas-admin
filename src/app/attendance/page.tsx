@@ -7,6 +7,7 @@ import { useStudentsList } from '@/hooks/queries/useStudents';
 import { useAttendance, useMarkBulkAttendance } from '@/hooks/queries/useAttendance';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
+import { StatCard } from '@/components/ui/StatCard';
 
 interface LocalRecord {
   status: 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY';
@@ -324,45 +325,43 @@ export default function AttendancePage() {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Students</span>
-                <span className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">
-                  {loadingStudents ? '...' : totalCount}
-                </span>
-              </div>
-              <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Present</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
-                    {loadingStudents ? '...' : presentCount}
-                  </span>
-                  {totalCount > 0 && (
-                    <span className="text-xs font-semibold text-emerald-600/70">
-                      ({Math.round((presentCount / totalCount) * 100)}%)
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-                <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">Absent</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-extrabold text-rose-700 dark:text-rose-300">
-                    {loadingStudents ? '...' : absentCount}
-                  </span>
-                  {totalCount > 0 && (
-                    <span className="text-xs font-semibold text-rose-600/70">
-                      ({Math.round((absentCount / totalCount) * 100)}%)
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="bg-violet-50/50 dark:bg-violet-950/20 border border-violet-100/50 dark:border-violet-900/30 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-                <span className="text-sm font-semibold text-violet-600 dark:text-violet-400">Attendance Rate</span>
-                <span className="text-3xl font-extrabold text-violet-700 dark:text-violet-300 mt-2">
-                  {loadingStudents ? '...' : `${attendanceRate}%`}
-                </span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <StatCard
+                label="Total Students"
+                value={loadingStudents ? '...' : totalCount}
+                icon="pi pi-users"
+                gradientClass="from-blue-500 to-indigo-500"
+                iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+                iconColorClass="text-blue-600 dark:text-blue-400"
+                footerText="Enrolled in class"
+              />
+              <StatCard
+                label="Present"
+                value={loadingStudents ? '...' : presentCount}
+                icon="pi pi-check-circle"
+                gradientClass="from-emerald-500 to-teal-500"
+                iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
+                iconColorClass="text-emerald-600 dark:text-emerald-400"
+                footerText={totalCount > 0 ? `(${Math.round((presentCount / totalCount) * 100)}%)` : 'Active'}
+              />
+              <StatCard
+                label="Absent"
+                value={loadingStudents ? '...' : absentCount}
+                icon="pi pi-times-circle"
+                gradientClass="from-rose-500 to-red-500"
+                iconBgClass="bg-rose-500/10 dark:bg-rose-500/20"
+                iconColorClass="text-rose-600 dark:text-rose-400"
+                footerText={totalCount > 0 ? `(${Math.round((absentCount / totalCount) * 100)}%)` : 'Inactive'}
+              />
+              <StatCard
+                label="Attendance Rate"
+                value={loadingStudents ? '...' : `${attendanceRate}%`}
+                icon="pi pi-chart-line"
+                gradientClass="from-violet-500 to-purple-500"
+                iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
+                iconColorClass="text-violet-600 dark:text-violet-400"
+                footerText="Overall attendance rate"
+              />
             </div>
 
             {/* Action Panel */}

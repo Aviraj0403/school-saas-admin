@@ -12,6 +12,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
+import { StatCard } from '@/components/ui/StatCard';
 import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder, useAllBoarders } from '@/hooks/queries/useHostel';
 
 export default function HostelPage() {
@@ -175,36 +176,34 @@ export default function HostelPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-sm font-semibold text-slate-500">Total Hostels</span>
-              <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mt-1">
-                {dashboard?.totalHostels ?? hostelList.length}
-              </h2>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20">
-              <i className="pi pi-building text-lg"></i>
-            </div>
-          </div>
-          <div className="bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/20 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Total Capacity</span>
-              <h2 className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-1">{dashboard?.totalCapacity || 0} Beds</h2>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
-              <i className="pi pi-users text-lg"></i>
-            </div>
-          </div>
-          <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100 dark:border-orange-900/20 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">Currently Occupied</span>
-              <h2 className="text-3xl font-extrabold text-orange-700 dark:text-orange-400 mt-1">{dashboard?.totalOccupied || 0} Beds</h2>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-500/20">
-              <i className="pi pi-user text-lg"></i>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+          <StatCard
+            label="Total Hostels"
+            value={dashboard?.totalHostels ?? hostelList.length}
+            icon="pi pi-building"
+            gradientClass="from-blue-500 to-indigo-500"
+            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+            iconColorClass="text-blue-600 dark:text-blue-400"
+            footerText="Active residential blocks"
+          />
+          <StatCard
+            label="Total Capacity"
+            value={`${dashboard?.totalCapacity || 0} Beds`}
+            icon="pi pi-users"
+            gradientClass="from-emerald-500 to-teal-500"
+            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
+            iconColorClass="text-emerald-600 dark:text-emerald-400"
+            footerText="Maximum occupancy"
+          />
+          <StatCard
+            label="Currently Occupied"
+            value={`${dashboard?.totalOccupied || 0} Beds`}
+            icon="pi pi-user"
+            gradientClass="from-orange-500 to-amber-500"
+            iconBgClass="bg-orange-500/10 dark:bg-orange-500/20"
+            iconColorClass="text-orange-600 dark:text-orange-400"
+            footerText="Students admitted"
+          />
         </div>
 
         {/* Tabbed view for Hostel registry sections */}

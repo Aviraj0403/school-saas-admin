@@ -10,6 +10,7 @@ import { useStudentsList, useDeleteStudent } from '@/hooks/queries/useStudents';
 import Link from 'next/link';
 import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
+import { StatCard } from '@/components/ui/StatCard';
 
 export default function StudentsPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -116,29 +117,43 @@ export default function StudentsPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Enrolled</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">{isPending ? '...' : totalRecords}</h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Active</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : studentsList.filter((s: any) => s.status === 'ACTIVE').length}
-            </h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Suspended</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : studentsList.filter((s: any) => s.status !== 'ACTIVE').length}
-            </h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-violet-600 dark:text-violet-400">Newly Added</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : Math.min(totalRecords, 5)}
-            </h2>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <StatCard
+            label="Total Enrolled"
+            value={isPending ? '...' : totalRecords}
+            icon="pi pi-users"
+            gradientClass="from-blue-500 to-indigo-500"
+            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+            iconColorClass="text-blue-600 dark:text-blue-400"
+            footerText="Total students in system"
+          />
+          <StatCard
+            label="Active"
+            value={isPending ? '...' : studentsList.filter((s: any) => s.status === 'ACTIVE').length}
+            icon="pi pi-check-circle"
+            gradientClass="from-emerald-500 to-teal-500"
+            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
+            iconColorClass="text-emerald-600 dark:text-emerald-400"
+            footerText="Currently active students"
+          />
+          <StatCard
+            label="Suspended"
+            value={isPending ? '...' : studentsList.filter((s: any) => s.status !== 'ACTIVE').length}
+            icon="pi pi-exclamation-triangle"
+            gradientClass="from-amber-500 to-orange-500"
+            iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
+            iconColorClass="text-amber-600 dark:text-amber-400"
+            footerText="Inactive or suspended"
+          />
+          <StatCard
+            label="Newly Added"
+            value={isPending ? '...' : Math.min(totalRecords, 5)}
+            icon="pi pi-user-plus"
+            gradientClass="from-violet-500 to-purple-500"
+            iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
+            iconColorClass="text-violet-600 dark:text-violet-400"
+            footerText="Recent enrollments"
+          />
         </div>
 
         {/* Filter and Control Bar */}

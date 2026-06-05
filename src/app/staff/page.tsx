@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import Link from 'next/link';
 import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
+import { StatCard } from '@/components/ui/StatCard';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -230,29 +232,43 @@ export default function StaffPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Registered</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">{isPending ? '...' : totalRecords}</h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Teachers</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : staffList.filter((s: any) => s.role === 'Teacher' || s.role === 'TEACHER').length}
-            </h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Administration</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : staffList.filter((s: any) => s.role !== 'Teacher' && s.role !== 'TEACHER').length}
-            </h2>
-          </div>
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm flex flex-col justify-between">
-            <span className="text-sm font-medium text-violet-600 dark:text-violet-400">Active Departments</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2 tracking-tight">
-              {isPending ? '...' : Math.max(1, new Set(staffList.map((s: any) => s.department).filter(Boolean)).size)}
-            </h2>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <StatCard
+            label="Total Registered"
+            value={isPending ? '...' : totalRecords}
+            icon="pi pi-users"
+            gradientClass="from-blue-500 to-indigo-500"
+            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+            iconColorClass="text-blue-600 dark:text-blue-400"
+            footerText="Total faculty and staff"
+          />
+          <StatCard
+            label="Teachers"
+            value={isPending ? '...' : staffList.filter((s: any) => s.role === 'Teacher' || s.role === 'TEACHER').length}
+            icon="pi pi-briefcase"
+            gradientClass="from-emerald-500 to-teal-500"
+            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
+            iconColorClass="text-emerald-600 dark:text-emerald-400"
+            footerText="Active teaching staff"
+          />
+          <StatCard
+            label="Administration"
+            value={isPending ? '...' : staffList.filter((s: any) => s.role !== 'Teacher' && s.role !== 'TEACHER').length}
+            icon="pi pi-id-card"
+            gradientClass="from-amber-500 to-orange-500"
+            iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
+            iconColorClass="text-amber-600 dark:text-amber-400"
+            footerText="Admin & support roles"
+          />
+          <StatCard
+            label="Active Departments"
+            value={isPending ? '...' : Math.max(1, new Set(staffList.map((s: any) => s.department).filter(Boolean)).size)}
+            icon="pi pi-sitemap"
+            gradientClass="from-violet-500 to-purple-500"
+            iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
+            iconColorClass="text-violet-600 dark:text-violet-400"
+            footerText="Configured departments"
+          />
         </div>
 
         {/* Filter and Control Bar */}

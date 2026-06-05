@@ -14,38 +14,7 @@ import {
 import { useStaffList } from '@/hooks/queries/useStaff';
 import { useStudentsList } from '@/hooks/queries/useStudents';
 
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  icon: string;
-  gradientClass: string;
-  iconBgClass: string;
-  iconColorClass: string;
-  footerText: string;
-  loading?: boolean;
-}
-
-function StatCard({ label, value, icon, gradientClass, iconBgClass, iconColorClass, footerText, loading }: StatCardProps) {
-  return (
-    <div className={`relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 flex flex-col justify-between group`}>
-      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradientClass} opacity-[0.03] rounded-full translate-x-8 -translate-y-8`}></div>
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="block text-slate-400 font-bold uppercase tracking-wider text-[10px]">{label}</span>
-          {loading ? (
-            <Skeleton width="6rem" height="2.25rem" className="mt-2" />
-          ) : (
-            <div className="font-black text-3xl text-slate-800 dark:text-slate-100 mt-2">{value}</div>
-          )}
-        </div>
-        <div className={`flex items-center justify-center ${iconBgClass} rounded-2xl w-14 h-14 transition-transform duration-300 group-hover:scale-110`}>
-          <i className={`${icon} ${iconColorClass} text-2xl`}></i>
-        </div>
-      </div>
-      <p className="text-slate-400 text-[10px] mt-5 uppercase font-extrabold tracking-wider">{footerText}</p>
-    </div>
-  );
-}
+import { StatCard } from '@/components/ui/StatCard';
 
 export default function DashboardPage() {
   const { activeUser, activeTenant } = useAuthStore();
@@ -88,7 +57,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Primary KPIs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <StatCard
             label="Total Students"
             value={coreStats.students?.total ?? '—'}
@@ -132,7 +101,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Secondary KPIs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <StatCard
             label="Unpaid Fee Count"
             value={coreStats.fees?.pendingCount ?? '—'}

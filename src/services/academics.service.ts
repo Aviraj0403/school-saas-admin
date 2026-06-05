@@ -116,4 +116,40 @@ export const academicsService = {
     const response = await api.delete<{ success: boolean }>(`/academics/timetable/${id}`);
     return response.data;
   },
+
+  // ── Lesson Plans ──────────────────────────────────────────
+  getLessonPlans: async (classId?: string, subjectId?: string) => {
+    let url = '/academics/lesson-plans';
+    if (classId || subjectId) {
+       const params = new URLSearchParams();
+       if (classId) params.append('classId', classId);
+       if (subjectId) params.append('subjectId', subjectId);
+       url += `?${params.toString()}`;
+    }
+    const response = await api.get<{ success: boolean; data: any[] }>(url);
+    return response.data.data ?? [];
+  },
+
+  createLessonPlan: async (data: any) => {
+    const response = await api.post<{ success: boolean; data: any }>('/academics/lesson-plans', data);
+    return response.data;
+  },
+
+  // ── Quizzes ───────────────────────────────────────────────
+  getQuizzes: async (classId?: string, subjectId?: string) => {
+    let url = '/academics/quizzes';
+    if (classId || subjectId) {
+       const params = new URLSearchParams();
+       if (classId) params.append('classId', classId);
+       if (subjectId) params.append('subjectId', subjectId);
+       url += `?${params.toString()}`;
+    }
+    const response = await api.get<{ success: boolean; data: any[] }>(url);
+    return response.data.data ?? [];
+  },
+
+  createQuiz: async (data: any) => {
+    const response = await api.post<{ success: boolean; data: any }>('/academics/quizzes', data);
+    return response.data;
+  },
 };

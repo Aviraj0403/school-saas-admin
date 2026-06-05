@@ -46,5 +46,10 @@ export const analyticsService = {
     const items = response.data.data?.items ?? [];
     const meta = response.data.data?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
+  },
+
+  generateReportCardComment: async (studentId: string) => {
+    const response = await api.post<{ success: boolean; data: { comment: string } }>('/analytics/ai-comment', { studentId });
+    return response.data;
   }
 };

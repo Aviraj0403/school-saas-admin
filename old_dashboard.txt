@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -76,14 +76,14 @@ export default function DashboardPage() {
         <div className="border-b border-slate-100 dark:border-slate-800 pb-6 flex justify-between items-end flex-wrap gap-4">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-premium-gradient">
-              {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
+              {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} ≡ƒæï
             </h1>
             <p className="text-slate-500 mt-2 text-md">
               Welcome back to <span className="font-bold text-slate-700 dark:text-slate-350">{activeTenant?.name || 'Demo School'}</span> management console.
             </p>
           </div>
           <span className="px-4 py-1.5 bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 rounded-full text-xs font-bold uppercase tracking-wider">
-            Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
+            Academic Term: {currentAY?.name || 'Not Configured ΓÜá∩╕Å'}
           </span>
         </div>
 
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             label="Total Students"
-            value={coreStats.students?.total ?? '—'}
+            value={coreStats.students?.total ?? 'ΓÇö'}
             icon="pi pi-users"
             gradientClass="from-blue-500 to-indigo-500"
             iconBgClass="bg-blue-500/10"
@@ -101,7 +101,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Active Staff"
-            value={coreStats.staff?.total ?? '—'}
+            value={coreStats.staff?.total ?? 'ΓÇö'}
             icon="pi pi-id-card"
             gradientClass="from-orange-500 to-amber-500"
             iconBgClass="bg-orange-500/10"
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Fee Collected (Month)"
-            value={coreStats.fees?.monthlyRevenue ? `₹${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}` : '₹0'}
+            value={coreStats.fees?.monthlyRevenue ? `Γé╣${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}` : 'Γé╣0'}
             icon="pi pi-wallet"
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10"
@@ -135,7 +135,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             label="Unpaid Fee Count"
-            value={coreStats.fees?.pendingCount ?? '—'}
+            value={coreStats.fees?.pendingCount ?? 'ΓÇö'}
             icon="pi pi-exclamation-circle"
             gradientClass="from-rose-500 to-red-500"
             iconBgClass="bg-rose-500/10"
@@ -145,7 +145,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Hostel Occupancy"
-            value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : '—'}
+            value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : 'ΓÇö'}
             icon="pi pi-home"
             gradientClass="from-indigo-500 to-violet-500"
             iconBgClass="bg-indigo-500/10"
@@ -155,7 +155,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Pending Leaves"
-            value={leaveStats.pending ?? '—'}
+            value={leaveStats.pending ?? 'ΓÇö'}
             icon="pi pi-calendar-minus"
             gradientClass="from-amber-500 to-yellow-500"
             iconBgClass="bg-amber-500/10"
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Overdue Books"
-            value={coreStats.library?.overdueBooks ?? '—'}
+            value={coreStats.library?.overdueBooks ?? 'ΓÇö'}
             icon="pi pi-book"
             gradientClass="from-teal-500 to-cyan-500"
             iconBgClass="bg-teal-500/10"
@@ -181,7 +181,7 @@ export default function DashboardPage() {
           <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
             <div className="mb-6">
               <h3 className="font-bold text-slate-800 dark:text-white text-lg">Fee Collection Trend</h3>
-              <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (₹)</p>
+              <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (Γé╣)</p>
             </div>
             <div className="flex items-end justify-between h-44 px-2">
               {feeTrendData && feeTrendData.length > 0 ? (
@@ -198,7 +198,7 @@ export default function DashboardPage() {
                         <div
                           className="w-8 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
                           style={{ height: `${pct}%`, minHeight: '4px' }}
-                          title={`₹${item.amount.toLocaleString('en-IN')}`}
+                          title={`Γé╣${item.amount.toLocaleString('en-IN')}`}
                         />
                       </div>
                       <span className="text-xs font-bold text-slate-500">{monthName}</span>

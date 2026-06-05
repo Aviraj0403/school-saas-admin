@@ -6,6 +6,7 @@ import { Card } from 'primereact/card';
 import { DataTable, DataTablePageEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useDashboardStats, useActivityLog } from '@/hooks/queries/useAnalytics';
+import { StatCard } from '@/components/ui/StatCard';
 
 export default function AnalyticsPage() {
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
@@ -67,82 +68,47 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Analytics Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Card 1: Admissions */}
-          <div className="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-150 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full translate-x-8 -translate-y-8 animate-pulse"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Admissions</p>
-                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                  {loadingStats ? <i className="pi pi-spin pi-spinner text-lg"></i> : stats?.students?.total ?? '—'}
-                </h3>
-              </div>
-              <div className="p-3 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-2xl border border-violet-100/50 dark:border-violet-900/20">
-                <i className="pi pi-users text-lg animate-bounce"></i>
-              </div>
-            </div>
-            <p className="text-slate-500 text-[10px] mt-4 uppercase font-extrabold tracking-wider bg-slate-100 dark:bg-slate-850 p-1 px-2.5 rounded-lg w-max border border-slate-200/40">
-              Active: {stats?.students?.active ?? '0'} Students
-            </p>
-          </div>
-
-          {/* Card 2: Staff */}
-          <div className="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-150 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Staff</p>
-                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                  {loadingStats ? <i className="pi pi-spin pi-spinner text-lg"></i> : stats?.staff?.total ?? '—'}
-                </h3>
-              </div>
-              <div className="p-3 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/20">
-                <i className="pi pi-briefcase text-lg"></i>
-              </div>
-            </div>
-            <p className="text-slate-500 text-[10px] mt-4 uppercase font-extrabold tracking-wider bg-slate-100 dark:bg-slate-850 p-1 px-2.5 rounded-lg w-max border border-slate-200/40">
-              Enrolled instructors and admins
-            </p>
-          </div>
-
-          {/* Card 3: Attendance */}
-          <div className="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-150 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full translate-x-8 -translate-y-8 animate-pulse"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Today Attendance</p>
-                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                  {loadingStats ? <i className="pi pi-spin pi-spinner text-lg"></i> : (stats?.attendance?.percentage ? `${stats.attendance.percentage}%` : '96.2%')}
-                </h3>
-              </div>
-              <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-100/50 dark:border-emerald-900/20">
-                <i className="pi pi-check-square text-lg"></i>
-              </div>
-            </div>
-            <p className="text-slate-500 text-[10px] mt-4 uppercase font-extrabold tracking-wider bg-slate-100 dark:bg-slate-850 p-1 px-2.5 rounded-lg w-max border border-slate-200/40">
-              Present: {stats?.attendance?.today?.present ?? '5'} | Absent: {stats?.attendance?.today?.absent ?? '0'}
-            </p>
-          </div>
-
-          {/* Card 4: Revenue */}
-          <div className="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-150 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full translate-x-8 -translate-y-8"></div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Monthly Revenue</p>
-                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                  {loadingStats ? <i className="pi pi-spin pi-spinner text-lg"></i> : `₹${(stats?.fees?.monthlyRevenue ?? '0').toLocaleString('en-IN')}`}
-                </h3>
-              </div>
-              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-100/50 dark:border-amber-900/20">
-                <i className="pi pi-wallet text-lg"></i>
-              </div>
-            </div>
-            <p className="text-slate-500 text-[10px] mt-4 uppercase font-extrabold tracking-wider bg-slate-100 dark:bg-slate-850 p-1 px-2.5 rounded-lg w-max border border-slate-200/40">
-              Unpaid Collections: {stats?.fees?.pendingCount ?? '0'} structures
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <StatCard
+            label="Total Admissions"
+            value={stats?.students?.total ?? '—'}
+            icon="pi pi-users"
+            gradientClass="from-violet-500 to-purple-500"
+            iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
+            iconColorClass="text-violet-600 dark:text-violet-400"
+            footerText={`Active: ${stats?.students?.active ?? '0'} Students`}
+            loading={loadingStats}
+          />
+          <StatCard
+            label="Active Staff"
+            value={stats?.staff?.total ?? '—'}
+            icon="pi pi-briefcase"
+            gradientClass="from-indigo-500 to-blue-500"
+            iconBgClass="bg-indigo-500/10 dark:bg-indigo-500/20"
+            iconColorClass="text-indigo-600 dark:text-indigo-400"
+            footerText="Enrolled instructors and admins"
+            loading={loadingStats}
+          />
+          <StatCard
+            label="Today Attendance"
+            value={stats?.attendance?.percentage ? `${stats.attendance.percentage}%` : '96.2%'}
+            icon="pi pi-check-square"
+            gradientClass="from-emerald-500 to-teal-500"
+            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
+            iconColorClass="text-emerald-600 dark:text-emerald-400"
+            footerText={`Present: ${stats?.attendance?.today?.present ?? '5'} | Absent: ${stats?.attendance?.today?.absent ?? '0'}`}
+            loading={loadingStats}
+          />
+          <StatCard
+            label="Monthly Revenue"
+            value={stats?.fees?.monthlyRevenue ? `₹${(stats.fees.monthlyRevenue).toLocaleString('en-IN')}` : '₹0'}
+            icon="pi pi-wallet"
+            gradientClass="from-amber-500 to-orange-500"
+            iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
+            iconColorClass="text-amber-500"
+            footerText={`Unpaid Collections: ${stats?.fees?.pendingCount ?? '0'} structures`}
+            loading={loadingStats}
+          />
         </div>
 
         {/* Dynamic Charts Grid */}

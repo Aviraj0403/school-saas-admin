@@ -160,7 +160,7 @@ export default function StaffPage() {
       {
         accessorKey: 'name',
         header: 'Name',
-        cell: (info) => <span className="font-semibold text-slate-800 dark:text-slate-200">{info.getValue() as string}</span>,
+        cell: (info: any) => <span className="font-semibold text-slate-800 dark:text-slate-200">{info.getValue() as string}</span>,
       },
       {
         accessorKey: 'email',
@@ -173,12 +173,12 @@ export default function StaffPage() {
       {
         accessorKey: 'role',
         header: 'Role',
-        cell: (info) => roleBodyTemplate(info.row.original),
+        cell: (info: any) => roleBodyTemplate(info.row.original),
       },
       {
         id: 'department',
         header: 'Department',
-        cell: (info) => getDeptName(info.row.original.departmentId),
+        cell: (info: any) => getDeptName(info.row.original.departmentId),
       },
       {
         accessorKey: 'designation',
@@ -187,7 +187,7 @@ export default function StaffPage() {
       {
         id: 'salary',
         header: 'Salary Structure',
-        cell: (info) => (
+        cell: (info: any) => (
           <button 
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-xl transition-all"
             onClick={() => {
@@ -202,7 +202,7 @@ export default function StaffPage() {
       {
         id: 'actions',
         header: () => <div className="text-center">Actions</div>,
-        cell: (info) => actionsBodyTemplate(info.row.original),
+        cell: (info: any) => actionsBodyTemplate(info.row.original),
       },
     ],
     [deptsData, deleteMutation.isPending]
@@ -262,7 +262,7 @@ export default function StaffPage() {
               <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
               <InputText
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPagination((p) => ({ ...p, pageIndex: 0 })); }}
+                onChange={(e) => { setSearch(e.target.value); setPagination((p: PaginationState) => ({ ...p, pageIndex: 0 })); }}
                 placeholder="Search staff..."
                 className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-sm"
               />
@@ -382,14 +382,14 @@ export default function StaffPage() {
                 <span className="text-sm font-medium text-slate-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
+                    onClick={() => setPagination((p: PaginationState) => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
                     disabled={pagination.pageIndex === 0}
                     className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
                   >
                     Previous
                   </button>
                   <button 
-                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.min(pageCount - 1, p.pageIndex + 1) }))}
+                    onClick={() => setPagination((p: PaginationState) => ({ ...p, pageIndex: Math.min(pageCount - 1, p.pageIndex + 1) }))}
                     disabled={pagination.pageIndex >= pageCount - 1}
                     className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
                   >

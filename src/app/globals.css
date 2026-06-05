@@ -395,6 +395,7 @@ textarea:-webkit-autofill:focus {
 .text-premium-gradient {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   transition: all 0.3s ease-in-out !important;
 }

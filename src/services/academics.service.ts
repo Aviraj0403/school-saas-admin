@@ -152,4 +152,22 @@ export const academicsService = {
     const response = await api.post<{ success: boolean; data: any }>('/academics/quizzes', data);
     return response.data;
   },
+
+  // ── Online Classes ────────────────────────────────────────
+  getOnlineClasses: async (classId?: string, subjectId?: string) => {
+    let url = '/academics/online-classes';
+    if (classId || subjectId) {
+       const params = new URLSearchParams();
+       if (classId) params.append('classId', classId);
+       if (subjectId) params.append('subjectId', subjectId);
+       url += `?${params.toString()}`;
+    }
+    const response = await api.get<{ success: boolean; data: any[] }>(url);
+    return response.data.data ?? [];
+  },
+
+  createOnlineClass: async (data: any) => {
+    const response = await api.post<{ success: boolean; data: any }>('/academics/online-classes', data);
+    return response.data;
+  },
 };

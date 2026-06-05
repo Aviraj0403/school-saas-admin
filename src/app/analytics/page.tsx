@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from 'primereact/card';
 import { DataTable, DataTablePageEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useDashboardStats, useActivityLog } from '@/hooks/queries/useAnalytics';
+import { useDashboardStats, useActivityLog, useFeeCollectionTrend } from '@/hooks/queries/useAnalytics';
 import { StatCard } from '@/components/ui/StatCard';
 
 export default function AnalyticsPage() {
@@ -14,6 +14,7 @@ export default function AnalyticsPage() {
   // Queries
   const { data: stats, isPending: loadingStats } = useDashboardStats();
   const { data: logs, isPending: loadingLogs } = useActivityLog(lazyState.page, lazyState.rows);
+  const { data: feeTrendData } = useFeeCollectionTrend();
 
   const onPage = (event: DataTablePageEvent) => {
     setLazyState((prev) => ({
@@ -24,19 +25,8 @@ export default function AnalyticsPage() {
     }));
   };
 
-  // Mock revenue trends for beautiful SVG rendering
-  const revenueTrend = [
-    { month: 'Jan', value: 12000 },
-    { month: 'Feb', value: 19000 },
-    { month: 'Mar', value: 3000 },
-    { month: 'Apr', value: 5000 },
-    { month: 'May', value: 20000 },
-    { month: 'Jun', value: 30000 },
-    { month: 'Jul', value: 45000 },
-    { month: 'Aug', value: 25000 },
-  ];
-
-  const maxVal = Math.max(...revenueTrend.map((t) => t.value));
+  const chartData = feeTrendData || [];
+  const maxVal = chartData.length > 0 ? Math.max(...chartData.map((t: any) => t.amount), 10000) : 10000;
 
   const severityTemplate = (rowData: any) => {
     const action = rowData.action || 'CREATE';
@@ -126,8 +116,9 @@ export default function AnalyticsPage() {
                 <div className="border-t border-slate-400 w-full" />
               </div>
 
-              {revenueTrend.map((item) => {
-                const heightPercentage = (item.value / maxVal) * 100;
+              {chartData.map((item: any) => {
+                const heightPercentage = (item.amount / maxVal) * 100;
+                const monthName = new Date(item.month + '-01').toLocaleString('default', { month: 'short' });
                 return (
                   <div key={item.month} className="flex flex-col items-center gap-3 flex-1 group z-10">
                     <div className="w-full flex items-end justify-center h-36">
@@ -137,11 +128,11 @@ export default function AnalyticsPage() {
                       >
                         {/* Hover Value Badge */}
                         <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow">
-                          ₹{item.value.toLocaleString()}
+                          ₹{item.amount.toLocaleString()}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-350 transition-colors duration-200">{item.month}</span>
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-350 transition-colors duration-200">{monthName}</span>
                   </div>
                 );
               })}

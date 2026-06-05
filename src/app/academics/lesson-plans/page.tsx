@@ -11,18 +11,15 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Tag } from 'primereact/tag';
-
-// Mocked initial data for lesson plans until API is fully wired
-const MOCK_LESSON_PLANS = [
-  { id: '1', date: '2026-06-05', class: '10A', subject: 'Mathematics', topic: 'Trigonometric Ratios', teacher: 'John Doe', status: 'COMPLETED' },
-  { id: '2', date: '2026-06-06', class: '10A', subject: 'Mathematics', topic: 'Heights and Distances', teacher: 'John Doe', status: 'PLANNED' },
-  { id: '3', date: '2026-06-05', class: '9B', subject: 'Science', topic: 'Laws of Motion', teacher: 'Alice Smith', status: 'COMPLETED' },
-  { id: '4', date: '2026-06-07', class: '9B', subject: 'Science', topic: 'Gravitation', teacher: 'Alice Smith', status: 'PLANNED' }
-];
+import { useLessonPlans, useCreateLessonPlan } from '@/hooks/queries/useAcademics';
 
 export default function LessonPlansPage() {
   const [showDialog, setShowDialog] = useState(false);
-  const [plans, setPlans] = useState(MOCK_LESSON_PLANS);
+  
+  const { data: plansData, isPending } = useLessonPlans();
+  const createMutation = useCreateLessonPlan();
+  
+  const plans = plansData || [];
   
   const [formData, setFormData] = useState({
     date: new Date(),
@@ -45,22 +42,23 @@ export default function LessonPlansPage() {
   };
 
   const handleSave = () => {
-    // In future: mutate API
-    const newPlan = {
-      id: Math.random().toString(),
+    createMutation.mutate({
       date: formData.date.toISOString().split('T')[0],
-      class: 'Selected Class',
-      subject: 'Selected Subject',
-      topic: formData.topic,
-      teacher: 'Current User',
+      classId: formData.classId,
+      subjectId: formData.subjectId,
+      topicName: formData.topic,
+      teacherId: 'current-user', // Handled by backend typically
+      content: formData.content,
+      homework: formData.homework,
       status: formData.status
-    };
-    setPlans([newPlan, ...plans]);
-    setShowDialog(false);
-    
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Success', detail: 'Lesson plan saved successfully.', life: 3000 }
-    }));
+    }, {
+      onSuccess: () => {
+        setShowDialog(false);
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Success', detail: 'Lesson plan saved successfully.', life: 3000 }
+        }));
+      }
+    });
   };
 
   return (
@@ -115,11 +113,11 @@ export default function LessonPlansPage() {
             paginator rows={10}
             rowHover
           >
-            <Column field="date" header="Date" sortable className="text-sm font-medium text-slate-800 dark:text-slate-200 w-32" />
-            <Column field="class" header="Class" sortable className="text-sm" />
-            <Column field="subject" header="Subject" sortable className="text-sm" />
-            <Column field="topic" header="Topic / Chapter" sortable className="text-sm font-semibold text-slate-900 dark:text-white" />
-            <Column field="teacher" header="Teacher" sortable className="text-sm" />
+            <Column field="date" header="Date" body={(rowData) => new Date(rowData.date).toLocaleDateString()} sortable className="text-sm font-medium text-slate-800 dark:text-slate-200 w-32" />
+            <Column field="topic.class.name" header="Class" sortable className="text-sm" />
+            <Column field="topic.subject.name" header="Subject" sortable className="text-sm" />
+            <Column field="topic.title" header="Topic / Chapter" sortable className="text-sm font-semibold text-slate-900 dark:text-white" />
+            <Column field="teacher.name" header="Teacher" sortable className="text-sm" />
             <Column field="status" header="Status" body={statusTemplate} sortable className="w-32" />
             <Column 
               body={() => (

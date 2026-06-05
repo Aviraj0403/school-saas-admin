@@ -10,15 +10,15 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-
-const MOCK_QUIZZES = [
-  { id: '1', title: 'Mid-Term Algebra Review', class: '10A', subject: 'Mathematics', questions: 15, duration: 30, status: 'PUBLISHED' },
-  { id: '2', title: 'Basic Physics Quiz', class: '9B', subject: 'Science', questions: 10, duration: 15, status: 'DRAFT' }
-];
+import { useQuizzes, useCreateQuiz } from '@/hooks/queries/useAcademics';
 
 export default function QuizzesPage() {
   const [showDialog, setShowDialog] = useState(false);
-  const [quizzes, setQuizzes] = useState(MOCK_QUIZZES);
+  
+  const { data: quizzesData } = useQuizzes();
+  const createMutation = useCreateQuiz();
+  
+  const quizzes = quizzesData || [];
   
   const [formData, setFormData] = useState({
     title: '',
@@ -37,21 +37,21 @@ export default function QuizzesPage() {
   };
 
   const handleSave = () => {
-    const newQuiz = {
-      id: Math.random().toString(),
+    createMutation.mutate({
       title: formData.title,
-      class: 'Selected Class',
-      subject: 'Selected Subject',
-      questions: 0,
       duration: formData.duration,
-      status: formData.status
-    };
-    setQuizzes([newQuiz, ...quizzes]);
-    setShowDialog(false);
-    
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Success', detail: 'Quiz created successfully.', life: 3000 }
-    }));
+      status: formData.status,
+      // Default to some IDs for now
+      classId: 'dummy',
+      subjectId: 'dummy'
+    }, {
+      onSuccess: () => {
+        setShowDialog(false);
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: 'Success', detail: 'Quiz created successfully.', life: 3000 }
+        }));
+      }
+    });
   };
 
   return (
@@ -104,11 +104,11 @@ export default function QuizzesPage() {
             rowHover
           >
             <Column field="title" header="Quiz Title" sortable className="text-sm font-semibold text-slate-900 dark:text-white" />
-            <Column field="class" header="Class" sortable className="text-sm" />
-            <Column field="subject" header="Subject" sortable className="text-sm" />
-            <Column field="questions" header="Questions" sortable className="text-sm" />
+            <Column field="class.name" header="Class" sortable className="text-sm" />
+            <Column field="subject.name" header="Subject" sortable className="text-sm" />
+            <Column field="_count.questions" header="Questions" sortable className="text-sm" />
             <Column field="duration" header="Duration (mins)" sortable className="text-sm" />
-            <Column field="status" header="Status" body={statusTemplate} sortable className="w-32" />
+            <Column field="isPublished" header="Status" body={(r) => statusTemplate({ status: r.isPublished ? 'PUBLISHED' : 'DRAFT' })} sortable className="w-32" />
             <Column 
               body={() => (
                 <div className="flex gap-2 justify-end">

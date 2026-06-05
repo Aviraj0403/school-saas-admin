@@ -9,9 +9,8 @@ import { Calendar } from 'primereact/calendar';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-import { useClasses } from '@/hooks/queries/useAcademics';
+import { useClasses, useOnlineClasses, useCreateOnlineClass } from '@/hooks/queries/useAcademics';
 import { useAuthStore } from '@/store/useAuthStore';
-import { api } from '@/services/api';
 
 interface OnlineClass {
   id: string;
@@ -32,8 +31,10 @@ export default function OnlineClassesPage() {
   const { activeTenant, user } = useAuthStore();
   const activeModules = activeTenant?.activeModules || [];
   
-  const [classesList, setClassesList] = useState<OnlineClass[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: classesData, isPending: loading } = useOnlineClasses();
+  const classesList = classesData || [];
+  const createMutation = useCreateOnlineClass();
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeJitsiRoom, setActiveJitsiRoom] = useState<OnlineClass | null>(null);
 
@@ -53,67 +54,7 @@ export default function OnlineClassesPage() {
     value: c.id,
   }));
 
-  // Fetch from Backend, with beautiful premium mock fallback if backend offline/initializing
-  const fetchClasses = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/online-classes');
-      if (response.data?.success && Array.isArray(response.data.data)) {
-        setClassesList(response.data.data);
-      } else {
-        throw new Error('Fallback to mock');
-      }
-    } catch {
-      // Premium mock data
-      setClassesList([
-        {
-          id: '1',
-          title: 'Advanced Algebra & Trigonometry',
-          description: 'Special session on board exam preparation and trigonometric formulas.',
-          jitsiRoomName: `school-${activeTenant?.subdomain || 'demo'}-math-class10a`,
-          scheduledAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 mins from now
-          duration: 60,
-          status: 'LIVE',
-          teacherId: 'teacher-1',
-          teacherName: 'Prof. Anjali Mehta',
-          className: 'Class 10 — A',
-          subjectName: 'Mathematics',
-        },
-        {
-          id: '2',
-          title: 'Quantum Physics Basics',
-          description: 'Introduction to wave-particle duality and photoelectric effects.',
-          jitsiRoomName: `school-${activeTenant?.subdomain || 'demo'}-physics-class11b`,
-          scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-          duration: 45,
-          status: 'SCHEDULED',
-          teacherId: 'teacher-2',
-          teacherName: 'Dr. Vivek Sharma',
-          className: 'Class 11 — B',
-          subjectName: 'Physics',
-        },
-        {
-          id: '3',
-          title: 'English Literature: Hamlet Analysis',
-          description: 'Critical analysis of Act 3 and Soliloquies.',
-          jitsiRoomName: `school-${activeTenant?.subdomain || 'demo'}-english-class10b`,
-          scheduledAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // yesterday
-          duration: 60,
-          status: 'COMPLETED',
-          teacherId: 'teacher-3',
-          teacherName: 'Mrs. Sarah D\'souza',
-          className: 'Class 10 — B',
-          subjectName: 'English Literature',
-        }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchClasses();
-  }, [activeTenant]);
 
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,45 +65,24 @@ export default function OnlineClassesPage() {
       return;
     }
 
-    try {
-      const payload = {
-        classId: form.classId,
-        subjectId: form.subjectId || undefined,
-        title: form.title,
-        description: form.description || undefined,
-        scheduledAt: form.scheduledAt.toISOString(),
-        duration: Number(form.duration),
-      };
-
-      await api.post('/online-classes', payload);
-      window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { severity: 'success', summary: '🎓 Room Scheduled!', detail: `Online class room "${form.title}" created successfully. Jitsi link generated!`, life: 4000 }
-      }));
-      setShowCreateDialog(false);
-      setForm({ classId: '', subjectId: '', title: '', description: '', scheduledAt: null, duration: 60 });
-      fetchClasses();
-    } catch {
-      // Mock Success offline
-      const newMock: OnlineClass = {
-        id: Math.random().toString(),
-        title: form.title,
-        description: form.description,
-        jitsiRoomName: `school-${activeTenant?.subdomain || 'demo'}-${form.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-        scheduledAt: form.scheduledAt.toISOString(),
-        duration: Number(form.duration),
-        status: 'SCHEDULED',
-        teacherId: user?.id || 'teacher-self',
-        teacherName: user?.name || 'System Educator',
-        className: classOptions.find((c: any) => c.value === form.classId)?.label || 'General',
-        subjectName: 'General Study',
-      };
-      setClassesList(prev => [newMock, ...prev]);
-      setShowCreateDialog(false);
-      setForm({ classId: '', subjectId: '', title: '', description: '', scheduledAt: null, duration: 60 });
-      window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { severity: 'success', summary: '🎓 Room Scheduled (Offline Mode)', detail: `Online class room "${form.title}" successfully cached.`, life: 4000 }
-      }));
-    }
+    createMutation.mutate({
+      classId: form.classId,
+      subjectId: form.subjectId || undefined,
+      title: form.title,
+      description: form.description || undefined,
+      scheduledAt: form.scheduledAt.toISOString(),
+      duration: Number(form.duration),
+      teacherId: user?.id,
+      meetingLink: `school-${activeTenant?.subdomain || 'demo'}-${form.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+    }, {
+      onSuccess: () => {
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'success', summary: '🎓 Room Scheduled!', detail: `Online class room "${form.title}" created successfully. Jitsi link generated!`, life: 4000 }
+        }));
+        setShowCreateDialog(false);
+        setForm({ classId: '', subjectId: '', title: '', description: '', scheduledAt: null, duration: 60 });
+      }
+    });
   };
 
   const getStatusTag = (status: OnlineClass['status']) => {
@@ -278,7 +198,7 @@ export default function OnlineClassesPage() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Host Teacher:</span>
-                      <span className="text-slate-700 dark:text-slate-300 truncate max-w-40">{c.teacherName || 'System Faculty'}</span>
+                      <span className="text-slate-700 dark:text-slate-300 truncate max-w-40">{c.teacher?.name || 'System Faculty'}</span>
                     </div>
                   </div>
 

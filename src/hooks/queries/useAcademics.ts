@@ -209,6 +209,62 @@ export function useDeleteTimetableSlot() {
   });
 }
 
+// ── Lesson Plans ──
+export function useLessonPlans(classId?: string, subjectId?: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'lesson-plans', classId, subjectId],
+    queryFn: () => academicsService.getLessonPlans(classId, subjectId),
+    enabled: isAuthenticated,
+  });
+}
 
+export function useCreateLessonPlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => academicsService.createLessonPlan(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'lesson-plans'] });
+    },
+  });
+}
 
+// ── Quizzes ──
+export function useQuizzes(classId?: string, subjectId?: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'quizzes', classId, subjectId],
+    queryFn: () => academicsService.getQuizzes(classId, subjectId),
+    enabled: isAuthenticated,
+  });
+}
 
+export function useCreateQuiz() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => academicsService.createQuiz(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'quizzes'] });
+    },
+  });
+}
+
+// ── Online Classes ──
+export function useOnlineClasses(classId?: string, subjectId?: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['academics', 'online-classes', classId, subjectId],
+    queryFn: () => academicsService.getOnlineClasses(classId, subjectId),
+    enabled: isAuthenticated,
+  });
+}
+
+export function useCreateOnlineClass() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => academicsService.createOnlineClass(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'online-classes'] });
+    },
+  });
+}

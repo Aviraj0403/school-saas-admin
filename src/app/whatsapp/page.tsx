@@ -26,6 +26,7 @@ export default function WhatsAppPage() {
   const [activeTab, setTab] = useState(0);
   const [showConfigDialog, setShowConfigDialog] = useState(false);
   const [showBroadcastDialog, setShowBroadcastDialog] = useState(false);
+  const [showMetaConfigDialog, setShowMetaConfigDialog] = useState(false);
 
   // Simulated Chat Console
   const [testQuery, setTestQuery] = useState({ phone: '+91 99999 88888', question: '' });
@@ -36,6 +37,12 @@ export default function WhatsAppPage() {
 
   // Form configs
   const [newBroadcast, setNewBroadcast] = useState({ name: '', templateName: 'fee_reminder' });
+  const [metaConfigForm, setMetaConfigForm] = useState({
+    phoneNumberId: '',
+    businessId: '',
+    wabaId: '',
+    accessToken: ''
+  });
 
   // Pagination states
   const [sessionLazy, setSessionLazy] = useState({ first: 0, rows: 10, page: 1 });
@@ -53,8 +60,22 @@ export default function WhatsAppPage() {
 
   const handleUpdateConfig = (updatedData: any) => {
     updateConfigMutation.mutate(updatedData, {
-      onSuccess: () => reloadConfig()
+      onSuccess: () => {
+        reloadConfig();
+        setShowMetaConfigDialog(false);
+      }
     });
+  };
+
+  const openMetaConfigDialog = () => {
+    const currentConfig = (config as any)?.data || config;
+    setMetaConfigForm({
+      phoneNumberId: currentConfig?.phoneNumberId || '',
+      businessId: currentConfig?.businessId || '',
+      wabaId: currentConfig?.wabaId || '',
+      accessToken: currentConfig?.accessToken || ''
+    });
+    setShowMetaConfigDialog(true);
   };
 
   const handleSeedTemplates = async () => {
@@ -196,8 +217,11 @@ export default function WhatsAppPage() {
             
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-slate-400">Meta Phone Number ID</span>
-                <span className="font-mono text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-850 p-2 rounded-xl border border-slate-150/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-slate-400">Meta Phone Number ID</span>
+                  <button onClick={openMetaConfigDialog} className="text-[10px] text-indigo-500 hover:text-indigo-600 font-bold uppercase">Configure Credentials</button>
+                </div>
+                <span className="font-mono text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-850 p-2 rounded-xl border border-slate-150/50 truncate">
                   {((config as any)?.data || config)?.phoneNumberId || 'Masked (Not Seeded)'}
                 </span>
               </div>
@@ -399,6 +423,69 @@ export default function WhatsAppPage() {
               onChange={(e) => setNewBroadcast({ ...newBroadcast, templateName: e.value })} 
               className="border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
             />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Dialog: Meta API Configuration */}
+      <Dialog 
+        header="Configure Meta API Credentials" 
+        visible={showMetaConfigDialog} 
+        style={{ width: '450px' }} 
+        modal 
+        onHide={() => setShowMetaConfigDialog(false)}
+        className="dialog-custom rounded-3xl"
+        footer={
+          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+            <Button label="Cancel" icon="pi pi-times" onClick={() => setShowMetaConfigDialog(false)} className="p-button-text p-2" />
+            <Button 
+              label="Save Configuration" 
+              icon="pi pi-save" 
+              onClick={() => handleUpdateConfig(metaConfigForm)} 
+              loading={updateConfigMutation.isPending}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+            />
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Phone Number ID</label>
+            <InputText 
+              value={metaConfigForm.phoneNumberId} 
+              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, phoneNumberId: e.target.value })} 
+              placeholder="e.g. 102938475610293"
+              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl font-mono text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Business Account ID (Optional)</label>
+            <InputText 
+              value={metaConfigForm.businessId} 
+              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, businessId: e.target.value })} 
+              placeholder="e.g. 102938475610294"
+              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl font-mono text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">WABA ID (Optional)</label>
+            <InputText 
+              value={metaConfigForm.wabaId} 
+              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, wabaId: e.target.value })} 
+              placeholder="WhatsApp Business Account ID"
+              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl font-mono text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Permanent Access Token</label>
+            <InputTextarea 
+              value={metaConfigForm.accessToken} 
+              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, accessToken: e.target.value })} 
+              placeholder="EAAGm0..."
+              rows={3}
+              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl font-mono text-xs"
+            />
+            <small className="text-[10px] text-slate-400 mt-1">Generate a permanent token from Meta Developer Portal > System Users.</small>
           </div>
         </div>
       </Dialog>

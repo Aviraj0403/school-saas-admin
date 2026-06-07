@@ -79,8 +79,6 @@ export default function OnlineClassesPage() {
       description: form.description || undefined,
       scheduledAt: form.scheduledAt.toISOString(),
       duration: Number(form.duration),
-      teacherId: user?.id,
-      meetingLink: `school-${activeTenant?.subdomain || 'demo'}-${form.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
     }, {
       onSuccess: () => {
         window.dispatchEvent(new CustomEvent('show-toast', {

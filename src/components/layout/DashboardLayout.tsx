@@ -148,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-11 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl z-0"
+                    className="w-full py-3.5 pr-3.5 pl-11 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl z-0"
                     placeholder="admin@school.com"
                     autoComplete="email"
                   />
@@ -168,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full pl-11 pr-12 p-3.5 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
+                    className="w-full py-3.5 pl-11 pr-12 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
                     placeholder="••••••••"
                     autoComplete="current-password"
                   />
@@ -359,7 +359,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {sidebarOpen && (
         <div
           id="mobile-overlay-close"
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity"
+          className="fixed top-16 inset-x-0 bottom-0 z-30 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}

@@ -80,111 +80,7 @@ body {
   border-radius: 4px;
 }
 
-/* Dark Mode Overrides for PrimeReact */
-@media (prefers-color-scheme: dark) {
-  .p-tabview {
-    background: transparent !important;
-  }
-  .p-tabview-nav {
-    background: var(--background) !important;
-    border-color: #1e293b !important;
-  }
-  .p-tabview-nav li .p-tabview-nav-link {
-    background: var(--background) !important;
-    border-color: #1e293b !important;
-    color: #94a3b8 !important;
-  }
-  .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-    background: var(--background) !important;
-    color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-  }
-  .p-tabview-panels {
-    background: transparent !important;
-    color: #f1f5f9 !important;
-  }
-  .p-datatable {
-    background: transparent !important;
-  }
-  .p-datatable-thead > tr > th {
-    background: #0f172a !important;
-    color: #f8fafc !important;
-    border-color: #1e293b !important;
-    font-weight: 600 !important;
-    padding: 1rem 1.25rem !important;
-  }
-  .p-datatable-tbody > tr {
-    background: var(--background) !important;
-    color: #cbd5e1 !important;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
-  }
-  .p-datatable-tbody > tr:hover {
-    background: color-mix(in srgb, var(--primary-color) 4%, #1e293b) !important;
-  }
-  .p-datatable-tbody > tr > td {
-    border-color: #1e293b !important;
-    background: transparent !important;
-    color: #cbd5e1 !important;
-  }
-  .p-datatable-tbody > tr:hover {
-    background: #1e293b/50 !important;
-  }
-  .p-dropdown {
-    background: var(--background) !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
-  }
-  .p-dropdown-label {
-    color: #f8fafc !important;
-  }
-  .p-dropdown-panel {
-    background: var(--background) !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
-  }
-  .p-dropdown-items .p-dropdown-item {
-    color: #cbd5e1 !important;
-  }
-  .p-dropdown-items .p-dropdown-item:hover {
-    background: #1e293b !important;
-  }
-  .p-dialog {
-    background: var(--background) !important;
-    border-color: #1e293b !important;
-  }
-  .p-dialog-header {
-    background: var(--background) !important;
-    color: #f8fafc !important;
-    border-color: #1e293b !important;
-  }
-  .p-dialog-content {
-    background: var(--background) !important;
-    color: #cbd5e1 !important;
-  }
-  .p-dialog-footer {
-    background: var(--background) !important;
-    border-color: #1e293b !important;
-  }
-  .p-multiselect {
-    background: var(--background) !important;
-    border-color: #334155 !important;
-  }
-  .p-multiselect-panel {
-    background: var(--background) !important;
-    border-color: #334155 !important;
-  }
-  .p-multiselect-items .p-multiselect-item {
-    color: #cbd5e1 !important;
-  }
-  .p-multiselect-items .p-multiselect-item:hover {
-    background: #1e293b !important;
-  }
-  .p-datepicker {
-    background: var(--background) !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
-  }
-}
+/* Removed prefers-color-scheme to strictly follow .dark class */
 
 /* Fallback for explicit .dark class */
 .dark .p-tabview {
@@ -391,16 +287,6 @@ textarea:-webkit-autofill:focus {
 }
 
 /* Dark mode specific fine-tuning */
-@media (prefers-color-scheme: dark) {
-  .p-dropdown-panel, 
-  .p-multiselect-panel, 
-  .p-datepicker, 
-  .p-overlaypanel,
-  .p-menu {
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    background: #0f172a !important; /* Fallback absolute dark slate */
-  }
-}
 .dark .p-dropdown-panel, 
 .dark .p-multiselect-panel, 
 .dark .p-datepicker, 

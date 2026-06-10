@@ -134,7 +134,7 @@ export default function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed top-0 md:top-16 bottom-0 left-0 z-50 w-[280px] md:w-[240px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-[24px] border-r border-slate-200/50 dark:border-slate-800/40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-4px_rgba(0,0,0,0.4)] flex flex-col transition-transform duration-300 ease-in-out',
+        'fixed top-16 bottom-0 left-0 z-40 w-[280px] md:w-[240px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-[24px] border-r border-slate-200/50 dark:border-slate-800/40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-4px_rgba(0,0,0,0.4)] flex flex-col transition-transform duration-300 ease-in-out',
         {
           'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
@@ -154,14 +154,6 @@ export default function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <p className="text-[11px] md:text-[10px] text-slate-500 dark:text-slate-400 truncate leading-none mt-1 md:mt-0.5 uppercase tracking-wider">{activeUser.role}</p>
           </div>
         </div>
-        
-        {/* Mobile Close Button */}
-        <button 
-          className="md:hidden w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-          onClick={() => onClose?.()}
-        >
-          <i className="pi pi-times text-sm"></i>
-        </button>
       </div>
 
       {/* Nav items */}

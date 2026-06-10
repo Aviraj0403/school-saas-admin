@@ -169,7 +169,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center px-4 sm:px-6 h-16 bg-white/60 dark:bg-slate-950/60 backdrop-blur-[24px] border-b border-white/20 dark:border-slate-800/40 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] transition-colors duration-300">
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-16 bg-white/60 dark:bg-slate-950/60 backdrop-blur-[24px] border-b border-white/20 dark:border-slate-800/40 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] transition-colors duration-300">
       {/* Left: hamburger + brand + switcher */}
       <div className="flex items-center gap-4">
         <Button

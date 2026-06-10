@@ -485,7 +485,7 @@ export default function WhatsAppPage() {
               rows={3}
               className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl font-mono text-xs"
             />
-            <small className="text-[10px] text-slate-400 mt-1">Generate a permanent token from Meta Developer Portal > System Users.</small>
+            <small className="text-[10px] text-slate-400 mt-1">Generate a permanent token from Meta Developer Portal &gt; System Users.</small>
           </div>
         </div>
       </Dialog>

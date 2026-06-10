@@ -30,11 +30,11 @@ export interface ThemePreset {
 }
 
 export const THEME_PRESETS: ThemePreset[] = [
-  { name: 'Classic Blue', primaryColor: '#1a73e8', secondaryColor: '#e8f0fe', previewClass: 'bg-blue-550' },
-  { name: 'Emerald Green', primaryColor: '#059669', secondaryColor: '#ecfdf5', previewClass: 'bg-emerald-550' },
-  { name: 'Royal Purple', primaryColor: '#7c3aed', secondaryColor: '#f5f3ff', previewClass: 'bg-purple-550' },
+  { name: 'Classic Blue', primaryColor: '#1a73e8', secondaryColor: '#e8f0fe', previewClass: 'bg-blue-600' },
+  { name: 'Emerald Green', primaryColor: '#059669', secondaryColor: '#ecfdf5', previewClass: 'bg-emerald-600' },
+  { name: 'Royal Purple', primaryColor: '#7c3aed', secondaryColor: '#f5f3ff', previewClass: 'bg-purple-600' },
   { name: 'Amber Gold', primaryColor: '#d97706', secondaryColor: '#fffbeb', previewClass: 'bg-amber-500' },
-  { name: 'Crimson Red', primaryColor: '#e11d48', secondaryColor: '#fff1f2', previewClass: 'bg-rose-500' },
+  { name: 'Crimson Red', primaryColor: '#e11d48', secondaryColor: '#fff1f2', previewClass: 'bg-rose-600' },
 ];
 
 export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }) {

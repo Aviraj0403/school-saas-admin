@@ -87,30 +87,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
-        style={{ backgroundImage: `url('/neural_network_bg.png')` }}
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-cover bg-center select-none"
+        style={{ backgroundColor: 'var(--background)' }}
       >
         {/* Ambient Overlay Layer */}
-        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[3px] z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-[5px] z-0 pointer-events-none" />
 
-        {/* Soft Luminous Backdrop Orbs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-600/30 to-indigo-600/0 blur-[130px] pointer-events-none animate-pulse duration-[8000ms]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-cyan-500/30 to-blue-500/0 blur-[130px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+        {/* Soft Luminous Backdrop Orbs (Dynamic Theme Context Colors) */}
+        <div 
+          className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms] opacity-40 dark:opacity-20"
+          style={{ background: `radial-gradient(circle, var(--primary-color) 0%, transparent 70%)` }}
+        ></div>
+        <div 
+          className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[140px] pointer-events-none animate-pulse duration-[10000ms] opacity-40 dark:opacity-20"
+          style={{ background: `radial-gradient(circle, var(--secondary-color) 0%, transparent 70%)` }}
+        ></div>
         
         {/* Responsive Side-by-Side Flex Container */}
         <div className="relative z-10 flex flex-col md:flex-row gap-6 max-w-4xl w-full items-stretch justify-center">
           
           {/* Static Glassmorphic Login Card */}
-          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col gap-6 transition-all duration-300">
+          <div className="backdrop-blur-2xl bg-white/10 dark:bg-slate-900/40 border border-white/20 dark:border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col gap-6 transition-all duration-300">
             {/* Glowing Premium Logo & Branding */}
             <div className="flex flex-col items-center mb-2">
               <div className="relative group">
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative w-16 h-16 bg-slate-950/80 rounded-2xl flex items-center justify-center mb-4 border border-blue-400/20 shadow-inner">
-                  <i className="pi pi-graduation-cap text-blue-450 text-3xl"></i>
+                <div className="absolute -inset-1 rounded-2xl opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200" style={{ background: `linear-gradient(to right, var(--primary-color), var(--secondary-color))` }}></div>
+                <div className="relative w-16 h-16 bg-white dark:bg-slate-950/80 rounded-2xl flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-700/50 shadow-inner">
+                  <i className="pi pi-graduation-cap text-3xl" style={{ color: 'var(--primary-color)' }}></i>
                 </div>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white bg-gradient-to-r from-white via-blue-100 to-indigo-100 bg-clip-text text-transparent mt-2">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-800 dark:text-white mt-2">
                 School SaaS Admin
               </h1>
               <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
@@ -177,25 +183,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               {/* Submit Button */}
-              <Button
+              <button
                 type="submit"
-                label="Sign In to Dashboard"
-                icon="pi pi-sign-in"
-                loading={loginMutation.isPending}
-                className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-800 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/25 active:scale-[0.98] transition-all"
-              />
+                disabled={loginMutation.isPending}
+                className="mt-2 w-full text-white font-bold p-3.5 rounded-xl border-0 shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                style={{ background: `linear-gradient(135deg, var(--primary-color), var(--secondary-color))`, opacity: loginMutation.isPending ? 0.7 : 1 }}
+              >
+                {loginMutation.isPending ? <i className="pi pi-spinner pi-spin"></i> : <i className="pi pi-sign-in"></i>}
+                Sign In to Dashboard
+              </button>
             </form>
           </div>
 
           {/* Static Glassmorphic Demo Credentials Card (Side-by-Side) */}
-          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col justify-between gap-6 transition-all duration-300">
+          <div className="backdrop-blur-2xl bg-white/10 dark:bg-slate-900/40 border border-white/20 dark:border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col justify-between gap-6 transition-all duration-300">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 border-b border-slate-800/60 pb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-450/20 flex items-center justify-center">
-                  <i className="pi pi-info-circle text-blue-400 text-lg"></i>
+              <div className="flex items-center gap-3 border-b border-slate-200/50 dark:border-slate-800/60 pb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                  <i className="pi pi-info-circle text-lg" style={{ color: 'var(--primary-color)' }}></i>
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Workspace Demo Access</h2>
+                  <h2 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Workspace Demo Access</h2>
                   <p className="text-slate-400 text-[10px] font-medium tracking-wide">Quick-copy credentials to preview distinct roles</p>
                 </div>
               </div>
@@ -345,11 +353,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden">
       <Toast ref={toastRef} position="top-right" />
       <AppTopbar onToggleMenu={() => setSidebarOpen(!sidebarOpen)} />
-      <AppSidebar isOpen={sidebarOpen} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
+          id="mobile-overlay-close"
           className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />

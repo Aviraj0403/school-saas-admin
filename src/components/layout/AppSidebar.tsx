@@ -9,9 +9,10 @@ import { classNames } from 'primereact/utils';
 
 interface AppSidebarProps {
   isOpen: boolean;
+  onClose?: () => void;
 }
 
-export default function AppSidebar({ isOpen }: AppSidebarProps) {
+export default function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const pathname = usePathname();
   const { activeUser, activeTenant } = useAuthStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -102,6 +103,11 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
         ) : (
           <Link
             href={item.path}
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                onClose?.();
+              }
+            }}
             className={classNames(
               'flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-150 no-underline',
               {
@@ -128,7 +134,7 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
   return (
     <div
       className={classNames(
-        'fixed top-16 bottom-0 left-0 z-50 w-[240px] bg-white/70 dark:bg-slate-950/70 backdrop-blur-[24px] border-r border-white/20 dark:border-slate-800/40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[4px_0_24px_-4px_rgba(0,0,0,0.4)] flex flex-col transition-transform duration-300 ease-in-out',
+        'fixed top-0 md:top-16 bottom-0 left-0 z-50 w-[280px] md:w-[240px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-[24px] border-r border-slate-200/50 dark:border-slate-800/40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-4px_rgba(0,0,0,0.4)] flex flex-col transition-transform duration-300 ease-in-out',
         {
           'translate-x-0': isOpen,
           '-translate-x-full': !isOpen,
@@ -136,18 +142,26 @@ export default function AppSidebar({ isOpen }: AppSidebarProps) {
       )}
     >
       {/* School branding strip */}
-      <div className="px-3.5 py-3 border-b border-slate-200/40 dark:border-slate-800/40 bg-gradient-to-r from-transparent via-slate-50/30 to-transparent dark:via-slate-900/30">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-white/20" style={{ backgroundColor: 'var(--primary-color)' }}>
-            <i className="pi pi-graduation-cap text-white text-[13px] drop-shadow-sm"></i>
+      <div className="px-4 py-4 md:py-3 border-b border-slate-200/40 dark:border-slate-800/40 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent dark:via-slate-900/50 flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-2">
+          <div className="w-10 h-10 md:w-8 md:h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5 dark:border-white/10" style={{ backgroundColor: 'var(--primary-color)' }}>
+            <i className="pi pi-graduation-cap text-white text-[16px] md:text-[13px] drop-shadow-sm"></i>
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-normal">
+            <p className="text-[13px] md:text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-normal">
               {activeTenant.name} {activeTenant.prefix ? `[${activeTenant.prefix}]` : ''}
             </p>
-            <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate leading-none mt-0.5 uppercase tracking-wider">{activeUser.role}</p>
+            <p className="text-[11px] md:text-[10px] text-slate-500 dark:text-slate-400 truncate leading-none mt-1 md:mt-0.5 uppercase tracking-wider">{activeUser.role}</p>
           </div>
         </div>
+        
+        {/* Mobile Close Button */}
+        <button 
+          className="md:hidden w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          onClick={() => onClose?.()}
+        >
+          <i className="pi pi-times text-sm"></i>
+        </button>
       </div>
 
       {/* Nav items */}

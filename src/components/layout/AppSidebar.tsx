@@ -165,7 +165,7 @@ export default function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
       {/* Bottom: version */}
       <div className="px-4 py-3 border-t border-slate-200/50 dark:border-slate-800/40">
-        <p className="text-xs text-slate-400 text-center">School SaaS v1.0 · Phase 1</p>
+        <p className="text-xs text-slate-400 text-center font-bold tracking-wider uppercase">School SaaS · Premium Elite</p>
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10">
         
         {/* Welcome Section */}
         <div className="border-b border-slate-100 dark:border-slate-800 pb-6 flex justify-between items-end flex-wrap gap-4">
@@ -145,10 +145,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {/* Fee Collection Bar Chart */}
-          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-            <div className="mb-6">
+          <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
+            <div className="mb-4 sm:mb-6">
               <h3 className="font-bold text-slate-800 dark:text-white text-lg">Fee Collection Trend</h3>
               <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (₹)</p>
             </div>
@@ -183,8 +183,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Attendance Trend */}
-          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-            <div className="mb-6">
+          <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
+            <div className="mb-4 sm:mb-6">
               <h3 className="font-bold text-slate-800 dark:text-white text-lg">Daily Attendance Rate</h3>
               <p className="text-xs text-slate-400 mt-1">Active student participation index (%)</p>
             </div>
@@ -223,9 +223,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-6">Operations Quick Actions</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
+          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 sm:mb-6">Operations Quick Actions</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
             {[
               { label: 'Add Student', icon: 'pi pi-user-plus', href: '/students', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
               { label: 'Mark Attendance', icon: 'pi pi-check-square', href: '/attendance', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },

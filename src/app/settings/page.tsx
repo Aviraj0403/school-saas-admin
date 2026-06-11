@@ -145,10 +145,10 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <Toast ref={toast} />
-      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
+      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2 border-b border-slate-100/50 dark:border-slate-800/50 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">School Settings & Credentials Control</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
@@ -202,8 +202,8 @@ export default function SettingsPage() {
           
           {/* Tab 1: Profile & Pricing */}
           {activeTab === 'profile' && (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
+              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-800 dark:text-white">School Profile Parameters</h2>
                   <p className="text-[11px] text-slate-400 mt-0.5">Basic metadata details about this institutional workspace.</p>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Pricing package slabs */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Subscription Package Tier</h2>
                   <p className="text-[11px] text-slate-400 mt-0.5">Upgrade or inspect school subscription pricing limits.</p>
@@ -299,8 +299,8 @@ export default function SettingsPage() {
 
           {/* Tab 2: Module Matrix */}
           {activeTab === 'modules' && (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
+              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Module Matrix Switcher</h2>
                   <p className="text-[11px] text-slate-400 mt-0.5">Enable or disable panel modules in your sidebar index menu.</p>
@@ -352,7 +352,7 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-6 animate-fade-in">
               
               {/* Educational info strip */}
-              <div className="bg-slate-900 border border-slate-850 p-5 rounded-3xl text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="bg-slate-900 border border-slate-850 p-4 sm:p-5 rounded-3xl text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
                 <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
                 <div className="z-10">
                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
@@ -371,7 +371,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Roster list */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm flex flex-col gap-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 premium-glow-effect">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Login Users</h2>
                   <p className="text-[11px] text-slate-400 mt-0.5">List of active school administrators, teachers, and accountants authorized to sign in.</p>

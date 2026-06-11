@@ -30,6 +30,8 @@ export interface ThemePreset {
 }
 
 export const THEME_PRESETS: ThemePreset[] = [
+  { name: 'Elite Indigo', primaryColor: '#312E81', secondaryColor: '#F59E0B', previewClass: 'bg-indigo-900' },
+  { name: 'Midnight Blue', primaryColor: '#0F172A', secondaryColor: '#10B981', previewClass: 'bg-slate-900' },
   { name: 'Classic Blue', primaryColor: '#1a73e8', secondaryColor: '#e8f0fe', previewClass: 'bg-blue-600' },
   { name: 'Emerald Green', primaryColor: '#059669', secondaryColor: '#ecfdf5', previewClass: 'bg-emerald-600' },
   { name: 'Royal Purple', primaryColor: '#7c3aed', secondaryColor: '#f5f3ff', previewClass: 'bg-purple-600' },
@@ -42,13 +44,16 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   const userMenuRef = useRef<Menu>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('theme-mode') as 'light' | 'dark';
       if (savedMode === 'light' || savedMode === 'dark') {
         setThemeMode(savedMode);
+      } else {
+        setThemeMode('light');
+        localStorage.setItem('theme-mode', 'light');
       }
     }
   }, []);

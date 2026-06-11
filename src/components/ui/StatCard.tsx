@@ -25,7 +25,7 @@ export function StatCard({
   loading 
 }: StatCardProps) {
   return (
-    <div className={`relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group min-w-[200px] w-full`}>
+    <div className={`relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group min-w-[200px] w-full premium-glow-effect`}>
       {/* Background Gradient Decorative Shape */}
       <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br ${gradientClass} opacity-5 dark:opacity-[0.03] rounded-full translate-x-6 -translate-y-6 sm:translate-x-8 sm:-translate-y-8`}></div>
       

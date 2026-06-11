@@ -5,19 +5,16 @@
 @layer tailwind-base, primereact, tailwind-utilities;
 
 :root {
-  /* Ultra-Premium Royal Palette */
-  --primary-color: #4f46e5;
-  --secondary-color: #818cf8;
+  /* Premium Elite Color Palette */
+  --primary-color: #4318FF; /* Vibrant Premium CRM Blue */
+  --secondary-color: #39B8FF;
   
-  /* Dynamic premium tinted background matched to primary brand color */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Pure and Clean Backgrounds */
+  --background: #F4F7FE;
+  --foreground: #1B254B;
   
-  /* Modern Mesh Gradient Light */
-  --mesh-bg: radial-gradient(at 0% 0%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0px, transparent 50%),
-             radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary-color) 8%, transparent) 0px, transparent 50%),
-             radial-gradient(at 100% 100%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0px, transparent 50%),
-             radial-gradient(at 0% 100%, color-mix(in srgb, var(--secondary-color) 8%, transparent) 0px, transparent 50%);
+  /* Modern Mesh Gradient Light - Disabled for cleaner look */
+  --mesh-bg: none;
 
   /* Dynamic Tailwind CSS v4 theme color mapping */
   --color-primary: var(--primary-color);
@@ -25,14 +22,11 @@
 }
 
 .dark {
-  --background: #090e17;
-  --foreground: #f8fafc;
+  --background: #0B1437;
+  --foreground: #F4F7FE;
   
-  /* Deep Space Royal Mesh Gradient Dark */
-  --mesh-bg: radial-gradient(at 0% 0%, color-mix(in srgb, var(--primary-color) 15%, transparent) 0px, transparent 50%),
-             radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary-color) 12%, transparent) 0px, transparent 50%),
-             radial-gradient(at 100% 100%, color-mix(in srgb, var(--primary-color) 15%, transparent) 0px, transparent 50%),
-             radial-gradient(at 0% 100%, color-mix(in srgb, var(--secondary-color) 12%, transparent) 0px, transparent 50%);
+  /* Deep Space Royal Mesh Gradient Dark - Disabled for cleaner look */
+  --mesh-bg: none;
 }
 
 body {
@@ -201,9 +195,18 @@ textarea:-webkit-autofill:focus {
     margin-left: 0 !important;
   }
 }
+.premium-glow-effect {
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.02) !important;
+}
+.dark .premium-glow-effect {
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  background-color: #111C44 !important;
+}
 .premium-glow-effect:hover {
-  box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.45) !important;
+  box-shadow: 0 10px 40px -5px rgba(67, 24, 255, 0.15);
+  transform: translateY(-2px);
 }
 
 /* Premium PrimeReact Panel and Overlay Overrides */
@@ -317,6 +320,21 @@ textarea:-webkit-autofill:focus {
   -webkit-text-fill-color: transparent !important;
 }
 
+/* Elite Micro-animations */
+@keyframes slide-up-fade {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 
+.animate-slide-up {
+  animation: slide-up-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}

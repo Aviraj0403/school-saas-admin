@@ -212,7 +212,7 @@ export default function StaffPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 lg:gap-8 pb-10 max-w-[100vw] overflow-x-hidden">
+      <div className="flex flex-col gap-6 lg:gap-8 pb-10 w-full">
         
         {/* Header Block */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">

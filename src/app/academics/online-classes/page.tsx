@@ -25,6 +25,9 @@ interface OnlineClass {
   teacherName?: string;
   className?: string;
   subjectName?: string;
+  joinUrl?: string;
+  teacherUrl?: string;
+  embedUrl?: string;
 }
 
 export default function OnlineClassesPage() {
@@ -141,7 +144,7 @@ export default function OnlineClassesPage() {
             {/* Jitsi Meet Secure Embedded Sandbox Iframe */}
             <div className="w-full aspect-video md:h-[500px] bg-black relative">
               <iframe
-                src={`https://meet.jit.si/${activeJitsiRoom.jitsiRoomName}#userInfo.displayName="${user?.name || 'Educator'}"`}
+                src={`${activeJitsiRoom.embedUrl || activeJitsiRoom.joinUrl || `https://meet.jit.si/${activeJitsiRoom.jitsiRoomName}`}#userInfo.displayName="${user?.name || 'Educator'}"`}
                 allow="camera; microphone; fullscreen; display-capture; autoplay"
                 className="w-full h-full border-0 rounded-2xl"
               />

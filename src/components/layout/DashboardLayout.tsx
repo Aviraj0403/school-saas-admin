@@ -86,33 +86,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 font-sans relative overflow-hidden">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
+        style={{ backgroundImage: `url('/ai_student_bg.png')` }}
+      >
+        {/* Ambient Overlay Layer */}
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[3px] z-0 pointer-events-none" />
+
+        {/* Soft Luminous Backdrop Orbs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/20 blur-[140px] pointer-events-none animate-pulse duration-[8000ms]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/20 blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
         
-        {/* Soft glowing ambient backgrounds for Premium Elite feel */}
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px] pointer-events-none"></div>
-        
-        <div className="relative z-10 w-full max-w-md">
-          {/* Main Login Card */}
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-800/60 rounded-[2rem] shadow-xl dark:shadow-2xl flex flex-col p-8 sm:p-10 transition-all duration-300">
-            
-            {/* Branding Header */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 ring-1 ring-indigo-600/20">
-                <i className="pi pi-graduation-cap text-3xl"></i>
+        {/* Responsive Side-by-Side Flex Container */}
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 max-w-4xl w-full items-stretch justify-center">
+          
+          {/* Static Glassmorphic Login Card */}
+          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col gap-6 transition-all duration-300">
+            {/* Glowing Premium Logo & Branding */}
+            <div className="flex flex-col items-center mb-2">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl opacity-75 blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center mb-4 border border-slate-700/50 shadow-inner">
+                  <i className="pi pi-graduation-cap text-blue-400 text-3xl"></i>
+                </div>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white text-center">
-                School SaaS
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white mt-2">
+                EduNexus OS
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium text-center">
-                Sign in to your administration panel
+              <p className="text-slate-400 text-xs md:text-sm mt-1.5 font-medium tracking-wide">
+                Sign in to manage your school ecosystem
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-5">
               {loginMutation.isError && (
-                <div className="p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-600 dark:text-rose-400 text-xs font-semibold">
-                  <i className="pi pi-exclamation-circle text-base"></i>
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold">
+                  <i className="pi pi-exclamation-circle text-base text-rose-400"></i>
                   <span>
                     {(loginMutation.error as any)?.response?.data?.message ||
                       'Login failed. Please check your credentials.'}
@@ -121,19 +130,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
 
               {/* Email Field */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="email" className="font-bold text-xs text-slate-700 dark:text-slate-300">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="email" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
                   Email Address
                 </label>
                 <div className="relative flex items-center group w-full">
-                  <i className="pi pi-envelope absolute left-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-200 z-10 pointer-events-none"></i>
-                  <InputText
+                  <i className="pi pi-envelope absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
+                  <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full py-3.5 pr-3.5 pl-11 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-slate-900 dark:text-white text-sm placeholder-slate-400 rounded-xl shadow-sm z-0"
+                    className="w-full py-3.5 pr-3.5 pl-11 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
                     placeholder="admin@school.com"
                     autoComplete="email"
                   />
@@ -141,26 +150,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               {/* Password Field */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="password" className="font-bold text-xs text-slate-700 dark:text-slate-300">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
                   Password
                 </label>
                 <div className="relative flex items-center group w-full">
-                  <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-200 z-10 pointer-events-none"></i>
+                  <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full py-3.5 pl-11 pr-12 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-slate-900 dark:text-white text-sm placeholder-slate-400 rounded-xl shadow-sm outline-none z-0"
+                    className="w-full py-3.5 pl-11 pr-12 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
                     placeholder="••••••••"
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
+                    className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
                   >
                     <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
                   </button>
@@ -171,27 +180,60 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 type="submit"
                 disabled={loginMutation.isPending}
-                className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold p-3.5 rounded-xl border-0 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 style={{ opacity: loginMutation.isPending ? 0.7 : 1 }}
               >
                 {loginMutation.isPending ? <i className="pi pi-spinner pi-spin"></i> : <i className="pi pi-sign-in"></i>}
-                Sign In securely
+                Sign In to Platform
               </button>
             </form>
           </div>
 
-          {/* Minimalist Demo Information */}
-          <div className="mt-8 flex flex-col gap-3">
-            <div className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              <i className="pi pi-info-circle"></i>
-              <span>Demo Credentials</span>
+          {/* Static Glassmorphic Demo Credentials Card (Side-by-Side) */}
+          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex-1 p-8 md:p-10 flex flex-col justify-between gap-6 transition-all duration-300">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3 border-b border-slate-800/60 pb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center">
+                  <i className="pi pi-info-circle text-blue-400 text-lg"></i>
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Workspace Access</h2>
+                  <p className="text-slate-400 text-[10px] font-medium tracking-wide">Quick-copy credentials to preview distinct roles</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 mt-2">
+                {/* SuperAdmin Item */}
+                <div className="p-4 bg-slate-950/40 border border-slate-800/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-blue-400 font-extrabold uppercase tracking-widest">SuperAdmin Role</span>
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[9px] font-bold">Platform Owner</span>
+                  </div>
+                  <div className="flex flex-col text-xs mt-1">
+                    <span className="text-slate-400 font-semibold">Email:</span>
+                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">superadmin@aviraj.com</span>
+                  </div>
+                </div>
+
+                {/* School Admin Item */}
+                <div className="p-4 bg-slate-950/40 border border-slate-800/50 rounded-2xl flex flex-col gap-1.5 hover:border-blue-500/20 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest">School Admin Role</span>
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[9px] font-bold">School Manager</span>
+                  </div>
+                  <div className="flex flex-col text-xs mt-1">
+                    <span className="text-slate-400 font-semibold">Email:</span>
+                    <span className="font-mono text-white mt-0.5 select-all break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800/40">admin@demo.com</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-center gap-4 text-[11px] font-mono text-slate-400 dark:text-slate-500">
-              <span className="bg-white/50 dark:bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">superadmin@aviraj.com</span>
-              <span className="bg-white/50 dark:bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">admin@demo.com</span>
-            </div>
-            <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-              Password for all: <span className="font-bold font-mono">123456</span>
+
+            <div className="p-3 bg-blue-950/15 border border-blue-900/20 rounded-2xl flex items-center gap-3">
+              <i className="pi pi-shield text-blue-400 text-sm"></i>
+              <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
+                Shared default password for both accounts: <span className="font-mono text-blue-300 font-bold select-all bg-slate-900/50 px-1.5 py-0.5 rounded">123456</span>
+              </p>
             </div>
           </div>
 

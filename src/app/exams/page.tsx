@@ -16,6 +16,9 @@ import { useExamsList, useCreateExam, useAutoAssignSeating, useSeatingChart, use
 import { useClasses } from '@/hooks/queries/useAcademics';
 import { studentsService } from '@/services/students.service';
 import { useQuery } from '@tanstack/react-query';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
+
 
 export default function ExamsPage() {
   const [activeTab, setActiveTab] = useState(0);
@@ -89,16 +92,12 @@ export default function ExamsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Exams" />
+<div className="flex flex-col gap-4 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Exams & Seat Allocations</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Establish exam dates, publish term sheets, and trigger automatic seat allocations.
-            </p>
-          </div>
+        <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4 pt-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
+          
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => {
@@ -107,14 +106,14 @@ export default function ExamsPage() {
                 }
                 setShowSeatingDialog(true);
               }}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
             >
               <i className="pi pi-sitemap"></i>
               Assign Seatings
             </button>
             <button 
               onClick={() => setShowAddDialog(true)}
-              className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+              className="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-md shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
             >
               <i className="pi pi-calendar-plus"></i>
               Schedule Exam
@@ -123,13 +122,13 @@ export default function ExamsPage() {
         </div>
 
         {/* View mode toggle */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm flex justify-end gap-2">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-md border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex justify-end gap-2">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-lg transition-all ${
+            className={`p-2 rounded-md transition-all ${
               viewMode === 'grid' 
-                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
+                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
             }`}
             title="Grid Mode"
           >
@@ -137,10 +136,10 @@ export default function ExamsPage() {
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`p-2 rounded-lg transition-all ${
+            className={`p-2 rounded-md transition-all ${
               viewMode === 'table' 
-                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
+                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
             }`}
             title="Tabular View"
           >
@@ -149,7 +148,7 @@ export default function ExamsPage() {
         </div>
 
         {/* Tab Boards */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
           <style>{`
             .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
               background: transparent !important;
@@ -168,35 +167,35 @@ export default function ExamsPage() {
               <div className="p-4">
                 {loadingExams ? (
                   <div className="p-12 flex flex-col items-center justify-center gap-3">
-                    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-semibold text-slate-400">Loading schedules...</span>
+                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-semibold text-zinc-400">Loading schedules...</span>
                   </div>
                 ) : activeExams.length === 0 ? (
-                  <p className="p-8 text-center text-slate-400">No examinations configured yet.</p>
+                  <p className="p-8 text-center text-zinc-400">No examinations configured yet.</p>
                 ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-2">
                     {activeExams.map((exam: any) => (
                       <div 
                         key={exam.id} 
-                        className="border border-slate-105 dark:border-slate-805 p-5 rounded-3xl bg-slate-50/50 dark:bg-slate-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
+                        className="border border-zinc-105 dark:border-zinc-805 p-5 rounded-md bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         <div className="flex justify-between items-start">
-                          <h3 className="font-extrabold text-slate-850 dark:text-white text-base leading-snug">{exam.name}</h3>
+                          <h3 className="font-extrabold text-zinc-850 dark:text-white text-base leading-snug">{exam.name}</h3>
                           {statusBodyTemplate(exam)}
                         </div>
                         
-                        <div className="bg-slate-100/50 dark:bg-slate-850 p-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1.5 border border-slate-150/40 text-slate-400 mt-2">
+                        <div className="bg-zinc-100/50 dark:bg-zinc-850 p-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1.5 border border-zinc-150/40 text-zinc-400 mt-2">
                           <div className="flex justify-between">
                             <span>Class:</span>
-                            <span className="text-slate-850 dark:text-slate-300 font-extrabold">{exam.className || 'All Classes'}</span>
+                            <span className="text-zinc-850 dark:text-zinc-300 font-extrabold">{exam.className || 'All Classes'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Term Start:</span>
-                            <span className="text-slate-850 dark:text-slate-350">{exam.startDate}</span>
+                            <span className="text-zinc-850 dark:text-zinc-350">{exam.startDate}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Term End:</span>
-                            <span className="text-slate-850 dark:text-slate-350">{exam.endDate}</span>
+                            <span className="text-zinc-850 dark:text-zinc-350">{exam.endDate}</span>
                           </div>
                         </div>
                       </div>
@@ -208,7 +207,7 @@ export default function ExamsPage() {
                     loading={loadingExams} 
                     className="p-datatable-sm mt-1" 
                   >
-                    <Column field="name" header="Exam Term" className="font-semibold text-slate-850 dark:text-white"></Column>
+                    <Column field="name" header="Exam Term" className="font-semibold text-zinc-850 dark:text-white"></Column>
                     <Column field="className" header="Class Room" body={(d) => d.className || 'All Classes'}></Column>
                     <Column field="startDate" header="Starts On" sortable></Column>
                     <Column field="endDate" header="Ends On" sortable></Column>
@@ -221,21 +220,21 @@ export default function ExamsPage() {
             {/* Seating chart Panel */}
             <TabPanel header="Seating Allocation Maps">
               <div className="p-4 flex flex-col gap-5">
-                <div className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-850 p-4 rounded-2xl flex-wrap">
-                  <label className="font-bold text-xs text-slate-500 uppercase tracking-wider">Inspect Scheduled Exam:</label>
+                <div className="flex items-center gap-3 bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-850 p-4 rounded-md flex-wrap">
+                  <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">Inspect Scheduled Exam:</label>
                   <Dropdown 
                     value={selectedExamId} 
                     options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
                     onChange={(e) => setSelectedExamId(e.value)} 
                     placeholder="Select Term"
-                    className="border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl min-w-60"
+                    className="border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md min-w-60"
                   />
                 </div>
 
                 {loadingSeating ? (
                   <div className="p-12 flex flex-col items-center justify-center gap-3">
-                    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-semibold text-slate-400">Querying chart data...</span>
+                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-semibold text-zinc-400">Querying chart data...</span>
                   </div>
                 ) : selectedExamId && seatingChart && seatingChart.length > 0 ? (
                   viewMode === 'grid' ? (
@@ -243,15 +242,15 @@ export default function ExamsPage() {
                       {seatingChart.map((slot: any, idx: number) => (
                         <div 
                           key={idx} 
-                          className="border border-indigo-100/55 dark:border-indigo-900/20 p-4 rounded-3xl bg-indigo-50/20 dark:bg-indigo-950/10 flex flex-col gap-2 hover:scale-[1.02] hover:bg-indigo-50/40 transition-all duration-200"
+                          className="border border-blue-100/55 dark:border-blue-900/20 p-4 rounded-md bg-blue-50/20 dark:bg-blue-950/10 flex flex-col gap-2 hover:scale-[1.02] hover:bg-blue-50/40 transition-all duration-200"
                         >
                           <div>
-                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{slot.hallName || 'Hall'}</span>
-                            <h4 className="font-extrabold text-slate-850 dark:text-white text-xs mt-0.5">{slot.studentName}</h4>
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">{slot.hallName || 'Hall'}</span>
+                            <h4 className="font-extrabold text-zinc-850 dark:text-white text-xs mt-0.5">{slot.studentName}</h4>
                           </div>
-                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400 border-t border-slate-100/50 dark:border-indigo-900/10 pt-2 mt-1">
+                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-zinc-400 border-t border-zinc-100/50 dark:border-blue-900/10 pt-2 mt-1">
                             <span>Seat No.</span>
-                            <span className="text-indigo-700 dark:text-indigo-300 font-mono font-extrabold">{slot.seatNo}</span>
+                            <span className="text-blue-700 dark:text-blue-300 font-mono font-extrabold">{slot.seatNo}</span>
                           </div>
                         </div>
                       ))}
@@ -268,7 +267,7 @@ export default function ExamsPage() {
                     </DataTable>
                   )
                 ) : (
-                  <div className="p-12 text-center text-slate-400">
+                  <div className="p-12 text-center text-zinc-400">
                     <i className="pi pi-sitemap text-4xl mb-2"></i>
                     <p className="text-sm font-semibold">No allocations calculated.</p>
                     <p className="text-xs mt-1">Choose a term, then select assign seatings to auto allocate desk arrangements.</p>
@@ -280,26 +279,26 @@ export default function ExamsPage() {
             {/* Admit Card Generation Portal Tab */}
             <TabPanel header="Admit Card Generator">
               <div className="p-4 flex flex-col gap-6">
-                <div className="flex bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl gap-4 flex-wrap">
+                <div className="flex bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-5 rounded-md gap-4 flex-wrap">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">1. Choose Exam Term *</label>
+                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">1. Choose Exam Term *</label>
                     <Dropdown 
                       value={admitCardExamId} 
                       options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
                       onChange={(e) => setAdmitCardExamId(e.value)} 
                       placeholder="Select term"
-                      className="w-60 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl"
+                      className="w-60 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">2. Select Student *</label>
+                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">2. Select Student *</label>
                     <Dropdown 
                       value={admitCardStudentId} 
                       options={studentOptions} 
                       onChange={(e) => setAdmitCardStudentId(e.value)} 
                       filter
                       placeholder="Search student by name/admission"
-                      className="w-72 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl" 
+                      className="w-72 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md" 
                     />
                   </div>
                 </div>
@@ -313,9 +312,9 @@ export default function ExamsPage() {
                     return (
                       <div className="max-w-xl mx-auto w-full animate-fade-in">
                         {/* Premium Printable Admit Card Visualizer */}
-                        <div className="border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg bg-white dark:bg-slate-950 relative">
+                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-lg bg-white dark:bg-zinc-950 relative">
                           {/* Card header banner */}
-                          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 p-5 text-white flex justify-between items-center">
+                          <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-violet-700 p-5 text-white flex justify-between items-center">
                             <div>
                               <span className="text-[9px] font-extrabold uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded">Official Admit Card</span>
                               <h3 className="text-md font-black mt-1 uppercase tracking-wide">{selExamObj?.name || 'TERMINAL EXAMINATION'}</h3>
@@ -325,53 +324,53 @@ export default function ExamsPage() {
 
                           {/* Student Demographics details */}
                           <div className="p-6 flex flex-col gap-5">
-                            <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-900 pb-4">
-                              <div className="w-12 h-12 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center font-bold text-sm border border-indigo-500/20">
+                            <div className="flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-900 pb-4">
+                              <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-md flex items-center justify-center font-bold text-sm border border-blue-500/20">
                                 {selStudentObj?.firstName ? selStudentObj.firstName[0] : '?'}
                               </div>
                               <div className="flex-1">
-                                <h4 className="text-sm font-extrabold text-slate-850 dark:text-white">{fullName}</h4>
-                                <div className="flex gap-4 text-[10px] text-slate-450 mt-1 font-semibold">
-                                  <span>ADM: <span className="font-bold font-mono text-slate-700 dark:text-slate-300">{selStudentObj?.admissionNo || '—'}</span></span>
-                                  <span>CLASS: <span className="font-bold text-indigo-500">{selStudentObj?.className || 'Class 10A'}</span></span>
+                                <h4 className="text-sm font-extrabold text-zinc-850 dark:text-white">{fullName}</h4>
+                                <div className="flex gap-4 text-[10px] text-zinc-450 mt-1 font-semibold">
+                                  <span>ADM: <span className="font-bold font-mono text-zinc-700 dark:text-zinc-300">{selStudentObj?.admissionNo || '—'}</span></span>
+                                  <span>CLASS: <span className="font-bold text-blue-500">{selStudentObj?.className || 'Class 10A'}</span></span>
                                 </div>
                               </div>
                             </div>
 
                             {/* Desk allocation strips */}
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
-                                <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">ALLOCATED HALL</span>
-                                <span className="text-xs font-bold text-slate-850 dark:text-slate-200 mt-1 block">Hall-A (North Wing)</span>
+                              <div className="bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
+                                <span className="text-[8px] font-extrabold text-zinc-400 uppercase tracking-widest block">ALLOCATED HALL</span>
+                                <span className="text-xs font-bold text-zinc-850 dark:text-zinc-200 mt-1 block">Hall-A (North Wing)</span>
                               </div>
-                              <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
-                                <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">ASSIGNED DESK / SEAT</span>
-                                <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 font-mono mt-1 block">Desk Seat #42</span>
+                              <div className="bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
+                                <span className="text-[8px] font-extrabold text-zinc-400 uppercase tracking-widest block">ASSIGNED DESK / SEAT</span>
+                                <span className="text-xs font-black text-blue-600 dark:text-blue-400 font-mono mt-1 block">Desk Seat #42</span>
                               </div>
                             </div>
 
                             {/* Timetable schedule mini logs */}
                             <div className="mt-2">
-                              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block mb-2">Examination Timetable</span>
-                              <div className="border border-slate-100 dark:border-slate-900 rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-900 text-[11px] font-semibold text-slate-650 dark:text-slate-350 bg-slate-50/20">
-                                <div className="p-3 flex justify-between bg-slate-50 dark:bg-slate-900 font-bold text-slate-400 text-[9px] uppercase tracking-wider">
+                              <span className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block mb-2">Examination Timetable</span>
+                              <div className="border border-zinc-100 dark:border-zinc-900 rounded-md overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-900 text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 bg-zinc-50/20">
+                                <div className="p-3 flex justify-between bg-zinc-50 dark:bg-zinc-900 font-bold text-zinc-400 text-[9px] uppercase tracking-wider">
                                   <span>Subject</span>
                                   <span>Schedule Time</span>
                                 </div>
-                                <div className="p-3 flex justify-between"><span>English Literature</span><span className="font-mono text-slate-500">2026-06-01 · 09:00 AM</span></div>
-                                <div className="p-3 flex justify-between"><span>Mathematics Core</span><span className="font-mono text-slate-500">2026-06-03 · 09:00 AM</span></div>
-                                <div className="p-3 flex justify-between"><span>Science & Physics</span><span className="font-mono text-slate-500">2026-06-05 · 09:00 AM</span></div>
+                                <div className="p-3 flex justify-between"><span>English Literature</span><span className="font-mono text-zinc-500">2026-06-01 · 09:00 AM</span></div>
+                                <div className="p-3 flex justify-between"><span>Mathematics Core</span><span className="font-mono text-zinc-500">2026-06-03 · 09:00 AM</span></div>
+                                <div className="p-3 flex justify-between"><span>Science & Physics</span><span className="font-mono text-zinc-500">2026-06-05 · 09:00 AM</span></div>
                               </div>
                             </div>
 
                             {/* Signature / stamp blocks */}
-                            <div className="flex justify-between items-end border-t border-slate-100 dark:border-slate-900 pt-5 mt-3 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                            <div className="flex justify-between items-end border-t border-zinc-100 dark:border-zinc-900 pt-5 mt-3 text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
                               <div className="flex flex-col items-center">
-                                <div className="h-8 w-24 border-b border-dashed border-slate-200 dark:border-slate-800"></div>
+                                <div className="h-8 w-24 border-b border-dashed border-zinc-200 dark:border-zinc-800"></div>
                                 <span className="mt-2">Invigilator Sign</span>
                               </div>
                               <div className="flex flex-col items-center">
-                                <div className="h-8 w-24 border-b border-dashed border-slate-200 dark:border-slate-800"></div>
+                                <div className="h-8 w-24 border-b border-dashed border-zinc-200 dark:border-zinc-800"></div>
                                 <span className="mt-2">Principal Seal</span>
                               </div>
                             </div>
@@ -391,7 +390,7 @@ export default function ExamsPage() {
                                 }
                               }));
                             }}
-                            className="p-3 px-6 bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
+                            className="p-3 px-6 bg-blue-600 hover:bg-blue-700 border-none text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-md transition-all active:scale-95 flex items-center gap-2"
                           >
                             <i className="pi pi-print"></i>
                             Print Admit Card
@@ -401,10 +400,10 @@ export default function ExamsPage() {
                     );
                   })()
                 ) : (
-                  <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/20 max-w-lg mx-auto">
-                    <i className="pi pi-id-card text-4xl mb-2 text-indigo-400"></i>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-350">Admit Card Visualizer</p>
-                    <p className="text-xs text-slate-400 mt-1">Select an active exam term and student roll number to generate and review their printable exam hall admit card.</p>
+                  <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50/20 max-w-lg mx-auto">
+                    <i className="pi pi-id-card text-4xl mb-2 text-blue-400"></i>
+                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-350">Admit Card Visualizer</p>
+                    <p className="text-xs text-zinc-400 mt-1">Select an active exam term and student roll number to generate and review their printable exam hall admit card.</p>
                   </div>
                 )}
               </div>
@@ -413,26 +412,26 @@ export default function ExamsPage() {
             {/* Terminal Exam Results Sheets Tab */}
             <TabPanel header="Exam Report Sheets">
               <div className="p-4 flex flex-col gap-6">
-                <div className="flex bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl gap-4 flex-wrap">
+                <div className="flex bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-5 rounded-md gap-4 flex-wrap">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">Select Exam Term *</label>
+                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">Select Exam Term *</label>
                     <Dropdown 
                       value={resultsSearchExamId} 
                       options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
                       onChange={(e) => setResultsSearchExamId(e.value)} 
                       placeholder="Select term"
-                      className="w-60 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl"
+                      className="w-60 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-450">Search Student Profile *</label>
+                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">Search Student Profile *</label>
                     <Dropdown 
                       value={resultsSearchStudentId} 
                       options={studentOptions} 
                       onChange={(e) => setResultsSearchStudentId(e.value)} 
                       filter
                       placeholder="Search student by name/admission"
-                      className="w-72 border border-slate-200 dark:border-slate-800 dark:bg-slate-950 rounded-xl" 
+                      className="w-72 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md" 
                     />
                   </div>
                 </div>
@@ -451,13 +450,13 @@ export default function ExamsPage() {
                     return (
                       <div className="flex flex-col gap-6 animate-fade-in">
                         {/* Report card overview banner */}
-                        <div className="p-5 rounded-2xl bg-indigo-500/5 dark:bg-indigo-950/10 border border-indigo-150/30 flex justify-between items-center">
+                        <div className="p-5 rounded-md bg-blue-500/5 dark:bg-blue-950/10 border border-blue-150/30 flex justify-between items-center">
                           <div>
-                            <h4 className="text-sm font-extrabold text-slate-800 dark:text-white">{fullName} Report Sheet</h4>
-                            <p className="text-[10px] text-slate-400 font-semibold mt-1">Class: {selStudentObj?.className || 'Class'} · Roll Code: {selStudentObj?.admissionNo || '—'}</p>
+                            <h4 className="text-sm font-extrabold text-zinc-800 dark:text-white">{fullName} Report Sheet</h4>
+                            <p className="text-[10px] text-zinc-400 font-semibold mt-1">Class: {selStudentObj?.className || 'Class'} · Roll Code: {selStudentObj?.admissionNo || '—'}</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-slate-400 block">Overall Grade</span>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-400 block">Overall Grade</span>
                             <span className={`text-lg font-black block mt-0.5 ${overallStatus === 'PASS' ? 'text-emerald-500' : 'text-rose-500'}`}>
                               {studentResults?.length ? `${overallGrade} (${overallStatus}) - ${overallPct}%` : 'N/A'}
                             </span>
@@ -466,7 +465,7 @@ export default function ExamsPage() {
 
                         {/* Results DataTable */}
                         {loadingStudentResults ? (
-                          <div className="p-8 text-center text-slate-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+                          <div className="p-8 text-center text-zinc-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
                         ) : (
                           <DataTable
                             value={studentResults || []}
@@ -478,7 +477,7 @@ export default function ExamsPage() {
                           <Column 
                             header="Marks Obtained" 
                             body={(d) => (
-                              <span className="font-bold font-mono text-slate-800 dark:text-slate-200">
+                              <span className="font-bold font-mono text-zinc-800 dark:text-zinc-200">
                                 {d.marks} / {d.maxMarks}
                               </span>
                             )} 
@@ -487,9 +486,9 @@ export default function ExamsPage() {
                             header="Percentage" 
                             body={(d) => (
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs text-slate-600 dark:text-slate-350">{Math.round((d.marks / d.maxMarks) * 100)}%</span>
-                                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-indigo-500" style={{ width: `${(d.marks / d.maxMarks) * 100}%` }}></div>
+                                <span className="font-mono text-xs text-zinc-600 dark:text-zinc-350">{Math.round((d.marks / d.maxMarks) * 100)}%</span>
+                                <div className="w-16 h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-blue-500" style={{ width: `${(d.marks / d.maxMarks) * 100}%` }}></div>
                                 </div>
                               </div>
                             )}
@@ -499,7 +498,7 @@ export default function ExamsPage() {
                             body={(d) => {
                               const pct = (d.marks / d.maxMarks) * 100;
                               const grade = pct >= 90 ? 'A+' : pct >= 80 ? 'A' : 'B';
-                              return <span className="font-extrabold text-indigo-500 font-mono">{grade}</span>;
+                              return <span className="font-extrabold text-blue-500 font-mono">{grade}</span>;
                             }} 
                             align="center"
                           />
@@ -508,17 +507,17 @@ export default function ExamsPage() {
                             body={(d) => <Tag value={d.status} severity="success" className="font-bold text-[9px] px-2 py-0.5 rounded-full" />} 
                             align="center"
                           />
-                          <Column field="remarks" header="Remarks / Feedback" className="text-xs text-slate-450" />
+                          <Column field="remarks" header="Remarks / Feedback" className="text-xs text-zinc-450" />
                           </DataTable>
                         )}
                       </div>
                     );
                   })()
                 ) : (
-                  <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/20 max-w-lg mx-auto">
-                    <i className="pi pi-file text-4xl mb-2 text-indigo-400"></i>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-350">Academic Report Card</p>
-                    <p className="text-xs text-slate-400 mt-1">Select an active exam term and a student to pull and inspect their live subject-wise marks, grades, and PASS/FAIL metrics.</p>
+                  <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50/20 max-w-lg mx-auto">
+                    <i className="pi pi-file text-4xl mb-2 text-blue-400"></i>
+                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-350">Academic Report Card</p>
+                    <p className="text-xs text-zinc-400 mt-1">Select an active exam term and a student to pull and inspect their live subject-wise marks, grades, and PASS/FAIL metrics.</p>
                   </div>
                 )}
               </div>
@@ -536,58 +535,58 @@ export default function ExamsPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowAddDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-md"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAddDialog(false)} />
             <Button 
               label="Schedule Term" 
               icon="pi pi-check" 
               onClick={handleCreateExam} 
               loading={createMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
             />
           </div>
         }
       >
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Exam Term Name *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Exam Term Name *</label>
             <InputText 
               value={newExam.name} 
               onChange={(e) => setNewExam({ ...newExam, name: e.target.value })} 
               placeholder="e.g. Mid-Term 2026"
-              className="p-2 border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="p-2 border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Target Class *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Target Class *</label>
             <Dropdown 
               value={newExam.classId} 
               options={classOptions} 
               onChange={(e) => setNewExam({ ...newExam, classId: e.value })} 
               placeholder="Select Class"
-              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Start Date *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Start Date *</label>
             <Calendar 
               value={newExam.startDate ? new Date(newExam.startDate) : null} 
               onChange={(e) => setNewExam({ ...newExam, startDate: e.value ? e.value.toISOString().split('T')[0] : '' })} 
               dateFormat="yy-mm-dd"
               showIcon
-              className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full"
+              className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">End Date *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">End Date *</label>
             <Calendar 
               value={newExam.endDate ? new Date(newExam.endDate) : null} 
               onChange={(e) => setNewExam({ ...newExam, endDate: e.value ? e.value.toISOString().split('T')[0] : '' })} 
               dateFormat="yy-mm-dd"
               showIcon
-              className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full"
+              className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full"
             />
           </div>
         </div>
@@ -600,35 +599,35 @@ export default function ExamsPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowSeatingDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-md"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowSeatingDialog(false)} />
             <Button 
               label="Run Allocations" 
               icon="pi pi-check" 
               onClick={handleAutoAssign} 
               loading={autoAssignMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
             />
           </div>
         }
       >
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Select Exam Term *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Select Exam Term *</label>
             <Dropdown 
               value={selectedExamId} 
               options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
               onChange={(e) => setSelectedExamId(e.value)} 
-              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Select Classroom Sections * (Hold Ctrl for multi)</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Select Classroom Sections * (Hold Ctrl for multi)</label>
             <select 
               multiple 
-              className="w-full p-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-2xl h-32 text-xs focus:ring-1 focus:ring-indigo-500 outline-none"
+              className="w-full p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md h-32 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
               value={selectedClassIds}
               onChange={(e) => {
                 const options = Array.from(e.target.selectedOptions, option => option.value);

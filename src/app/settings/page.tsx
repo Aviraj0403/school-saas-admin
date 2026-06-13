@@ -10,6 +10,8 @@ import { Column } from 'primereact/column';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsService } from '@/services/settings.service';
 import { useStaffList, useResetStaffPassword } from '@/hooks/queries/useStaff';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 const ALL_MODULES = [
   { id: 'students', label: 'Students', desc: 'Manage admission files, profile rosters, and student metrics.', icon: 'pi pi-users', color: 'text-blue-500' },
@@ -17,7 +19,7 @@ const ALL_MODULES = [
   { id: 'academics', label: 'Academics Suite', desc: 'Timetables, classes, subject schedules, and syllabi.', icon: 'pi pi-book', color: 'text-purple-500' },
   { id: 'attendance', label: 'Attendance Roster', desc: 'Daily attendance registry with bulk check-in tools.', icon: 'pi pi-check-square', color: 'text-emerald-500' },
   { id: 'fee', label: 'Finance & Fees', desc: 'Slabs, invoices, receipt collections, and transaction logs.', icon: 'pi pi-wallet', color: 'text-teal-500' },
-  { id: 'exams', label: 'Exams & Seating', desc: 'Define exam terms, schedules, and seating layouts.', icon: 'pi pi-sitemap', color: 'text-indigo-500' },
+  { id: 'exams', label: 'Exams & Seating', desc: 'Define exam terms, schedules, and seating layouts.', icon: 'pi pi-sitemap', color: 'text-blue-500' },
   { id: 'library', label: 'Library Catalog', desc: 'Track book catalogs, borrowing logs, and return status.', icon: 'pi pi-bookmark', color: 'text-rose-500' },
   { id: 'communication', label: 'Communication Hub', desc: 'Post bulletins, newsletters, and announcements.', icon: 'pi pi-megaphone', color: 'text-pink-500' },
   { id: 'whatsapp', label: 'WhatsApp Bot', desc: 'Trigger chatbot auto-responders and template logs.', icon: 'pi pi-whatsapp', color: 'text-green-500' },
@@ -27,8 +29,8 @@ const ALL_MODULES = [
 ];
 
 const PLANS = [
-  { value: 'BASIC', label: 'Basic Slab', price: '₹4,999/mo', desc: 'Core student directory, library catalog, and leave approvals.', color: 'from-slate-400 to-slate-500' },
-  { value: 'STANDARD', label: 'Standard Tier', price: '₹9,999/mo', desc: 'Includes fee management, staff metrics, and exams scheduling.', color: 'from-blue-500 to-indigo-650' },
+  { value: 'BASIC', label: 'Basic Slab', price: '₹4,999/mo', desc: 'Core student directory, library catalog, and leave approvals.', color: 'from-zinc-400 to-zinc-500' },
+  { value: 'STANDARD', label: 'Standard Tier', price: '₹9,999/mo', desc: 'Includes fee management, staff metrics, and exams scheduling.', color: 'from-blue-500 to-blue-650' },
   { value: 'PREMIUM', label: 'Premium Gold', price: '₹19,999/mo', desc: 'Includes auto seating charts, WhatsApp bots, and advanced analytics.', color: 'from-amber-500 to-orange-650' },
   { value: 'ENTERPRISE', label: 'Enterprise Pro', price: 'Custom Quote', desc: 'Full transport timeline mappings, multi-branch panels, and dedicated databases.', color: 'from-purple-500 to-fuchsia-700' },
 ];
@@ -134,9 +136,10 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-96 gap-4">
-          <div className="w-10 h-10 border-4 border-indigo-650 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-semibold text-slate-400">Loading settings...</span>
+      <PageBreadcrumb title="Settings" />
+<div className="flex flex-col items-center justify-center h-96 gap-4">
+          <div className="w-10 h-10 border-4 border-blue-650 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-semibold text-zinc-400">Loading settings...</span>
         </div>
       </DashboardLayout>
     );
@@ -144,28 +147,22 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <Toast ref={toast} />
+      <PageBreadcrumb title="Settings" />
+<Toast ref={toast} />
       <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2 border-b border-slate-100/50 dark:border-slate-800/50 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">School Settings & Credentials Control</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Manage your institute's profile parameters, subscription plan levels, modules, and app login credentials.
-            </p>
-          </div>
-        </div>
+        
 
         {/* Configurations Sub-Tabs Selector */}
-        <div className="flex bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/40 dark:border-slate-800/80 w-max overflow-x-auto max-w-full">
+        <div className="flex bg-zinc-100/60 dark:bg-zinc-900/60 p-1.5 rounded-md border border-zinc-200/40 dark:border-zinc-800/80 w-max overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
               activeTab === 'profile'
-                ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-700'
             }`}
           >
             <i className="pi pi-building"></i>
@@ -174,10 +171,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('modules')}
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
               activeTab === 'modules'
-                ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-700'
             }`}
           >
             <i className="pi pi-cog"></i>
@@ -186,10 +183,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('users')}
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
               activeTab === 'users'
-                ? 'bg-white dark:bg-slate-950 text-indigo-500 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-700'
             }`}
           >
             <i className="pi pi-id-card"></i>
@@ -203,44 +200,44 @@ export default function SettingsPage() {
           {/* Tab 1: Profile & Pricing */}
           {activeTab === 'profile' && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-800 dark:text-white">School Profile Parameters</h2>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Basic metadata details about this institutional workspace.</p>
+                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">School Profile Parameters</h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">Basic metadata details about this institutional workspace.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-xs text-slate-500 uppercase tracking-wider">School / Tenant Name *</label>
+                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">School / Tenant Name *</label>
                     <InputText
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="p-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="e.g. Heights Academy Junior Wing"
                       required
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-xs text-slate-500 uppercase tracking-wider">Subdomain Slug</label>
+                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">Subdomain Slug</label>
                     <div className="relative">
                       <InputText
                         value={formData.slug}
                         disabled
-                        className="p-3 w-full border border-slate-200 dark:border-slate-850 dark:bg-slate-800/50 rounded-xl cursor-not-allowed text-slate-400 font-mono text-xs pl-3 pr-28"
+                        className="p-3 w-full border border-zinc-200 dark:border-zinc-850 dark:bg-zinc-800/50 rounded-md cursor-not-allowed text-zinc-400 font-mono text-xs pl-3 pr-28"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-indigo-550 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/40 p-1 px-2.5 rounded-lg border border-indigo-100/50 dark:border-indigo-900/30">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-blue-550 uppercase tracking-widest bg-blue-50 dark:bg-blue-950/40 p-1 px-2.5 rounded-md border border-blue-100/50 dark:border-blue-900/30">
                         {baseDomain}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1.5 md:col-span-2">
-                    <label className="font-bold text-xs text-slate-500 uppercase tracking-wider">Administrative Contact Email *</label>
+                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">Administrative Contact Email *</label>
                     <InputText
                       value={formData.adminEmail}
                       onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                      className="p-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="admin@heights.edu"
                       required
                     />
@@ -249,10 +246,10 @@ export default function SettingsPage() {
               </div>
 
               {/* Pricing package slabs */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Subscription Package Tier</h2>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Upgrade or inspect school subscription pricing limits.</p>
+                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">Subscription Package Tier</h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">Upgrade or inspect school subscription pricing limits.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -262,19 +259,19 @@ export default function SettingsPage() {
                       <div
                         key={p.value}
                         onClick={() => setFormData({ ...formData, plan: p.value })}
-                        className={`cursor-pointer rounded-2xl border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:scale-[1.02] ${
+                        className={`cursor-pointer rounded-md border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:scale-[1.02] ${
                           isSelected 
-                            ? 'border-indigo-650 bg-indigo-50/15 dark:bg-indigo-950/10 shadow-md ring-1 ring-indigo-500' 
-                            : 'border-slate-150 dark:border-slate-800 bg-slate-50/30 hover:bg-slate-50/70 dark:bg-slate-900 dark:hover:bg-slate-850'
+                            ? 'border-blue-650 bg-blue-50/15 dark:bg-blue-950/10 shadow-md ring-1 ring-blue-500' 
+                            : 'border-zinc-150 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50/70 dark:bg-zinc-900 dark:hover:bg-zinc-850'
                         }`}
                       >
                         <div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs font-black uppercase tracking-wider text-slate-400">{p.label}</span>
-                            {isSelected && <i className="pi pi-check-circle text-indigo-600 text-sm animate-pulse"></i>}
+                            <span className="text-xs font-black uppercase tracking-wider text-zinc-400">{p.label}</span>
+                            {isSelected && <i className="pi pi-check-circle text-blue-600 text-sm animate-pulse"></i>}
                           </div>
-                          <h3 className="text-xl font-black mt-2 text-slate-800 dark:text-white">{p.price}</h3>
-                          <p className="text-[10px] text-slate-450 mt-2 leading-relaxed">{p.desc}</p>
+                          <h3 className="text-xl font-black mt-2 text-zinc-800 dark:text-white">{p.price}</h3>
+                          <p className="text-[10px] text-zinc-450 mt-2 leading-relaxed">{p.desc}</p>
                         </div>
 
                         <div className={`h-1.5 rounded-full w-full bg-gradient-to-r ${p.color}`} />
@@ -291,7 +288,7 @@ export default function SettingsPage() {
                   label="Save Profile Settings"
                   icon="pi pi-check"
                   loading={mutation.isPending}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 px-6 rounded-xl border-0 shadow-md transition-all active:scale-95"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
                 />
               </div>
             </form>
@@ -300,10 +297,10 @@ export default function SettingsPage() {
           {/* Tab 2: Module Matrix */}
           {activeTab === 'modules' && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Module Matrix Switcher</h2>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Enable or disable panel modules in your sidebar index menu.</p>
+                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">Module Matrix Switcher</h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">Enable or disable panel modules in your sidebar index menu.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -313,21 +310,21 @@ export default function SettingsPage() {
                       <div
                         key={m.id}
                         onClick={() => toggleModule(m.id)}
-                        className={`cursor-pointer p-4 rounded-2xl border flex items-start gap-3 transition-all duration-150 active:scale-98 ${
+                        className={`cursor-pointer p-4 rounded-md border flex items-start gap-3 transition-all duration-150 active:scale-98 ${
                           isActive 
-                            ? 'border-indigo-650/40 bg-indigo-50/20 dark:bg-indigo-950/10' 
-                            : 'border-slate-100 dark:border-slate-800 hover:bg-slate-50/50'
+                            ? 'border-blue-650/40 bg-blue-50/20 dark:bg-blue-950/10' 
+                            : 'border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50/50'
                         }`}
                       >
-                        <div className={`p-2.5 rounded-xl ${isActive ? 'bg-indigo-100 text-indigo-650 dark:bg-indigo-900/40' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'} transition-colors`}>
+                        <div className={`p-2.5 rounded-md ${isActive ? 'bg-blue-100 text-blue-650 dark:bg-blue-900/40' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800'} transition-colors`}>
                           <i className={`${m.icon} text-md`}></i>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center gap-1">
-                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">{m.label}</span>
-                            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? 'bg-emerald-500 scale-100' : 'bg-slate-300 scale-75'}`} />
+                            <span className="font-bold text-xs text-zinc-800 dark:text-zinc-200 truncate">{m.label}</span>
+                            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? 'bg-emerald-500 scale-100' : 'bg-zinc-300 scale-75'}`} />
                           </div>
-                          <p className="text-[9px] text-slate-400 mt-1 leading-snug break-words">{m.desc}</p>
+                          <p className="text-[9px] text-zinc-400 mt-1 leading-snug break-words">{m.desc}</p>
                         </div>
                       </div>
                     );
@@ -341,7 +338,7 @@ export default function SettingsPage() {
                   label="Save Modules Activation"
                   icon="pi pi-check"
                   loading={mutation.isPending}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 px-6 rounded-xl border-0 shadow-md transition-all active:scale-95"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
                 />
               </div>
             </form>
@@ -352,29 +349,29 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-6 animate-fade-in">
               
               {/* Educational info strip */}
-              <div className="bg-slate-900 border border-slate-850 p-4 sm:p-5 rounded-3xl text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="bg-zinc-900 border border-zinc-850 p-4 sm:p-5 rounded-md text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
+                <div className="absolute top-0 right-0 w-44 h-44 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
                 <div className="z-10">
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
                     SaaS Portal Workflows
                   </span>
                   <h3 className="text-xl font-black mt-2">School Login & Subdomain Context Routing</h3>
-                  <p className="text-xs text-slate-400 mt-1.5 max-w-xl leading-relaxed">
+                  <p className="text-xs text-zinc-400 mt-1.5 max-w-xl leading-relaxed">
                     Staff and teachers login using their registered emails. The SaaS cockpit maps their school automatically via domain matching, separating rosters securely.
                   </p>
                 </div>
                 
-                <div className="flex flex-col gap-1.5 bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800/80 text-[10px] text-slate-400 font-bold tracking-wide uppercase min-w-[200px] shadow-inner backdrop-blur-sm">
-                  <div className="flex justify-between"><span>Default Password:</span><span className="text-indigo-400 font-mono">School@123</span></div>
+                <div className="flex flex-col gap-1.5 bg-zinc-950/70 p-3.5 rounded-md border border-zinc-800/80 text-[10px] text-zinc-400 font-bold tracking-wide uppercase min-w-[200px] shadow-inner backdrop-blur-sm">
+                  <div className="flex justify-between"><span>Default Password:</span><span className="text-blue-400 font-mono">School@123</span></div>
                   <div className="flex justify-between mt-1"><span>Target School Subdomain:</span><span className="text-emerald-400 font-mono lowercase">{formData.slug}{baseDomain}</span></div>
                 </div>
               </div>
 
               {/* Roster list */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col gap-4 premium-glow-effect">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 premium-glow-effect">
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Login Users</h2>
-                  <p className="text-[11px] text-slate-400 mt-0.5">List of active school administrators, teachers, and accountants authorized to sign in.</p>
+                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">Active Login Users</h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">List of active school administrators, teachers, and accountants authorized to sign in.</p>
                 </div>
 
                 <DataTable
@@ -383,8 +380,8 @@ export default function SettingsPage() {
                   emptyMessage="No login users registered yet in this school."
                   className="p-datatable-sm"
                 >
-                  <Column field="name" header="Name" sortable className="font-bold text-slate-850 dark:text-slate-100" />
-                  <Column field="email" header="Login Email (Username)" className="font-mono text-xs text-indigo-600 dark:text-indigo-400" />
+                  <Column field="name" header="Name" sortable className="font-bold text-zinc-850 dark:text-zinc-100" />
+                  <Column field="email" header="Login Email (Username)" className="font-mono text-xs text-blue-600 dark:text-blue-400" />
                   <Column 
                     field="roles" 
                     header="Role Context" 
@@ -392,7 +389,7 @@ export default function SettingsPage() {
                       const rolesList = Array.isArray(d.roles) ? d.roles : [];
                       const primary = rolesList[0]?.name || d.designation || 'Teacher';
                       return (
-                        <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-black uppercase tracking-wider border border-indigo-500/20">
+                        <span className="px-2 py-0.5 bg-blue-500/10 text-blue-650 dark:text-blue-400 rounded-md text-[10px] font-black uppercase tracking-wider border border-blue-500/20">
                           {primary}
                         </span>
                       );
@@ -402,8 +399,8 @@ export default function SettingsPage() {
                     header="Account Status" 
                     body={(d) => (
                       <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${d.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-350'}`}></span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                        <span className={`w-2 h-2 rounded-full ${d.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-350'}`}></span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                           {d.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
@@ -417,7 +414,7 @@ export default function SettingsPage() {
                         label="Reset Password"
                         icon="pi pi-lock-open"
                         onClick={() => handleResetPassword(d.id, d.name)}
-                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold p-1 px-3 border-0 text-[10px] rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-1"
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold p-1 px-3 border-0 text-[10px] rounded-md shadow-sm transition-all active:scale-95 flex items-center gap-1"
                       />
                     )} 
                   />

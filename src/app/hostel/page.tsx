@@ -14,6 +14,9 @@ import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { StatCard } from '@/components/ui/StatCard';
 import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder, useAllBoarders } from '@/hooks/queries/useHostel';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
+
 
 export default function HostelPage() {
   const toast = useRef<Toast>(null);
@@ -146,30 +149,26 @@ export default function HostelPage() {
 
   return (
     <DashboardLayout>
-      <Toast ref={toast} />
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Hostel" />
+<Toast ref={toast} />
+      <div className="flex flex-col gap-4 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Hostel & Residences</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage residential blocks, configure capacities, and assign student boarders.
-            </p>
-          </div>
-          <div className="flex gap-2">
+        <div className="flex justify-end w-full -mt-8 mb-2 z-10 relative">
+          
+          <div className="flex gap-2 w-full md:w-auto">
             <button 
               onClick={() => setShowAdmitDialog(true)}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+              className="flex-1 md:flex-none px-4 py-2 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium rounded-md shadow-sm transition-all text-sm flex items-center justify-center gap-2"
             >
-              <i className="pi pi-user-plus"></i>
+              <i className="pi pi-user-plus text-xs"></i>
               Admit Boarder
             </button>
             <button 
               onClick={() => setShowHostelDialog(true)}
-              className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+              className="flex-1 md:flex-none bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
             >
-              <i className="pi pi-plus"></i>
+              <i className="pi pi-plus text-xs"></i>
               Add Hostel
             </button>
           </div>
@@ -181,7 +180,7 @@ export default function HostelPage() {
             label="Total Hostels"
             value={dashboard?.totalHostels ?? hostelList.length}
             icon="pi pi-building"
-            gradientClass="from-blue-500 to-indigo-500"
+            gradientClass="from-blue-500 to-blue-500"
             iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Active residential blocks"
@@ -207,7 +206,7 @@ export default function HostelPage() {
         </div>
 
         {/* Tabbed view for Hostel registry sections */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
           <style>{`
             .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
               background: transparent !important;
@@ -230,10 +229,10 @@ export default function HostelPage() {
             <TabPanel header="Hostel Rooms & Blocks">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
                 {/* Hostel list panel */}
-                <div className="lg:col-span-3 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">Hostel Blocks</h2>
-                    <p className="text-xs text-slate-400">Select a block to inspect room allotments.</p>
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Hostel Blocks</h2>
+                    <p className="text-xs text-zinc-500">Select a block to inspect room allotments.</p>
                   </div>
                   
                   <DataTable
@@ -245,29 +244,29 @@ export default function HostelPage() {
                     dataKey="id"
                     emptyMessage="No hostels found."
                     className="p-datatable-sm"
-                    rowClassName={(data: any) => `cursor-pointer transition-all duration-100 ${selectedHostel?.id === data.id ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : ''}`}
+                    rowClassName={(data: any) => `cursor-pointer transition-all duration-100 ${selectedHostel?.id === data.id ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
                   >
-                    <Column field="name" header="Block Name" sortable className="font-semibold text-slate-800 dark:text-white" />
-                    <Column field="type" header="Type" sortable body={(d) => <Tag value={d.type} className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold text-[9px] px-2.5 py-0.5 rounded-full" />} />
+                    <Column field="name" header="Block Name" sortable className="font-semibold text-zinc-900 dark:text-white" />
+                    <Column field="type" header="Type" sortable body={(d) => <Tag value={d.type} className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 font-bold text-[9px] px-2.5 py-0.5 rounded-md" />} />
                     <Column field="capacity" header="Bed Capacity" sortable />
                   </DataTable>
                 </div>
 
                 {/* Rooms List Panel */}
-                <div className="lg:col-span-2 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                      <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                         {selectedHostel ? `Rooms — ${selectedHostel.name}` : 'Rooms Allotment'}
                       </h2>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-zinc-500">
                         {selectedHostel ? 'Beds configuration details.' : 'Select block to view rooms list.'}
                       </p>
                     </div>
                     {selectedHostel && (
                       <button 
                         onClick={() => setShowRoomDialog(true)}
-                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-xs flex items-center gap-1.5 transition-all"
                       >
                         <i className="pi pi-plus text-[10px]"></i>
                         Add Room
@@ -282,13 +281,13 @@ export default function HostelPage() {
                       emptyMessage="No rooms mapped to this hostel block yet."
                       className="p-datatable-sm mt-1"
                     >
-                      <Column field="roomNo" header="Room" className="font-semibold text-slate-800 dark:text-white" />
+                      <Column field="roomNo" header="Room" className="font-semibold text-zinc-900 dark:text-white" />
                       <Column field="type" header="Room Type" />
                       <Column field="occupied" header="Occupied" body={(d) => `${d.occupied}/${d.capacity} beds`} />
                       <Column body={statusBodyTemplate} header="Status" />
                     </DataTable>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-12 text-slate-400 border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                    <div className="flex flex-col items-center justify-center p-12 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md">
                       <i className="pi pi-home text-3xl mb-2"></i>
                       <p className="text-xs font-semibold">No Hostel Selected</p>
                     </div>
@@ -302,15 +301,15 @@ export default function HostelPage() {
               <div className="p-4 flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">Active Resident Boarders</h2>
-                    <p className="text-xs text-slate-400">Manage all student allocations across residential block beds.</p>
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Active Resident Boarders</h2>
+                    <p className="text-xs text-zinc-500">Manage all student allocations across residential block beds.</p>
                   </div>
                 </div>
 
                 <DataTable value={boardersList} className="p-datatable-sm" emptyMessage="No resident boarders found.">
-                  <Column field="studentName" header="Student Name" className="font-semibold text-slate-800 dark:text-white" />
+                  <Column field="studentName" header="Student Name" className="font-semibold text-zinc-900 dark:text-white" />
                   <Column field="hostelName" header="Hostel Block" />
-                  <Column field="roomNo" header="Room No" className="font-mono" />
+                  <Column field="roomNo" header="Room No" className="font-mono text-zinc-600 dark:text-zinc-400" />
                   <Column field="academicYear" header="Academic Term" />
                   <Column field="joinDate" header="Admission Date" />
                   <Column 
@@ -322,7 +321,7 @@ export default function HostelPage() {
                         icon="pi pi-sign-out" 
                         size="small" 
                         severity="danger" 
-                        className="bg-rose-600 text-white p-1 px-2.5 text-xs rounded-xl"
+                        className="bg-red-600 hover:bg-red-700 text-white p-1 px-2.5 text-xs rounded-md border-0"
                         onClick={() => handleDischarge(d.id, d.academicYear)}
                       />
                     )}
@@ -336,26 +335,26 @@ export default function HostelPage() {
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
                 
                 {/* Wardens List */}
-                <div className="lg:col-span-2 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
                   <div>
-                    <h2 className="text-base font-bold text-slate-800 dark:text-white">Hostel Wardens</h2>
-                    <p className="text-[11px] text-slate-400">Assigned wardens for safety & oversight.</p>
+                    <h2 className="text-base font-bold text-zinc-900 dark:text-white">Hostel Wardens</h2>
+                    <p className="text-[11px] text-zinc-500">Assigned wardens for safety & oversight.</p>
                   </div>
                   
                   <div className="flex flex-col gap-3">
                     {wardensList.map(warden => (
-                      <div key={warden.id} className="p-3 border border-slate-100 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 flex justify-between items-center">
+                      <div key={warden.id} className="p-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 flex justify-between items-center shadow-sm">
                         <div>
-                          <h4 className="font-bold text-slate-800 dark:text-white text-xs">{warden.name}</h4>
-                          <span className="text-[10px] text-slate-450">{warden.hostelBlock}</span>
-                          <div className="text-[9px] text-slate-400 mt-1 flex flex-col">
+                          <h4 className="font-semibold text-zinc-900 dark:text-white text-xs">{warden.name}</h4>
+                          <span className="text-[10px] text-zinc-500">{warden.hostelBlock}</span>
+                          <div className="text-[9px] text-zinc-400 mt-1 flex flex-col">
                             <span>Phone: {warden.phone}</span>
                             <span>Email: {warden.email}</span>
                           </div>
                         </div>
                         <Tag 
                           value={warden.status === 'ON_DUTY' ? 'On Duty' : 'Off Duty'} 
-                          className={warden.status === 'ON_DUTY' ? 'bg-emerald-500/10 text-emerald-650 font-bold text-[9px]' : 'bg-slate-500/10 text-slate-500 font-bold text-[9px]'}
+                          className={warden.status === 'ON_DUTY' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 font-bold text-[9px] rounded-md' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 font-bold text-[9px] rounded-md'}
                         />
                       </div>
                     ))}
@@ -363,29 +362,29 @@ export default function HostelPage() {
                 </div>
 
                 {/* Entry/Exit logs */}
-                <div className="lg:col-span-3 bg-slate-50/30 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
                   <div>
-                    <h2 className="text-base font-bold text-slate-800 dark:text-white">Access Entry & Exit Logbook</h2>
-                    <p className="text-[11px] text-slate-400">Real-time gate check logs managed by wardens.</p>
+                    <h2 className="text-base font-bold text-zinc-900 dark:text-white">Access Entry & Exit Logbook</h2>
+                    <p className="text-[11px] text-zinc-500">Real-time gate check logs managed by wardens.</p>
                   </div>
                   
                   <DataTable value={wardenLogs} className="p-datatable-sm" emptyMessage="No gate logs recorded today.">
-                    <Column field="boarderName" header="Student" className="font-bold text-slate-850 dark:text-white text-xs" />
-                    <Column field="roomNo" header="Room" className="font-mono text-xs" />
+                    <Column field="boarderName" header="Student" className="font-semibold text-zinc-900 dark:text-white text-xs" />
+                    <Column field="roomNo" header="Room" className="font-mono text-xs text-zinc-600 dark:text-zinc-400" />
                     <Column 
                       field="action" 
                       header="Action" 
                       body={(d) => (
                         <Tag 
                           value={d.action} 
-                          className={`font-bold text-[9px] px-2 py-0.5 rounded-full ${
-                            d.action === 'CHECK_IN' ? 'bg-emerald-500/10 text-emerald-650' : 'bg-amber-500/10 text-amber-650'
+                          className={`font-bold text-[9px] px-2 py-0.5 rounded-md ${
+                            d.action === 'CHECK_IN' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
                           }`}
                         />
                       )}
                     />
-                    <Column field="time" header="Time Logged" className="text-slate-450 text-[10px]" />
-                    <Column field="remarks" header="Remarks" className="text-slate-450 text-[10px]" />
+                    <Column field="time" header="Time Logged" className="text-zinc-500 text-[10px]" />
+                    <Column field="remarks" header="Remarks" className="text-zinc-500 text-[10px]" />
                   </DataTable>
                 </div>
               </div>
@@ -397,77 +396,77 @@ export default function HostelPage() {
       </div>
 
       {/* Dialog: Add Hostel */}
-      <Dialog header="Add New Hostel" visible={showHostelDialog} style={{ width: '450px' }} modal onHide={() => setShowHostelDialog(false)} className="dialog-custom rounded-3xl">
+      <Dialog header="Add New Hostel" visible={showHostelDialog} style={{ width: '450px' }} modal onHide={() => setShowHostelDialog(false)} className="dialog-custom rounded-md">
         <form onSubmit={handleCreateHostel} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Hostel Name *</label>
-            <InputText value={hostelForm.name} onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. Boys Hostel Block A" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Name *</label>
+            <InputText value={hostelForm.name} onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. Boys Hostel Block A" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Hostel Type *</label>
-            <Dropdown value={hostelForm.type} options={hostelTypes} onChange={(e) => setHostelForm({ ...hostelForm, type: e.value })} className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Type *</label>
+            <Dropdown value={hostelForm.type} options={hostelTypes} onChange={(e) => setHostelForm({ ...hostelForm, type: e.value })} className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Total Bed Capacity *</label>
-            <InputNumber value={hostelForm.capacity} onValueChange={(e) => setHostelForm({ ...hostelForm, capacity: e.value || 0 })} required className="border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Total Bed Capacity *</label>
+            <InputNumber value={hostelForm.capacity} onValueChange={(e) => setHostelForm({ ...hostelForm, capacity: e.value || 0 })} required className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Address Location</label>
-            <InputText value={hostelForm.address} onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })} className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="Campus block location details" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Address Location</label>
+            <InputText value={hostelForm.address} onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })} className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="Campus block location details" />
           </div>
-          <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowHostelDialog(false)} />
-            <Button type="submit" label="Save Block" icon="pi pi-check" loading={createHostelMutation.isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" />
+          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
+            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowHostelDialog(false)} />
+            <Button type="submit" label="Save Block" icon="pi pi-check" loading={createHostelMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
           </div>
         </form>
       </Dialog>
 
       {/* Dialog: Add Room */}
-      <Dialog header={`Add Room to ${selectedHostel?.name || 'Hostel'}`} visible={showRoomDialog} style={{ width: '400px' }} modal onHide={() => setShowRoomDialog(false)} className="dialog-custom rounded-3xl">
+      <Dialog header={`Add Room to ${selectedHostel?.name || 'Hostel'}`} visible={showRoomDialog} style={{ width: '400px' }} modal onHide={() => setShowRoomDialog(false)} className="dialog-custom rounded-md">
         <form onSubmit={handleCreateRoom} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Room Number *</label>
-            <InputText value={roomForm.roomNo} onChange={(e) => setRoomForm({ ...roomForm, roomNo: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. 101" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Room Number *</label>
+            <InputText value={roomForm.roomNo} onChange={(e) => setRoomForm({ ...roomForm, roomNo: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. 101" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Room Category Type *</label>
-            <InputText value={roomForm.type} onChange={(e) => setRoomForm({ ...roomForm, type: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. STANDARD" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Room Category Type *</label>
+            <InputText value={roomForm.type} onChange={(e) => setRoomForm({ ...roomForm, type: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. STANDARD" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Bed Capacity Count *</label>
-            <InputNumber value={roomForm.capacity} onValueChange={(e) => setRoomForm({ ...roomForm, capacity: e.value || 0 })} required className="border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Bed Capacity Count *</label>
+            <InputNumber value={roomForm.capacity} onValueChange={(e) => setRoomForm({ ...roomForm, capacity: e.value || 0 })} required className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
           </div>
-          <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowRoomDialog(false)} />
-            <Button type="submit" label="Add Room" icon="pi pi-check" loading={createRoomMutation.isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" />
+          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
+            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowRoomDialog(false)} />
+            <Button type="submit" label="Add Room" icon="pi pi-check" loading={createRoomMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
           </div>
         </form>
       </Dialog>
 
       {/* Dialog: Admit Boarder */}
-      <Dialog header="Admit Student as Resident" visible={showAdmitDialog} style={{ width: '420px' }} modal onHide={() => setShowAdmitDialog(false)} className="dialog-custom rounded-3xl">
+      <Dialog header="Admit Student as Resident" visible={showAdmitDialog} style={{ width: '420px' }} modal onHide={() => setShowAdmitDialog(false)} className="dialog-custom rounded-md">
         <form onSubmit={handleAdmitBoarder} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student ID *</label>
-            <InputText value={admitForm.studentId} onChange={(e) => setAdmitForm({ ...admitForm, studentId: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="Student UUID or Admission No" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Student ID *</label>
+            <InputText value={admitForm.studentId} onChange={(e) => setAdmitForm({ ...admitForm, studentId: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="Student UUID or Admission No" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Hostel Room *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Room *</label>
             <Dropdown
               value={admitForm.hostelRoomId}
               options={roomList.map((r: any) => ({ label: `Room ${r.roomNo} (${r.occupied}/${r.capacity} occupied)`, value: r.id }))}
               onChange={(e) => setAdmitForm({ ...admitForm, hostelRoomId: e.value })}
               placeholder="Select Room"
-              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Academic Term Year *</label>
-            <InputText value={admitForm.academicYear} onChange={(e) => setAdmitForm({ ...admitForm, academicYear: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="e.g. 2026" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Academic Term Year *</label>
+            <InputText value={admitForm.academicYear} onChange={(e) => setAdmitForm({ ...admitForm, academicYear: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. 2026" />
           </div>
-          <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowAdmitDialog(false)} />
-            <Button type="submit" label="Admit Resident" icon="pi pi-check" loading={admitBoarderMutation.isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" />
+          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
+            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowAdmitDialog(false)} />
+            <Button type="submit" label="Admit Resident" icon="pi pi-check" loading={admitBoarderMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
           </div>
         </form>
       </Dialog>

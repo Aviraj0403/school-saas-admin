@@ -10,6 +10,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { api } from '@/services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 const ALL_MODULES = [
   { label: 'Students', value: 'students' },
@@ -33,16 +35,16 @@ const DEFAULT_PLANS = [
   {
     name: 'BASIC',
     price: '₹999/mo',
-    color: 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900',
-    gradient: 'from-slate-400 to-slate-500',
+    color: 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900',
+    gradient: 'from-zinc-400 to-zinc-500',
     modules: ['students', 'staff', 'academics', 'attendance', 'fee'],
     description: 'Core school management for small institutions.',
   },
   {
     name: 'STANDARD',
     price: '₹2,499/mo',
-    color: 'border-indigo-100 dark:border-indigo-950 bg-indigo-50/10 dark:bg-indigo-950/10',
-    gradient: 'from-blue-500 to-indigo-650',
+    color: 'border-blue-100 dark:border-blue-950 bg-blue-50/10 dark:bg-blue-950/10',
+    gradient: 'from-blue-500 to-blue-650',
     modules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication'],
     description: 'Full academic suite with exams and library.',
   },
@@ -100,19 +102,15 @@ export default function PlansPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Plans" subtitle="Superadmin" />
+<div className="flex flex-col gap-4 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">SaaS Plans & Module Control</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage subscription plans, configure active modules, and provision tenant school workspaces.
-            </p>
-          </div>
+        <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4 pt-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
+          
           <button 
             onClick={() => setShowAssignDialog(true)}
-            className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2 border-none cursor-pointer"
+            className="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-md shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2 border-none cursor-pointer"
           >
             <i className="pi pi-cog"></i>
             Assign Modules
@@ -122,18 +120,18 @@ export default function PlansPage() {
         {/* Plan Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {DEFAULT_PLANS.map((plan) => (
-            <div key={plan.name} className={`rounded-3xl border-2 ${plan.color} p-6 flex flex-col justify-between gap-6 shadow-sm hover:shadow-md hover:translate-y-[-2px] transition-all duration-200`}>
+            <div key={plan.name} className={`rounded-md border-2 ${plan.color} p-6 flex flex-col justify-between gap-6 shadow-sm hover:shadow-md hover:translate-y-[-2px] transition-all duration-200`}>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm`}>{plan.name}</span>
-                  <span className="font-extrabold text-lg text-slate-800 dark:text-white">{plan.price}</span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm`}>{plan.name}</span>
+                  <span className="font-extrabold text-lg text-zinc-800 dark:text-white">{plan.price}</span>
                 </div>
-                <p className="text-xs text-slate-450 leading-relaxed font-medium">{plan.description}</p>
+                <p className="text-xs text-zinc-450 leading-relaxed font-medium">{plan.description}</p>
                 <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Included Modules</span>
+                  <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Included Modules</span>
                   <div className="flex flex-wrap gap-1">
                     {plan.modules.map((m) => (
-                      <span key={m} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-350 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                      <span key={m} className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-350 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
                         {m}
                       </span>
                     ))}
@@ -146,8 +144,8 @@ export default function PlansPage() {
         </div>
 
         {/* Tenant plan overview */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 rounded-3xl overflow-hidden shadow-sm p-4">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg p-2">Tenant Subscription Directory</h3>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-850 rounded-md overflow-hidden shadow-sm p-4">
+          <h3 className="font-bold text-zinc-800 dark:text-white text-lg p-2">Tenant Subscription Directory</h3>
           <DataTable
             value={tenants?.data?.items || []}
             className="p-datatable-sm mt-3"
@@ -163,10 +161,10 @@ export default function PlansPage() {
               body={(d) => (
                 <div className="flex flex-wrap gap-1">
                   {(d.activeModules || []).slice(0, 5).map((m: string) => (
-                    <span key={m} className="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-indigo-100/30 dark:border-indigo-900/20">{m}</span>
+                    <span key={m} className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-blue-100/30 dark:border-blue-900/20">{m}</span>
                   ))}
                   {(d.activeModules || []).length > 5 && (
-                    <span className="text-xs text-slate-400 font-semibold self-center ml-1">+{d.activeModules.length - 5} more</span>
+                    <span className="text-xs text-zinc-400 font-semibold self-center ml-1">+{d.activeModules.length - 5} more</span>
                   )}
                 </div>
               )}
@@ -178,7 +176,7 @@ export default function PlansPage() {
                   label="Customize"
                   icon="pi pi-pencil"
                   size="small"
-                  className="p-button-text p-button-rounded text-indigo-600"
+                  className="p-button-text p-button-rounded text-blue-600"
                   onClick={() => {
                     setAssignForm({ tenantId: d.id, modules: d.activeModules || [], plan: d.plan || 'BASIC' });
                     setShowAssignDialog(true);
@@ -198,15 +196,15 @@ export default function PlansPage() {
         style={{ width: '480px' }} 
         modal 
         onHide={() => setShowAssignDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-md"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAssignDialog(false)} />
             <Button
               label="Save Custom Settings"
               icon="pi pi-check"
               loading={assignMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl border-none cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-none cursor-pointer"
               onClick={() => assignMutation.mutate(assignForm)}
               disabled={!assignForm.tenantId}
             />
@@ -215,11 +213,11 @@ export default function PlansPage() {
       >
         <div className="flex flex-col gap-5 mt-3">
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Select School *</label>
+            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Select School *</label>
             <select
               value={assignForm.tenantId}
               onChange={(e) => setAssignForm({ ...assignForm, tenantId: e.target.value })}
-              className="p-3 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl bg-white dark:text-white outline-none focus:ring-1 focus:ring-indigo-500 font-bold"
+              className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md bg-white dark:text-white outline-none focus:ring-1 focus:ring-blue-500 font-bold"
             >
               <option value="">-- Choose School --</option>
               {tenantOptions.map((t: any) => (
@@ -229,7 +227,7 @@ export default function PlansPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quick Plan Preset</label>
+            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Quick Plan Preset</label>
             <div className="flex gap-2 flex-wrap">
               {DEFAULT_PLANS.map((p) => (
                 <Button
@@ -237,7 +235,7 @@ export default function PlansPage() {
                   label={p.name}
                   size="small"
                   outlined={assignForm.plan !== p.name}
-                  className={`p-2 px-3 rounded-lg border text-xs font-black transition-all ${assignForm.plan === p.name ? 'bg-indigo-600 text-white border-indigo-650' : 'text-slate-500 border-slate-200'}`}
+                  className={`p-2 px-3 rounded-md border text-xs font-black transition-all ${assignForm.plan === p.name ? 'bg-blue-600 text-white border-blue-650' : 'text-zinc-500 border-zinc-200'}`}
                   onClick={() => handlePlanSelect(p.name)}
                 />
               ))}
@@ -245,14 +243,14 @@ export default function PlansPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Modules (customize)</label>
+            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Active Modules (customize)</label>
             <MultiSelect
               value={assignForm.modules}
               options={ALL_MODULES}
               onChange={(e) => setAssignForm({ ...assignForm, modules: e.value })}
               placeholder="Select modules to enable"
               display="chip"
-              className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
         </div>

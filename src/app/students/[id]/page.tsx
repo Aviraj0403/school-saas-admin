@@ -10,6 +10,9 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents';
 import { useStudentDues } from '@/hooks/queries/useFee';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
+
 
 export default function StudentDetailsPage() {
   const params = useParams();
@@ -33,9 +36,10 @@ export default function StudentDetailsPage() {
   if (isPending) {
     return (
       <DashboardLayout>
-        <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl max-w-4xl mx-auto mt-10">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-semibold text-slate-400">Loading student details profile...</span>
+      <PageBreadcrumb title="Students Details" subtitle="Students" />
+<div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-medium text-zinc-500">Loading student details profile...</span>
         </div>
       </DashboardLayout>
     );
@@ -44,11 +48,12 @@ export default function StudentDetailsPage() {
   if (isError || !student) {
     return (
       <DashboardLayout>
-        <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl max-w-4xl mx-auto mt-10">
+      <PageBreadcrumb title="Students Details" subtitle="Students" />
+<div className="p-12 text-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
           <i className="pi pi-exclamation-triangle text-4xl text-rose-500 mb-3"></i>
-          <p className="text-slate-500 font-bold text-lg">Failed to Load Profile</p>
-          <p className="text-slate-400 text-sm mt-1">Student details could not be found or retrieved.</p>
-          <Button label="Back to Directory" className="mt-4 bg-primary text-white p-2.5 px-5 rounded-xl font-bold" onClick={() => router.push('/students')} />
+          <p className="text-zinc-900 dark:text-zinc-200 font-bold text-lg">Failed to Load Profile</p>
+          <p className="text-zinc-500 text-sm mt-1">Student details could not be found or retrieved.</p>
+          <Button label="Back to Directory" className="mt-4 bg-blue-600 text-white p-2.5 px-5 rounded-md font-medium" onClick={() => router.push('/students')} />
         </div>
       </DashboardLayout>
     );
@@ -58,41 +63,44 @@ export default function StudentDetailsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Students Details" subtitle="Students" />
+<div className="flex flex-col gap-4 pb-10">
         
-        {/* Back Link */}
-        <div className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors" onClick={() => router.push('/students')}>
-          <i className="pi pi-arrow-left text-xs"></i>
-          <span className="text-xs font-bold uppercase tracking-wider">Back to Directory</span>
+        {/* Header Navigation & Breadcrumb */}
+        <div className="flex flex-col gap-2">
+          
+          <div className="flex items-center gap-2 cursor-pointer text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 transition-colors" onClick={() => router.push('/students')}>
+            <i className="pi pi-arrow-left text-xs"></i>
+            <span className="text-xs font-semibold uppercase tracking-wider">Back to Directory</span>
+          </div>
         </div>
 
         {/* Profile Card Header */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl shadow-sm p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-36 h-36 bg-indigo-500/5 rounded-full translate-x-8 -translate-y-8"></div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl font-black border border-indigo-150/30">
+            <div className="w-16 h-16 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-black border border-blue-100 dark:border-blue-800/30">
               {student.firstName ? student.firstName[0] : student.name ? student.name[0] : '?'}
               {student.lastName ? student.lastName[0] : ''}
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-800 dark:text-white">{fullName}</h1>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{fullName}</h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5">
-                <span className="text-xs text-slate-400 font-medium">
-                  Admission No: <span className="font-mono font-bold text-slate-600 dark:text-slate-350">{student.admissionNo}</span>
+                <span className="text-xs text-zinc-500 font-medium">
+                  Admission No: <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">{student.admissionNo}</span>
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 hidden sm:inline-block"></span>
-                <span className="text-xs text-slate-400 font-medium">
-                  Class: <span className="font-bold text-indigo-600 dark:text-indigo-400">{student.className || 'Not Assigned'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 hidden sm:inline-block"></span>
+                <span className="text-xs text-zinc-500 font-medium">
+                  Class: <span className="font-semibold text-blue-600 dark:text-blue-400">{student.className || 'Not Assigned'}</span>
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 hidden sm:inline-block"></span>
-                <span className="text-xs text-slate-400 font-medium">
-                  Academic Year: <span className="font-bold text-slate-500">{student.academicYear}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 hidden sm:inline-block"></span>
+                <span className="text-xs text-zinc-500 font-medium">
+                  Academic Year: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{student.academicYear}</span>
                 </span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 relative z-10 self-stretch md:self-auto justify-end border-t md:border-t-0 border-slate-100 dark:border-slate-800 pt-4 md:pt-0">
+          <div className="flex items-center gap-3 relative z-10 self-stretch md:self-auto justify-end border-t md:border-t-0 border-zinc-100 dark:border-zinc-800 pt-4 md:pt-0">
             <Tag 
               value={student.status || 'ACTIVE'} 
               severity={student.status === 'ACTIVE' || !student.status ? 'success' : 'warning'} 
@@ -109,7 +117,7 @@ export default function StudentDetailsPage() {
         </div>
 
         {/* Tab switch navigation */}
-        <div className="flex border-b border-slate-150 dark:border-slate-800 overflow-x-auto max-w-full">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto max-w-full">
           {[
             { id: 'personal', label: 'Personal Profile', icon: 'pi-user' },
             { id: 'guardian', label: 'Parent & Guardian Info', icon: 'pi-users' },
@@ -119,10 +127,10 @@ export default function StudentDetailsPage() {
             <button
               key={tb.id}
               onClick={() => setActiveTab(tb.id as any)}
-              className={`p-3 px-5 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] flex items-center gap-1.5 whitespace-nowrap ${
+              className={`p-3 px-5 font-semibold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] flex items-center gap-1.5 whitespace-nowrap ${
                 activeTab === tb.id
-                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-650'
+                  ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
               }`}
             >
               <i className={`pi ${tb.icon} text-[10px]`}></i>
@@ -133,35 +141,35 @@ export default function StudentDetailsPage() {
 
         {/* Dynamic tab contents */}
         {activeTab === 'personal' && (
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Date of Birth</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.dob ? new Date(student.dob).toLocaleDateString() : '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Date of Birth</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.dob ? new Date(student.dob).toLocaleDateString() : '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Gender</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 capitalize">{student.gender || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Gender</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">{student.gender || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Blood Group</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 uppercase">{student.bloodGroup || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Blood Group</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 uppercase">{student.bloodGroup || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Aadhar / National ID</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.aadharNo || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Aadhar / National ID</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.aadharNo || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Mother Tongue</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 capitalize">{student.motherTongue || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Mother Tongue</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">{student.motherTongue || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Previous School Attended</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.previousSchool || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Previous School Attended</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.previousSchool || '—'}</p>
               </div>
-              <div className="md:col-span-2 border-t border-slate-100 dark:border-slate-800/80 pt-5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Permanent Residential Address</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 leading-relaxed">
+              <div className="md:col-span-2 border-t border-zinc-100 dark:border-zinc-800 pt-5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Permanent Residential Address</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 leading-relaxed">
                   {student.address || ''} {student.city ? `, ${student.city}` : ''} {student.pincode ? ` - ${student.pincode}` : ''}
                   {!student.address && !student.city && '—'}
                 </p>
@@ -171,50 +179,50 @@ export default function StudentDetailsPage() {
         )}
 
         {activeTab === 'guardian' && (
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden">
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Parent / Guardian Name</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.parentName || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Parent / Guardian Name</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.parentName || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Primary contact Phone</label>
-                <p className="font-bold text-indigo-600 dark:text-indigo-400 mt-1">{student.parentPhone || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Primary contact Phone</label>
+                <p className="font-medium text-blue-600 dark:text-blue-400 mt-1">{student.parentPhone || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Guardian Email Address</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1 truncate">{student.parentEmail || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Guardian Email Address</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 truncate">{student.parentEmail || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Alternate Phone</label>
-                <p className="font-semibold text-slate-700 dark:text-slate-350 mt-1">{student.alternatePhone || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Alternate Phone</label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.alternatePhone || '—'}</p>
               </div>
             </div>
           </Card>
         )}
 
         {activeTab === 'ledger' && (
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden p-4">
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden p-4">
             <div className="flex flex-col gap-6">
               {/* Fees quick metrics */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150/40 dark:border-slate-800/80">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Billed (Annual)</span>
-                  <span className="text-lg font-extrabold text-slate-800 dark:text-white mt-1 block">₹{((ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)).toLocaleString()}</span>
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-md border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">Total Billed (Annual)</span>
+                  <span className="text-lg font-bold text-zinc-900 dark:text-white mt-1 block">₹{((ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)).toLocaleString()}</span>
                 </div>
-                <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Fees Paid</span>
-                  <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 block">₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}</span>
+                <div className="p-4 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-md border border-emerald-200/50">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider block">Fees Paid</span>
+                  <span className="text-lg font-bold mt-1 block">₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}</span>
                 </div>
-                <div className="p-4 bg-rose-500/5 rounded-2xl border border-rose-500/10 col-span-2 md:col-span-1">
-                  <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">Outstanding Due</span>
-                  <span className="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1 block">₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}</span>
+                <div className="p-4 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 rounded-md border border-red-200/50 col-span-2 md:col-span-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider block">Outstanding Due</span>
+                  <span className="text-lg font-bold mt-1 block">₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Transactions Ledger Table */}
               {loadingLedger ? (
-                <div className="p-8 text-center text-slate-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+                <div className="p-8 text-center text-zinc-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
               ) : (
                 <DataTable
                   value={[
@@ -239,12 +247,12 @@ export default function StudentDetailsPage() {
                   stripedRows
                   emptyMessage="No fee transactions found for this student."
                 >
-                  <Column field="id" header="Transaction Ref" body={(d) => d.id.replace('out-', '').replace('paid-', '').substring(0,8).toUpperCase()} className="font-mono font-bold text-xs" />
-                  <Column field="term" header="Term Particulars" className="font-semibold text-slate-700 dark:text-slate-350" />
+                  <Column field="id" header="Transaction Ref" body={(d) => d.id.replace('out-', '').replace('paid-', '').substring(0,8).toUpperCase()} className="font-mono font-medium text-xs text-zinc-700 dark:text-zinc-300" />
+                  <Column field="term" header="Term Particulars" className="font-medium text-zinc-900 dark:text-zinc-200" />
                   <Column field="date" header="Due / Pay Date" body={(d) => new Date(d.date).toLocaleDateString()} />
                   <Column 
                     header="Amount" 
-                    body={(d) => <span className="font-bold font-mono">₹{Number(d.invoiced).toLocaleString('en-IN')}</span>} 
+                    body={(d) => <span className="font-medium font-mono">₹{Number(d.invoiced).toLocaleString('en-IN')}</span>} 
                   />
                   <Column field="method" header="Payment Method" />
                   <Column 
@@ -253,7 +261,7 @@ export default function StudentDetailsPage() {
                       <Tag 
                         value={d.status} 
                         severity={d.status === 'PAID' ? 'success' : 'danger'} 
-                        className="font-bold text-[9px] rounded px-2" 
+                        className="font-bold text-[9px] rounded-md px-2 py-0.5" 
                       />
                     )} 
                   />
@@ -262,7 +270,7 @@ export default function StudentDetailsPage() {
                     body={(d) => d.status === 'PAID' && (
                       <Button 
                         icon="pi pi-print" 
-                        className="p-button-text p-button-sm p-1 text-indigo-500" 
+                        className="p-button-text p-button-sm p-1 text-blue-600 dark:text-blue-400" 
                         onClick={() => {
                           window.dispatchEvent(new CustomEvent('show-toast', {
                             detail: {
@@ -284,14 +292,14 @@ export default function StudentDetailsPage() {
         )}
 
         {activeTab === 'audit_logs' && (
-          <Card className="shadow-sm border border-slate-100 dark:border-slate-800/80 rounded-3xl bg-white dark:bg-slate-900 overflow-hidden p-4">
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden p-4">
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/80 pb-3">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-white">Student Academic & System Activity Trail</h3>
-                <span className="text-[10px] font-extrabold text-indigo-500 uppercase bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded">Roster Auditing Active</span>
+              <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Student Academic & System Activity Trail</h3>
+                <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">Roster Auditing Active</span>
               </div>
 
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
+              <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-80 overflow-y-auto">
                 {[
                   { action: 'Marked Present via biometric handshake', category: 'ATTENDANCE', terminal: 'BIO-01-MAIN', time: 'Today, 08:12 AM' },
                   { action: 'Allocated to Hostel Room 104', category: 'HOSTEL', terminal: 'Warden Logbook', time: 'Yesterday, 04:30 PM' },
@@ -299,15 +307,15 @@ export default function StudentDetailsPage() {
                   { action: 'English Poetry Homework Assignment submitted', category: 'HOMEWORK', terminal: 'Student Console', time: '2026-05-25, 08:50 PM' },
                   { action: 'Tuition Fee invoice generated (Third Term Fees)', category: 'FINANCE', terminal: 'Automated Billing', time: '2026-05-20, 10:00 AM' }
                 ].map((log, i) => (
-                  <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
+                  <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-medium">
                     <div>
-                      <p className="text-slate-800 dark:text-slate-350">{log.action}</p>
-                      <div className="flex gap-2 items-center text-[10px] text-slate-400 mt-1">
-                        <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.category}</span>
+                      <p className="text-zinc-900 dark:text-zinc-200">{log.action}</p>
+                      <div className="flex gap-2 items-center text-[10px] text-zinc-500 mt-1">
+                        <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 px-1.5 py-0.5 rounded-sm font-bold uppercase">{log.category}</span>
                         <span>· Via {log.terminal}</span>
                       </div>
                     </div>
-                    <span className="text-[10px] text-slate-400/80 font-medium whitespace-nowrap">{log.time}</span>
+                    <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">{log.time}</span>
                   </div>
                 ))}
               </div>

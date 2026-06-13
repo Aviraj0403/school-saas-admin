@@ -10,10 +10,13 @@ import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 import { 
   useAcademicYears,
   useCreateAcademicYear
 } from '@/hooks/queries/useAcademics';
+
 
 export default function TermsPage() {
   const [showAyDialog, setShowAyDialog] = useState(false);
@@ -55,30 +58,26 @@ export default function TermsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
+      <PageBreadcrumb title="Terms" subtitle="Academics" />
+<div className="flex flex-col gap-4 pb-10 animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Academic Years & Terms</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Define the active school calendars, academic year timelines, and active term sessions.
-            </p>
-          </div>
+        <div className="flex justify-end w-full -mt-8 mb-2 z-10 relative">
+          
           <button 
             onClick={() => setShowAyDialog(true)}
-            className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs"
+            className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
           >
-            <i className="pi pi-plus"></i>
+            <i className="pi pi-plus text-xs"></i>
             Create Academic Year
           </button>
         </div>
 
         {/* Directory Layout Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm">
           <div>
-            <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Onboarding Academic Terms</h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">Manage active academic years and session calendars for this school.</p>
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Onboarding Academic Terms</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">Manage active academic years and session calendars for this school.</p>
           </div>
           
           <DataTable
@@ -87,10 +86,10 @@ export default function TermsPage() {
             emptyMessage="No academic years configured yet."
             className="p-datatable-sm"
           >
-            <Column field="name" header="Academic Term" sortable className="font-bold text-slate-800 dark:text-slate-100" />
-            <Column header="Start Date" body={(d) => dateTemplate(d.startDate)} />
-            <Column header="End Date" body={(d) => dateTemplate(d.endDate)} />
-            <Column header="Status" body={(d) => d.isCurrent ? <Tag value="Active Term" severity="success" className="bg-emerald-500/10 text-emerald-650 px-2.5 py-1 text-[10px] font-bold rounded-full uppercase" /> : <Tag value="Archived" severity="secondary" className="bg-slate-100 text-slate-500 px-2.5 py-1 text-[10px] font-bold rounded-full uppercase" />} />
+            <Column field="name" header="Academic Term" sortable className="font-semibold text-zinc-900 dark:text-zinc-100" />
+            <Column header="Start Date" body={(d) => dateTemplate(d.startDate)} className="text-zinc-700 dark:text-zinc-300" />
+            <Column header="End Date" body={(d) => dateTemplate(d.endDate)} className="text-zinc-700 dark:text-zinc-300" />
+            <Column header="Status" body={(d) => d.isCurrent ? <Tag value="Active Term" severity="success" className="bg-emerald-50 text-emerald-600 px-2 py-0.5 text-[10px] font-bold rounded-md uppercase border border-emerald-200/50" /> : <Tag value="Archived" severity="secondary" className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 px-2 py-0.5 text-[10px] font-bold rounded-md uppercase border border-zinc-200 dark:border-zinc-700" />} />
           </DataTable>
         </div>
 
@@ -103,17 +102,17 @@ export default function TermsPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowAyDialog(false)}
-        className="rounded-3xl shadow-xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
-        headerClassName="border-b border-gray-150 dark:border-slate-800 p-6 font-bold"
+        headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={
-          <div className="flex justify-end gap-2 p-4 border-t border-slate-100 dark:border-slate-800/80">
-            <Button label="Cancel" className="p-button-text p-2 font-bold text-xs" onClick={() => setShowAyDialog(false)} />
+          <div className="flex justify-end gap-2 p-4 border-t border-zinc-100 dark:border-zinc-800">
+            <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowAyDialog(false)} />
             <Button 
               label="Create Term" 
               icon="pi pi-check" 
               loading={createAyMutation.isPending} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl border-0 font-bold text-xs" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
               onClick={handleCreateAy} 
             />
           </div>
@@ -121,22 +120,22 @@ export default function TermsPage() {
       >
         <div className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-slate-550 dark:text-slate-450 uppercase tracking-wider">Term Name *</label>
-            <InputText value={ayForm.name} onChange={(e) => setAyForm({ ...ayForm, name: e.target.value })} className="p-2.5 border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. 2026-2027, 2027" />
+            <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">Term Name *</label>
+            <InputText value={ayForm.name} onChange={(e) => setAyForm({ ...ayForm, name: e.target.value })} className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:border-blue-500 text-sm" placeholder="e.g. 2026-2027, 2027" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs text-slate-550 dark:text-slate-450 uppercase tracking-wider">Start Date *</label>
-              <Calendar value={ayForm.startDate} onChange={(e) => setAyForm({ ...ayForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl w-full" inputClassName="p-2 rounded-xl outline-none w-full" />
+              <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">Start Date *</label>
+              <Calendar value={ayForm.startDate} onChange={(e) => setAyForm({ ...ayForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md w-full" inputClassName="p-2 rounded-md outline-none w-full text-sm dark:bg-zinc-950" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-xs text-slate-550 dark:text-slate-450 uppercase tracking-wider">End Date *</label>
-              <Calendar value={ayForm.endDate} onChange={(e) => setAyForm({ ...ayForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl w-full" inputClassName="p-2 rounded-xl outline-none w-full" />
+              <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">End Date *</label>
+              <Calendar value={ayForm.endDate} onChange={(e) => setAyForm({ ...ayForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md w-full" inputClassName="p-2 rounded-md outline-none w-full text-sm dark:bg-zinc-950" />
             </div>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Checkbox id="isCurrentAy" checked={ayForm.isCurrent} onChange={(e) => setAyForm({ ...ayForm, isCurrent: e.checked || false })} />
-            <label htmlFor="isCurrentAy" className="font-semibold text-xs text-slate-650 dark:text-slate-350 cursor-pointer select-none">Set as Current Active Term</label>
+            <label htmlFor="isCurrentAy" className="font-medium text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer select-none">Set as Current Active Term</label>
           </div>
         </div>
       </Dialog>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+
 import { Card } from 'primereact/card';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFullDashboard, useFeeCollectionTrend, useAttendanceTrend } from '@/hooks/queries/useAnalytics';
@@ -15,6 +16,8 @@ import { useStaffList } from '@/hooks/queries/useStaff';
 import { useStudentsList } from '@/hooks/queries/useStudents';
 
 import { StatCard } from '@/components/ui/StatCard';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 export default function DashboardPage() {
   const { activeUser, activeTenant } = useAuthStore();
@@ -39,19 +42,19 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10">
+      <PageBreadcrumb title="Dashboard" />
+<div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10">
+        
         
         {/* Welcome Section */}
-        <div className="border-b border-slate-100 dark:border-slate-800 pb-6 flex justify-between items-end flex-wrap gap-4">
+        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-end flex-wrap gap-4">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-premium-gradient">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
             </h1>
-            <p className="text-slate-500 mt-2 text-md">
-              Welcome back to <span className="font-bold text-slate-700 dark:text-slate-350">{activeTenant?.name || 'Demo School'}</span> management console.
-            </p>
+            
           </div>
-          <span className="px-4 py-1.5 bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 rounded-full text-xs font-bold uppercase tracking-wider">
+          <span className="px-3 py-1 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 rounded-md text-xs font-semibold uppercase tracking-wider">
             Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
           </span>
         </div>
@@ -62,7 +65,7 @@ export default function DashboardPage() {
             label="Total Students"
             value={coreStats.students?.total ?? '—'}
             icon="pi pi-users"
-            gradientClass="from-blue-500 to-indigo-500"
+            gradientClass="from-blue-500 to-blue-500"
             iconBgClass="bg-blue-500/10"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText={`Active: ${coreStats.students?.active ?? '0'} Students`}
@@ -116,9 +119,9 @@ export default function DashboardPage() {
             label="Hostel Occupancy"
             value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : '—'}
             icon="pi pi-home"
-            gradientClass="from-indigo-500 to-violet-500"
-            iconBgClass="bg-indigo-500/10"
-            iconColorClass="text-indigo-600 dark:text-indigo-400"
+            gradientClass="from-blue-500 to-violet-500"
+            iconBgClass="bg-blue-500/10"
+            iconColorClass="text-blue-600 dark:text-blue-400"
             footerText={`Boarders: ${hostelStats.totalBoarders ?? '0'} / ${hostelStats.totalCapacity ?? '0'}`}
             loading={isPending}
           />
@@ -147,10 +150,10 @@ export default function DashboardPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {/* Fee Collection Bar Chart */}
-          <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
+          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
             <div className="mb-4 sm:mb-6">
-              <h3 className="font-bold text-slate-800 dark:text-white text-lg">Fee Collection Trend</h3>
-              <p className="text-xs text-slate-400 mt-1">Monthly school revenue inflow (₹)</p>
+              <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Fee Collection Trend</h3>
+              <p className="text-xs text-zinc-400 mt-1">Monthly school revenue inflow (₹)</p>
             </div>
             <div className="flex items-end justify-between h-44 px-2">
               {feeTrendData && feeTrendData.length > 0 ? (
@@ -160,22 +163,22 @@ export default function DashboardPage() {
                   const pct = (item.amount / maxVal) * 100;
                   return (
                     <div key={item.month} className="flex flex-col items-center gap-2 flex-1 group">
-                      <span className="text-[10px] text-slate-400 font-bold group-hover:text-slate-650 transition-colors">
+                      <span className="text-[10px] text-zinc-400 font-bold group-hover:text-zinc-650 transition-colors">
                         {item.amount >= 1000 ? `${(item.amount / 1000).toFixed(0)}k` : item.amount}
                       </span>
                       <div className="w-full flex items-end justify-center h-32">
                         <div
-                          className="w-8 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
+                          className="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
                           style={{ height: `${pct}%`, minHeight: '4px' }}
                           title={`₹${item.amount.toLocaleString('en-IN')}`}
                         />
                       </div>
-                      <span className="text-xs font-bold text-slate-500">{monthName}</span>
+                      <span className="text-xs font-bold text-zinc-500">{monthName}</span>
                     </div>
                   );
                 })
               ) : (
-                <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                <div className="flex-1 flex items-center justify-center text-zinc-400 text-xs w-full py-10 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-md">
                   No fee collection revenue data found.
                 </div>
               )}
@@ -183,10 +186,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Attendance Trend */}
-          <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
+          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
             <div className="mb-4 sm:mb-6">
-              <h3 className="font-bold text-slate-800 dark:text-white text-lg">Daily Attendance Rate</h3>
-              <p className="text-xs text-slate-400 mt-1">Active student participation index (%)</p>
+              <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Daily Attendance Rate</h3>
+              <p className="text-xs text-zinc-400 mt-1">Active student participation index (%)</p>
             </div>
             <div className="flex flex-col gap-4 mt-2">
               {attendanceTrendData && attendanceTrendData.length > 0 ? (
@@ -196,8 +199,8 @@ export default function DashboardPage() {
                   const rate = total > 0 ? Math.round(((item.PRESENT + item.LATE) / total) * 100) : 0;
                   return (
                     <div key={item.date} className="flex items-center gap-4">
-                      <span className="text-xs font-bold text-slate-500 w-8">{dayName}</span>
-                      <div className="flex-1 bg-slate-100 dark:bg-slate-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-200/40 dark:border-slate-800">
+                      <span className="text-xs font-bold text-zinc-500 w-8">{dayName}</span>
+                      <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-zinc-200/40 dark:border-zinc-800">
                         <div
                           className={`h-full rounded-full transition-all duration-550 ${
                             rate >= 95 
@@ -209,12 +212,12 @@ export default function DashboardPage() {
                           style={{ width: `${rate}%` }}
                         />
                       </div>
-                      <span className="text-xs font-extrabold text-slate-600 dark:text-slate-350 w-10 text-right">{rate}%</span>
+                      <span className="text-xs font-extrabold text-zinc-600 dark:text-zinc-350 w-10 text-right">{rate}%</span>
                     </div>
                   );
                 })
               ) : (
-                <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-10 mt-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                <div className="flex-1 flex items-center justify-center text-zinc-400 text-xs w-full py-10 mt-4 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-md">
                   No attendance data recorded yet.
                 </div>
               )}
@@ -223,8 +226,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="premium-glow-effect border border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 overflow-hidden">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 sm:mb-6">Operations Quick Actions</h3>
+        <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
+          <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-4 sm:mb-6">Operations Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
             {[
               { label: 'Add Student', icon: 'pi pi-user-plus', href: '/students', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
@@ -232,12 +235,12 @@ export default function DashboardPage() {
               { label: 'Collect Fee', icon: 'pi pi-money-bill', href: '/fee', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 font-bold' },
               { label: 'Post Notice', icon: 'pi pi-megaphone', href: '/communication', color: 'bg-purple-500/10 text-purple-650 dark:text-purple-400' },
               { label: 'Issue Book', icon: 'pi pi-bookmark', href: '/library', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
-              { label: 'View Analytics', icon: 'pi pi-chart-bar', href: '/analytics', color: 'bg-indigo-500/10 text-indigo-650 dark:text-indigo-400' },
+              { label: 'View Analytics', icon: 'pi pi-chart-bar', href: '/analytics', color: 'bg-blue-500/10 text-blue-650 dark:text-blue-400' },
             ].map((action) => (
               <a
                 key={action.label}
                 href={action.href}
-                className={`flex flex-col items-center gap-3 p-5 rounded-2xl ${action.color} hover:opacity-90 hover:scale-[1.03] transition-all duration-300 cursor-pointer no-underline border border-slate-100 dark:border-slate-800`}
+                className={`flex flex-col items-center gap-3 p-5 rounded-md ${action.color} hover:opacity-90 hover:scale-[1.03] transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
               >
                 <i className={`${action.icon} text-2xl`}></i>
                 <span className="text-xs font-bold text-center leading-tight">{action.label}</span>

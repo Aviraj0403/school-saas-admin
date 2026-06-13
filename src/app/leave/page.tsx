@@ -13,6 +13,8 @@ import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { useLeavesList, useApplyLeave, useApproveLeave, useRejectLeave } from '@/hooks/queries/useLeave';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 export default function LeavePage() {
   const toast = useRef<Toast>(null);
@@ -91,7 +93,7 @@ export default function LeavePage() {
     return (
       <Tag 
         value={status} 
-        className={`px-2.5 py-1 text-xs font-bold rounded-full ${map[status] || 'bg-slate-100 text-slate-500'}`} 
+        className={`px-2.5 py-1 text-xs font-bold rounded-full ${map[status] || 'bg-zinc-100 text-zinc-500'}`} 
       />
     );
   };
@@ -109,20 +111,16 @@ export default function LeavePage() {
 
   return (
     <DashboardLayout>
-      <Toast ref={toast} />
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Leave" />
+<Toast ref={toast} />
+      <div className="flex flex-col gap-4 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Leave Requests</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Process student and faculty leave applications, review reasons, and dispatch status updates.
-            </p>
-          </div>
+        <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4 pt-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
+          
           <button 
             onClick={() => setShowApplyDialog(true)}
-            className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-blue-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm"
+            className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <i className="pi pi-plus"></i>
             Apply Leave
@@ -130,23 +128,23 @@ export default function LeavePage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-md border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Filter:</span>
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Filter:</span>
             <Dropdown
               value={statusFilter}
               options={statusOptions}
               onChange={(e) => { setStatusFilter(e.value); setPage(1); }}
-              className="border border-slate-200 dark:border-slate-800 dark:bg-slate-905 rounded-xl text-xs min-w-48"
+              className="border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-905 rounded-md text-xs min-w-48"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-2 rounded-md transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
               }`}
               title="Visual Cards"
             >
@@ -154,10 +152,10 @@ export default function LeavePage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-2 rounded-md transition-all ${
                 viewMode === 'table' 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
               }`}
               title="Tabular View"
             >
@@ -168,62 +166,62 @@ export default function LeavePage() {
 
         {/* Dynamic Display Section */}
         {isLoading ? (
-          <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
-            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-400">Loading leave inbox...</span>
+          <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm font-semibold text-zinc-400">Loading leave inbox...</span>
           </div>
         ) : activeLeaves.length === 0 ? (
-          <div className="p-20 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
-            <p className="text-slate-400 font-medium">No leave applications found.</p>
+          <div className="p-20 text-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
+            <p className="text-zinc-400 font-medium">No leave applications found.</p>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {activeLeaves.map((leave: any) => (
               <div 
                 key={leave.id} 
-                className="bg-white dark:bg-slate-900 border border-slate-105 dark:border-slate-800/80 p-5 rounded-3xl shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700/80 transition-all duration-200 flex flex-col justify-between gap-4 group"
+                className="bg-white dark:bg-zinc-900 border border-zinc-105 dark:border-zinc-800/80 p-5 rounded-md shadow-sm hover:shadow-md hover:border-zinc-200 dark:hover:border-zinc-700/80 transition-all duration-200 flex flex-col justify-between gap-4 group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-extrabold text-sm border border-indigo-100 dark:border-indigo-900/30">
+                    <div className="w-10 h-10 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 font-extrabold text-sm border border-blue-100 dark:border-blue-900/30">
                       {leave.applicantName ? leave.applicantName[0].toUpperCase() : 'L'}
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-slate-850 dark:text-white text-sm leading-snug">{leave.applicantName}</h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{leave.applicantType}</p>
+                      <h3 className="font-extrabold text-zinc-850 dark:text-white text-sm leading-snug">{leave.applicantName}</h3>
+                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">{leave.applicantType}</p>
                     </div>
                   </div>
                   {statusTemplate(leave.status)}
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1 text-slate-400 border border-slate-100/50 dark:border-slate-800/50">
+                <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1 text-zinc-400 border border-zinc-100/50 dark:border-zinc-800/50">
                   <div className="flex justify-between">
                     <span>From:</span>
-                    <span className="text-slate-850 dark:text-slate-350">{dateTemplate(leave.startDate)}</span>
+                    <span className="text-zinc-850 dark:text-zinc-350">{dateTemplate(leave.startDate)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Until:</span>
-                    <span className="text-slate-850 dark:text-slate-350">{dateTemplate(leave.endDate)}</span>
+                    <span className="text-zinc-850 dark:text-zinc-350">{dateTemplate(leave.endDate)}</span>
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed px-1">
-                  <span className="font-semibold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">Reason:</span>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed px-1">
+                  <span className="font-semibold text-zinc-400 block text-[10px] uppercase tracking-wider mb-0.5">Reason:</span>
                   {leave.reason}
                 </div>
 
                 {leave.status === 'PENDING' && (
-                  <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
+                  <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
                     <button 
                       onClick={() => handleReject(leave.id)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-455 dark:hover:bg-rose-950/20 rounded-xl transition-all active:scale-95 flex items-center gap-1"
+                      className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-455 dark:hover:bg-rose-950/20 rounded-md transition-all active:scale-95 flex items-center gap-1"
                     >
                       <i className="pi pi-times text-[10px]"></i>
                       Reject
                     </button>
                     <button 
                       onClick={() => handleApprove(leave.id)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-650 hover:bg-indigo-700 rounded-xl transition-all active:scale-95 flex items-center gap-1"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-650 hover:bg-blue-700 rounded-md transition-all active:scale-95 flex items-center gap-1"
                     >
                       <i className="pi pi-check text-[10px]"></i>
                       Approve
@@ -234,7 +232,7 @@ export default function LeavePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm">
             <DataTable
               value={activeLeaves}
               loading={isLoading}
@@ -247,8 +245,8 @@ export default function LeavePage() {
               emptyMessage="No leave applications found."
               className="p-datatable-sm"
             >
-              <Column field="applicantName" header="Applicant" sortable className="font-semibold text-slate-800 dark:text-white" />
-              <Column field="applicantType" header="Type" sortable body={(d) => <Tag value={d.applicantType} className="bg-slate-105 text-slate-500 font-bold text-[9px] rounded-full px-2" />} />
+              <Column field="applicantName" header="Applicant" sortable className="font-semibold text-zinc-800 dark:text-white" />
+              <Column field="applicantType" header="Type" sortable body={(d) => <Tag value={d.applicantType} className="bg-zinc-105 text-zinc-500 font-bold text-[9px] rounded-full px-2" />} />
               <Column body={(d) => dateTemplate(d.startDate)} header="Start Date" />
               <Column body={(d) => dateTemplate(d.endDate)} header="End Date" />
               <Column field="reason" header="Reason" />
@@ -267,14 +265,14 @@ export default function LeavePage() {
       </div>
 
       {/* Dialog: Apply Leave */}
-      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} modal onHide={() => setShowApplyDialog(false)} className="dialog-custom rounded-3xl">
+      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} modal onHide={() => setShowApplyDialog(false)} className="dialog-custom rounded-md">
         <form onSubmit={handleApply} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Applicant Type *</label>
-            <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Applicant Type *</label>
+            <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Leave Type *</label>
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Leave Type *</label>
             <Dropdown 
               value={applyForm.leaveType} 
               options={[
@@ -285,30 +283,30 @@ export default function LeavePage() {
                 { label: 'Other', value: 'other' }
               ]} 
               onChange={(e) => setApplyForm({ ...applyForm, leaveType: e.value })} 
-              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl" 
+              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" 
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Student / Staff ID *</label>
-            <InputText value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl" placeholder="UUID or Admission No" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Student / Staff ID *</label>
+            <InputText value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" placeholder="UUID or Admission No" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Start Date *</label>
-              <Calendar value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" />
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Start Date *</label>
+              <Calendar value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">End Date *</label>
-              <Calendar value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full" />
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">End Date *</label>
+              <Calendar value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" />
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Reason *</label>
-            <InputTextarea value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required rows={3} className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl w-full outline-none focus:border-indigo-500" placeholder="Reason for leave..." />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Reason *</label>
+            <InputTextarea value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required rows={3} className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full outline-none focus:border-blue-500" placeholder="Reason for leave..." />
           </div>
-          <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 mt-2">
+          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
             <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowApplyDialog(false)} />
-            <Button type="submit" label="Submit Request" icon="pi pi-send" loading={applyMutation.isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" />
+            <Button type="submit" label="Submit Request" icon="pi pi-send" loading={applyMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" />
           </div>
         </form>
       </Dialog>

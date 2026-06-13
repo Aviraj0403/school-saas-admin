@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
+import AppFooter from './AppFooter';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLogin } from '@/hooks/queries/useAuth';
 import { Toast } from 'primereact/toast';
@@ -12,6 +13,7 @@ let globalMounted = false;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarSize, setSidebarSize] = useState<'default' | 'collapsed'>('default');
   const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(globalMounted);
   const toastRef = useRef<Toast>(null);
@@ -21,6 +23,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [identifier, setIdentifier] = useState(''); // email for staff, admission no for student
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleToggleMenu = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setSidebarSize(s => s === 'default' ? 'collapsed' : 'default');
+    } else {
+      setSidebarOpen(!sidebarOpen);
+    }
+  };
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [detectedSchool, setDetectedSchool] = useState<string | null>(null);
 
@@ -62,11 +72,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     customEvent.detail.severity === 'success' ? 'pi-check-circle text-emerald-500' :
                     customEvent.detail.severity === 'error' ? 'pi-times-circle text-rose-500' :
                     customEvent.detail.severity === 'warn' ? 'pi-exclamation-triangle text-amber-500' :
-                    'pi-info-circle text-indigo-500'
+                    'pi-info-circle text-blue-500'
                   } text-lg`}></i>
-                  <span className="font-bold text-sm text-slate-800 dark:text-white">{props.message.summary}</span>
+                  <span className="font-bold text-sm text-zinc-800 dark:text-white">{props.message.summary}</span>
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 pl-7">{props.message.detail}</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 pl-7">{props.message.detail}</div>
               </div>
             )
           });
@@ -113,38 +123,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-slate-950 bg-cover bg-center select-none"
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-zinc-950 bg-cover bg-center select-none"
         style={{ backgroundImage: `url('/ai_student_bg.png')` }}
       >
         {/* Ambient Overlay Layer */}
-        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm z-0 pointer-events-none" />
 
         {/* Soft Luminous Backdrop Orbs */}
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none animate-pulse duration-[8000ms]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
         <div className="absolute top-[20%] right-[20%] w-[40%] h-[40%] rounded-full bg-emerald-600/10 blur-[120px] pointer-events-none"></div>
         
         {/* Responsive Flex Container */}
         <div className="relative z-10 flex flex-col md:flex-row gap-8 max-w-5xl w-full items-stretch justify-center">
           
           {/* Main Login Card */}
-          <div className="backdrop-blur-2xl bg-slate-900/60 border border-slate-700/50 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex-1 flex flex-col overflow-hidden transition-all duration-500 relative">
+          <div className="backdrop-blur-2xl bg-zinc-900/60 border border-zinc-700/50 rounded-md shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex-1 flex flex-col overflow-hidden transition-all duration-500 relative">
             
             {/* Top Branding Header */}
-            <div className="bg-gradient-to-r from-slate-900/90 to-slate-800/90 p-8 border-b border-slate-700/50 relative overflow-hidden">
+            <div className="bg-gradient-to-r from-zinc-900/90 to-zinc-800/90 p-8 border-b border-zinc-700/50 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
               
               <div className="flex flex-col items-center relative z-10">
                 <div className="relative group mb-4">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-40 blur-lg group-hover:opacity-75 transition duration-500"></div>
-                  <div className="relative w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center border border-slate-700/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                    <i className="pi pi-graduation-cap text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-indigo-400 text-3xl drop-shadow-sm"></i>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-blue-500 rounded-md opacity-40 blur-lg group-hover:opacity-75 transition duration-500"></div>
+                  <div className="relative w-16 h-16 bg-zinc-950 rounded-md flex items-center justify-center border border-zinc-700/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                    <i className="pi pi-graduation-cap text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-blue-400 text-3xl drop-shadow-sm"></i>
                   </div>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">
                   {detectedSchool ? detectedSchool : 'EduNexus OS'}
                 </h1>
-                <p className="text-slate-400 text-xs md:text-sm mt-2 font-medium tracking-wide flex items-center gap-2">
+                <p className="text-zinc-400 text-xs md:text-sm mt-2 font-medium tracking-wide flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   Secure Unified Authentication
                 </p>
@@ -154,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="p-8 md:p-10 flex flex-col gap-6">
               <form onSubmit={handleLogin} className="flex flex-col gap-5">
                 {loginMutation.isError && (
-                  <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold animate-in fade-in zoom-in duration-300">
+                  <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-md flex gap-3 items-center text-rose-450 text-xs font-semibold animate-in fade-in zoom-in duration-300">
                     <i className="pi pi-exclamation-circle text-base text-rose-400 shrink-0"></i>
                     <span>
                       {(loginMutation.error as any)?.response?.data?.message ||
@@ -166,18 +176,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* School Code Field (Only shown if not auto-detected or if superadmin needs to switch) */}
                 {!detectedSchool && (
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="schoolCode" className="font-bold text-[10px] uppercase tracking-widest text-slate-400 flex justify-between">
+                    <label htmlFor="schoolCode" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between">
                       <span>School Code</span>
                       <span className="text-blue-400/70 font-normal normal-case tracking-normal">Optional for SuperAdmin</span>
                     </label>
                     <div className="relative flex items-center group w-full">
-                      <i className="pi pi-building absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
+                      <i className="pi pi-building absolute left-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
                       <input
                         id="schoolCode"
                         type="text"
                         value={schoolCode}
                         onChange={(e) => setSchoolCode(e.target.value.toUpperCase())}
-                        className="w-full py-3.5 pr-3.5 pl-11 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0 uppercase"
+                        className="w-full py-3.5 pr-3.5 pl-11 bg-zinc-950/50 border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-zinc-500 rounded-md outline-none z-0 uppercase"
                         placeholder="e.g. SATYASAI"
                       />
                     </div>
@@ -186,18 +196,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Identifier Field (Email vs Admission No) */}
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="identifier" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
+                  <label htmlFor="identifier" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">
                     Email Address or Admission No.
                   </label>
                   <div className="relative flex items-center group w-full">
-                    <i className="pi pi-user absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
+                    <i className="pi pi-user absolute left-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
                     <input
                       id="identifier"
                       type="text"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       required
-                      className="w-full py-3.5 pr-3.5 pl-11 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
+                      className="w-full py-3.5 pr-3.5 pl-11 bg-zinc-950/50 border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-zinc-500 rounded-md outline-none z-0"
                       placeholder="admin@school.com or ADM-2023-001"
                     />
                   </div>
@@ -205,25 +215,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Password Field */}
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-slate-400 flex justify-between">
+                  <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between">
                     <span>Password</span>
                     <a href="#" className="text-blue-400/80 hover:text-blue-400 font-normal normal-case tracking-normal transition-colors">Forgot?</a>
                   </label>
                   <div className="relative flex items-center group w-full">
-                    <i className="pi pi-lock absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
+                    <i className="pi pi-lock absolute left-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="w-full py-3.5 pl-11 pr-12 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0 tracking-wide"
+                      className="w-full py-3.5 pl-11 pr-12 bg-zinc-950/50 border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-zinc-500 rounded-md outline-none z-0 tracking-wide"
                       placeholder="••••••••"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
+                      className="absolute right-4 text-zinc-400 hover:text-zinc-200 transition-colors duration-200 z-10 focus:outline-none flex items-center justify-center"
                     >
                       <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} text-sm`}></i>
                     </button>
@@ -234,7 +244,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <button
                   type="submit"
                   disabled={isAuthenticating}
-                  className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl border-0 shadow-[0_10px_20px_-10px_rgba(59,130,246,0.6)] hover:shadow-[0_10px_25px_-10px_rgba(59,130,246,0.8)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                  className="mt-4 w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white font-bold py-4 rounded-md border-0 shadow-[0_10px_20px_-10px_rgba(59,130,246,0.6)] hover:shadow-[0_10px_25px_-10px_rgba(59,130,246,0.8)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
                 >
                   {isAuthenticating ? (
                     <i className="pi pi-spinner pi-spin text-lg"></i>
@@ -253,32 +263,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Contextual Info Panel */}
           <div className="hidden md:flex flex-col gap-6 w-80 shrink-0">
             {/* Dynamic Welcome Message */}
-            <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 shadow-xl flex flex-col h-full relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2"></div>
+            <div className="backdrop-blur-xl bg-zinc-900/40 border border-zinc-800/60 rounded-md p-6 shadow-xl flex flex-col h-full relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2"></div>
               
               <div className="flex items-center gap-3 mb-6 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                  <i className="pi pi-shield text-indigo-400 text-lg"></i>
+                <div className="w-10 h-10 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                  <i className="pi pi-shield text-blue-400 text-lg"></i>
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white leading-none">Security Info</h3>
-                  <span className="text-[10px] text-slate-400 font-medium">Enterprise Grade</span>
+                  <span className="text-[10px] text-zinc-400 font-medium">Enterprise Grade</span>
                 </div>
               </div>
 
-              <div className="flex-1 text-sm text-slate-300 font-medium leading-relaxed relative z-10 flex flex-col justify-center gap-4">
+              <div className="flex-1 text-sm text-zinc-300 font-medium leading-relaxed relative z-10 flex flex-col justify-center gap-4">
                 <p>
                   Welcome to the Platform Dashboard.
                 </p>
-                <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-2xl">
+                <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-md">
                   <p className="text-xs text-blue-200/80 leading-relaxed">
                     Our intelligent routing automatically detects whether you are logging in as a student or staff member based on your credentials, isolating your data in optimal environments.
                   </p>
                 </div>
               </div>
               
-              <div className="mt-6 pt-6 border-t border-slate-800/60 relative z-10">
-                <p className="text-[10px] text-slate-500 text-center uppercase tracking-widest font-semibold">
+              <div className="mt-6 pt-6 border-t border-zinc-800/60 relative z-10">
+                <p className="text-[10px] text-zinc-500 text-center uppercase tracking-widest font-semibold">
                   Powered by EduNexus OS © 2026
                 </p>
               </div>
@@ -291,26 +301,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden">
+    <div className={`min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300 font-sans overflow-x-hidden`}>
       <Toast ref={toastRef} position="top-right" />
-      <AppTopbar onToggleMenu={() => setSidebarOpen(!sidebarOpen)} />
-      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AppTopbar onToggleMenu={handleToggleMenu} />
+      <AppSidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        size={sidebarSize}
+        onToggleSize={() => setSidebarSize(s => s === 'default' ? 'collapsed' : 'default')}
+      />
 
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
           id="mobile-overlay-close"
-          className="fixed top-16 inset-x-0 bottom-0 z-30 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity"
+          className="fixed top-[70px] inset-x-0 bottom-0 z-30 bg-zinc-950/50 backdrop-blur-sm md:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <div
-        className={`transition-all duration-300 ease-in-out pt-16 ${sidebarOpen ? 'md:pl-[240px]' : 'pl-0'} w-full min-h-screen`}
+        className={`transition-all duration-300 ease-in-out pt-[70px] ${sidebarOpen ? (sidebarSize === 'collapsed' ? 'md:pl-[70px]' : 'md:pl-[260px]') : 'pl-0'} w-full min-h-screen flex flex-col`}
       >
-        <main className="p-4 sm:p-6 min-h-[calc(100vh-64px)] w-full mx-auto overflow-x-hidden">
+        <main className="p-4 sm:p-6 flex-1 w-full mx-auto overflow-x-hidden">
           {children}
         </main>
+        <AppFooter />
       </div>
     </div>
   );

@@ -17,7 +17,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const toastRef = useRef<Toast>(null);
 
   // Login State
-  const [loginMode, setLoginMode] = useState<'staff' | 'student'>('staff');
   const [schoolCode, setSchoolCode] = useState('');
   const [identifier, setIdentifier] = useState(''); // email for staff, admission no for student
   const [password, setPassword] = useState('');
@@ -85,12 +84,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     e.preventDefault();
     setIsAuthenticating(true);
     
-    // In a real implementation, you would pass `loginMode` and `schoolCode` to the backend
+    // In a real implementation, you would pass `schoolCode` to the backend
     // to determine which table to authenticate against (users vs students).
     const loginPayload = {
-      email: identifier, // Reusing email field for backend compatibility for now
+      email: identifier, // This can be email or admissionNo
       password,
-      type: loginMode,
       schoolCode: schoolCode
     };
 
@@ -154,29 +152,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             <div className="p-8 md:p-10 flex flex-col gap-6">
-              {/* Role Toggle Switcher */}
-              <div className="flex bg-slate-950/60 p-1.5 rounded-xl border border-slate-800/60 relative w-full mb-2">
-                <div 
-                  className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg transition-transform duration-300 ease-out shadow-lg shadow-blue-500/20 ${loginMode === 'student' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => { setLoginMode('staff'); setIdentifier(''); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider relative z-10 transition-colors duration-300 ${loginMode === 'staff' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                >
-                  <i className="pi pi-users text-sm"></i>
-                  Staff & Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setLoginMode('student'); setIdentifier(''); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider relative z-10 transition-colors duration-300 ${loginMode === 'student' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                >
-                  <i className="pi pi-id-card text-sm"></i>
-                  Student Portal
-                </button>
-              </div>
-
               <form onSubmit={handleLogin} className="flex flex-col gap-5">
                 {loginMutation.isError && (
                   <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex gap-3 items-center text-rose-450 text-xs font-semibold animate-in fade-in zoom-in duration-300">
@@ -212,18 +187,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Identifier Field (Email vs Admission No) */}
                 <div className="flex flex-col gap-2">
                   <label htmlFor="identifier" className="font-bold text-[10px] uppercase tracking-widest text-slate-400">
-                    {loginMode === 'staff' ? 'Email Address' : 'Admission Number'}
+                    Email Address or Admission No.
                   </label>
                   <div className="relative flex items-center group w-full">
-                    <i className={`pi ${loginMode === 'staff' ? 'pi-envelope' : 'pi-hashtag'} absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none`}></i>
+                    <i className="pi pi-user absolute left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
                     <input
                       id="identifier"
-                      type={loginMode === 'staff' ? 'email' : 'text'}
+                      type="text"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       required
                       className="w-full py-3.5 pr-3.5 pl-11 bg-slate-950/50 border border-slate-800 hover:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white text-sm placeholder-slate-500 rounded-xl outline-none z-0"
-                      placeholder={loginMode === 'staff' ? "admin@school.com" : "e.g. ADM-2023-001"}
+                      placeholder="admin@school.com or ADM-2023-001"
                     />
                   </div>
                 </div>
@@ -293,21 +268,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
               <div className="flex-1 text-sm text-slate-300 font-medium leading-relaxed relative z-10 flex flex-col justify-center gap-4">
                 <p>
-                  Welcome to the {loginMode === 'staff' ? 'Staff Portal' : 'Student Dashboard'}.
+                  Welcome to the Platform Dashboard.
                 </p>
-                {loginMode === 'student' ? (
-                  <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-2xl">
-                    <p className="text-xs text-blue-200/80 leading-relaxed">
-                      Students are isolated in a separate, highly-optimized database structure to ensure zero performance degradation during morning peak login hours.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl">
-                    <p className="text-xs text-emerald-200/80 leading-relaxed">
-                      Staff and administrators have access to robust management tools, partitioned securely per tenant (school) to guarantee data privacy.
-                    </p>
-                  </div>
-                )}
+                <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-2xl">
+                  <p className="text-xs text-blue-200/80 leading-relaxed">
+                    Our intelligent routing automatically detects whether you are logging in as a student or staff member based on your credentials, isolating your data in optimal environments.
+                  </p>
+                </div>
               </div>
               
               <div className="mt-6 pt-6 border-t border-slate-800/60 relative z-10">

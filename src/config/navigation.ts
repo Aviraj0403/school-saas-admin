@@ -38,9 +38,9 @@ export const navigationConfig: NavItem[] = [
     icon: PrimeIcons.USER,
     path: '/students',
     children: [
-      { label: 'All Students', icon: PrimeIcons.USERS, path: '/students', module: 'student' },
-      { label: 'New Admission', icon: PrimeIcons.USER_PLUS, path: '/students/admissions', module: 'student' },
-      { label: 'Attendance logs', icon: PrimeIcons.CHECK_SQUARE, path: '/attendance', module: 'attendance' },
+      { label: 'All Students', icon: PrimeIcons.USERS, path: '/students', module: 'student', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'] },
+      { label: 'New Admission', icon: PrimeIcons.USER_PLUS, path: '/students/admissions', module: 'student', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
+      { label: 'My Attendance', icon: PrimeIcons.CHECK_SQUARE, path: '/attendance', module: 'attendance' },
       { label: 'Assignments & Homework', icon: PrimeIcons.UPLOAD, path: '/assignments', module: 'homework' },
       { label: 'Exams & Results', icon: PrimeIcons.PENCIL, path: '/exams', module: 'exams' },
     ],
@@ -73,9 +73,9 @@ export const navigationConfig: NavItem[] = [
     path: '/transport',
     module: 'transport',
     children: [
-      { label: 'Vehicle Directory', icon: PrimeIcons.CAR, path: '/transport/vehicles', module: 'transport' },
+      { label: 'Vehicle Directory', icon: PrimeIcons.CAR, path: '/transport/vehicles', module: 'transport', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
       { label: 'Bus Routes & Stops', icon: PrimeIcons.MAP_MARKER, path: '/transport/routes', module: 'transport' },
-      { label: 'Driver Allocations', icon: PrimeIcons.USER, path: '/transport/vehicles', module: 'transport' },
+      { label: 'Driver Allocations', icon: PrimeIcons.USER, path: '/transport/vehicles', module: 'transport', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
     ],
   },
   {
@@ -85,8 +85,8 @@ export const navigationConfig: NavItem[] = [
     module: 'hostel',
     children: [
       { label: 'Hostel Rooms', icon: PrimeIcons.HOME, path: '/hostel/rooms', module: 'hostel' },
-      { label: 'Room Allocations', icon: PrimeIcons.KEY, path: '/hostel/allocations', module: 'hostel' },
-      { label: 'Warden Logbook', icon: PrimeIcons.BOOK, path: '/hostel/wardens', module: 'hostel' },
+      { label: 'Room Allocations', icon: PrimeIcons.KEY, path: '/hostel/allocations', module: 'hostel', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden'] },
+      { label: 'Warden Logbook', icon: PrimeIcons.BOOK, path: '/hostel/wardens', module: 'hostel', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden'] },
     ],
   },
   {

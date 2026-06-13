@@ -14,7 +14,7 @@ export interface LoginResponse {
 }
 
 export const authService = {
-  login: async (credentials: { email: string; password: string }): Promise<LoginResponse> => {
+  login: async (credentials: { email: string; password: string; type?: string; schoolCode?: string }): Promise<LoginResponse> => {
     // Backend: POST /auth/login → ResponseInterceptor wraps as { success, data: { accessToken, refreshToken, user } }
     const response = await api.post<{ success: boolean; data: LoginResponse }>('/auth/login', credentials);
     return response.data.data;

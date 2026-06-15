@@ -31,6 +31,11 @@ export const academicsService = {
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
+  assignSubjectsToClass: async (classId: string, subjectIds: string[]) => {
+    const response = await api.post<{ success: boolean; data: any }>(`/academics/classes/${classId}/subjects`, { subjectIds });
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+  },
+
   // Get subjects globally (optionally filtered by department)
   getSubjects: async (departmentId?: string) => {
     const url = departmentId

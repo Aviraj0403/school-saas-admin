@@ -10,7 +10,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-import { useQuizzes, useCreateQuiz } from '@/hooks/queries/useAcademics';
+import { useQuizzes, useCreateQuiz, useClasses, useAllSubjects } from '@/hooks/queries/useAcademics';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
 
@@ -20,10 +20,22 @@ export default function QuizzesPage() {
   const [search, setSearch] = useState('');
   
   const { data: quizzesData } = useQuizzes();
+  const { data: classesData } = useClasses(1, 100);
+  const { data: subjectsData } = useAllSubjects();
+  
   const createMutation = useCreateQuiz();
   
   const quizzes = quizzesData || [];
   
+  const classOptions = (classesData?.items || classesData?.data?.items || []).map((c: any) => ({
+    label: `${c.name} — ${c.section}`,
+    value: c.id
+  }));
+
+  const subjectOptions = Array.isArray(subjectsData) 
+    ? subjectsData.map((s: any) => ({ label: `${s.name} (${s.code})`, value: s.id }))
+    : [];
+
   const filteredQuizzes = quizzes.filter((q: any) => 
     q.title?.toLowerCase().includes(search.toLowerCase()) ||
     q.subject?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -33,32 +45,45 @@ export default function QuizzesPage() {
   const [formData, setFormData] = useState({
     title: '',
     duration: 30,
-    status: 'DRAFT'
+    status: 'DRAFT',
+    classId: '',
+    subjectId: ''
   });
 
   const statusTemplate = (rowData: any) => {
     return (
       <Tag 
-        value={rowData.status} 
-        severity={rowData.status === 'PUBLISHED' ? 'success' : 'warning'} 
+        value={rowData.isPublished ? 'PUBLISHED' : 'DRAFT'} 
+        severity={rowData.isPublished ? 'success' : 'warning'} 
         className="text-[10px] font-bold"
       />
     );
   };
 
   const handleSave = () => {
+    if (!formData.title || !formData.classId || !formData.subjectId) {
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'warn', summary: 'Required', detail: 'Title, Class, and Subject are required.', life: 3000 }
+      }));
+      return;
+    }
     createMutation.mutate({
       title: formData.title,
       duration: formData.duration,
       status: formData.status,
-      // Default to some IDs for now
-      classId: 'dummy',
-      subjectId: 'dummy'
+      classId: formData.classId,
+      subjectId: formData.subjectId
     }, {
       onSuccess: () => {
         setShowDialog(false);
+        setFormData({ title: '', duration: 30, status: 'DRAFT', classId: '', subjectId: '' });
         window.dispatchEvent(new CustomEvent('show-toast', {
           detail: { severity: 'success', summary: 'Success', detail: 'Quiz created successfully.', life: 3000 }
+        }));
+      },
+      onError: (err: any) => {
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to create quiz.', life: 4000 }
         }));
       }
     });
@@ -71,17 +96,11 @@ export default function QuizzesPage() {
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">LMS Quizzes & Assessments</h1>
-            <p className="text-slate-400 mt-1 text-sm md:text-base">
-              Create interactive online quizzes and track student performance.
-            </p>
-          </div> */}
           <div className="flex gap-2">
 
             <button 
               onClick={() => setShowDialog(true)}
-              className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm border border-transparent text-sm px-5 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <i className="pi pi-plus text-xs"></i>
               Create Quiz
@@ -101,11 +120,6 @@ export default function QuizzesPage() {
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md outline-none focus:border-blue-500 transition-colors text-sm"
             />
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end bg-zinc-100 dark:bg-zinc-900 p-1 rounded-md border border-zinc-200 dark:border-zinc-800">
-             <button className="p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm">
-               <i className="pi pi-list text-sm"></i> List
-             </button>
-          </div>
         </div>
 
         {/* Table View */}
@@ -120,9 +134,9 @@ export default function QuizzesPage() {
             <Column field="title" header="Quiz Title" sortable className="text-sm font-semibold text-zinc-900 dark:text-white" />
             <Column field="class.name" header="Class" sortable className="text-sm text-zinc-700 dark:text-zinc-300" />
             <Column field="subject.name" header="Subject" sortable className="text-sm text-zinc-700 dark:text-zinc-300" />
-            <Column field="_count.questions" header="Questions" sortable className="text-sm text-zinc-700 dark:text-zinc-300" />
+            <Column field="_count.questions" header="Questions" sortable className="text-sm text-zinc-700 dark:text-zinc-300" body={(r) => r._count?.questions || 0} />
             <Column field="duration" header="Duration (mins)" sortable className="text-sm text-zinc-700 dark:text-zinc-300" />
-            <Column field="isPublished" header="Status" body={(r) => statusTemplate({ status: r.isPublished ? 'PUBLISHED' : 'DRAFT' })} sortable className="w-32" />
+            <Column field="isPublished" header="Status" body={statusTemplate} sortable className="w-32" />
             <Column 
               body={() => (
                 <div className="flex gap-2 justify-end">
@@ -153,6 +167,7 @@ export default function QuizzesPage() {
             <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowDialog(false)} />
             <Button 
               label="Save Quiz" 
+              loading={createMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
               onClick={handleSave} 
             />
@@ -161,7 +176,7 @@ export default function QuizzesPage() {
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Quiz Title</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Quiz Title *</label>
             <InputText 
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -172,7 +187,7 @@ export default function QuizzesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Duration (Minutes)</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Duration (Mins) *</label>
               <InputNumber 
                 value={formData.duration} 
                 onValueChange={(e) => setFormData({...formData, duration: e.value || 30})} 
@@ -194,17 +209,23 @@ export default function QuizzesPage() {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Class</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Class *</label>
               <Dropdown 
-                options={[{label: 'Class 10A', value: '1'}, {label: 'Class 9B', value: '2'}]} 
+                value={formData.classId}
+                options={[{label: '— Select Class —', value: ''}, ...classOptions]} 
+                onChange={(e) => setFormData({...formData, classId: e.value})}
+                filter
                 placeholder="Select Class"
                 className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Subject</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Subject *</label>
               <Dropdown 
-                options={[{label: 'Mathematics', value: '1'}, {label: 'Science', value: '2'}]} 
+                value={formData.subjectId}
+                options={[{label: '— Select Subject —', value: ''}, ...subjectOptions]} 
+                onChange={(e) => setFormData({...formData, subjectId: e.value})}
+                filter
                 placeholder="Select Subject"
                 className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
               />

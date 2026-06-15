@@ -56,9 +56,22 @@ export function useCreateSubject() {
       departmentId?: string;
       maxMarks?: number;
       passMarks?: number;
+      classIds?: string[];
     }) => academicsService.createSubject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academics', 'subjects'] });
+    },
+  });
+}
+
+export function useAssignSubjectsToClass() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ classId, subjectIds }: { classId: string; subjectIds: string[] }) =>
+      academicsService.assignSubjectsToClass(classId, subjectIds),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['academics', 'subjects', 'byClass', vars.classId] });
+      queryClient.invalidateQueries({ queryKey: ['academics', 'timetable', vars.classId] });
     },
   });
 }

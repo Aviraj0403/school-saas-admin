@@ -10,7 +10,8 @@ import {
   useClasses, 
   useTimetable, 
   useCreateTimetableEntry, 
-  useAllSubjects 
+  useAllSubjects,
+  useDeleteTimetableSlot
 } from '@/hooks/queries/useAcademics';
 import { useStaffList } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -51,6 +52,24 @@ export default function TimetablePage() {
   const { data: staffData }          = useStaffList(1, 200);       // all teachers
 
   const createMutation = useCreateTimetableEntry();
+  const deleteMutation = useDeleteTimetableSlot();
+
+  const handleDeleteSlot = (slotId: string) => {
+    if (confirm('Are you sure you want to delete this period?')) {
+      deleteMutation.mutate(slotId, {
+        onSuccess: () => {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'success', summary: 'Deleted', detail: 'Period deleted successfully.', life: 3000 }
+          }));
+        },
+        onError: (err: any) => {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to delete period.', life: 4000 }
+          }));
+        }
+      });
+    }
+  };
 
   // ── Options ───────────────────────────────────────────────────────
   const classOptions = (classes?.items || classes?.data?.items || []).map((c: any) => ({
@@ -87,9 +106,9 @@ export default function TimetablePage() {
 
   const handleCreate = () => {
     if (!selectedClassId) return;
-    if (!form.subjectId || !form.teacherId) {
+    if (!form.subjectId || !form.teacherId || !form.startTime || !form.endTime) {
       window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { severity: 'warn', summary: 'Required', detail: 'Please select both a Subject and a Teacher.', life: 3000 }
+        detail: { severity: 'warn', summary: 'Required', detail: 'Please fill all fields.', life: 3000 }
       }));
       return;
     }
@@ -118,13 +137,6 @@ export default function TimetablePage() {
 
         {/* Header */}
         <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Class Timetable Builder</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Configure weekly schedules, assign teachers to periods, and manage the academic calendar.
-            </p>
-          </div> */}
-
           <button
             disabled={!selectedClassId}
             onClick={() => setShowDialog(true)}
@@ -135,32 +147,34 @@ export default function TimetablePage() {
         </div>
 
         {/* Class Selector + Stats */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm flex flex-col md:flex-row items-start md:items-end gap-5">
-          <div className="flex flex-col gap-1.5 w-full md:w-80">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Select Class</label>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
+          <div className="flex flex-col gap-2 w-full md:w-96">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Active Class</label>
             <Dropdown
               value={selectedClassId}
-              options={[{ label: '— Choose a Class —', value: '' }, ...classOptions]}
+              options={[{ label: '— Select a Class —', value: '' }, ...classOptions]}
               onChange={(e) => setSelectedClassId(e.value)}
-              placeholder="Choose academic class"
+              placeholder="Select a class to manage schedule"
               filter
               filterPlaceholder="Search class..."
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md w-full outline-none"
+              className="border-2 border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-lg w-full outline-none hover:border-blue-400 focus:border-blue-500 transition-colors"
             />
           </div>
 
           {selectedClassId && (
             <div className="flex gap-4 flex-wrap">
               {[
-                { label: 'Total Periods', val: totalPeriods,    icon: 'pi-clock',       color: 'blue' },
-                { label: 'Subjects',      val: uniqueSubjects,  icon: 'pi-book',         color: 'emerald' },
-                { label: 'Teachers',      val: uniqueTeachers,  icon: 'pi-user',         color: 'zinc' },
+                { label: 'Weekly Periods', val: totalPeriods,    icon: 'pi-calendar-plus', color: 'blue' },
+                { label: 'Total Subjects', val: uniqueSubjects,  icon: 'pi-book',          color: 'emerald' },
+                { label: 'Teachers',       val: uniqueTeachers,  icon: 'pi-users',         color: 'amber' },
               ].map(stat => (
-                <div key={stat.label} className={`bg-${stat.color}-50 dark:bg-${stat.color}-900/20 border border-${stat.color}-100/50 dark:border-${stat.color}-800/30 rounded-md px-4 py-2.5 flex items-center gap-2.5`}>
-                  <i className={`pi ${stat.icon} text-${stat.color}-500`}></i>
+                <div key={stat.label} className={`bg-gradient-to-br from-white to-${stat.color}-50/30 dark:from-zinc-900 dark:to-${stat.color}-900/10 border border-${stat.color}-100 dark:border-${stat.color}-900/30 rounded-xl px-5 py-3 flex items-center gap-3 shadow-sm`}>
+                  <div className={`p-2 rounded-lg bg-${stat.color}-100/50 dark:bg-${stat.color}-900/30 text-${stat.color}-600 dark:text-${stat.color}-400`}>
+                    <i className={`pi ${stat.icon} text-lg`}></i>
+                  </div>
                   <div>
-                    <p className={`text-xs font-bold text-${stat.color}-600 dark:text-${stat.color}-400`}>{stat.val}</p>
-                    <p className="text-[10px] text-zinc-500 font-medium">{stat.label}</p>
+                    <p className={`text-lg font-black text-zinc-800 dark:text-zinc-100 leading-tight`}>{stat.val}</p>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{stat.label}</p>
                   </div>
                 </div>
               ))}
@@ -171,64 +185,80 @@ export default function TimetablePage() {
         {/* Timetable Grid */}
         {selectedClassId ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {[1, 2, 3, 4, 5, 6].map((day) => (
                 <div
                   key={day}
-                  className={`bg-gradient-to-br ${DAY_COLORS[day]} border rounded-md p-5 flex flex-col gap-3 shadow-sm`}
+                  className={`bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col shadow-sm overflow-hidden group`}
                 >
-                  <div className="flex justify-between items-center pb-2 border-b border-zinc-200/60 dark:border-zinc-700/40">
-                    <h3 className="font-bold text-zinc-900 dark:text-white text-sm">{DAY_MAP[day]}</h3>
-                    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest bg-white/60 dark:bg-zinc-800/40 px-2 py-0.5 rounded-md">
+                  <div className={`p-4 border-b border-zinc-100 dark:border-zinc-800 bg-gradient-to-br ${DAY_COLORS[day]} flex justify-between items-center`}>
+                    <h3 className="font-extrabold text-zinc-800 dark:text-zinc-100 text-sm tracking-wide">{DAY_MAP[day]}</h3>
+                    <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 bg-white/80 dark:bg-zinc-900/80 px-2 py-0.5 rounded-md shadow-sm">
                       {grouped[day]?.length || 0} periods
                     </span>
                   </div>
 
-                  {isPending ? (
-                    <div className="flex items-center gap-2 py-2">
-                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-zinc-500">Loading...</span>
-                    </div>
-                  ) : grouped[day]?.length ? (
-                    <div className="flex flex-col gap-2">
-                      {grouped[day]
-                        .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                        .map((entry: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-zinc-900/50 backdrop-blur-sm rounded-md border border-white/50 dark:border-zinc-700/30 hover:shadow-sm transition-all"
-                          >
-                            <div className={`w-1 h-10 rounded-full ${SLOT_COLORS[idx % SLOT_COLORS.length]} shrink-0`} />
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
-                                {entry.subject?.name || entry.subjectName || 'Subject'}
-                              </span>
-                              <span className="text-[10px] text-zinc-500 font-medium">
-                                {entry.startTime} – {entry.endTime}
-                              </span>
-                              {(entry.teacher?.name || entry.teacherName) && (
-                                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium truncate">
-                                  <i className="pi pi-user text-[8px] mr-0.5"></i>
-                                  {entry.teacher?.name || entry.teacherName}
+                  <div className="p-3 flex-1 flex flex-col gap-3 min-h-[300px]">
+                    {isPending ? (
+                      <div className="flex items-center justify-center h-full gap-2 py-10">
+                        <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : grouped[day]?.length ? (
+                      <div className="flex flex-col gap-3">
+                        {grouped[day]
+                          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                          .map((entry: any, idx: number) => (
+                            <div
+                              key={entry.id || idx}
+                              className="relative group/slot flex flex-col gap-1.5 p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all"
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-2 pr-4 leading-tight">
+                                  {entry.subject?.name || entry.subjectName || 'Subject'}
                                 </span>
+                                <button 
+                                  onClick={() => handleDeleteSlot(entry.id)}
+                                  className="absolute top-2 right-2 p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded opacity-0 group-hover/slot:opacity-100 transition-all cursor-pointer"
+                                  title="Delete Period"
+                                >
+                                  <i className="pi pi-trash text-[10px]"></i>
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <i className="pi pi-clock text-blue-500 text-[10px]"></i>
+                                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-semibold tracking-wide">
+                                  {entry.startTime} – {entry.endTime}
+                                </span>
+                              </div>
+                              {(entry.teacher?.name || entry.teacherName) && (
+                                <div className="flex items-center gap-1.5 mt-1 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                                  <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-[8px]">
+                                    {(entry.teacher?.name || entry.teacherName).charAt(0)}
+                                  </div>
+                                  <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium truncate">
+                                    {entry.teacher?.name || entry.teacherName}
+                                  </span>
+                                </div>
                               )}
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="py-6 text-center text-zinc-400 text-xs font-medium">
-                      <i className="pi pi-calendar block text-2xl mb-1 opacity-30"></i>
-                      No periods scheduled
-                    </div>
-                  )}
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-center opacity-40 group-hover:opacity-60 transition-opacity">
+                        <i className="pi pi-calendar-times text-3xl mb-2"></i>
+                        <span className="text-xs font-semibold">Free Day</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <button
-                    onClick={() => { setForm(f => ({ ...f, dayOfWeek: day })); setShowDialog(true); }}
-                    className="mt-1 w-full py-1.5 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 bg-white/50 dark:bg-zinc-800/30 hover:bg-white/80 dark:hover:bg-zinc-800/60 border border-zinc-200/50 dark:border-zinc-700/30 rounded-md transition-all flex items-center justify-center gap-1"
-                  >
-                    <i className="pi pi-plus text-[8px]"></i> Add Period
-                  </button>
+                  <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+                    <button
+                      onClick={() => { setForm(f => ({ ...f, dayOfWeek: day, startTime: '', endTime: '' })); setShowDialog(true); }}
+                      className="w-full py-2 text-xs font-bold text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-zinc-200 dark:border-zinc-800 hover:border-blue-200 dark:hover:border-blue-800/50 rounded-lg transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <i className="pi pi-plus text-[10px]"></i> Add Period
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -8,6 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -16,12 +17,13 @@ import {
   useClasses, 
   useCreateClass, 
   useSubjects, 
+  useAllSubjects,
   useCreateSubject, 
   useDeleteSubject,
   useCurrentAcademicYear,
   useDepartmentsList,
+  useAssignSubjectsToClass,
 } from '@/hooks/queries/useAcademics';
-
 
 const SUBJECT_TYPES = [
   { label: 'Theory', value: 'theory' },
@@ -38,6 +40,7 @@ export default function ClassesPage() {
   // Dialog visibility states
   const [showClassDialog, setShowClassDialog] = useState(false);
   const [showSubjectDialog, setShowSubjectDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
   
   // Form states
   const [classForm, setClassForm] = useState({ name: '', section: '', maxStrength: 40, roomNo: '' });
@@ -49,20 +52,25 @@ export default function ClassesPage() {
     maxMarks: 100,
     passMarks: 33,
   });
+  const [assignSubjectIds, setAssignSubjectIds] = useState<string[]>([]);
 
   // Queries
   const { data: currentYear } = useCurrentAcademicYear();
   const { data: classes, isPending } = useClasses(page, 20);
   const { data: subjects, isPending: loadingSubjects } = useSubjects(selectedClass?.id || '');
+  const { data: allSubjectsData } = useAllSubjects();
   const { data: departments } = useDepartmentsList();
   
   // Mutations
   const createClassMutation = useCreateClass();
   const createSubjectMutation = useCreateSubject();
   const deleteSubjectMutation = useDeleteSubject();
+  const assignSubjectsMutation = useAssignSubjectsToClass();
 
   const classList = classes?.items || classes?.data?.items || [];
   const subjectList = Array.isArray(subjects) ? subjects : [];
+  const allSubjectsList = Array.isArray(allSubjectsData) ? allSubjectsData : [];
+  
   const departmentOptions = Array.isArray(departments)
     ? departments.map((d: any) => ({ label: d.name, value: d.id }))
     : [];
@@ -114,18 +122,45 @@ export default function ClassesPage() {
         departmentId: subjectForm.departmentId || undefined,
         maxMarks: subjectForm.maxMarks,
         passMarks: subjectForm.passMarks,
+        classIds: selectedClass ? [selectedClass.id] : [],
       },
       {
         onSuccess: () => {
           setShowSubjectDialog(false);
           setSubjectForm({ name: '', code: '', type: 'theory', departmentId: '', maxMarks: 100, passMarks: 33 });
           window.dispatchEvent(new CustomEvent('show-toast', {
-            detail: { severity: 'success', summary: 'Subject Added', detail: `${subjectForm.name} created and linked to the school curriculum.`, life: 3000 }
+            detail: { severity: 'success', summary: 'Subject Added', detail: `${subjectForm.name} created${selectedClass ? ` and linked to ${selectedClass.name}` : ''}.`, life: 3000 }
           }));
         },
         onError: (err: any) => {
           window.dispatchEvent(new CustomEvent('show-toast', {
             detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to add subject.', life: 4000 }
+          }));
+        }
+      }
+    );
+  };
+
+  const handleAssignSubjects = () => {
+    if (!selectedClass || assignSubjectIds.length === 0) return;
+    
+    // Merge existing subject IDs with newly selected ones so we don't drop existing ones
+    const existingIds = subjectList.map((s: any) => s.id);
+    const newSubjectIds = Array.from(new Set([...existingIds, ...assignSubjectIds]));
+
+    assignSubjectsMutation.mutate(
+      { classId: selectedClass.id, subjectIds: newSubjectIds },
+      {
+        onSuccess: () => {
+          setShowAssignDialog(false);
+          setAssignSubjectIds([]);
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'success', summary: 'Subjects Assigned', detail: `Successfully updated subjects for ${selectedClass.name}`, life: 3000 }
+          }));
+        },
+        onError: (err: any) => {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to assign subjects.', life: 4000 }
           }));
         }
       }
@@ -144,6 +179,11 @@ export default function ClassesPage() {
     return <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.color}`}>{t.label}</span>;
   };
 
+  // Filter out subjects already assigned to the selected class
+  const availableSubjectsToAssign = allSubjectsList.filter(
+    (sub: any) => !subjectList.some((s: any) => s.id === sub.id)
+  );
+
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Classes" subtitle="Academics" />
@@ -151,24 +191,16 @@ export default function ClassesPage() {
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Classes & Subject Catalog</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Setup active school grades, sections and manage the academic subject curriculum.
-            </p>
-          </div> */}
-          <div className="flex gap-2">
-
+          <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => setShowSubjectDialog(true)}
               className="flex-1 md:flex-none px-4 py-2 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium rounded-md shadow-sm transition-all text-sm flex items-center justify-center gap-2"
             >
-              <i className="pi pi-book text-xs"></i> Add Subject
+              <i className="pi pi-book text-xs"></i> New Subject
             </button>
             <button 
               onClick={() => setShowClassDialog(true)}
               className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
-
             >
               <i className="pi pi-plus text-xs"></i>
               New Class
@@ -223,24 +255,48 @@ export default function ClassesPage() {
           </div>
 
           {/* Subjects Column (Right 2 columns) */}
-          <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm">
+          <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm relative">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                   {selectedClass ? `${selectedClass.name} — ${selectedClass.section}` : 'Subject Catalog'}
                 </h2>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  {selectedClass ? 'Subjects linked to this class via timetable.' : 'Select a class to view its subjects.'}
+                  {selectedClass ? 'Subjects linked to this class.' : 'Select a class to view its subjects.'}
                 </p>
               </div>
+              {selectedClass && (
+                <button
+                  onClick={() => setShowAssignDialog(true)}
+                  className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-md transition-all flex items-center gap-1.5"
+                >
+                  <i className="pi pi-link text-[10px]"></i> Link Existing
+                </button>
+              )}
             </div>
 
             {selectedClass ? (
               subjectList.length === 0 && !loadingSubjects ? (
-                <div className="flex flex-col items-center justify-center p-10 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md gap-2">
+                <div className="flex flex-col items-center justify-center p-10 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md gap-3 mt-4">
                   <i className="pi pi-book text-3xl"></i>
-                  <p className="text-sm font-semibold text-center">No subjects linked yet.</p>
-                  <p className="text-xs text-center opacity-70">Add subjects via the timetable or using the Add Subject button.</p>
+                  <div>
+                    <p className="text-sm font-semibold text-center text-zinc-600 dark:text-zinc-300">No subjects linked yet</p>
+                    <p className="text-xs text-center opacity-70 mt-1 max-w-[200px]">Link existing subjects or create a new one to assign it automatically.</p>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button 
+                      onClick={() => setShowAssignDialog(true)}
+                      className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded text-xs font-medium"
+                    >
+                      Link Existing
+                    </button>
+                    <button 
+                      onClick={() => setShowSubjectDialog(true)}
+                      className="px-3 py-1.5 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-100 text-white dark:text-zinc-900 rounded text-xs font-medium"
+                    >
+                      Create New
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <DataTable
@@ -263,16 +319,13 @@ export default function ClassesPage() {
                 </DataTable>
               )
             ) : (
-              <div className="flex flex-col items-center justify-center p-12 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md">
+              <div className="flex flex-col items-center justify-center p-12 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md mt-4">
                 <i className="pi pi-arrow-left text-3xl mb-2"></i>
                 <p className="text-sm font-semibold">Select a Class</p>
-                
               </div>
             )}
           </div>
-
         </div>
-
       </div>
 
       {/* ── Dialog: Add Class ───────────────────────────────────────── */}
@@ -351,7 +404,7 @@ export default function ClassesPage() {
 
       {/* ── Dialog: Add Subject ─────────────────────────────────────── */}
       <Dialog 
-        header="Add New Subject to Curriculum"
+        header="Add New Subject"
         visible={showSubjectDialog} 
         style={{ width: '480px' }} 
         modal 
@@ -373,6 +426,12 @@ export default function ClassesPage() {
         }
       >
         <div className="flex flex-col gap-4 mt-3">
+          {selectedClass && (
+            <div className="p-2 px-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/30 dark:border-blue-800/20 rounded-md flex items-center gap-2 text-blue-700 dark:text-blue-400 text-xs font-medium mb-1">
+              <i className="pi pi-info-circle"></i>
+              This subject will be automatically linked to {selectedClass.name} — {selectedClass.section}.
+            </div>
+          )}
           {/* Name + Code */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -441,11 +500,53 @@ export default function ClassesPage() {
               />
             </div>
           </div>
+        </div>
+      </Dialog>
 
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/40 dark:border-blue-800/30 rounded-md text-blue-700 dark:text-blue-400 text-xs font-medium flex items-start gap-2">
-            <i className="pi pi-info-circle mt-0.5"></i>
-            <span>Subjects are school-level resources. Assign them to classes via the <strong>Timetable</strong> builder.</span>
+      {/* ── Dialog: Assign Subjects ─────────────────────────────────────── */}
+      <Dialog 
+        header={`Link Subjects to ${selectedClass?.name || 'Class'}`}
+        visible={showAssignDialog} 
+        style={{ width: '480px' }} 
+        modal 
+        onHide={() => {
+          setShowAssignDialog(false);
+          setAssignSubjectIds([]);
+        }}
+        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        contentClassName="p-6"
+        headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
+        footer={
+          <div className="flex justify-end gap-2 p-4 border-t border-zinc-100 dark:border-zinc-800">
+            <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowAssignDialog(false)} />
+            <Button 
+              label="Assign Selected" 
+              icon="pi pi-link" 
+              disabled={assignSubjectIds.length === 0}
+              loading={assignSubjectsMutation.isPending} 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
+              onClick={handleAssignSubjects} 
+            />
           </div>
+        }
+      >
+        <div className="flex flex-col gap-4 mt-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Select Subjects</label>
+            <MultiSelect
+              value={assignSubjectIds}
+              options={availableSubjectsToAssign.map((s: any) => ({ label: `${s.name} (${s.code})`, value: s.id }))}
+              onChange={(e) => setAssignSubjectIds(e.value)}
+              placeholder="Select existing subjects..."
+              display="chip"
+              filter
+              className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none p-1 text-sm"
+              emptyMessage="No available subjects to assign."
+            />
+          </div>
+          <p className="text-xs text-zinc-500 leading-relaxed mt-1">
+            Selected subjects will be added to the curriculum of <strong>{selectedClass?.name} {selectedClass?.section}</strong>. You can view them in the right pane.
+          </p>
         </div>
       </Dialog>
     </DashboardLayout>

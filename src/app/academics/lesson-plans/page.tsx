@@ -11,7 +11,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Tag } from 'primereact/tag';
-import { useLessonPlans, useCreateLessonPlan } from '@/hooks/queries/useAcademics';
+import { useLessonPlans, useCreateLessonPlan, useClasses, useAllSubjects } from '@/hooks/queries/useAcademics';
+import { useStaffList } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
 
@@ -21,10 +22,28 @@ export default function LessonPlansPage() {
   const [search, setSearch] = useState('');
   
   const { data: plansData, isPending } = useLessonPlans();
+  const { data: classesData } = useClasses(1, 100);
+  const { data: subjectsData } = useAllSubjects();
+  const { data: staffData } = useStaffList(1, 200);
+  
   const createMutation = useCreateLessonPlan();
   
   const plans = plansData || [];
   
+  const classOptions = (classesData?.items || classesData?.data?.items || []).map((c: any) => ({
+    label: `${c.name} — ${c.section}`,
+    value: c.id
+  }));
+
+  const subjectOptions = Array.isArray(subjectsData) 
+    ? subjectsData.map((s: any) => ({ label: `${s.name} (${s.code})`, value: s.id }))
+    : [];
+    
+  const teacherOptions = (staffData?.items || []).map((t: any) => ({
+    label: `${t.name} — ${t.designation || 'Teacher'}`,
+    value: t.id
+  }));
+
   const filteredPlans = plans.filter((p: any) => 
     p.topic?.title?.toLowerCase().includes(search.toLowerCase()) || 
     p.topic?.subject?.name?.toLowerCase().includes(search.toLowerCase())
@@ -34,6 +53,7 @@ export default function LessonPlansPage() {
     date: new Date(),
     classId: '',
     subjectId: '',
+    teacherId: '',
     topic: '',
     content: '',
     homework: '',
@@ -51,20 +71,35 @@ export default function LessonPlansPage() {
   };
 
   const handleSave = () => {
+    if (!formData.classId || !formData.subjectId || !formData.topic || !formData.teacherId) {
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'warn', summary: 'Required', detail: 'Class, Subject, Teacher, and Topic are required.', life: 3000 }
+      }));
+      return;
+    }
+    
     createMutation.mutate({
       date: formData.date.toISOString().split('T')[0],
       classId: formData.classId,
       subjectId: formData.subjectId,
       topicName: formData.topic,
-      teacherId: 'current-user', // Handled by backend typically
+      teacherId: formData.teacherId,
       content: formData.content,
       homework: formData.homework,
       status: formData.status
     }, {
       onSuccess: () => {
         setShowDialog(false);
+        setFormData({
+          date: new Date(), classId: '', subjectId: '', teacherId: '', topic: '', content: '', homework: '', status: 'PLANNED'
+        });
         window.dispatchEvent(new CustomEvent('show-toast', {
           detail: { severity: 'success', summary: 'Success', detail: 'Lesson plan saved successfully.', life: 3000 }
+        }));
+      },
+      onError: (err: any) => {
+        window.dispatchEvent(new CustomEvent('show-toast', {
+          detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to save lesson plan.', life: 4000 }
         }));
       }
     });
@@ -77,17 +112,11 @@ export default function LessonPlansPage() {
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Lesson Planning</h1>
-            <p className="text-slate-400 mt-1 text-sm md:text-base">
-              Manage daily syllabus progression, teaching logs, and homework assignments.
-            </p>
-          </div> */}
           <div className="flex gap-2">
 
             <button 
               onClick={() => setShowDialog(true)}
-              className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm border border-transparent text-sm px-5 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <i className="pi pi-plus text-xs"></i>
               Create Lesson Plan
@@ -107,14 +136,6 @@ export default function LessonPlansPage() {
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md outline-none focus:border-blue-500 transition-colors text-sm"
             />
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end bg-zinc-100 dark:bg-zinc-900 p-1 rounded-md border border-zinc-200 dark:border-zinc-800">
-             <button className="p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm">
-               <i className="pi pi-table text-sm"></i> List View
-             </button>
-             <button className="p-1.5 px-3 rounded-md transition-all font-medium flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
-               <i className="pi pi-calendar text-sm"></i> Calendar
-             </button>
-          </div>
         </div>
 
         {/* Table View */}
@@ -125,6 +146,7 @@ export default function LessonPlansPage() {
             emptyMessage="No lesson plans found."
             paginator rows={10}
             rowHover
+            loading={isPending}
           >
             <Column field="date" header="Date" body={(rowData) => new Date(rowData.date).toLocaleDateString()} sortable className="text-sm font-medium text-zinc-800 dark:text-zinc-200 w-32" />
             <Column field="topic.class.name" header="Class" sortable className="text-sm text-zinc-700 dark:text-zinc-300" />
@@ -163,6 +185,7 @@ export default function LessonPlansPage() {
             <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowDialog(false)} />
             <Button 
               label="Save Plan" 
+              loading={createMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
               onClick={handleSave} 
             />
@@ -172,7 +195,7 @@ export default function LessonPlansPage() {
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Date</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Date *</label>
               <Calendar 
                 value={formData.date} 
                 onChange={(e) => setFormData({...formData, date: e.value as Date})} 
@@ -193,17 +216,23 @@ export default function LessonPlansPage() {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Class</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Class *</label>
               <Dropdown 
-                options={[{label: 'Class 10A', value: '1'}, {label: 'Class 9B', value: '2'}]} 
+                value={formData.classId}
+                options={[{label: '— Select Class —', value: ''}, ...classOptions]} 
+                onChange={(e) => setFormData({...formData, classId: e.value})}
+                filter
                 placeholder="Select Class"
                 className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Subject</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Subject *</label>
               <Dropdown 
-                options={[{label: 'Mathematics', value: '1'}, {label: 'Science', value: '2'}]} 
+                value={formData.subjectId}
+                options={[{label: '— Select Subject —', value: ''}, ...subjectOptions]} 
+                onChange={(e) => setFormData({...formData, subjectId: e.value})}
+                filter
                 placeholder="Select Subject"
                 className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
               />
@@ -211,7 +240,19 @@ export default function LessonPlansPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Topic / Chapter</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Teacher *</label>
+            <Dropdown 
+              value={formData.teacherId}
+              options={[{label: '— Select Teacher —', value: ''}, ...teacherOptions]} 
+              onChange={(e) => setFormData({...formData, teacherId: e.value})}
+              filter
+              placeholder="Select Assigned Teacher"
+              className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Topic / Chapter *</label>
             <InputText 
               value={formData.topic}
               onChange={(e) => setFormData({...formData, topic: e.target.value})}

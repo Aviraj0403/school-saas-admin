@@ -15,16 +15,19 @@ export const studentsService = {
 
   getStudentById: async (id: string) => {
     const response = await api.get<{ success: boolean; data: Student }>(`/students/${id}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   createStudent: async (data: CreateStudentDto) => {
     const response = await api.post<{ success: boolean; data: Student }>('/students', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   deleteStudent: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/students/${id}`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 };
+
+
+

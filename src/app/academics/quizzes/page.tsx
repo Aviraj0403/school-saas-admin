@@ -66,7 +66,7 @@ export default function QuizzesPage() {
       <div className="flex flex-col gap-6 animate-fade-in pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">LMS Quizzes & Assessments</h1>
             <p className="text-slate-400 mt-1 text-sm md:text-base">
@@ -85,7 +85,7 @@ export default function QuizzesPage() {
         </div>
 
         {/* Stats / Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col items-start gap-4">
           <div className="relative w-full md:w-80">
             <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input 

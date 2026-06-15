@@ -150,7 +150,7 @@ export default function HostelPage() {
       <div className="flex flex-col gap-8 pb-10">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Hostel & Residences</h1>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
@@ -343,7 +343,7 @@ export default function HostelPage() {
                   </div>
                   
                   <div className="flex flex-col gap-3">
-                    {wardensList.map(warden => (
+                    {wardensList.map((warden: any) => (
                       <div key={warden.id} className="p-3 border border-slate-100 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 flex justify-between items-center">
                         <div>
                           <h4 className="font-bold text-slate-800 dark:text-white text-xs">{warden.name}</h4>

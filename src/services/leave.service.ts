@@ -12,7 +12,7 @@ export const leaveService = {
       reason: data.reason,
     };
     const response = await api.post<{ success: boolean; data: LeaveApplication }>('/leave/apply', payload);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getLeaves: async (page = 1, limit = 10, filters?: { applicantId?: string; applicantType?: string; status?: string }) => {
@@ -28,22 +28,25 @@ export const leaveService = {
 
   approve: async (id: string) => {
     const response = await api.patch<{ success: boolean }>(`/leave/${id}/approve`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   reject: async (id: string, reason: string) => {
     const response = await api.patch<{ success: boolean }>(`/leave/${id}/reject`, { reason });
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   cancel: async (id: string) => {
     const response = await api.patch<{ success: boolean }>(`/leave/${id}/cancel`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getBalance: async (applicantId: string, year?: number) => {
     const yr = year || new Date().getFullYear();
     const response = await api.get<{ success: boolean; data: any }>(`/leave/balance/${applicantId}?year=${yr}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 };
+
+
+

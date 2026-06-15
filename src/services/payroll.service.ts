@@ -40,17 +40,17 @@ export interface FinanceSummary {
 export const payrollService = {
   getSalaryStructure: async (userId: string) => {
     const response = await api.get<{ success: boolean; data: SalaryStructure }>(`/hr-payroll/salary-structure/${userId}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   upsertSalaryStructure: async (userId: string, data: Omit<SalaryStructure, 'userId'>) => {
     const response = await api.post<{ success: boolean; data: SalaryStructure }>(`/hr-payroll/salary-structure/${userId}`, data);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   generatePayslips: async (data: { month: number; year: number }) => {
     const response = await api.post<{ success: boolean; data: any }>('/hr-payroll/payslips/generate', data);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getPayslips: async (filters: { month?: number; year?: number; userId?: string } = {}) => {
@@ -60,18 +60,22 @@ export const payrollService = {
     if (filters.userId) params.append('userId', filters.userId);
     
     const response = await api.get<{ success: boolean; data: Payslip[] }>(`/hr-payroll/payslips?${params}`);
-    return response.data.data ?? [];
+    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
   payPayslip: async (id: string, paymentMethod: string) => {
     const response = await api.post<{ success: boolean }>(`/hr-payroll/payslips/${id}/pay`, { paymentMethod });
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getFinancialSummary: async (year?: string) => {
     const params = new URLSearchParams();
     if (year) params.append('year', year);
     const response = await api.get<{ success: boolean; data: FinanceSummary }>(`/hr-payroll/finance/summary?${params}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 };
+
+
+
+

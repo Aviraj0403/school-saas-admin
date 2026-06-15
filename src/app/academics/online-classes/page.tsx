@@ -106,7 +106,7 @@ export default function OnlineClassesPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Area */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Jitsi Meet Online Classrooms</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
@@ -159,7 +159,7 @@ export default function OnlineClassesPage() {
 
         {/* Classes List section */}
         <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col items-start gap-4">
             <div>
               <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Room Rosters</h2>
               <p className="text-[11px] text-slate-400 mt-0.5">Click "Join Room" to launch Jitsi Meet secure video stream.</p>

@@ -46,11 +46,14 @@ export const attendanceService = {
 
   markBulk: async (data: MarkBulkAttendancePayload) => {
     const response = await api.post<{ success: boolean }>('/attendance/bulk', data);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   markSingle: async (data: MarkSingleAttendancePayload) => {
     const response = await api.post<{ success: boolean }>('/attendance/single', data);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 };
+
+
+

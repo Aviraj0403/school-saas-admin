@@ -36,7 +36,9 @@ export default function Error({
         <div>
           <h2 className="text-xl font-bold">Something went wrong</h2>
           <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-            The page encountered an error loading its assets. Please try reloading the page.
+            The page encountered an unexpected error:
+            <br />
+            <span className="font-mono text-rose-400 mt-1 block">{error.message || 'Unknown error'}</span>
           </p>
         </div>
         <div className="flex flex-col gap-2">

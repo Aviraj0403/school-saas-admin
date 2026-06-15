@@ -13,26 +13,30 @@ export const libraryService = {
 
   createBook: async (data: any) => {
     const response = await api.post<{ success: boolean; data: Book }>('/library/books', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   issueBook: async (data: { bookId: string; studentId: string; dueDate: string }) => {
     const response = await api.post<{ success: boolean; data: BookIssue }>('/library/issues', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   returnBook: async (issueId: string, data?: { remarks?: string }) => {
     const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/return`, data || {});
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getActiveIssues: async () => {
     const response = await api.get<{ success: boolean; data: BookIssue[] }>('/library/issues/active');
-    return response.data.data ?? [];
+    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
   getOverdueIssues: async () => {
     const response = await api.get<{ success: boolean; data: BookIssue[] }>('/library/issues/overdue');
-    return response.data.data ?? [];
+    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 };
+
+
+
+

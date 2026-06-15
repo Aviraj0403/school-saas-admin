@@ -4,28 +4,28 @@ import { PaginatedResponse } from '@/types/api.types';
 export const analyticsService = {
   getFullDashboard: async () => {
     const response = await api.get<{ success: boolean; data: any }>('/analytics/dashboard');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getDashboardStats: async () => {
     const response = await api.get<{ success: boolean; data: any }>('/analytics/dashboard/core');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getAttendanceTrend: async (classId?: string) => {
     const params = classId ? `?classId=${classId}` : '';
     const response = await api.get<{ success: boolean; data: any }>(`/analytics/attendance/trend${params}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getFeeCollectionTrend: async () => {
     const response = await api.get<{ success: boolean; data: any }>('/analytics/fee/trend');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getHostelAnalytics: async () => {
     const response = await api.get<{ success: boolean; data: any }>('/analytics/hostel');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getLeaveAnalytics: async (month?: number, year?: number) => {
@@ -34,7 +34,7 @@ export const analyticsService = {
       ...(year ? { year: year.toString() } : {})
     });
     const response = await api.get<{ success: boolean; data: any }>(`/analytics/leave?${params.toString()}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getActivityLog: async (page = 1, limit = 10) => {
@@ -50,6 +50,9 @@ export const analyticsService = {
 
   generateReportCardComment: async (studentId: string) => {
     const response = await api.post<{ success: boolean; data: { comment: string } }>('/analytics/ai-comment', { studentId });
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   }
 };
+
+
+

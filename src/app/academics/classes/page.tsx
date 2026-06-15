@@ -146,7 +146,7 @@ export default function ClassesPage() {
       <div className="flex flex-col gap-8 pb-10 animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Classes & Subject Catalog</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
@@ -162,7 +162,7 @@ export default function ClassesPage() {
             </button>
             <button 
               onClick={() => setShowClassDialog(true)}
-              className="px-4 py-2.5 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs"
+              className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
             >
               <i className="pi pi-plus"></i>
               New Class

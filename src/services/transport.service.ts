@@ -3,21 +3,21 @@ import { api } from './api';
 export const transportService = {
   getRoutes: async () => {
     const response = await api.get<{ success: boolean; data: any[] }>('/transport/routes');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   createRoute: async (data: { name: string; startPoint: string; endPoint: string; stops: string[] }) => {
     const response = await api.post<{ success: boolean; data: any }>('/transport/routes', data);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getBuses: async () => {
     try {
       const response = await api.get<{ success: boolean; data: any[] }>('/transport/vehicles');
-      return response.data.data;
+      return ((response.data as any)?.data as any)?.items || response.data?.data;
     } catch (e) {
       const response = await api.get<{ success: boolean; data: any[] }>('/transport/buses').catch(() => ({ data: { data: [] } }));
-      return response.data.data;
+      return ((response.data as any)?.data as any)?.items || response.data?.data;
     }
   },
 
@@ -31,17 +31,17 @@ export const transportService = {
     };
     try {
       const response = await api.post<{ success: boolean; data: any }>('/transport/vehicles', backendData);
-      return response.data;
+      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
     } catch (e) {
       const response = await api.post<{ success: boolean; data: any }>('/transport/buses', data);
-      return response.data;
+      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
     }
   },
 
   getBusLocations: async () => {
     try {
       const response = await api.get<{ success: boolean; data: any[] }>('/transport/locations');
-      return response.data.data;
+      return ((response.data as any)?.data as any)?.items || response.data?.data;
     } catch (e) {
       return [];
     }
@@ -57,17 +57,17 @@ export const transportService = {
     };
     try {
       const response = await api.post<{ success: boolean; data: any }>('/transport/students/assign', payload);
-      return response.data;
+      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
     } catch (e) {
       const response = await api.post<{ success: boolean; data: any }>('/transport/assign', data);
-      return response.data;
+      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
     }
   },
 
   getAssignments: async () => {
     try {
       const response = await api.get<{ success: boolean; data: any[] }>('/transport/students');
-      return response.data.data;
+      return ((response.data as any)?.data as any)?.items || response.data?.data;
     } catch (e) {
       return [];
     }
@@ -75,6 +75,9 @@ export const transportService = {
 
   getStudentsByRoute: async (routeId: string) => {
     const response = await api.get<{ success: boolean; data: any[] }>(`/transport/routes/${routeId}/students`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 };
+
+
+

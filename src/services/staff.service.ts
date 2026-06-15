@@ -13,36 +13,39 @@ export const staffService = {
 
   getStaffById: async (id: string) => {
     const response = await api.get<{ success: boolean; data: Staff }>(`/staff/${id}`);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   createStaff: async (data: any) => {
     const response = await api.post<{ success: boolean; data: Staff }>('/staff', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   updateStaff: async (id: string, data: any) => {
     const response = await api.patch<{ success: boolean; data: Staff }>(`/staff/${id}`, data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   deleteStaff: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/staff/${id}`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   resetPassword: async (id: string) => {
     const response = await api.patch<{ success: boolean }>(`/staff/${id}/reset-password`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getRoles: async () => {
     const response = await api.get<{ success: boolean; data: any[] }>('/rbac/roles');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getDepartments: async () => {
     const response = await api.get<{ success: boolean; data: any[] }>('/academics/departments');
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 };
+
+
+

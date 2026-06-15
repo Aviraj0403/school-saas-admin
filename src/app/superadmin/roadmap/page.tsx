@@ -23,7 +23,7 @@ export default function SuperadminRoadmapPage() {
           <div className="absolute top-0 right-0 w-80 h-80 bg-purple-550/10 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl translate-y-16 -translate-x-16 pointer-events-none"></div>
           
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 z-10 relative mb-8">
+          <div className="flex flex-col items-start gap-4 z-10 relative mb-8">
             <div>
               <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-widest uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 SaaS Workflow Protocol

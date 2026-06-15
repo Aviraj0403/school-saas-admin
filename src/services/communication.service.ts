@@ -13,12 +13,12 @@ export const communicationService = {
 
   createAnnouncement: async (data: CreateAnnouncementDto) => {
     const response = await api.post<{ success: boolean; data: Announcement }>('/communication/announcements', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   deleteAnnouncement: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/communication/announcements/${id}`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getEvents: async (month?: number, year?: number) => {
@@ -26,16 +26,20 @@ export const communicationService = {
     if (month) params.append('month', month.toString());
     if (year) params.append('year', year.toString());
     const response = await api.get<{ success: boolean; data: SchoolEvent[] }>(`/communication/events?${params}`);
-    return response.data.data ?? [];
+    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
   createEvent: async (data: { title: string; description?: string; startDate: string; endDate: string }) => {
     const response = await api.post<{ success: boolean; data: SchoolEvent }>('/communication/events', data);
-    return response.data.data;
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   deleteEvent: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/communication/events/${id}`);
-    return response.data;
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 };
+
+
+
+

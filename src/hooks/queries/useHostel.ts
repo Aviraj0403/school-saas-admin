@@ -42,7 +42,7 @@ export function useAllBoarders() {
     queryFn: async () => {
       const { api } = await import('@/services/api');
       const res = await api.get('/hostel/boarders');
-      return res.data?.data || res.data || [];
+      return res.data?.data?.items || res.data?.data || [];
     },
   });
 }

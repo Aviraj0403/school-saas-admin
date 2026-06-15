@@ -324,7 +324,7 @@ export default function AdmissionsPage() {
         <div className="flex flex-col gap-8 pb-10">
           
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+          <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Admissions</h1>
               <p className="text-violet-100 mt-1.5 text-xs md:text-sm">
@@ -333,7 +333,7 @@ export default function AdmissionsPage() {
             </div>
             <button
               onClick={() => setView('wizard')}
-              className="px-5 py-2.5 bg-white text-violet-700 hover:bg-violet-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm"
+              className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
             >
               <i className="pi pi-user-plus"></i>
               New Admission

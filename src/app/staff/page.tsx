@@ -219,13 +219,13 @@ export default function StaffPage() {
 <div className="flex flex-col gap-6 lg:gap-8 pb-10 w-full">
         
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
+        <div className="flex flex-col items-start gap-4 pb-4">
+          {/* <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Staff Directory</h1>
             <p className="text-slate-400 mt-1 text-sm">
               Manage school employees, teachers, and administrative staff.
             </p>
-          </div>
+          </div> */}
           <button 
             onClick={() => setShowAddDialog(true)}
             className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"

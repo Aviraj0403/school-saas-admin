@@ -113,13 +113,13 @@ export default function OnlineClassesPage() {
 <div className="flex flex-col gap-4 pb-10 animate-fade-in">
         
         {/* Header Area */}
-        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
+        <div className="flex flex-col items-start gap-4 pb-4">
+          {/* <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Jitsi Meet Online Classrooms</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
               Schedule premium zero-latency video lectures, track live attendance telemetry, and share records with students.
             </p>
-          </div>
+          </div> */}
 
           <button 
             onClick={() => setShowCreateDialog(true)}

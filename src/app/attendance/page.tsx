@@ -180,7 +180,7 @@ export default function AttendancePage() {
       <div className="flex flex-col gap-4 pb-10">
         
         {/* Header Section */}
-        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div className="flex flex-col items-start gap-4 pb-4">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Attendance Management</h1>

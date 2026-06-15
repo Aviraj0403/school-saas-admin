@@ -37,12 +37,12 @@ export default function OnboardingGuidePage() {
         
         {/* Welcome Section */}
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6 flex justify-between items-end flex-wrap gap-4">
-          <div>
+          {/* <div>
             <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
               School Setup Guide & Helper Cockpit
             </h1>
             
-          </div>
+          </div> */}
           <span className="px-4 py-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md text-xs font-bold uppercase tracking-wider border border-blue-500/20">
             Active Term: {currentAY?.name || 'Not Configured ⚠️'}
           </span>

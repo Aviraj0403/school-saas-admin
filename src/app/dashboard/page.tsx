@@ -48,12 +48,12 @@ export default function DashboardPage() {
         
         {/* Welcome Section */}
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-end flex-wrap gap-4">
-          <div>
+          {/* <div>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
             </h1>
             
-          </div>
+          </div> */}
           <span className="px-3 py-1 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 rounded-md text-xs font-semibold uppercase tracking-wider">
             Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
           </span>

@@ -327,13 +327,13 @@ export default function AdmissionsPage() {
 <div className="flex flex-col gap-4 pb-10">
           
           {/* Header */}
-          <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-            <div>
+          <div className="flex flex-col items-start gap-4 pb-4">
+            {/* <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Admissions</h1>
               <p className="text-violet-100 mt-1.5 text-xs md:text-sm">
                 Register new students with full academic, hostel, transport & library enrollment.
               </p>
-            </div>
+            </div> */}
             <button
               onClick={() => setView('wizard')}
               className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
@@ -439,10 +439,10 @@ export default function AdmissionsPage() {
 
         {/* Wizard Header */}
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
-          <div>
+          {/* <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">New Student Admission</h1>
             <p className="text-zinc-500 text-sm mt-0.5">Step {currentStep + 1} of {enabledSteps.length} — {enabledSteps[currentStep]?.label}</p>
-          </div>
+          </div> */}
           <button
             onClick={() => setView('list')}
             className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-all"

@@ -150,13 +150,13 @@ export default function ClassesPage() {
 <div className="flex flex-col gap-4 pb-10 animate-fade-in">
         
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <div>
+        <div className="flex flex-col items-start gap-4 pb-4">
+          {/* <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Classes & Subject Catalog</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
               Setup active school grades, sections and manage the academic subject curriculum.
             </p>
-          </div>
+          </div> */}
           <div className="flex gap-2">
 
             <button 

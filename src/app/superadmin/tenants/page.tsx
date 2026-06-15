@@ -356,7 +356,7 @@ export default function TenantsPage() {
               <div className="flex gap-4 items-end flex-wrap">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Terminal</label>
-                  <Dropdown value="BIO-01-MAIN" options={['BIO-01-MAIN', 'BIO-02-HOSTEL']} onChange={() => {}} className="w-48 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md" />
+                  <Dropdown value="BIO-01-MAIN" options={['BIO-01-MAIN', 'BIO-02-HOSTEL']} onChange={() => {}} className="w-48" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Roll No / Staff Code</label>
@@ -639,7 +639,7 @@ export default function TenantsPage() {
                   value={formData.plan} 
                   options={PLANS} 
                   onChange={(e) => setFormData({ ...formData, plan: e.value })} 
-                  className="border border-zinc-200 dark:border-zinc-850 rounded-md dark:bg-zinc-950 text-sm" 
+                  className="text-sm" 
                 />
               </div>
             </div>
@@ -792,7 +792,7 @@ export default function TenantsPage() {
                         value={selectedPlan}
                         options={PLANS}
                         onChange={(e) => handleUpdatePlan(e.value)}
-                        className="w-48 border border-zinc-200 dark:border-zinc-850 rounded-md dark:bg-zinc-950 font-bold"
+                        className="w-48 font-bold"
                       />
                       <small className="text-xs text-zinc-400">Upgrades or downgrades tenant access tier instantly.</small>
                     </div>

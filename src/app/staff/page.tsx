@@ -495,7 +495,7 @@ export default function StaffPage() {
               options={roleOptions} 
               onChange={(e) => setNewStaff({ ...newStaff, roleId: e.value })} 
               placeholder="Select a Role"
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -507,7 +507,7 @@ export default function StaffPage() {
                 options={deptOptions} 
                 onChange={(e) => setNewStaff({ ...newStaff, departmentId: e.value })} 
                 placeholder="Select Dept"
-                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+                className=""
               />
             </div>
             <div className="flex flex-col gap-1">

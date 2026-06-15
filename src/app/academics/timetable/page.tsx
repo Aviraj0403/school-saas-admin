@@ -157,7 +157,7 @@ export default function TimetablePage() {
               placeholder="Select a class to manage schedule"
               filter
               filterPlaceholder="Search class..."
-              className="border-2 border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-lg w-full outline-none hover:border-blue-400 focus:border-blue-500 transition-colors"
+              className="w-full"
             />
           </div>
 
@@ -338,7 +338,7 @@ export default function TimetablePage() {
               value={form.dayOfWeek}
               options={dayOptions}
               onChange={(e) => setForm({ ...form, dayOfWeek: e.value })}
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none"
+              className=""
             />
           </div>
 
@@ -352,7 +352,7 @@ export default function TimetablePage() {
               placeholder="Select subject from curriculum"
               filter
               filterPlaceholder="Search subjects..."
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none"
+              className=""
               emptyMessage="No subjects added yet. Add subjects in Classes page."
             />
           </div>
@@ -367,7 +367,7 @@ export default function TimetablePage() {
               placeholder="Select from staff directory"
               filter
               filterPlaceholder="Search by name..."
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none"
+              className=""
               emptyMessage="No staff found. Add teachers in the Teacher Directory."
             />
           </div>

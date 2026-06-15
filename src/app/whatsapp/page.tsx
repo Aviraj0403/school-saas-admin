@@ -425,7 +425,7 @@ export default function WhatsAppPage() {
                 { label: 'attendance_alert', value: 'attendance_alert' }
               ]} 
               onChange={(e) => setNewBroadcast({ ...newBroadcast, templateName: e.value })} 
-              className="border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
         </div>

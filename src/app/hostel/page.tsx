@@ -410,7 +410,7 @@ export default function HostelPage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Type *</label>
-            <Dropdown value={hostelForm.type} options={hostelTypes} onChange={(e) => setHostelForm({ ...hostelForm, type: e.value })} className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
+            <Dropdown value={hostelForm.type} options={hostelTypes} onChange={(e) => setHostelForm({ ...hostelForm, type: e.value })} className="" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Total Bed Capacity *</label>
@@ -463,7 +463,7 @@ export default function HostelPage() {
               options={roomList.map((r: any) => ({ label: `Room ${r.roomNo} (${r.occupied}/${r.capacity} occupied)`, value: r.id }))}
               onChange={(e) => setAdmitForm({ ...admitForm, hostelRoomId: e.value })}
               placeholder="Select Room"
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none"
+              className=""
             />
           </div>
           <div className="flex flex-col gap-1">

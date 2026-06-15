@@ -141,7 +141,7 @@ export default function LeavePage() {
               value={statusFilter}
               options={statusOptions}
               onChange={(e) => { setStatusFilter(e.value); setPage(1); }}
-              className="border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-905 rounded-md text-xs min-w-48"
+              className="text-xs min-w-48"
             />
           </div>
           <div className="flex gap-2">
@@ -275,7 +275,7 @@ export default function LeavePage() {
         <form onSubmit={handleApply} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Applicant Type *</label>
-            <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" />
+            <Dropdown value={applyForm.applicantType} options={applicantTypes} onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.value })} className="" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Leave Type *</label>
@@ -289,7 +289,7 @@ export default function LeavePage() {
                 { label: 'Other', value: 'other' }
               ]} 
               onChange={(e) => setApplyForm({ ...applyForm, leaveType: e.value })} 
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" 
+              className="" 
             />
           </div>
           <div className="flex flex-col gap-1">

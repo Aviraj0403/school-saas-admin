@@ -628,7 +628,7 @@ export default function TransportPage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Assign Route Line</label>
-            <Dropdown value={busForm.routeId} options={routeOptions} onChange={(e) => setBusForm({ ...busForm, routeId: e.value })} placeholder="Select route" className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" />
+            <Dropdown value={busForm.routeId} options={routeOptions} onChange={(e) => setBusForm({ ...busForm, routeId: e.value })} placeholder="Select route" className="w-full" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
@@ -673,7 +673,7 @@ export default function TransportPage() {
               onChange={(e) => setAssignForm({ ...assignForm, studentId: e.value })} 
               filter 
               placeholder="Search student by name/admission" 
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" 
+              className="w-full" 
             />
           </div>
           
@@ -684,7 +684,7 @@ export default function TransportPage() {
               options={routeOptions} 
               onChange={(e) => setAssignForm({ ...assignForm, routeId: e.value, stopId: '', stopName: '' })} 
               placeholder="Select active route line" 
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" 
+              className="w-full" 
             />
           </div>
 
@@ -700,7 +700,7 @@ export default function TransportPage() {
                     setAssignForm({ ...assignForm, stopId: e.value, stopName: selStop ? selStop.label : '' });
                   }} 
                   placeholder="Select designated boarding stop" 
-                  className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" 
+                  className="w-full" 
                 />
               ) : (
                 <InputText 

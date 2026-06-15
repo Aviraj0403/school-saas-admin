@@ -425,11 +425,11 @@ export default function FeePage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex flex-col gap-0.5">
                       <label className="text-[10px] font-semibold text-zinc-500 uppercase">Month</label>
-                      <Dropdown value={selectedMonth} options={monthsList} onChange={(e) => setSelectedMonth(e.value)} className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-xs" />
+                      <Dropdown value={selectedMonth} options={monthsList} onChange={(e) => setSelectedMonth(e.value)} className="text-xs" />
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <label className="text-[10px] font-semibold text-zinc-500 uppercase">Year</label>
-                      <Dropdown value={selectedYear} options={yearsList} onChange={(e) => setSelectedYear(e.value)} className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-xs" />
+                      <Dropdown value={selectedYear} options={yearsList} onChange={(e) => setSelectedYear(e.value)} className="text-xs" />
                     </div>
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function FeePage() {
               value={newStructure.type} 
               options={[{ label: 'Tuition', value: 'TUITION' }, { label: 'Transport', value: 'TRANSPORT' }, { label: 'Exam', value: 'EXAM' }, { label: 'Hostel', value: 'HOSTEL' }]} 
               onChange={(e) => setNewStructure({ ...newStructure, type: e.value })} 
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
         </div>
@@ -588,7 +588,7 @@ export default function FeePage() {
                 setCollectFee({ ...collectFee, studentId: '' });
               }} 
               placeholder="Select Class"
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -599,7 +599,7 @@ export default function FeePage() {
               onChange={(e) => setCollectFee({ ...collectFee, studentId: e.value })} 
               disabled={!selectedClassId}
               placeholder={selectedClassId ? "Select Student" : "First select a class"}
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
 
@@ -642,7 +642,7 @@ export default function FeePage() {
               value={collectFee.paymentMethod} 
               options={[{ label: 'Cash', value: 'CASH' }, { label: 'Online / Card', value: 'ONLINE' }, { label: 'Cheque', value: 'CHEQUE' }]} 
               onChange={(e) => setCollectFee({ ...collectFee, paymentMethod: e.value })} 
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -689,7 +689,7 @@ export default function FeePage() {
                 { label: 'Cheque Disbursed', value: 'CHEQUE' }
               ]} 
               onChange={(e) => setPaymentMethod(e.value)} 
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
         </div>

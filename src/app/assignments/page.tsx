@@ -362,11 +362,11 @@ export default function AssignmentsPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 uppercase">Subject Category *</label>
-              <Dropdown value={formData.subject} options={subjects} onChange={(e) => setFormData({ ...formData, subject: e.value })} placeholder="Select Subject" className="border border-zinc-200 dark:border-zinc-800 rounded-md" />
+              <Dropdown value={formData.subject} options={subjects} onChange={(e) => setFormData({ ...formData, subject: e.value })} placeholder="Select Subject" className="" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 uppercase">Target Class *</label>
-              <Dropdown value={formData.className} options={classes} onChange={(e) => setFormData({ ...formData, className: e.value })} placeholder="Select Class" className="border border-zinc-200 dark:border-zinc-800 rounded-md" />
+              <Dropdown value={formData.className} options={classes} onChange={(e) => setFormData({ ...formData, className: e.value })} placeholder="Select Class" className="" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 uppercase">Due Date *</label>

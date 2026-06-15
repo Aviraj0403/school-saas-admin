@@ -233,7 +233,7 @@ export default function ExamsPage() {
                     options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
                     onChange={(e) => setSelectedExamId(e.value)} 
                     placeholder="Select Term"
-                    className="border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md min-w-60"
+                    className="min-w-60"
                   />
                 </div>
 
@@ -293,7 +293,7 @@ export default function ExamsPage() {
                       options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
                       onChange={(e) => setAdmitCardExamId(e.value)} 
                       placeholder="Select term"
-                      className="w-60 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md"
+                      className="w-60"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -304,7 +304,7 @@ export default function ExamsPage() {
                       onChange={(e) => setAdmitCardStudentId(e.value)} 
                       filter
                       placeholder="Search student by name/admission"
-                      className="w-72 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md" 
+                      className="w-72" 
                     />
                   </div>
                 </div>
@@ -426,7 +426,7 @@ export default function ExamsPage() {
                       options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
                       onChange={(e) => setResultsSearchExamId(e.value)} 
                       placeholder="Select term"
-                      className="w-60 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md"
+                      className="w-60"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -437,7 +437,7 @@ export default function ExamsPage() {
                       onChange={(e) => setResultsSearchStudentId(e.value)} 
                       filter
                       placeholder="Search student by name/admission"
-                      className="w-72 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md" 
+                      className="w-72" 
                     />
                   </div>
                 </div>
@@ -572,7 +572,7 @@ export default function ExamsPage() {
               options={classOptions} 
               onChange={(e) => setNewExam({ ...newExam, classId: e.value })} 
               placeholder="Select Class"
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -626,7 +626,7 @@ export default function ExamsPage() {
               value={selectedExamId} 
               options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
               onChange={(e) => setSelectedExamId(e.value)} 
-              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              className=""
             />
           </div>
           <div className="flex flex-col gap-1">

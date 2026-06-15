@@ -279,7 +279,7 @@ export default function WebsiteCMSPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Category *</label>
-              <Dropdown value={downloadForm.category} options={['Syllabus', 'Transport', 'Admission', 'Calendar']} onChange={(e) => setDownloadForm({ ...downloadForm, category: e.value })} className="border border-zinc-200 dark:border-zinc-800 rounded-md dark:bg-zinc-950" />
+              <Dropdown value={downloadForm.category} options={['Syllabus', 'Transport', 'Admission', 'Calendar']} onChange={(e) => setDownloadForm({ ...downloadForm, category: e.value })} className="" />
             </div>
             <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-3">
               <Button type="button" label="Discard" className="p-button-text p-2.5 px-4 rounded-md text-xs font-bold" onClick={() => setShowDownloadDialog(false)} />

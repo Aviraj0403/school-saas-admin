@@ -306,7 +306,7 @@ export default function OnlineClassesPage() {
                 options={classOptions} 
                 onChange={(e) => setForm({ ...form, classId: e.value })} 
                 placeholder="Select Class"
-                className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none"
+                className="text-sm"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -320,7 +320,7 @@ export default function OnlineClassesPage() {
                   { label: '90 Mins', value: 90 },
                 ]} 
                 onChange={(e) => setForm({ ...form, duration: e.value })} 
-                className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none"
+                className="text-sm"
               />
             </div>
           </div>

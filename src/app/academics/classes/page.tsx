@@ -463,7 +463,7 @@ export default function ClassesPage() {
                 options={[{ label: '— None —', value: '' }, ...departmentOptions]}
                 onChange={(e) => setSubjectForm({ ...subjectForm, departmentId: e.value })} 
                 placeholder="Select Department"
-                className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none"
+                className="text-sm"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -472,7 +472,7 @@ export default function ClassesPage() {
                 value={subjectForm.type} 
                 options={SUBJECT_TYPES} 
                 onChange={(e) => setSubjectForm({ ...subjectForm, type: e.value })} 
-                className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none"
+                className="text-sm"
               />
             </div>
           </div>

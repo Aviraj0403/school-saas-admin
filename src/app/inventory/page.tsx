@@ -232,7 +232,7 @@ export default function InventoryPage() {
                 onChange={(e) => setFormData({...formData, categoryId: e.value})}
                 options={categoryOptions} 
                 placeholder="Select Category"
-                className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+                className="w-full text-sm" 
                 emptyMessage="No categories found. Please add in backend."
               />
             </div>
@@ -242,7 +242,7 @@ export default function InventoryPage() {
                 value={formData.status} 
                 options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Damaged', value: 'DAMAGED'}, {label: 'Retired', value: 'RETIRED'}]} 
                 onChange={(e) => setFormData({...formData, status: e.value})} 
-                className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+                className="w-full text-sm" 
               />
             </div>
           </div>

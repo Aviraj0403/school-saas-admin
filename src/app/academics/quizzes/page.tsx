@@ -202,7 +202,7 @@ export default function QuizzesPage() {
                 value={formData.status} 
                 options={[{label: 'Draft', value: 'DRAFT'}, {label: 'Published', value: 'PUBLISHED'}]} 
                 onChange={(e) => setFormData({...formData, status: e.value})} 
-                className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+                className="w-full text-sm" 
               />
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function QuizzesPage() {
                 onChange={(e) => setFormData({...formData, classId: e.value})}
                 filter
                 placeholder="Select Class"
-                className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+                className="w-full text-sm" 
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -227,7 +227,7 @@ export default function QuizzesPage() {
                 onChange={(e) => setFormData({...formData, subjectId: e.value})}
                 filter
                 placeholder="Select Subject"
-                className="w-full border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none" 
+                className="w-full text-sm" 
               />
             </div>
           </div>

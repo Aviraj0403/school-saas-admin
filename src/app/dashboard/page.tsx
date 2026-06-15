@@ -26,7 +26,17 @@ export default function DashboardPage() {
   const { data: attendanceTrendData } = useAttendanceTrend();
 
   // Current active term check
-  const { data: currentAY } = useCurrentAcademicYear();
+  const { data: currentAY, isPending: ayPending } = useCurrentAcademicYear();
+  const { data: classesData, isPending: classesPending } = useClasses(1, 1);
+
+  React.useEffect(() => {
+    // If not super admin, and data is loaded, and no classes exist, redirect to setup
+    if (!ayPending && !classesPending && activeTenant?.id !== 'superadmin') {
+      if (!currentAY?.id || !classesData?.items?.length) {
+        window.location.href = '/setup';
+      }
+    }
+  }, [currentAY, classesData, ayPending, classesPending, activeTenant]);
 
   // Extract core stats
   const coreStats = dashboard?.core || {};

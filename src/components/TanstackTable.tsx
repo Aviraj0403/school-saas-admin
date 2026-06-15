@@ -40,9 +40,9 @@ export function TanstackTable<T>({
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className="w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-        <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
-          <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+      <div className="w-full overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        <table className="w-full text-sm text-left text-zinc-600 dark:text-zinc-300">
+          <thead className="text-xs text-zinc-500 uppercase bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -58,13 +58,13 @@ export function TanstackTable<T>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-                    <span className="text-sm font-medium text-slate-500">Loading data...</span>
+                    <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium text-zinc-500">Loading data...</span>
                   </div>
                 </td>
               </tr>
@@ -72,10 +72,10 @@ export function TanstackTable<T>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="bg-white dark:bg-slate-950 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors duration-150"
+                  className="bg-white dark:bg-zinc-950 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors duration-150"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200">
+                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-zinc-700 dark:text-zinc-200">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -83,7 +83,7 @@ export function TanstackTable<T>({
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={columns.length} className="px-6 py-12 text-center text-zinc-500">
                   {emptyMessage}
                 </td>
               </tr>
@@ -95,19 +95,19 @@ export function TanstackTable<T>({
       {/* Pagination Controls */}
       {pagination && setPagination && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-500 font-medium">
+          <div className="text-sm text-zinc-500 font-medium">
             Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="px-3 py-1.5 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              className="px-3 py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               Previous
             </button>
             <button
-              className="px-3 py-1.5 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              className="px-3 py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

@@ -83,29 +83,19 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         const theme = resolvedTheme as any;
         if (theme.primaryColor) {
           root.style.setProperty('--primary-color', theme.primaryColor);
-          
-          if (themeMode === 'dark') {
-            // Gorgeous brand-tinted premium dark background
-            root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 8%, #0f172a)`);
-            root.style.setProperty('--foreground', '#f8fafc');
-          } else {
-            // Gorgeous brand-tinted premium light background (combination with white)
-            root.style.setProperty('--background', `color-mix(in srgb, ${theme.primaryColor} 4%, #f8fafc)`);
-            root.style.setProperty('--foreground', '#0f172a');
-          }
         }
         if (theme.secondaryColor) {
           root.style.setProperty('--secondary-color', theme.secondaryColor);
         }
+      }
+
+      // Keep backgrounds pure and ultra-clean for CRM Premium Elite
+      if (themeMode === 'dark') {
+        root.style.setProperty('--background', '#0B1437'); // Rich Navy Dark
+        root.style.setProperty('--foreground', '#F4F7FE');
       } else {
-        // Fallbacks without loaded tenant/preset theme
-        if (themeMode === 'dark') {
-          root.style.setProperty('--background', 'color-mix(in srgb, var(--primary-color, #6366f1) 8%, #0f172a)');
-          root.style.setProperty('--foreground', '#f8fafc');
-        } else {
-          root.style.setProperty('--background', 'color-mix(in srgb, var(--primary-color, #6366f1) 4%, #f8fafc)');
-          root.style.setProperty('--foreground', '#0f172a');
-        }
+        root.style.setProperty('--background', '#F4F7FE'); // Premium Light CRM Background
+        root.style.setProperty('--foreground', '#1B254B'); // Rich Indigo Text
       }
     };
 

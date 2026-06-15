@@ -18,6 +18,9 @@ import { hostelService } from '@/services/hostel.service';
 import { transportService } from '@/services/transport.service';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
+
 
 // ── Step configuration ──────────────────────────────────────────────
 const ALL_STEPS = [
@@ -78,7 +81,7 @@ const INITIAL_FORM = {
 function FieldRow({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="font-bold text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+      <label className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
       {children}
@@ -99,17 +102,17 @@ function StepIndicator({ steps, current }: { steps: typeof ALL_STEPS; current: n
             <div className="flex flex-col items-center gap-1">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 ${
                 isDone   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' :
-                isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-300 dark:ring-indigo-700' :
-                           'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-300 dark:ring-blue-700' :
+                           'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500'
               }`}>
                 {isDone ? <i className="pi pi-check text-[10px]"></i> : <i className={`pi ${step.icon} text-[10px]`}></i>}
               </div>
               <span className={`text-[9px] font-bold uppercase tracking-wider hidden md:block ${
-                isActive ? 'text-indigo-600 dark:text-indigo-400' : isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                isActive ? 'text-blue-600 dark:text-blue-400' : isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'
               }`}>{step.label}</span>
             </div>
             {!isLast && (
-              <div className={`h-0.5 flex-1 mx-1 rounded-full transition-all duration-500 ${isDone ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-800'}`} />
+              <div className={`h-0.5 flex-1 mx-1 rounded-full transition-all duration-500 ${isDone ? 'bg-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
             )}
           </React.Fragment>
         );
@@ -123,7 +126,7 @@ function ModuleBadge({ icon, label, active }: { icon: string; label: string; act
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${
       active ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200/50'
-              : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 line-through'
+              : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 line-through'
     }`}>
       <i className={`pi ${icon} text-[9px]`}></i>
       {label}
@@ -279,22 +282,21 @@ export default function AdmissionsPage() {
   if (submitted) {
     return (
       <DashboardLayout>
-        <div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 max-w-lg mx-auto p-4">
+      <PageBreadcrumb title="Admissions" subtitle="Students" />
+<div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 max-w-lg mx-auto p-4">
           <div className="w-24 h-24 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 rounded-full flex items-center justify-center">
             <i className="pi pi-check text-4xl text-emerald-500"></i>
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-black text-slate-800 dark:text-white">Admission Successful!</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-              <strong>{form.firstName} {form.lastName}</strong> has been admitted and their record is now active.
-            </p>
+            <h1 className="text-2xl font-black text-zinc-800 dark:text-white">Admission Successful!</h1>
+            
           </div>
           {submitted.enrollments?.length > 0 && (
-            <div className="w-full bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-800/30 rounded-2xl p-4">
-              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2">Also Enrolled In</p>
+            <div className="w-full bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 rounded-md p-4">
+              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Also Enrolled In</p>
               <div className="flex flex-wrap gap-2">
                 {submitted.enrollments.map((e: string) => (
-                  <span key={e} className="px-3 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">{e}</span>
+                  <span key={e} className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">{e}</span>
                 ))}
               </div>
             </div>
@@ -302,12 +304,12 @@ export default function AdmissionsPage() {
           <div className="flex gap-3">
             <button
               onClick={resetWizard}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95"
+              className="w-full md:w-auto px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white text-white font-bold rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-xs tracking-wide"
             >
               <i className="pi pi-user-plus mr-2"></i>New Admission
             </button>
             <Link href="/students">
-              <button className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-all active:scale-95">
+              <button className="px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold rounded-md text-sm transition-all active:scale-95">
                 View All Students
               </button>
             </Link>
@@ -321,7 +323,8 @@ export default function AdmissionsPage() {
   if (view === 'list') {
     return (
       <DashboardLayout>
-        <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Admissions" subtitle="Students" />
+<div className="flex flex-col gap-4 pb-10">
           
           {/* Header */}
           <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -334,6 +337,7 @@ export default function AdmissionsPage() {
             <button
               onClick={() => setView('wizard')}
               className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
+
             >
               <i className="pi pi-user-plus"></i>
               New Admission
@@ -342,7 +346,7 @@ export default function AdmissionsPage() {
 
           {/* Active module indicators */}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Enrollment Modules:</span>
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Active Enrollment Modules:</span>
             <ModuleBadge icon="pi-building" label="Hostel"    active={activeModules.includes('hostel')} />
             <ModuleBadge icon="pi-car"      label="Transport" active={activeModules.includes('transport')} />
             <ModuleBadge icon="pi-book"     label="Library"   active={activeModules.includes('library')} />
@@ -356,7 +360,7 @@ export default function AdmissionsPage() {
               { label: 'Inactive', val: studentsList.filter((s: any) => s.status !== 'ACTIVE').length, color: 'amber' },
               { label: 'Academic Year', val: currentYear?.name || '—', color: 'violet' },
             ].map(stat => (
-              <div key={stat.label} className={`bg-${stat.color}-50/50 dark:bg-${stat.color}-950/10 border border-${stat.color}-100/50 dark:border-${stat.color}-900/20 p-5 rounded-2xl shadow-sm`}>
+              <div key={stat.label} className={`bg-${stat.color}-50/50 dark:bg-${stat.color}-950/10 border border-${stat.color}-100/50 dark:border-${stat.color}-900/20 p-5 rounded-md shadow-sm`}>
                 <span className={`text-xs font-semibold text-${stat.color}-600 dark:text-${stat.color}-400`}>{stat.label}</span>
                 <h2 className={`text-2xl font-extrabold text-${stat.color}-700 dark:text-${stat.color}-400 mt-1`}>
                   {loadingStudents ? '...' : stat.val}
@@ -366,7 +370,7 @@ export default function AdmissionsPage() {
           </div>
 
           {/* Student table */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm">
             <DataTable
               value={studentsList}
               loading={loadingStudents}
@@ -384,10 +388,10 @@ export default function AdmissionsPage() {
                 header="Student Name"
                 body={(d) => (
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-extrabold text-xs">
+                    <div className="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-extrabold text-xs">
                       {(d.name || d.firstName || '?')[0]}
                     </div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-100 text-xs">
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-100 text-xs">
                       {d.name || `${d.firstName || ''} ${d.lastName || ''}`.trim()}
                     </span>
                   </div>
@@ -411,7 +415,7 @@ export default function AdmissionsPage() {
                 align="center"
                 body={(d) => (
                   <Link href={`/students/${d.id}`}>
-                    <button className="px-3 py-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-950/50 transition-all">
+                    <button className="px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 rounded-md hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-all">
                       View
                     </button>
                   </Link>
@@ -425,43 +429,44 @@ export default function AdmissionsPage() {
   }
 
   // ── Wizard View ──────────────────────────────────────────────────
-  const inputCls = "p-2.5 border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-sm w-full transition-all";
-  const dropCls  = "border border-gray-200 dark:border-slate-700 rounded-xl text-sm w-full";
+  const inputCls = "p-2.5 border border-gray-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm w-full transition-all";
+  const dropCls  = "border border-gray-200 dark:border-zinc-700 rounded-md text-sm w-full";
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Admissions" subtitle="Students" />
+<div className="flex flex-col gap-4 pb-10">
 
         {/* Wizard Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-800 dark:text-white">New Student Admission</h1>
-            <p className="text-slate-400 text-xs mt-0.5">Step {currentStep + 1} of {enabledSteps.length} — {enabledSteps[currentStep]?.label}</p>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">New Student Admission</h1>
+            <p className="text-zinc-500 text-sm mt-0.5">Step {currentStep + 1} of {enabledSteps.length} — {enabledSteps[currentStep]?.label}</p>
           </div>
           <button
             onClick={() => setView('list')}
-            className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all"
+            className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-all"
           >
             <i className="pi pi-times mr-1"></i> Cancel
           </button>
         </div>
 
         {/* Step Indicator */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm">
           <StepIndicator steps={enabledSteps} current={currentStep} />
         </div>
 
         {/* Step Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
           
           {/* Step Header */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/40 border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/40 flex items-center justify-center">
-              <i className={`pi ${enabledSteps[currentStep]?.icon} text-indigo-600 dark:text-indigo-400`}></i>
+          <div className="bg-gradient-to-r from-zinc-50 to-zinc-100/50 dark:from-zinc-800/80 dark:to-zinc-800/40 border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-md bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center">
+              <i className={`pi ${enabledSteps[currentStep]?.icon} text-blue-600 dark:text-blue-400`}></i>
             </div>
             <div>
-              <h2 className="font-extrabold text-slate-800 dark:text-white text-base">{enabledSteps[currentStep]?.label}</h2>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h2 className="font-extrabold text-zinc-800 dark:text-white text-base">{enabledSteps[currentStep]?.label}</h2>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
                 {stepId === 'basic'     && 'Student personal and identification details'}
                 {stepId === 'academic'  && 'Academic class placement and roll number assignment'}
                 {stepId === 'parent'    && 'Parent or guardian contact information'}
@@ -472,7 +477,7 @@ export default function AdmissionsPage() {
               </p>
             </div>
             {enabledSteps[currentStep]?.module && (
-              <span className="ml-auto px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider rounded-full border border-indigo-200/50">
+              <span className="ml-auto px-2 py-0.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold uppercase tracking-wider rounded-full border border-blue-200/50">
                 MODULE ACTIVE
               </span>
             )}
@@ -607,7 +612,7 @@ export default function AdmissionsPage() {
             {/* ── STEP 4: Hostel (conditional) ─────────────────────── */}
             {stepId === 'hostel' && (
               <div className="flex flex-col gap-5">
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-800/30 rounded-xl text-blue-700 dark:text-blue-400 text-xs font-medium flex items-start gap-2">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-800/30 rounded-md text-blue-700 dark:text-blue-400 text-xs font-medium flex items-start gap-2">
                   <i className="pi pi-info-circle mt-0.5"></i>
                   <span>Only required for boarding students. Skip if student is a day scholar.</span>
                 </div>
@@ -615,20 +620,20 @@ export default function AdmissionsPage() {
                 {/* Toggle */}
                 <div
                   onClick={() => upd('hostelEnabled', !form.hostelEnabled)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-4 rounded-md border-2 cursor-pointer transition-all ${
                     form.hostelEnabled
-                      ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 dark:border-indigo-600'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-600'
+                      : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <i className="pi pi-building text-indigo-500 text-lg"></i>
+                    <i className="pi pi-building text-blue-500 text-lg"></i>
                     <div>
-                      <p className="font-bold text-sm text-slate-800 dark:text-white">Enroll in School Hostel</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Student will be a boarder and assigned a hostel room.</p>
+                      <p className="font-bold text-sm text-zinc-800 dark:text-white">Enroll in School Hostel</p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">Student will be a boarder and assigned a hostel room.</p>
                     </div>
                   </div>
-                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.hostelEnabled ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.hostelEnabled ? 'bg-blue-600' : 'bg-zinc-300 dark:bg-zinc-600'}`}>
                     <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${form.hostelEnabled ? 'left-6' : 'left-1'} shadow-sm`} />
                   </div>
                 </div>
@@ -664,27 +669,27 @@ export default function AdmissionsPage() {
             {/* ── STEP 5: Transport (conditional) ──────────────────── */}
             {stepId === 'transport' && (
               <div className="flex flex-col gap-5">
-                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/40 dark:border-amber-800/30 rounded-xl text-amber-700 dark:text-amber-400 text-xs font-medium flex items-start gap-2">
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/40 dark:border-amber-800/30 rounded-md text-amber-700 dark:text-amber-400 text-xs font-medium flex items-start gap-2">
                   <i className="pi pi-info-circle mt-0.5"></i>
                   <span>Assign a bus route for students who use school transport.</span>
                 </div>
 
                 <div
                   onClick={() => upd('transportEnabled', !form.transportEnabled)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-4 rounded-md border-2 cursor-pointer transition-all ${
                     form.transportEnabled
                       ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-600'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <i className="pi pi-car text-amber-500 text-lg"></i>
                     <div>
-                      <p className="font-bold text-sm text-slate-800 dark:text-white">Enroll in School Transport</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Student will use school bus service for commuting.</p>
+                      <p className="font-bold text-sm text-zinc-800 dark:text-white">Enroll in School Transport</p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">Student will use school bus service for commuting.</p>
                     </div>
                   </div>
-                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.transportEnabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.transportEnabled ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}>
                     <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${form.transportEnabled ? 'left-6' : 'left-1'} shadow-sm`} />
                   </div>
                 </div>
@@ -714,26 +719,26 @@ export default function AdmissionsPage() {
               <div className="flex flex-col gap-5">
                 <div
                   onClick={() => upd('libraryEnabled', !form.libraryEnabled)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-4 rounded-md border-2 cursor-pointer transition-all ${
                     form.libraryEnabled
                       ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-600'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <i className="pi pi-book text-emerald-500 text-lg"></i>
                     <div>
-                      <p className="font-bold text-sm text-slate-800 dark:text-white">Register Library Membership</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Student will be eligible to borrow books from the school library.</p>
+                      <p className="font-bold text-sm text-zinc-800 dark:text-white">Register Library Membership</p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">Student will be eligible to borrow books from the school library.</p>
                     </div>
                   </div>
-                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.libraryEnabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                  <div className={`w-11 h-6 rounded-full transition-all relative ${form.libraryEnabled ? 'bg-emerald-600' : 'bg-zinc-300 dark:bg-zinc-600'}`}>
                     <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${form.libraryEnabled ? 'left-6' : 'left-1'} shadow-sm`} />
                   </div>
                 </div>
 
                 {form.libraryEnabled && (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/40 dark:border-emerald-800/30 rounded-xl">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/40 dark:border-emerald-800/30 rounded-md">
                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       <i className="pi pi-check-circle mr-1.5"></i>
                       Library membership will be activated once the student is admitted. They can borrow books as per school policy.
@@ -749,9 +754,9 @@ export default function AdmissionsPage() {
                 {/* Student Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Basic */}
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                    <h3 className="font-extrabold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <i className="pi pi-user text-indigo-500"></i> Basic Info
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-4 border border-zinc-100 dark:border-zinc-700/50">
+                    <h3 className="font-extrabold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                      <i className="pi pi-user text-blue-500"></i> Basic Info
                     </h3>
                     <div className="space-y-1.5 text-xs">
                       {[
@@ -763,17 +768,17 @@ export default function AdmissionsPage() {
                         ['Aadhar',   form.aadharNo || '—'],
                       ].map(([k, v]) => (
                         <div key={k} className="flex justify-between">
-                          <span className="text-slate-400 font-medium">{k}</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{v}</span>
+                          <span className="text-zinc-400 font-medium">{k}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{v}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Academic */}
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                    <h3 className="font-extrabold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <i className="pi pi-graduation-cap text-indigo-500"></i> Academic
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-4 border border-zinc-100 dark:border-zinc-700/50">
+                    <h3 className="font-extrabold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                      <i className="pi pi-graduation-cap text-blue-500"></i> Academic
                     </h3>
                     <div className="space-y-1.5 text-xs">
                       {[
@@ -783,17 +788,17 @@ export default function AdmissionsPage() {
                         ['Prev. School',form.previousSchool || '—'],
                       ].map(([k, v]) => (
                         <div key={k} className="flex justify-between">
-                          <span className="text-slate-400 font-medium">{k}</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{v}</span>
+                          <span className="text-zinc-400 font-medium">{k}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{v}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Parent */}
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                    <h3 className="font-extrabold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <i className="pi pi-users text-indigo-500"></i> Parent / Guardian
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-4 border border-zinc-100 dark:border-zinc-700/50">
+                    <h3 className="font-extrabold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                      <i className="pi pi-users text-blue-500"></i> Parent / Guardian
                     </h3>
                     <div className="space-y-1.5 text-xs">
                       {[
@@ -803,17 +808,17 @@ export default function AdmissionsPage() {
                         ['City',   form.city || '—'],
                       ].map(([k, v]) => (
                         <div key={k} className="flex justify-between">
-                          <span className="text-slate-400 font-medium">{k}</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{v}</span>
+                          <span className="text-zinc-400 font-medium">{k}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{v}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Enrollments */}
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                    <h3 className="font-extrabold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <i className="pi pi-briefcase text-indigo-500"></i> Module Enrollments
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-4 border border-zinc-100 dark:border-zinc-700/50">
+                    <h3 className="font-extrabold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                      <i className="pi pi-briefcase text-blue-500"></i> Module Enrollments
                     </h3>
                     <div className="flex flex-col gap-2">
                       {[
@@ -821,15 +826,15 @@ export default function AdmissionsPage() {
                         { label: 'Transport', enabled: form.transportEnabled, icon: 'pi-car',      detail: routeOptions.find(r => r.value === form.routeId)?.label },
                         { label: 'Library',   enabled: form.libraryEnabled,   icon: 'pi-book',     detail: 'Membership activated' },
                       ].map(e => (
-                        <div key={e.label} className={`flex items-center gap-2 text-xs p-2 rounded-lg ${e.enabled ? 'bg-emerald-50 dark:bg-emerald-950/20' : 'opacity-40'}`}>
-                          <i className={`pi ${e.icon} ${e.enabled ? 'text-emerald-500' : 'text-slate-400'}`}></i>
-                          <span className={`font-semibold ${e.enabled ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`}>
+                        <div key={e.label} className={`flex items-center gap-2 text-xs p-2 rounded-md ${e.enabled ? 'bg-emerald-50 dark:bg-emerald-950/20' : 'opacity-40'}`}>
+                          <i className={`pi ${e.icon} ${e.enabled ? 'text-emerald-500' : 'text-zinc-400'}`}></i>
+                          <span className={`font-semibold ${e.enabled ? 'text-emerald-700 dark:text-emerald-400' : 'text-zinc-400'}`}>
                             {e.label}
                           </span>
                           {e.enabled && e.detail && (
-                            <span className="ml-auto text-slate-500 dark:text-slate-400 font-medium">{e.detail}</span>
+                            <span className="ml-auto text-zinc-500 dark:text-zinc-400 font-medium">{e.detail}</span>
                           )}
-                          {!e.enabled && <span className="ml-auto text-slate-400 font-medium">Skipped</span>}
+                          {!e.enabled && <span className="ml-auto text-zinc-400 font-medium">Skipped</span>}
                         </div>
                       ))}
                     </div>
@@ -842,18 +847,18 @@ export default function AdmissionsPage() {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div className="flex justify-between items-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md p-4 shadow-sm">
           <button
             onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
             disabled={currentStep === 0}
-            className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all active:scale-95 flex items-center gap-2"
+            className="px-5 py-2.5 text-sm font-bold text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-md transition-all active:scale-95 flex items-center gap-2"
           >
             <i className="pi pi-chevron-left text-xs"></i> Previous
           </button>
 
           <div className="flex gap-1">
             {enabledSteps.map((_, idx) => (
-              <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === currentStep ? 'bg-indigo-600 w-6' : idx < currentStep ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
+              <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === currentStep ? 'bg-blue-600 w-6' : idx < currentStep ? 'bg-emerald-400' : 'bg-zinc-200 dark:bg-zinc-700'}`} />
             ))}
           </div>
 
@@ -868,7 +873,7 @@ export default function AdmissionsPage() {
                 }
                 setCurrentStep(s => s + 1);
               }}
-              className="px-5 py-2.5 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all active:scale-95 flex items-center gap-2 shadow-md shadow-indigo-500/20"
+              className="px-5 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-all active:scale-95 flex items-center gap-2 shadow-md shadow-blue-500/20"
             >
               Next <i className="pi pi-chevron-right text-xs"></i>
             </button>
@@ -876,7 +881,7 @@ export default function AdmissionsPage() {
             <button
               onClick={handleSubmit}
               disabled={createMutation.isPending}
-              className="px-6 py-2.5 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all active:scale-95 flex items-center gap-2 shadow-md shadow-emerald-500/20 disabled:opacity-60"
+              className="px-6 py-2.5 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-all active:scale-95 flex items-center gap-2 shadow-md shadow-emerald-500/20 disabled:opacity-60"
             >
               {createMutation.isPending ? (
                 <><i className="pi pi-spin pi-spinner text-xs"></i> Submitting...</>

@@ -7,10 +7,13 @@ import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 import { 
   useDepartmentsList,
   useCreateDepartment
 } from '@/hooks/queries/useAcademics';
+
 
 export default function DepartmentsPage() {
   const [showDeptDialog, setShowDeptDialog] = useState(false);
@@ -36,7 +39,8 @@ export default function DepartmentsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
+      <PageBreadcrumb title="Departments" subtitle="Academics" />
+<div className="flex flex-col gap-4 pb-10 animate-fade-in">
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -46,20 +50,21 @@ export default function DepartmentsPage() {
               Manage the curriculum departments and organizational structure of your academic institution.
             </p>
           </div>
+
           <button 
             onClick={() => setShowDeptDialog(true)}
-            className="px-5 py-2.5 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs"
+            className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
           >
-            <i className="pi pi-plus"></i>
+            <i className="pi pi-plus text-xs"></i>
             Create Department
           </button>
         </div>
 
         {/* Directory Layout Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm">
           <div>
-            <h2 className="text-base font-extrabold text-slate-800 dark:text-white">Active Departments</h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">List of active course curriculum departments configured in this school.</p>
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Active Departments</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">List of active course curriculum departments configured in this school.</p>
           </div>
           
           <DataTable
@@ -68,8 +73,8 @@ export default function DepartmentsPage() {
             emptyMessage="No departments configured yet."
             className="p-datatable-sm"
           >
-            <Column field="name" header="Department Name" sortable className="font-bold text-slate-800 dark:text-slate-100" />
-            <Column header="Status" body={() => <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase">Active</span>} />
+            <Column field="name" header="Department Name" sortable className="font-semibold text-zinc-900 dark:text-zinc-100" />
+            <Column header="Status" body={() => <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 rounded-md text-[10px] font-bold uppercase border border-emerald-200/50 dark:border-emerald-800/30">Active</span>} />
           </DataTable>
         </div>
 
@@ -82,17 +87,17 @@ export default function DepartmentsPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowDeptDialog(false)}
-        className="rounded-3xl shadow-xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
-        headerClassName="border-b border-gray-150 dark:border-slate-800 p-6 font-bold"
+        headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={
-          <div className="flex justify-end gap-2 p-4 border-t border-slate-100 dark:border-slate-800/80">
-            <Button label="Cancel" className="p-button-text p-2 font-bold text-xs" onClick={() => setShowDeptDialog(false)} />
+          <div className="flex justify-end gap-2 p-4 border-t border-zinc-100 dark:border-zinc-800">
+            <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowDeptDialog(false)} />
             <Button 
               label="Create Department" 
               icon="pi pi-check" 
               loading={createDeptMutation.isPending} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl border-0 font-bold text-xs" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
               onClick={handleCreateDept} 
             />
           </div>
@@ -100,8 +105,8 @@ export default function DepartmentsPage() {
       >
         <div className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-slate-550 dark:text-slate-450 uppercase tracking-wider">Department Name *</label>
-            <InputText value={deptForm.name} onChange={(e) => setDeptForm({ name: e.target.value })} className="p-2.5 border border-gray-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Science, Languages" />
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Department Name *</label>
+            <InputText value={deptForm.name} onChange={(e) => setDeptForm({ name: e.target.value })} className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:border-blue-500 text-sm" placeholder="e.g. Science, Languages" />
           </div>
         </div>
       </Dialog>

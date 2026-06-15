@@ -7,6 +7,8 @@ import { DataTable, DataTablePageEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useDashboardStats, useActivityLog, useFeeCollectionTrend } from '@/hooks/queries/useAnalytics';
 import { StatCard } from '@/components/ui/StatCard';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 export default function AnalyticsPage() {
   const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
@@ -45,7 +47,8 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10">
+      <PageBreadcrumb title="Analytics" />
+<div className="flex flex-col gap-4 pb-10">
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -56,6 +59,7 @@ export default function AnalyticsPage() {
             </p>
           </div>
         </div>
+
 
         {/* Analytics Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -73,9 +77,9 @@ export default function AnalyticsPage() {
             label="Active Staff"
             value={stats?.staff?.total ?? '—'}
             icon="pi pi-briefcase"
-            gradientClass="from-indigo-500 to-blue-500"
-            iconBgClass="bg-indigo-500/10 dark:bg-indigo-500/20"
-            iconColorClass="text-indigo-600 dark:text-indigo-400"
+            gradientClass="from-blue-500 to-blue-500"
+            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+            iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Enrolled instructors and admins"
             loading={loadingStats}
           />
@@ -104,16 +108,16 @@ export default function AnalyticsPage() {
         {/* Dynamic Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Revenue chart */}
-          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-            <h3 className="font-bold text-slate-800 dark:text-white text-lg">Revenue Inflow Trend (₹)</h3>
-            <div className="relative flex items-end justify-between h-52 px-4 mt-6 border-b border-slate-100 dark:border-slate-800/60 pb-2">
+          <div className="shadow-sm border border-zinc-105 dark:border-zinc-850 rounded-md bg-white dark:bg-zinc-900 p-6 overflow-hidden">
+            <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Revenue Inflow Trend (₹)</h3>
+            <div className="relative flex items-end justify-between h-52 px-4 mt-6 border-b border-zinc-100 dark:border-zinc-800/60 pb-2">
               
               {/* Chart Grid Lines */}
               <div className="absolute inset-x-0 bottom-8 top-0 flex flex-col justify-between pointer-events-none opacity-20">
-                <div className="border-t border-slate-400 w-full" />
-                <div className="border-t border-slate-400 w-full" />
-                <div className="border-t border-slate-400 w-full" />
-                <div className="border-t border-slate-400 w-full" />
+                <div className="border-t border-zinc-400 w-full" />
+                <div className="border-t border-zinc-400 w-full" />
+                <div className="border-t border-zinc-400 w-full" />
+                <div className="border-t border-zinc-400 w-full" />
               </div>
 
               {chartData.map((item: any) => {
@@ -123,16 +127,16 @@ export default function AnalyticsPage() {
                   <div key={item.month} className="flex flex-col items-center gap-3 flex-1 group z-10">
                     <div className="w-full flex items-end justify-center h-36">
                       <div 
-                        className="w-8 bg-gradient-to-t from-violet-500 via-indigo-650 to-indigo-500 rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] group-hover:from-violet-600 group-hover:to-indigo-600 shadow-sm relative" 
+                        className="w-8 bg-gradient-to-t from-violet-500 via-blue-650 to-blue-500 rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] group-hover:from-violet-600 group-hover:to-blue-600 shadow-sm relative" 
                         style={{ height: `${heightPercentage}%`, minHeight: '8px' }}
                       >
                         {/* Hover Value Badge */}
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow">
+                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-[9px] font-black p-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow">
                           ₹{item.amount.toLocaleString()}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-350 transition-colors duration-200">{monthName}</span>
+                    <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-350 transition-colors duration-200">{monthName}</span>
                   </div>
                 );
               })}
@@ -140,25 +144,25 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Occupancy chart */}
-          <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-            <h3 className="font-bold text-slate-800 dark:text-white text-lg">Occupancy Distribution</h3>
+          <div className="shadow-sm border border-zinc-105 dark:border-zinc-850 rounded-md bg-white dark:bg-zinc-900 p-6 overflow-hidden">
+            <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Occupancy Distribution</h3>
             <div className="flex flex-col gap-6 mt-6 justify-center h-36 px-4">
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase tracking-wider">
                   <span>Boys Hostel A</span>
-                  <span className="text-indigo-600 dark:text-indigo-400">88%</span>
+                  <span className="text-blue-600 dark:text-blue-400">88%</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
-                  <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full" style={{ width: '88%' }} />
+                <div className="w-full bg-zinc-100 dark:bg-zinc-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-zinc-205/40 dark:border-zinc-800">
+                  <div className="bg-gradient-to-r from-blue-500 to-violet-500 h-full rounded-full" style={{ width: '88%' }} />
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase tracking-wider">
                   <span>Girls Hostel B</span>
                   <span className="text-pink-600 dark:text-pink-400">74%</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-205/40 dark:border-slate-800">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-955 h-3.5 rounded-full overflow-hidden p-0.5 border border-zinc-205/40 dark:border-zinc-800">
                   <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-full rounded-full" style={{ width: '74%' }} />
                 </div>
               </div>
@@ -167,8 +171,8 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Audit Log table */}
-        <div className="shadow-sm border border-slate-105 dark:border-slate-850 rounded-3xl bg-white dark:bg-slate-900 p-6 overflow-hidden">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">System Audit Logs</h3>
+        <div className="shadow-sm border border-zinc-105 dark:border-zinc-850 rounded-md bg-white dark:bg-zinc-900 p-6 overflow-hidden">
+          <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-4">System Audit Logs</h3>
           <DataTable 
             value={logs?.items || []} 
             lazy 
@@ -183,7 +187,7 @@ export default function AnalyticsPage() {
           >
             <Column field="user.email" header="Operator Email" body={(data) => data.user?.email || 'superadmin@aviraj.com'} className="font-semibold text-xs"></Column>
             <Column field="action" header="Action" body={severityTemplate} align="center"></Column>
-            <Column field="subject" header="Subject" className="font-semibold text-xs text-slate-500"></Column>
+            <Column field="subject" header="Subject" className="font-semibold text-xs text-zinc-500"></Column>
             <Column field="createdAt" header="Timestamp" body={(data) => data.createdAt ? new Date(data.createdAt).toLocaleString() : 'Just now'}></Column>
           </DataTable>
         </div>

@@ -13,10 +13,13 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { useStaffList, useCreateStaff, useDeleteStaff, useRoles, useDepartments } from '@/hooks/queries/useStaff';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 import { 
   useSalaryStructure, 
   useUpsertSalaryStructure
 } from '@/hooks/queries/usePayroll';
+
 
 export default function StaffPage() {
   const [selectedUserForSalary, setSelectedUserForSalary] = useState<string>('');
@@ -139,7 +142,7 @@ export default function StaffPage() {
         <button 
           onClick={() => handleDeleteStaff(rowData.id)}
           disabled={deleteMutation.isPending}
-          className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-lg transition-all active:scale-95 disabled:opacity-50"
+          className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
           title="Delete Staff"
         >
           <i className={deleteMutation.isPending ? "pi pi-spin pi-spinner" : "pi pi-trash"}></i>
@@ -162,7 +165,7 @@ export default function StaffPage() {
       {
         accessorKey: 'name',
         header: 'Name',
-        cell: (info: any) => <span className="font-semibold text-slate-800 dark:text-slate-200">{info.getValue() as string}</span>,
+        cell: (info: any) => <span className="font-semibold text-zinc-800 dark:text-zinc-200">{info.getValue() as string}</span>,
       },
       {
         accessorKey: 'email',
@@ -191,7 +194,7 @@ export default function StaffPage() {
         header: 'Salary Structure',
         cell: (info: any) => (
           <button 
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-xl transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 rounded-md transition-all"
             onClick={() => {
               setSelectedUserForSalary(info.row.original.id);
               setShowSalaryStructureDialog(true);
@@ -212,7 +215,8 @@ export default function StaffPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 lg:gap-8 pb-10 max-w-[100vw] overflow-x-hidden">
+      <PageBreadcrumb title="Staff" />
+<div className="flex flex-col gap-6 lg:gap-8 pb-10 w-full">
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -225,6 +229,7 @@ export default function StaffPage() {
           <button 
             onClick={() => setShowAddDialog(true)}
             className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3"
+
           >
             <i className="pi pi-plus text-xs"></i>
             Add Staff Member
@@ -237,7 +242,7 @@ export default function StaffPage() {
             label="Total Registered"
             value={isPending ? '...' : totalRecords}
             icon="pi pi-users"
-            gradientClass="from-blue-500 to-indigo-500"
+            gradientClass="from-blue-500 to-blue-500"
             iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Total faculty and staff"
@@ -272,25 +277,26 @@ export default function StaffPage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col items-start gap-4 bg-slate-100/50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
+
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
-              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"></i>
               <InputText
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPagination((p: PaginationState) => ({ ...p, pageIndex: 0 })); }}
                 placeholder="Search staff by name or email..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 text-sm outline-none focus:border-primary transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-md dark:bg-zinc-950 text-sm outline-none focus:border-blue-500 transition-all"
               />
             </div>
           </div>
           <div className="flex gap-2 w-full md:w-auto justify-end">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400' 
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               <i className="pi pi-th-large text-sm mr-2"></i>
@@ -298,10 +304,10 @@ export default function StaffPage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
                 viewMode === 'table' 
-                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400' 
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               <i className="pi pi-list text-sm mr-2"></i>
@@ -312,7 +318,7 @@ export default function StaffPage() {
 
         {/* Dynamic Display Section */}
         {isError ? (
-          <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
+          <div className="p-6 bg-red-50 text-red-600 rounded-md border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
             <i className="pi pi-exclamation-circle text-2xl"></i>
             <div>
               <h3 className="font-bold">Failed to load</h3>
@@ -322,65 +328,65 @@ export default function StaffPage() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {isPending ? (
-               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
-                 <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-                 <span className="text-sm font-medium text-slate-500">Loading directory...</span>
+               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+                 <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
+                 <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
                </div>
             ) : staffList.length === 0 ? (
-               <div className="col-span-full py-12 text-center border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
-                 <p className="text-slate-500 text-sm">No staff members found.</p>
+               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+                 <p className="text-zinc-500 text-sm">No staff members found.</p>
                </div>
             ) : (
               staffList.map((member: any) => {
                 const initials = member.name ? member.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'ST';
                 return (
-                  <div key={member.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
-                  <div className="p-5 flex items-center gap-4 border-b border-slate-100 dark:border-slate-800/80">
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl uppercase ring-2 ring-white dark:ring-slate-900 group-hover:scale-105 transition-transform">
+                  <div key={member.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
+                  <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
+                    <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform">
                       {initials}
                     </div>
                     <div className="flex flex-col">
-                      <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-1">
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1">
                         {member.name}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {member.designation || 'Faculty Member'} · <span className="font-medium text-slate-700 dark:text-slate-300">{getDeptName(member.departmentId)}</span>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {member.designation || 'Faculty Member'} · <span className="font-medium text-zinc-700 dark:text-zinc-300">{getDeptName(member.departmentId)}</span>
                       </p>
                     </div>
                   </div>
                   
-                  <div className="p-5 flex flex-col gap-4">
+                  <div className="p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       {roleBodyTemplate(member)}
                     </div>
 
-                    <div className="py-2 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="py-2 flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
                       <div className="flex items-center gap-2 truncate">
-                        <i className="pi pi-envelope text-slate-400"></i>
+                        <i className="pi pi-envelope text-zinc-400"></i>
                         <span>{member.email}</span>
                       </div>
                       {member.phone && (
                         <div className="flex items-center gap-2">
-                          <i className="pi pi-phone text-slate-400"></i>
+                          <i className="pi pi-phone text-zinc-400"></i>
                           <span>{member.phone}</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80 mt-2">
+                    <div className="flex justify-end gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800 mt-2">
                       <button 
                         onClick={() => {
                           setSelectedUserForSalary(member.id);
                           setShowSalaryStructureDialog(true);
                         }}
-                        className="flex-1 px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 dark:bg-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg transition-colors flex justify-center items-center gap-2 mt-2"
+                        className="flex-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-md transition-all flex justify-center items-center gap-2 mt-2"
                       >
                         <i className="pi pi-money-bill text-xs"></i>
                         Salary Config
                       </button>
                       <button 
                         onClick={() => handleDeleteStaff(member.id)}
-                        className="px-3 py-2 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg transition-colors flex justify-center items-center mt-2"
+                        className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex justify-center items-center mt-2"
                         title="Delete Staff"
                       >
                         <i className="pi pi-trash"></i>
@@ -395,19 +401,19 @@ export default function StaffPage() {
             {/* Grid Pagination */}
             {!isPending && staffList.length > 0 && (
               <div className="col-span-full flex justify-between items-center pt-4">
-                <span className="text-sm font-medium text-slate-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
+                <span className="text-sm font-medium text-zinc-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setPagination((p: PaginationState) => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
                     disabled={pagination.pageIndex === 0}
-                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Previous
                   </button>
                   <button 
                     onClick={() => setPagination((p: PaginationState) => ({ ...p, pageIndex: Math.min(pageCount - 1, p.pageIndex + 1) }))}
                     disabled={pagination.pageIndex >= pageCount - 1}
-                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Next
                   </button>
@@ -436,16 +442,16 @@ export default function StaffPage() {
         style={{ width: '450px' }} 
         modal 
         onHide={() => setShowAddDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-md"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" icon="pi pi-times" onClick={() => setShowAddDialog(false)} className="p-button-text p-2" />
             <Button 
               label="Register" 
               icon="pi pi-check" 
               onClick={handleAddStaff} 
               loading={createMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
             />
           </div>
         }
@@ -458,7 +464,7 @@ export default function StaffPage() {
               value={newStaff.name} 
               onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })} 
               placeholder="e.g., Jane Smith"
-              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -468,7 +474,7 @@ export default function StaffPage() {
               value={newStaff.email} 
               onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })} 
               placeholder="e.g., janesmith@school.com"
-              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -478,7 +484,7 @@ export default function StaffPage() {
               value={newStaff.phone} 
               onChange={(e) => setNewStaff({ ...newStaff, phone: e.target.value })} 
               placeholder="e.g., +91 98765 43210"
-              className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -489,7 +495,7 @@ export default function StaffPage() {
               options={roleOptions} 
               onChange={(e) => setNewStaff({ ...newStaff, roleId: e.value })} 
               placeholder="Select a Role"
-              className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+              className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -501,7 +507,7 @@ export default function StaffPage() {
                 options={deptOptions} 
                 onChange={(e) => setNewStaff({ ...newStaff, departmentId: e.value })} 
                 placeholder="Select Dept"
-                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -511,7 +517,7 @@ export default function StaffPage() {
                 value={newStaff.designation} 
                 onChange={(e) => setNewStaff({ ...newStaff, designation: e.target.value })} 
                 placeholder="e.g., Physics Teacher"
-                className="p-2 border border-gray-250 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
           </div>
@@ -525,69 +531,69 @@ export default function StaffPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowSalaryStructureDialog(false)}
-        className="dialog-custom rounded-3xl"
+        className="dialog-custom rounded-md"
         footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowSalaryStructureDialog(false)} />
             <Button 
               label="Save Structure" 
               icon="pi pi-check" 
               onClick={handleSaveSalaryStructure} 
               loading={upsertStructureMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-xl" 
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
             />
           </div>
         }
       >
         {loadingStructure ? (
           <div className="p-8 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-xs font-semibold text-slate-400">Fetching structure configuration...</span>
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs font-semibold text-zinc-400">Fetching structure configuration...</span>
           </div>
         ) : (
           <div className="flex flex-col gap-4 mt-2">
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Base Salary (₹/month) *</label>
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Base Salary (₹/month) *</label>
               <InputNumber 
                 value={salaryForm.baseSalary} 
                 onValueChange={(e) => setSalaryForm({ ...salaryForm, baseSalary: e.value || 0 })} 
                 mode="currency" 
                 currency="INR" 
                 locale="en-IN"
-                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">HRA Allowance (₹/month)</label>
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">HRA Allowance (₹/month)</label>
               <InputNumber 
                 value={salaryForm.hra} 
                 onValueChange={(e) => setSalaryForm({ ...salaryForm, hra: e.value || 0 })} 
                 mode="currency" 
                 currency="INR" 
                 locale="en-IN"
-                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Other Allowances (₹/month)</label>
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Other Allowances (₹/month)</label>
               <InputNumber 
                 value={salaryForm.allowance} 
                 onValueChange={(e) => setSalaryForm({ ...salaryForm, allowance: e.value || 0 })} 
                 mode="currency" 
                 currency="INR" 
                 locale="en-IN"
-                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-semibold text-xs text-slate-500 dark:text-slate-400">Deductions / PF (₹/month)</label>
+              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Deductions / PF (₹/month)</label>
               <InputNumber 
                 value={salaryForm.deductions} 
                 onValueChange={(e) => setSalaryForm({ ...salaryForm, deductions: e.value || 0 })} 
                 mode="currency" 
                 currency="INR" 
                 locale="en-IN"
-                className="border border-gray-255 dark:border-slate-700 dark:bg-slate-900 rounded-xl"
+                className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
             </div>
           </div>

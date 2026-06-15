@@ -2,48 +2,48 @@
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
 
 export default function SuperadminRoadmapPage() {
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 pb-10 animate-fade-in">
+      <PageBreadcrumb title="Roadmap" subtitle="Superadmin" />
+<div className="flex flex-col gap-4 pb-10 animate-fade-in">
         
         {/* Header Section */}
-        <div className="border-b border-slate-200 dark:border-slate-800 pb-5">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Tenant Onboarding Workflow Pipeline
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm font-medium">
-            Global Platform Command — Visual roadmap guide for provisioning, subscribing, and launching newly onboarded school tenants.
-          </p>
+        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-5">
+          
+          
         </div>
 
         {/* Tenant Onboarding Pipeline Flow Graph */}
-        <div className="shadow-2xl border border-slate-200 dark:border-slate-800 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/80 p-6 text-white overflow-hidden relative">
+        <div className="shadow-2xl border border-zinc-200 dark:border-zinc-800 rounded-md bg-gradient-to-br from-zinc-900 via-zinc-950 to-blue-950/80 p-6 text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-80 h-80 bg-purple-550/10 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl translate-y-16 -translate-x-16 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl translate-y-16 -translate-x-16 pointer-events-none"></div>
           
           <div className="flex flex-col items-start gap-4 z-10 relative mb-8">
+
             <div>
-              <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-widest uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-widest uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
                 SaaS Workflow Protocol
               </span>
               <h2 className="text-2xl font-black mt-3 text-white tracking-tight">
                 Tenant School Launch Roadmap
               </h2>
-              <p className="text-xs text-slate-400 mt-1.5 max-w-xl leading-relaxed">
+              <p className="text-xs text-zinc-400 mt-1.5 max-w-xl leading-relaxed">
                 Step-by-step protocol for provisioning and aligning a newly onboarded educational tenant. Follow this graph to achieve full operational sync.
               </p>
             </div>
             
-            <div className="flex items-center gap-3 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80 text-xs font-semibold text-slate-350 backdrop-blur-md">
-              <i className="pi pi-info-circle text-indigo-400 text-sm"></i>
+            <div className="flex items-center gap-3 bg-zinc-950/60 p-3.5 rounded-md border border-zinc-800/80 text-xs font-semibold text-zinc-350 backdrop-blur-md">
+              <i className="pi pi-info-circle text-blue-400 text-sm"></i>
               <span>Select any node on the graph to trigger the corresponding setup controls.</span>
             </div>
           </div>
 
           {/* Interactive SVG Flow Map */}
-          <div className="hidden lg:block relative w-full h-[200px] bg-slate-950/90 rounded-2xl border border-slate-900 shadow-inner overflow-hidden mb-6 z-10">
+          <div className="hidden lg:block relative w-full h-[200px] bg-zinc-950/90 rounded-md border border-zinc-900 shadow-inner overflow-hidden mb-6 z-10">
             {/* Tech grid background */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:24px_24px] opacity-35"></div>
             
@@ -65,9 +65,9 @@ export default function SuperadminRoadmapPage() {
                 <circle r="22" fill="#0f172a" stroke="#818cf8" strokeWidth="4" />
                 <circle r="22" fill="#818cf8" opacity="0.1" className="group-hover/node:scale-125 transition-transform" />
                 <circle r="32" fill="#818cf8" opacity="0.08" className="animate-pulse" />
-                <i className="pi pi-plus-circle text-indigo-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
+                <i className="pi pi-plus-circle text-blue-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
                 <text y="42" textAnchor="middle" className="text-[10px] font-black fill-white font-sans tracking-wide">1. Profile Creation</text>
-                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-indigo-355 font-sans">Register Subdomain</text>
+                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-blue-355 font-sans">Register Subdomain</text>
               </g>
 
               {/* Node 2: Assign Plan */}
@@ -75,9 +75,9 @@ export default function SuperadminRoadmapPage() {
                 <circle r="22" fill="#0f172a" stroke="#818cf8" strokeWidth="4" />
                 <circle r="22" fill="#818cf8" opacity="0.1" className="group-hover/node:scale-125 transition-transform" />
                 <circle r="32" fill="#818cf8" opacity="0.08" className="animate-pulse" />
-                <i className="pi pi-star text-indigo-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
+                <i className="pi pi-star text-blue-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
                 <text y="42" textAnchor="middle" className="text-[10px] font-black fill-white font-sans tracking-wide">2. Allocation of SaaS Plan</text>
-                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-indigo-355 font-sans">Basic to Enterprise</text>
+                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-blue-355 font-sans">Basic to Enterprise</text>
               </g>
 
               {/* Node 3: Modules Provisioning */}
@@ -85,9 +85,9 @@ export default function SuperadminRoadmapPage() {
                 <circle r="22" fill="#0f172a" stroke="#818cf8" strokeWidth="4" />
                 <circle r="22" fill="#818cf8" opacity="0.1" className="group-hover/node:scale-125 transition-transform" />
                 <circle r="32" fill="#818cf8" opacity="0.08" className="animate-pulse" />
-                <i className="pi pi-cog text-indigo-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
+                <i className="pi pi-cog text-blue-400 text-base" style={{ transform: 'translate(-8px, -8px)', position: 'absolute' }}></i>
                 <text y="42" textAnchor="middle" className="text-[10px] font-black fill-white font-sans tracking-wide">3. Provision Modules</text>
-                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-indigo-355 font-sans">Toggle Features</text>
+                <text y="54" textAnchor="middle" className="text-[8px] font-bold fill-blue-355 font-sans">Toggle Features</text>
               </g>
 
               {/* Node 4: Deploy Setup */}
@@ -104,48 +104,48 @@ export default function SuperadminRoadmapPage() {
 
           {/* Checklist Grid cards for Responsive layout */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2 z-10 relative">
-            <div className="p-4.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all duration-300">
+            <div className="p-4.5 rounded-md bg-zinc-900/60 border border-zinc-800 flex flex-col justify-between hover:border-zinc-700 transition-all duration-300">
               <div>
-                <span className="text-[9px] font-extrabold text-indigo-400 tracking-wider">STAGE 1</span>
+                <span className="text-[9px] font-extrabold text-blue-400 tracking-wider">STAGE 1</span>
                 <h4 className="font-extrabold text-sm mt-1.5 flex items-center gap-1.5">
-                  <i className="pi pi-plus-circle text-indigo-400"></i> Register Profile
+                  <i className="pi pi-plus-circle text-blue-400"></i> Register Profile
                 </h4>
-                <p className="text-[10px] text-slate-405 mt-1 leading-relaxed">Onboard the school tenant, set school subdomain name and admin details.</p>
+                <p className="text-[10px] text-zinc-405 mt-1 leading-relaxed">Onboard the school tenant, set school subdomain name and admin details.</p>
               </div>
-              <a href="/superadmin/tenants" className="mt-4 w-full bg-indigo-650 hover:bg-indigo-600 text-white font-bold p-2.5 rounded-xl text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Onboard Profile</a>
+              <a href="/superadmin/tenants" className="mt-4 w-full bg-blue-650 hover:bg-blue-600 text-white font-bold p-2.5 rounded-md text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Onboard Profile</a>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all duration-300">
+            <div className="p-4.5 rounded-md bg-zinc-900/60 border border-zinc-800 flex flex-col justify-between hover:border-zinc-700 transition-all duration-300">
               <div>
-                <span className="text-[9px] font-extrabold text-indigo-400 tracking-wider">STAGE 2</span>
+                <span className="text-[9px] font-extrabold text-blue-400 tracking-wider">STAGE 2</span>
                 <h4 className="font-extrabold text-sm mt-1.5 flex items-center gap-1.5">
-                  <i className="pi pi-star text-indigo-400"></i> Assign SaaS Plan
+                  <i className="pi pi-star text-blue-400"></i> Assign SaaS Plan
                 </h4>
-                <p className="text-[10px] text-slate-405 mt-1 leading-relaxed">Allocate appropriate subscription tiers matching pricing policies.</p>
+                <p className="text-[10px] text-zinc-405 mt-1 leading-relaxed">Allocate appropriate subscription tiers matching pricing policies.</p>
               </div>
-              <a href="/superadmin/tenants" className="mt-4 w-full bg-indigo-650 hover:bg-indigo-600 text-white font-bold p-2.5 rounded-xl text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Configure Plan</a>
+              <a href="/superadmin/tenants" className="mt-4 w-full bg-blue-650 hover:bg-blue-600 text-white font-bold p-2.5 rounded-md text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Configure Plan</a>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all duration-300">
+            <div className="p-4.5 rounded-md bg-zinc-900/60 border border-zinc-800 flex flex-col justify-between hover:border-zinc-700 transition-all duration-300">
               <div>
-                <span className="text-[9px] font-extrabold text-indigo-400 tracking-wider">STAGE 3</span>
+                <span className="text-[9px] font-extrabold text-blue-400 tracking-wider">STAGE 3</span>
                 <h4 className="font-extrabold text-sm mt-1.5 flex items-center gap-1.5">
-                  <i className="pi pi-cog text-indigo-400"></i> Enable Modules
+                  <i className="pi pi-cog text-blue-400"></i> Enable Modules
                 </h4>
-                <p className="text-[10px] text-slate-455 mt-1 leading-relaxed">Provision platform modules (Academics, transport, hostel matrices).</p>
+                <p className="text-[10px] text-zinc-455 mt-1 leading-relaxed">Provision platform modules (Academics, transport, hostel matrices).</p>
               </div>
-              <a href="/superadmin/tenants" className="mt-4 w-full bg-indigo-650 hover:bg-indigo-600 text-white font-bold p-2.5 rounded-xl text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Toggle Modules</a>
+              <a href="/superadmin/tenants" className="mt-4 w-full bg-blue-650 hover:bg-blue-600 text-white font-bold p-2.5 rounded-md text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Toggle Modules</a>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all duration-300">
+            <div className="p-4.5 rounded-md bg-zinc-900/60 border border-zinc-800 flex flex-col justify-between hover:border-zinc-700 transition-all duration-300">
               <div>
                 <span className="text-[9px] font-extrabold text-purple-400 tracking-wider">STAGE 4</span>
                 <h4 className="font-extrabold text-sm mt-1.5 flex items-center gap-1.5">
                   <i className="pi pi-directions text-purple-400"></i> Launch Setup
                 </h4>
-                <p className="text-[10px] text-slate-405 mt-1 leading-relaxed">Switch to active school workspace context and initiate local onboarding setup.</p>
+                <p className="text-[10px] text-zinc-405 mt-1 leading-relaxed">Switch to active school workspace context and initiate local onboarding setup.</p>
               </div>
-              <a href="/superadmin/tenants" className="mt-4 w-full bg-purple-650 hover:bg-purple-600 text-white font-bold p-2.5 rounded-xl text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Switch & Setup</a>
+              <a href="/superadmin/tenants" className="mt-4 w-full bg-purple-650 hover:bg-purple-600 text-white font-bold p-2.5 rounded-md text-[10px] border-0 cursor-pointer shadow-md text-center no-underline transition-all active:scale-95">Switch & Setup</a>
             </div>
           </div>
         </div>

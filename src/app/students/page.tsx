@@ -11,6 +11,9 @@ import Link from 'next/link';
 import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { StatCard } from '@/components/ui/StatCard';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+
+
 
 export default function StudentsPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -44,14 +47,14 @@ export default function StudentsPage() {
   const actionsTemplate = (rowData: any) => (
     <div className="flex gap-2 justify-center">
       <Link href={`/students/${rowData.id}`}>
-        <button className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-lg transition-all active:scale-95" title="View Profile">
+        <button className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-md transition-all active:scale-95" title="View Profile">
           <i className="pi pi-eye"></i>
         </button>
       </Link>
       <button 
         onClick={() => handleDelete(rowData.id)}
         disabled={deleteMutation.isPending}
-        className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-lg transition-all active:scale-95 disabled:opacity-50"
+        className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
         title="Remove"
       >
         <i className={deleteMutation.isPending ? "pi pi-spin pi-spinner" : "pi pi-trash"}></i>
@@ -68,7 +71,7 @@ export default function StudentsPage() {
       {
         accessorKey: 'admissionNo',
         header: 'Admission No.',
-        cell: (info) => <span className="font-semibold text-slate-700 dark:text-slate-300">{info.getValue() as string}</span>,
+        cell: (info) => <span className="font-medium text-zinc-700 dark:text-zinc-300">{info.getValue() as string}</span>,
       },
       {
         accessorKey: 'firstName',
@@ -98,7 +101,8 @@ export default function StudentsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 lg:gap-8 pb-10 max-w-[100vw] overflow-x-hidden">
+      <PageBreadcrumb title="Students" />
+<div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full">
         
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pt-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -110,6 +114,7 @@ export default function StudentsPage() {
           </div>
           <Link href="/students/admissions" className="w-full sm:w-auto">
             <button className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3">
+
               <i className="pi pi-plus text-xs"></i>
               New Admission
             </button>
@@ -122,8 +127,8 @@ export default function StudentsPage() {
             label="Total Enrolled"
             value={isPending ? '...' : totalRecords}
             icon="pi pi-users"
-            gradientClass="from-blue-500 to-indigo-500"
-            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
+            gradientClass="from-blue-500 to-blue-600"
+            iconBgClass="bg-blue-50 dark:bg-blue-900/20"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Total students in system"
           />
@@ -149,33 +154,34 @@ export default function StudentsPage() {
             label="Newly Added"
             value={isPending ? '...' : Math.min(totalRecords, 5)}
             icon="pi pi-user-plus"
-            gradientClass="from-violet-500 to-purple-500"
-            iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
-            iconColorClass="text-violet-600 dark:text-violet-400"
+            gradientClass="from-purple-500 to-purple-600"
+            iconBgClass="bg-purple-50 dark:bg-purple-900/20"
+            iconColorClass="text-purple-600 dark:text-purple-400"
             footerText="Recent enrollments"
           />
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col items-start gap-4 bg-slate-100/50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
+
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
-              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"></i>
               <InputText
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPagination((p) => ({ ...p, pageIndex: 0 })); }}
                 placeholder="Search students..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl dark:bg-slate-950 text-sm outline-none focus:border-primary transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-md dark:bg-zinc-950 text-sm outline-none focus:border-blue-500 transition-all"
               />
             </div>
           </div>
           <div className="flex gap-2 w-full md:w-auto justify-end">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400' 
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               <i className="pi pi-th-large text-sm mr-2"></i>
@@ -183,10 +189,10 @@ export default function StudentsPage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 px-5 rounded-lg text-xs font-bold transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
                 viewMode === 'table' 
-                  ? 'bg-white dark:bg-slate-950 text-primary shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400' 
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               <i className="pi pi-list text-sm mr-2"></i>
@@ -197,7 +203,7 @@ export default function StudentsPage() {
 
         {/* Dynamic Catalog Section */}
         {isError ? (
-          <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
+          <div className="p-6 bg-red-50 text-red-600 rounded-md border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
             <i className="pi pi-exclamation-circle text-2xl"></i>
             <div>
               <h3 className="font-bold">Failed to load</h3>
@@ -207,50 +213,50 @@ export default function StudentsPage() {
         ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {isPending ? (
-               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
-                 <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-                 <span className="text-sm font-medium text-slate-500">Loading directory...</span>
+               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+                 <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
+                 <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
                </div>
             ) : studentsList.length === 0 ? (
-               <div className="col-span-full py-12 text-center border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
-                 <p className="text-slate-500 text-sm">No students found matching current filters.</p>
+               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+                 <p className="text-zinc-500 text-sm">No students found matching current filters.</p>
                </div>
             ) : (
               studentsList.map((student: any) => {
                 const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
                 return (
-                  <div key={student.id} className="bg-white dark:bg-slate-900 border border-slate-150/60 dark:border-slate-850 rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
-                    <div className="p-5 flex items-center gap-4 border-b border-slate-100 dark:border-slate-800/80">
-                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl uppercase ring-2 ring-white dark:ring-slate-900 group-hover:scale-105 transition-transform">
+                  <div key={student.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all duration-300 animate-fade-in group">
+                    <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
+                      <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900">
                         {student.firstName ? student.firstName[0] : '?'}
                         {student.lastName ? student.lastName[0] : ''}
                       </div>
                       <div className="flex flex-col flex-1">
-                        <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-1">
+                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1">
                           {fullName}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
                           {student.admissionNo}
                         </p>
                       </div>
                       {statusTemplate(student)}
                     </div>
                     
-                    <div className="p-5 pt-0 flex flex-col gap-4">
-                      <div className="flex items-center justify-between text-sm py-3 border-b border-slate-100 dark:border-slate-800/80">
-                        <span className="text-slate-500">Class</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200">{student.className || 'Not Assigned'}</span>
+                    <div className="p-4 flex flex-col gap-3">
+                      <div className="flex items-center justify-between text-sm py-2 border-b border-zinc-100 dark:border-zinc-800">
+                        <span className="text-zinc-500">Class</span>
+                        <span className="font-medium text-zinc-900 dark:text-zinc-200">{student.className || 'Not Assigned'}</span>
                       </div>
 
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 mt-1">
                         <Link href={`/students/${student.id}`} className="flex-1">
-                          <button className="w-full px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors flex justify-center items-center gap-2">
+                          <button className="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border border-transparent rounded-md transition-all flex justify-center items-center">
                             View Profile
                           </button>
                         </Link>
                         <button 
                           onClick={() => handleDelete(student.id)}
-                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md transition-colors"
+                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors"
                           title="Delete Student"
                         >
                           <i className="pi pi-trash"></i>
@@ -265,19 +271,19 @@ export default function StudentsPage() {
             {/* Grid Pagination */}
             {!isPending && studentsList.length > 0 && (
               <div className="col-span-full flex justify-between items-center pt-4">
-                <span className="text-sm font-medium text-slate-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
+                <span className="text-sm font-medium text-zinc-500">Page {pagination.pageIndex + 1} of {pageCount}</span>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setPagination(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
                     disabled={pagination.pageIndex === 0}
-                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Previous
                   </button>
                   <button 
                     onClick={() => setPagination(p => ({ ...p, pageIndex: Math.min(pageCount - 1, p.pageIndex + 1) }))}
                     disabled={pagination.pageIndex >= pageCount - 1}
-                    className="px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-slate-700 dark:text-slate-300"
+                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Next
                   </button>

@@ -50,6 +50,7 @@ export const academicsService = {
     code: string;
     type?: string;
     departmentId?: string;
+    teacherId?: string;
     maxMarks?: number;
     passMarks?: number;
   }) => {

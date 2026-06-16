@@ -24,6 +24,8 @@ import {
 export default function StaffPage() {
   const [selectedUserForSalary, setSelectedUserForSalary] = useState<string>('');
   const [showSalaryStructureDialog, setShowSalaryStructureDialog] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
   
   // Salary structure form fields
   const [salaryForm, setSalaryForm] = useState({ baseSalary: 25000, hra: 5000, allowance: 3000, deductions: 1000 });
@@ -139,6 +141,13 @@ export default function StaffPage() {
   const actionsBodyTemplate = (rowData: any) => {
     return (
       <div className="flex gap-2 justify-center">
+        <button 
+          onClick={() => { setSelectedProfile(rowData); setShowProfileDialog(true); }}
+          className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-md transition-all active:scale-95"
+          title="View Profile"
+        >
+          <i className="pi pi-user"></i>
+        </button>
         <button 
           onClick={() => handleDeleteStaff(rowData.id)}
           disabled={deleteMutation.isPending}
@@ -376,13 +385,23 @@ export default function StaffPage() {
                     <div className="flex justify-end gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800 mt-2">
                       <button 
                         onClick={() => {
+                          setSelectedProfile(member);
+                          setShowProfileDialog(true);
+                        }}
+                        className="flex-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-md transition-all flex justify-center items-center gap-2 mt-2"
+                      >
+                        <i className="pi pi-user text-xs"></i>
+                        Profile
+                      </button>
+                      <button 
+                        onClick={() => {
                           setSelectedUserForSalary(member.id);
                           setShowSalaryStructureDialog(true);
                         }}
                         className="flex-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-md transition-all flex justify-center items-center gap-2 mt-2"
                       >
                         <i className="pi pi-money-bill text-xs"></i>
-                        Salary Config
+                        Salary
                       </button>
                       <button 
                         onClick={() => handleDeleteStaff(member.id)}
@@ -595,6 +614,82 @@ export default function StaffPage() {
                 locale="en-IN"
                 className="border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
               />
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      {/* Dialog: Teacher Profile */}
+      <Dialog 
+        header={selectedProfile ? `${selectedProfile.name}'s Profile` : 'Staff Profile'} 
+        visible={showProfileDialog} 
+        style={{ width: '600px' }} 
+        modal 
+        onHide={() => setShowProfileDialog(false)}
+        className="dialog-custom rounded-md"
+      >
+        {selectedProfile && (
+          <div className="flex flex-col gap-6 p-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 font-bold text-2xl uppercase ring-2 ring-zinc-200 dark:ring-zinc-800">
+                {selectedProfile.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{selectedProfile.name}</h2>
+                <p className="text-zinc-500 dark:text-zinc-400">{selectedProfile.designation || 'Faculty'} · {getDeptName(selectedProfile.departmentId)}</p>
+                {roleBodyTemplate(selectedProfile)}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Contact Details</h3>
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center gap-2"><i className="pi pi-envelope text-zinc-400"></i> {selectedProfile.email}</div>
+                  <div className="flex items-center gap-2"><i className="pi pi-phone text-zinc-400"></i> {selectedProfile.phone || 'N/A'}</div>
+                  <div className="flex items-center gap-2"><i className="pi pi-id-card text-zinc-400"></i> {selectedProfile.employeeId || 'N/A'}</div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Class Teacher Assigned</h3>
+                <div className="flex flex-col gap-2">
+                  {selectedProfile.classTeacherOf && selectedProfile.classTeacherOf.length > 0 ? (
+                    selectedProfile.classTeacherOf.map((cls: any) => (
+                      <div key={cls.id} className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Class {cls.name} - Section {cls.section}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-zinc-500 italic">Not a class teacher.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Subjects Taught</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedProfile.subjectsTaught && selectedProfile.subjectsTaught.length > 0 ? (
+                  selectedProfile.subjectsTaught.map((sub: any) => (
+                    <div key={sub.id} className="flex flex-col gap-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-2 min-w-[120px]">
+                      <span className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">{sub.name}</span>
+                      <span className="text-xs text-zinc-500 font-mono">{sub.code}</span>
+                      {sub.classes && sub.classes.length > 0 && (
+                        <div className="flex gap-1 mt-1 flex-wrap">
+                          {sub.classes.map((c: any, i: number) => (
+                            <span key={i} className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+                              {c.name}-{c.section}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-zinc-500 italic w-full">No subjects assigned yet.</div>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -53,7 +53,7 @@ export default function SetupWizard() {
             departmentId: null
           } as any);
         }
-        const fetchedTeachers = await staffService.listStaff(1, 100);
+        const fetchedTeachers = await staffService.getStaffList(1, 100);
         setSavedTeachers(fetchedTeachers.items || []);
         setCurrentStep(4);
       } else if (currentStep === 4) {

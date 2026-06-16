@@ -18,7 +18,7 @@ export default function StudentDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs' | 'facilities'>('personal');
   const { data: student, isPending, isError } = useStudentDetails(id);
   const { data: ledgerDuesData, isPending: loadingLedger } = useStudentDues(id);
   const deleteMutation = useDeleteStudent();
@@ -121,6 +121,7 @@ export default function StudentDetailsPage() {
           {[
             { id: 'personal', label: 'Personal Profile', icon: 'pi-user' },
             { id: 'guardian', label: 'Parent & Guardian Info', icon: 'pi-users' },
+            { id: 'facilities', label: 'Transport & Hostel', icon: 'pi-home' },
             { id: 'ledger', label: 'Academic Fee Ledger', icon: 'pi-wallet' },
             { id: 'audit_logs', label: 'Activity Logs', icon: 'pi-list' }
           ].map((tb) => (
@@ -287,6 +288,41 @@ export default function StudentDetailsPage() {
                   />
                 </DataTable>
               )}
+            </div>
+          </Card>
+        )}
+
+        {activeTab === 'facilities' && (
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
+              <div className="border border-zinc-100 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900/50">
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Transport Allocation</h3>
+                {student.transport && student.transport.length > 0 ? (
+                  student.transport.map((t: any) => (
+                    <div key={t.id} className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2"><i className="pi pi-car text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Route: {t.route?.name || 'N/A'}</span></div>
+                      <div className="flex items-center gap-2"><i className="pi pi-map-marker text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Pickup: {t.pickupStop?.stopName || 'N/A'}</span></div>
+                      {t.feeAmount && <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">Fee: ₹{t.feeAmount}</div>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm font-medium text-zinc-500 italic mt-1">No transport allocated.</p>
+                )}
+              </div>
+              <div className="border border-zinc-100 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900/50">
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Hostel Allocation</h3>
+                {student.hostelBoarder && student.hostelBoarder.length > 0 ? (
+                  student.hostelBoarder.map((h: any) => (
+                    <div key={h.id} className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2"><i className="pi pi-building text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Room: {h.room?.roomNumber || 'N/A'} ({h.room?.roomType || ''})</span></div>
+                      <div className="flex items-center gap-2"><i className="pi pi-calendar text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Joined: {new Date(h.joinDate).toLocaleDateString()}</span></div>
+                      {h.feeAmount && <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">Fee: ₹{h.feeAmount}</div>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm font-medium text-zinc-500 italic mt-1">No hostel allocated.</p>
+                )}
+              </div>
             </div>
           </Card>
         )}

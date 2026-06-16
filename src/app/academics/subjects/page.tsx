@@ -10,11 +10,10 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { useToast } from '@/hooks/useToast';
 
 export default function SubjectsPage() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const toast = (msg: any) => console.log(msg);
   
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [formData, setFormData] = useState({ id: '', name: '', code: '', type: 'theory', departmentId: '', teacherId: '' });

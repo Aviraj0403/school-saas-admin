@@ -134,7 +134,7 @@ export default function LeavePage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-md border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-xl border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Filter:</span>
             <Dropdown
@@ -147,7 +147,7 @@ export default function LeavePage() {
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-all ${
+              className={`p-2 rounded-xl transition-all ${
                 viewMode === 'grid' 
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
                   : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
@@ -158,7 +158,7 @@ export default function LeavePage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-all ${
+              className={`p-2 rounded-xl transition-all ${
                 viewMode === 'table' 
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
                   : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
@@ -172,12 +172,12 @@ export default function LeavePage() {
 
         {/* Dynamic Display Section */}
         {isLoading ? (
-          <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
+          <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl">
             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm font-semibold text-zinc-400">Loading leave inbox...</span>
           </div>
         ) : activeLeaves.length === 0 ? (
-          <div className="p-20 text-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
+          <div className="p-20 text-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl">
             <p className="text-zinc-400 font-medium">No leave applications found.</p>
           </div>
         ) : viewMode === 'grid' ? (
@@ -185,11 +185,11 @@ export default function LeavePage() {
             {activeLeaves.map((leave: any) => (
               <div 
                 key={leave.id} 
-                className="bg-white dark:bg-zinc-900 border border-zinc-105 dark:border-zinc-800/80 p-5 rounded-md shadow-sm hover:shadow-md hover:border-zinc-200 dark:hover:border-zinc-700/80 transition-all duration-200 flex flex-col justify-between gap-4 group"
+                className="bg-white dark:bg-zinc-900 border border-zinc-105 dark:border-zinc-800/80 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-zinc-200 dark:hover:border-zinc-700/80 transition-all duration-200 flex flex-col justify-between gap-4 group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 font-extrabold text-sm border border-blue-100 dark:border-blue-900/30">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 font-extrabold text-sm border border-blue-100 dark:border-blue-900/30">
                       {leave.applicantName ? leave.applicantName[0].toUpperCase() : 'L'}
                     </div>
                     <div>
@@ -200,7 +200,7 @@ export default function LeavePage() {
                   {statusTemplate(leave.status)}
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1 text-zinc-400 border border-zinc-100/50 dark:border-zinc-800/50">
+                <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1 text-zinc-400 border border-zinc-100/50 dark:border-zinc-800/50">
                   <div className="flex justify-between">
                     <span>From:</span>
                     <span className="text-zinc-850 dark:text-zinc-350">{dateTemplate(leave.startDate)}</span>
@@ -220,14 +220,14 @@ export default function LeavePage() {
                   <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
                     <button 
                       onClick={() => handleReject(leave.id)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-455 dark:hover:bg-rose-950/20 rounded-md transition-all active:scale-95 flex items-center gap-1"
+                      className="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-455 dark:hover:bg-rose-950/20 rounded-xl transition-all active:scale-95 flex items-center gap-1"
                     >
                       <i className="pi pi-times text-[10px]"></i>
                       Reject
                     </button>
                     <button 
                       onClick={() => handleApprove(leave.id)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-650 hover:bg-blue-700 rounded-md transition-all active:scale-95 flex items-center gap-1"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-650 hover:bg-blue-700 rounded-xl transition-all active:scale-95 flex items-center gap-1"
                     >
                       <i className="pi pi-check text-[10px]"></i>
                       Approve
@@ -238,7 +238,7 @@ export default function LeavePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
             <DataTable
               value={activeLeaves}
               loading={isLoading}
@@ -271,7 +271,7 @@ export default function LeavePage() {
       </div>
 
       {/* Dialog: Apply Leave */}
-      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} modal onHide={() => setShowApplyDialog(false)} className="dialog-custom rounded-md">
+      <Dialog header="Apply for Leave" visible={showApplyDialog} style={{ width: '450px' }} modal onHide={() => setShowApplyDialog(false)} className="dialog-custom rounded-xl">
         <form onSubmit={handleApply} className="flex flex-col gap-4 mt-3">
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Applicant Type *</label>
@@ -294,25 +294,25 @@ export default function LeavePage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Student / Staff ID *</label>
-            <InputText value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md" placeholder="UUID or Admission No" />
+            <InputText value={applyForm.applicantId} onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })} required className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-xl" placeholder="UUID or Admission No" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Start Date *</label>
-              <Calendar value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" />
+              <Calendar value={applyForm.startDate} onChange={(e) => setApplyForm({ ...applyForm, startDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-xl w-full" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">End Date *</label>
-              <Calendar value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full" />
+              <Calendar value={applyForm.endDate} onChange={(e) => setApplyForm({ ...applyForm, endDate: e.value })} required showIcon dateFormat="yy-mm-dd" className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-xl w-full" />
             </div>
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Reason *</label>
-            <InputTextarea value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required rows={3} className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full outline-none focus:border-blue-500" placeholder="Reason for leave..." />
+            <InputTextarea value={applyForm.reason} onChange={(e) => setApplyForm({ ...applyForm, reason: e.target.value })} required rows={3} className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-xl w-full outline-none focus:border-blue-500" placeholder="Reason for leave..." />
           </div>
           <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
             <Button type="button" label="Cancel" className="p-button-text p-2" onClick={() => setShowApplyDialog(false)} />
-            <Button type="submit" label="Submit Request" icon="pi pi-send" loading={applyMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" />
+            <Button type="submit" label="Submit Request" icon="pi pi-send" loading={applyMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-xl" />
           </div>
         </form>
       </Dialog>

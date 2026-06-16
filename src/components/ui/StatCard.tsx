@@ -25,7 +25,7 @@ export function StatCard({
   loading 
 }: StatCardProps) {
   return (
-    <div className={`relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 rounded-md sm:rounded-md p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group min-w-[200px] w-full premium-glow-effect`}>
+    <div className={`relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 rounded-xl sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group min-w-[200px] w-full premium-glow-effect`}>
       {/* Background Gradient Decorative Shape */}
       <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br ${gradientClass} opacity-5 dark:opacity-[0.03] rounded-full translate-x-6 -translate-y-6 sm:translate-x-8 sm:-translate-y-8`}></div>
       
@@ -38,7 +38,7 @@ export function StatCard({
             <div className="font-black text-2xl sm:text-3xl text-zinc-900 dark:text-zinc-100 mt-1 sm:mt-2 truncate">{value}</div>
           )}
         </div>
-        <div className={`flex items-center justify-center ${iconBgClass} rounded-md sm:rounded-md min-w-10 min-h-10 w-10 h-10 sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-110 flex-shrink-0`}>
+        <div className={`flex items-center justify-center ${iconBgClass} rounded-xl sm:rounded-xl min-w-10 min-h-10 w-10 h-10 sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-110 flex-shrink-0`}>
           <i className={`${icon} ${iconColorClass} text-xl sm:text-2xl`}></i>
         </div>
       </div>

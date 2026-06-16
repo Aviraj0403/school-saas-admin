@@ -278,7 +278,7 @@ export default function TenantsPage() {
           <Button 
             label="Onboard New School" 
             icon="pi pi-plus" 
-            className="bg-blue-600 hover:bg-blue-700 border-none text-white font-bold shadow-md shadow-blue-500/10 border-0 p-3 px-5 transition-all rounded-md" 
+            className="bg-blue-600 hover:bg-blue-700 border-none text-white font-bold shadow-md shadow-blue-500/10 border-0 p-3 px-5 transition-all rounded-xl" 
             onClick={() => setShowDialog(true)} 
           />
         </div>
@@ -286,24 +286,24 @@ export default function TenantsPage() {
 
 
         {/* Global Multi-Tab Control Menu */}
-        <div className="flex bg-zinc-100/60 dark:bg-zinc-900/60 p-1.5 rounded-md border border-zinc-200/40 dark:border-zinc-800/80 w-max overflow-x-auto max-w-full">
+        <div className="flex bg-zinc-100/60 dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/40 dark:border-zinc-800/80 w-max overflow-x-auto max-w-full">
           <button 
             onClick={() => setViewMode('grid')}
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'grid' || viewMode === 'table' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'grid' || viewMode === 'table' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
           >
             <i className="pi pi-building"></i>
             Active Schools Directory
           </button>
           <button 
             onClick={() => setViewMode('biometrics')} 
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'biometrics' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'biometrics' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
           >
             <i className="pi pi-print"></i>
             Biometric Terminals
           </button>
           <button 
             onClick={() => setViewMode('jitsi')} 
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'jitsi' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'jitsi' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
           >
             <i className="pi pi-video"></i>
             Live Jitsi Telemetry
@@ -315,7 +315,7 @@ export default function TenantsPage() {
           <div className="flex flex-col gap-6 animate-fade-in">
             {/* Devices telemetry */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-md p-5 shadow-sm">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm">
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Terminal Code</span>
@@ -329,7 +329,7 @@ export default function TenantsPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-md p-5 shadow-sm">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm">
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Terminal Code</span>
@@ -343,7 +343,7 @@ export default function TenantsPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-md p-5 shadow-sm border-dashed flex flex-col items-center justify-center py-6 text-center">
+              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm border-dashed flex flex-col items-center justify-center py-6 text-center">
                 <i className="pi pi-plus text-2xl text-blue-500 mb-2"></i>
                 <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Register Biometric Device</p>
                 <p className="text-[10px] text-zinc-400 mt-0.5">Generate API key and connect physical logs upload</p>
@@ -351,7 +351,7 @@ export default function TenantsPage() {
             </div>
 
             {/* Simulated punch test */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-md p-5 shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm flex flex-col gap-4">
               <h3 className="text-md font-bold text-zinc-850 dark:text-white">Simulate Device Punch (API Testing)</h3>
               <div className="flex gap-4 items-end flex-wrap">
                 <div className="flex flex-col gap-1.5">
@@ -365,7 +365,7 @@ export default function TenantsPage() {
                 <Button 
                   label="Inject Biometric Punch" 
                   icon="pi pi-bolt" 
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2.5 px-4 rounded-md text-xs border-0" 
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2.5 px-4 rounded-xl text-xs border-0" 
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('show-toast', {
                       detail: {
@@ -384,32 +384,32 @@ export default function TenantsPage() {
 
         {viewMode === 'jitsi' && (
           <div className="flex flex-col gap-6 animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-md p-5 shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm flex flex-col gap-4">
               <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
                 <h3 className="text-md font-bold text-zinc-850 dark:text-white">Active Online Class Rooms</h3>
                 <Tag value="JITSI INTEGRATION ACTIVE" severity="info" className="font-bold text-[9px]" />
               </div>
 
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between p-3 rounded-md bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
                   <div className="flex flex-col gap-0.5">
                     <span className="font-bold text-zinc-800 dark:text-white">demo-room-slot-jitsi-meet-1</span>
                     <span className="text-[10px] text-zinc-400">Delhi Public School · Grade 10-A Math</span>
                   </div>
                   <div className="flex gap-2">
                     <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
-                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-md" />
+                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-xl" />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-md bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
                   <div className="flex flex-col gap-0.5">
                     <span className="font-bold text-zinc-800 dark:text-white">demo-room-slot-jitsi-meet-2</span>
                     <span className="text-[10px] text-zinc-400">Oakridge International · Grade 11-B Physics</span>
                   </div>
                   <div className="flex gap-2">
                     <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
-                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-md" />
+                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-xl" />
                   </div>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function TenantsPage() {
                 <div 
                   key={tenant.id}
                   onClick={() => handleSwitchTenant(tenant)}
-                  className={`bg-white dark:bg-zinc-900/90 border ${tenant.isSuspended ? 'border-rose-200 dark:border-rose-950/40 bg-rose-50/10' : 'border-zinc-250 dark:border-zinc-800/80 hover:border-blue-500/80 dark:hover:border-blue-500/80'} rounded-md shadow-sm hover:shadow-xl hover:translate-y-[-4px] cursor-pointer transition-all duration-300 flex flex-col justify-between overflow-hidden relative group`}
+                  className={`bg-white dark:bg-zinc-900/90 border ${tenant.isSuspended ? 'border-rose-200 dark:border-rose-950/40 bg-rose-50/10' : 'border-zinc-250 dark:border-zinc-800/80 hover:border-blue-500/80 dark:hover:border-blue-500/80'} rounded-xl shadow-sm hover:shadow-xl hover:translate-y-[-4px] cursor-pointer transition-all duration-300 flex flex-col justify-between overflow-hidden relative group`}
                 >
                   {/* Card Header Gradient banner */}
                   <div className={`h-24 bg-gradient-to-r ${theme.bg} p-6 flex justify-between items-start relative`}>
@@ -535,7 +535,7 @@ export default function TenantsPage() {
           </div>
         ) : (
           /* Modern Table View */
-          <Card className="shadow-sm border border-zinc-100 dark:border-zinc-800/80 rounded-md overflow-hidden bg-white dark:bg-zinc-900">
+          <Card className="shadow-sm border border-zinc-100 dark:border-zinc-800/80 rounded-xl overflow-hidden bg-white dark:bg-zinc-900">
             <DataTable
               value={tenants}
               lazy
@@ -567,7 +567,7 @@ export default function TenantsPage() {
           style={{ width: '680px' }} 
           modal 
           onHide={() => setShowDialog(false)}
-          className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
+          className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
           contentClassName="p-6"
           headerClassName="border-b border-gray-150 dark:border-zinc-800 p-6 font-bold"
         >
@@ -727,15 +727,15 @@ export default function TenantsPage() {
           style={{ width: '680px' }}
           modal
           onHide={() => setShowDetailDialog(false)}
-          className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
+          className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
           contentClassName="p-6"
           headerClassName="border-b border-gray-150 dark:border-zinc-800 p-6 font-bold text-zinc-850 dark:text-zinc-100"
         >
           {selectedTenant && (
             <div className="flex flex-col gap-6">
               {/* Profile identity strip */}
-              <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
-                <div className="w-14 h-14 bg-blue-600 rounded-md flex items-center justify-center text-white text-xl font-black">
+              <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-150/40 dark:border-zinc-800/80">
+                <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-black">
                   {selectedTenant.prefix || selectedTenant.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>

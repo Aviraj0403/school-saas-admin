@@ -222,7 +222,7 @@ export default function ClassesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           
           {/* Classes Column (Left 3 columns) */}
-          <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm">
+          <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-sm">
             <div>
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Active Classrooms</h2>
               <p className="text-xs text-zinc-500 mt-0.5">Select a class row to view its assigned subjects.</p>
@@ -255,7 +255,7 @@ export default function ClassesPage() {
           </div>
 
           {/* Subjects Column (Right 2 columns) */}
-          <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4 shadow-sm relative">
+          <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-sm relative">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -335,7 +335,7 @@ export default function ClassesPage() {
         style={{ width: '440px' }} 
         modal 
         onHide={() => setShowClassDialog(false)}
-        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
         headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={
@@ -409,7 +409,7 @@ export default function ClassesPage() {
         style={{ width: '480px' }} 
         modal 
         onHide={() => setShowSubjectDialog(false)}
-        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
         headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={
@@ -513,7 +513,7 @@ export default function ClassesPage() {
           setShowAssignDialog(false);
           setAssignSubjectIds([]);
         }}
-        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
         headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={

@@ -262,7 +262,7 @@ export default function FeePage() {
         </div>
 
         {/* Tab Boards */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
           <style>{`
             .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
               background: transparent !important;
@@ -293,7 +293,7 @@ export default function FeePage() {
                     {((structures as any)?.data || structures || []).map((struct: any) => (
                       <div 
                         key={struct.id} 
-                        className="border border-zinc-200 dark:border-zinc-800 p-5 rounded-md bg-zinc-50 dark:bg-zinc-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
+                        className="border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         <div className="flex justify-between items-start">
                           <h3 className="font-semibold text-zinc-900 dark:text-white text-base leading-snug">{struct.name}</h3>
@@ -315,7 +315,7 @@ export default function FeePage() {
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
                 
                 {/* Students list */}
-                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
+                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
                   <div>
                     <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Student Directory</h2>
                     <p className="text-[11px] text-zinc-500">Select a student to view double-entry billing logs.</p>
@@ -340,7 +340,7 @@ export default function FeePage() {
                 </div>
 
                 {/* Ledger sheet */}
-                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
+                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
                   {selectedStudentLedger ? (
                     <div className="flex flex-col gap-5">
                       <div className="flex justify-between items-start flex-wrap gap-2">
@@ -421,7 +421,7 @@ export default function FeePage() {
               <div className="p-4 flex flex-col gap-6">
                 
                 {/* Payroll Header */}
-                <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-wrap justify-between items-center gap-4">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex flex-col gap-0.5">
                       <label className="text-[10px] font-semibold text-zinc-500 uppercase">Month</label>
@@ -435,7 +435,7 @@ export default function FeePage() {
                 </div>
 
                 {/* Payslips DataTable */}
-                <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+                <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
                   <DataTable 
                     value={payslips} 
                     loading={loadingPayslips} 
@@ -500,7 +500,7 @@ export default function FeePage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowAddStructureDialog(false)}
-        className="dialog-custom rounded-md"
+        className="dialog-custom rounded-xl"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAddStructureDialog(false)} />
@@ -558,7 +558,7 @@ export default function FeePage() {
           setSelectedClassId('');
           setCollectFee({ studentId: '', amount: 0, paymentMethod: 'CASH', remarks: '' });
         }}
-        className="dialog-custom rounded-md"
+        className="dialog-custom rounded-xl"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => {
@@ -664,7 +664,7 @@ export default function FeePage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowPayoutDialog(false)}
-        className="dialog-custom rounded-md animate-scalein"
+        className="dialog-custom rounded-xl animate-scalein"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowPayoutDialog(false)} />

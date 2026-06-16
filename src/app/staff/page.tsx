@@ -286,7 +286,7 @@ export default function StaffPage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
 
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
@@ -337,19 +337,19 @@ export default function StaffPage() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {isPending ? (
-               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
                  <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
                  <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
                </div>
             ) : staffList.length === 0 ? (
-               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
                  <p className="text-zinc-500 text-sm">No staff members found.</p>
                </div>
             ) : (
               staffList.map((member: any) => {
                 const initials = member.name ? member.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'ST';
                 return (
-                  <div key={member.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
+                  <div key={member.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
                   <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
                     <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform">
                       {initials}
@@ -461,7 +461,7 @@ export default function StaffPage() {
         style={{ width: '450px' }} 
         modal 
         onHide={() => setShowAddDialog(false)}
-        className="dialog-custom rounded-md"
+        className="dialog-custom rounded-xl"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" icon="pi pi-times" onClick={() => setShowAddDialog(false)} className="p-button-text p-2" />
@@ -550,7 +550,7 @@ export default function StaffPage() {
         style={{ width: '400px' }} 
         modal 
         onHide={() => setShowSalaryStructureDialog(false)}
-        className="dialog-custom rounded-md"
+        className="dialog-custom rounded-xl"
         footer={
           <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowSalaryStructureDialog(false)} />
@@ -626,7 +626,7 @@ export default function StaffPage() {
         style={{ width: '600px' }} 
         modal 
         onHide={() => setShowProfileDialog(false)}
-        className="dialog-custom rounded-md"
+        className="dialog-custom rounded-xl"
       >
         {selectedProfile && (
           <div className="flex flex-col gap-6 p-4">
@@ -642,7 +642,7 @@ export default function StaffPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Contact Details</h3>
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex items-center gap-2"><i className="pi pi-envelope text-zinc-400"></i> {selectedProfile.email}</div>
@@ -651,7 +651,7 @@ export default function StaffPage() {
                 </div>
               </div>
 
-              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Class Teacher Assigned</h3>
                 <div className="flex flex-col gap-2">
                   {selectedProfile.classTeacherOf && selectedProfile.classTeacherOf.length > 0 ? (
@@ -667,7 +667,7 @@ export default function StaffPage() {
               </div>
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-zinc-800">
+            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Subjects Taught</h3>
               <div className="flex flex-wrap gap-2">
                 {selectedProfile.subjectsTaught && selectedProfile.subjectsTaught.length > 0 ? (

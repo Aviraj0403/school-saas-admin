@@ -21,7 +21,9 @@ import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
 export default function DashboardPage() {
   const { activeUser, activeTenant } = useAuthStore();
-  const { data: dashboard, isPending } = useFullDashboard();
+  const isStudentOrParent = activeUser?.role === 'student' || activeUser?.role === 'parent';
+
+  const { data: dashboard, isPending: adminPending } = useFullDashboard();
   const { data: feeTrendData } = useFeeCollectionTrend();
   const { data: attendanceTrendData } = useAttendanceTrend();
 
@@ -49,6 +51,87 @@ export default function DashboardPage() {
     if (h < 17) return 'Good afternoon';
     return 'Good evening';
   };
+
+  if (isStudentOrParent) {
+    return (
+      <DashboardLayout>
+        <PageBreadcrumb title="Dashboard" />
+        <div className="flex flex-col gap-4 sm:gap-6 pb-6">
+          <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-end flex-wrap gap-4">
+            <span className="px-3 py-1 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 rounded-md text-xs font-semibold uppercase tracking-wider">
+              Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-4">
+            <StatCard
+              label="Pending Assignments"
+              value="2"
+              icon="pi pi-file-edit"
+              gradientClass="from-blue-500 to-blue-500"
+              iconBgClass="bg-blue-500/10"
+              iconColorClass="text-blue-600 dark:text-blue-400"
+              footerText="Due this week"
+              loading={false}
+            />
+            <StatCard
+              label="Recent Attendance"
+              value="98%"
+              icon="pi pi-check-square"
+              gradientClass="from-emerald-500 to-teal-500"
+              iconBgClass="bg-emerald-500/10"
+              iconColorClass="text-emerald-600 dark:text-emerald-400"
+              footerText="Present 48/49 days"
+              loading={false}
+            />
+            <StatCard
+              label="Unpaid Dues"
+              value="₹0"
+              icon="pi pi-wallet"
+              gradientClass="from-orange-500 to-amber-500"
+              iconBgClass="bg-orange-500/10"
+              iconColorClass="text-orange-600 dark:text-orange-400"
+              footerText="All clear"
+              loading={false}
+            />
+            <StatCard
+              label="Upcoming Exams"
+              value="1"
+              icon="pi pi-calendar"
+              gradientClass="from-purple-500 to-violet-500"
+              iconBgClass="bg-purple-500/10"
+              iconColorClass="text-purple-650 dark:text-purple-400"
+              footerText="Mid-terms starting soon"
+              loading={false}
+            />
+          </div>
+
+          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden mt-4">
+            <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-4 sm:mb-6">Quick Links</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+              {[
+                { label: 'View Timetable', icon: 'pi pi-clock', href: '/academics/timetable', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+                { label: 'My Attendance', icon: 'pi pi-check-square', href: '/attendance', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+                { label: 'Pay Fees', icon: 'pi pi-money-bill', href: '/fee/slabs', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 font-bold' },
+                { label: 'Assignments', icon: 'pi pi-upload', href: '/assignments', color: 'bg-purple-500/10 text-purple-650 dark:text-purple-400' },
+                { label: 'Library Books', icon: 'pi pi-bookmark', href: '/library/books', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
+                { label: 'Exam Results', icon: 'pi pi-chart-bar', href: '/exams', color: 'bg-blue-500/10 text-blue-650 dark:text-blue-400' },
+              ].map((action) => (
+                <a
+                  key={action.label}
+                  href={action.href}
+                  className={`flex flex-col items-center gap-3 p-5 rounded-xl ${action.color} hover:opacity-90 hover:scale-[1.03] hover:shadow-md transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
+                >
+                  <i className={`${action.icon} text-2xl`}></i>
+                  <span className="text-xs font-bold text-center leading-tight">{action.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -79,7 +162,7 @@ export default function DashboardPage() {
             iconBgClass="bg-blue-500/10"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText={`Active: ${coreStats.students?.active ?? '0'} Students`}
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Active Staff"
@@ -89,7 +172,7 @@ export default function DashboardPage() {
             iconBgClass="bg-orange-500/10"
             iconColorClass="text-orange-600 dark:text-orange-400"
             footerText="Enrolled instructors & admins"
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Fee Collected (Month)"
@@ -99,7 +182,7 @@ export default function DashboardPage() {
             iconBgClass="bg-emerald-500/10"
             iconColorClass="text-emerald-600 dark:text-emerald-400"
             footerText="Successfully processed collections"
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Attendance Rate"
@@ -109,7 +192,7 @@ export default function DashboardPage() {
             iconBgClass="bg-purple-500/10"
             iconColorClass="text-purple-650 dark:text-purple-400"
             footerText={`Present: ${coreStats.attendance?.today?.present ?? '5'} Students`}
-            loading={isPending}
+            loading={adminPending}
           />
         </div>
 
@@ -123,7 +206,7 @@ export default function DashboardPage() {
             iconBgClass="bg-rose-500/10"
             iconColorClass="text-rose-600 dark:text-rose-455"
             footerText="Pending invoice reminders"
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Hostel Occupancy"
@@ -133,7 +216,7 @@ export default function DashboardPage() {
             iconBgClass="bg-blue-500/10"
             iconColorClass="text-blue-600 dark:text-blue-400"
             footerText={`Boarders: ${hostelStats.totalBoarders ?? '0'} / ${hostelStats.totalCapacity ?? '0'}`}
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Pending Leaves"
@@ -143,7 +226,7 @@ export default function DashboardPage() {
             iconBgClass="bg-amber-500/10"
             iconColorClass="text-amber-600 dark:text-amber-500"
             footerText="Awaiting admin approval"
-            loading={isPending}
+            loading={adminPending}
           />
           <StatCard
             label="Overdue Books"
@@ -153,14 +236,14 @@ export default function DashboardPage() {
             iconBgClass="bg-teal-500/10"
             iconColorClass="text-teal-650 dark:text-teal-400"
             footerText={`Total Library Books: ${coreStats.library?.totalBooks ?? '0'}`}
-            loading={isPending}
+            loading={adminPending}
           />
         </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {/* Fee Collection Bar Chart */}
-          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
+          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
             <div className="mb-4 sm:mb-6">
               <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Fee Collection Trend</h3>
               <p className="text-xs text-zinc-400 mt-1">Monthly school revenue inflow (₹)</p>
@@ -196,7 +279,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Attendance Trend */}
-          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
+          <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
             <div className="mb-4 sm:mb-6">
               <h3 className="font-bold text-zinc-800 dark:text-white text-lg">Daily Attendance Rate</h3>
               <p className="text-xs text-zinc-400 mt-1">Active student participation index (%)</p>
@@ -236,7 +319,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
+        <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
           <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-4 sm:mb-6">Operations Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
             {[
@@ -250,7 +333,7 @@ export default function DashboardPage() {
               <a
                 key={action.label}
                 href={action.href}
-                className={`flex flex-col items-center gap-3 p-5 rounded-md ${action.color} hover:opacity-90 hover:scale-[1.03] transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
+                className={`flex flex-col items-center gap-3 p-5 rounded-xl ${action.color} hover:opacity-90 hover:scale-[1.03] hover:shadow-md transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
               >
                 <i className={`${action.icon} text-2xl`}></i>
                 <span className="text-xs font-bold text-center leading-tight">{action.label}</span>

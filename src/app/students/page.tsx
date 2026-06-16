@@ -162,7 +162,7 @@ export default function StudentsPage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
 
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
@@ -213,19 +213,19 @@ export default function StudentsPage() {
         ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {isPending ? (
-               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
                  <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
                  <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
                </div>
             ) : studentsList.length === 0 ? (
-               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-950">
+               <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
                  <p className="text-zinc-500 text-sm">No students found matching current filters.</p>
                </div>
             ) : (
               studentsList.map((student: any) => {
                 const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
                 return (
-                  <div key={student.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all duration-300 animate-fade-in group">
+                  <div key={student.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all duration-300 animate-fade-in group">
                     <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
                       <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900">
                         {student.firstName ? student.firstName[0] : '?'}

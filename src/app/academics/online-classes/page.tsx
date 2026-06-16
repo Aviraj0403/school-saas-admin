@@ -132,7 +132,7 @@ export default function OnlineClassesPage() {
 
         {/* Live Classroom Embedded Frame (Overlay/View Pane) */}
         {activeJitsiRoom && (
-          <div className="bg-zinc-950 border border-zinc-800 rounded-md overflow-hidden shadow-2xl flex flex-col gap-0 animate-fade-in relative z-20">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col gap-0 animate-fade-in relative z-20">
             <div className="flex justify-between items-center px-4 py-3 text-white bg-zinc-900 border-b border-zinc-800">
               <div>
                 <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live Room Active</span>
@@ -149,14 +149,14 @@ export default function OnlineClassesPage() {
             {/* Jitsi Meet Secure Embedded Sandbox Iframe */}
             <div className="w-full aspect-video md:h-[500px] bg-black relative">
               <iframe
-                src={`${activeJitsiRoom.embedUrl || activeJitsiRoom.joinUrl || `https://meet.jit.si/${activeJitsiRoom.jitsiRoomName}`}#userInfo.displayName="${user?.name || 'Educator'}"`}
+                src={`${activeJitsiRoom.embedUrl || activeJitsiRoom.joinUrl || `https://${process.env.NEXT_PUBLIC_JITSI_DOMAIN || 'meet.jit.si'}/${activeJitsiRoom.jitsiRoomName}`}#userInfo.displayName="${user?.name || 'Educator'}"`}
                 allow="camera; microphone; fullscreen; display-capture; autoplay"
                 className="w-full h-full border-0"
               />
             </div>
             
             <div className="flex justify-between items-center px-4 py-2 text-xs text-zinc-400 font-medium bg-zinc-900 border-t border-zinc-800">
-              <span>Platform: meet.jit.si</span>
+              <span>Platform: {process.env.NEXT_PUBLIC_JITSI_DOMAIN || 'meet.jit.si'}</span>
               <span className="flex items-center gap-1.5 text-emerald-500">
                 Connection secure & verified
               </span>
@@ -165,7 +165,7 @@ export default function OnlineClassesPage() {
         )}
 
         {/* Classes List section */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm flex flex-col gap-4">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 
             <div>
@@ -197,7 +197,7 @@ export default function OnlineClassesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClasses.map((c: any) => (
-                <div key={c.id} className="border border-zinc-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-800 rounded-md p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between gap-4">
+                <div key={c.id} className="border border-zinc-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-800 rounded-xl p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between gap-4">
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-start gap-2">
                       <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200/50 dark:border-blue-800/50">
@@ -272,7 +272,7 @@ export default function OnlineClassesPage() {
         style={{ width: '480px' }}
         modal
         onHide={() => setShowCreateDialog(false)}
-        className="rounded-md shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         contentClassName="p-6"
         headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
         footer={

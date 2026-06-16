@@ -323,7 +323,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div
         className={`transition-all duration-300 ease-in-out pt-[70px] ${sidebarOpen ? (sidebarSize === 'collapsed' ? 'md:pl-[70px]' : 'md:pl-[260px]') : 'pl-0'} w-full min-h-screen flex flex-col`}
       >
-        <main className="p-4 sm:p-6 flex-1 w-full mx-auto overflow-x-hidden">
+        <main className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-[1600px] mx-auto overflow-x-hidden">
           {children}
         </main>
         <AppFooter />

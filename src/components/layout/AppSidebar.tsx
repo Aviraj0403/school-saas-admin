@@ -83,10 +83,10 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
 
   const renderNavItem = (item: NavItem, isChild = false) => {
     if (item.isSection) {
-      if (isCollapsed) return <div key={item.label} className="my-2 border-t border-zinc-200 dark:border-zinc-800"></div>;
+      if (isCollapsed) return <div key={item.label} className="my-3 border-t border-zinc-200 dark:border-zinc-800/50"></div>;
       return (
-        <li key={item.label} className="mt-5 mb-2 px-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+        <li key={item.label} className="mt-7 mb-3 px-5">
+          <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-zinc-400/80 dark:text-zinc-500">
             {item.label}
           </span>
         </li>
@@ -98,7 +98,7 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
     const expanded = hasChildren && isExpanded(item);
 
     return (
-      <li key={item.path || item.label} className={classNames('mb-0.5', { 'ml-2': isChild })}>
+      <li key={item.path || item.label} className={classNames('mb-1 px-3', { 'ml-3': isChild })}>
         {hasChildren ? (
           <button
             onClick={() => {
@@ -108,20 +108,20 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
               toggleExpand(item.path!);
             }}
             className={classNames(
-              'w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-all duration-200 text-left relative group',
+              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ease-out text-left relative group',
               {
                 'justify-center md:justify-center px-0': isCollapsed,
-                'bg-blue-500/10 text-blue-600 dark:bg-zinc-800 dark:text-zinc-50 font-semibold': active,
-                'text-zinc-600 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-500/10 dark:hover:text-zinc-300 dark:hover:bg-zinc-800': !active,
+                'bg-blue-50/80 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 font-bold shadow-sm shadow-blue-500/5': active,
+                'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800/60 font-medium': !active,
               }
             )}
             title={isCollapsed ? item.label : undefined}
           >
-            <i className={classNames(item.icon, 'text-[18px] w-5 text-center shrink-0')}></i>
+            <i className={classNames(item.icon, 'text-[18px] w-5 text-center shrink-0 transition-transform group-hover:scale-110')}></i>
             {!isCollapsed && (
               <>
-                <span className="flex-1 text-[14px] truncate">{item.label}</span>
-                <i className={classNames('pi text-[9px] transition-transform duration-200 opacity-60', { 'pi-chevron-down': expanded, 'pi-chevron-right': !expanded })}></i>
+                <span className="flex-1 text-[13.5px] truncate tracking-tight">{item.label}</span>
+                <i className={classNames('pi text-[10px] transition-transform duration-200 opacity-50', { 'pi-chevron-down': expanded, 'pi-chevron-right': !expanded })}></i>
               </>
             )}
           </button>
@@ -134,18 +134,18 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
               }
             }}
             className={classNames(
-              'flex items-center gap-2.5 px-3 py-2 rounded-md transition-all duration-200 no-underline',
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ease-out no-underline group',
               {
                 'justify-center md:justify-center px-0': isCollapsed,
-                'bg-blue-500/10 text-blue-600 dark:bg-zinc-800 dark:text-zinc-50 font-semibold': active,
-                'text-zinc-600 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-500/10 dark:hover:text-zinc-300 dark:hover:bg-zinc-800': !active,
+                'bg-blue-50/80 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 font-bold shadow-sm shadow-blue-500/5': active,
+                'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800/60 font-medium': !active,
               }
             )}
             title={isCollapsed ? item.label : undefined}
           >
-            <i className={classNames(item.icon, 'text-[18px] w-5 text-center shrink-0')}></i>
+            <i className={classNames(item.icon, 'text-[18px] w-5 text-center shrink-0 transition-transform group-hover:scale-110')}></i>
             {!isCollapsed && (
-              <span className="text-[14px] truncate">{item.label}</span>
+              <span className="text-[13.5px] truncate tracking-tight">{item.label}</span>
             )}
           </Link>
         )}
@@ -173,17 +173,17 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
       )}
     >
       {/* School branding strip / Hover Toggle */}
-      <div className="relative px-4 py-4 md:py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between">
-        <div className="flex items-center gap-3 md:gap-2 overflow-hidden">
-          <div className="w-10 h-10 md:w-8 md:h-8 rounded-md flex items-center justify-center shrink-0 shadow-sm border border-black/5 dark:border-white/10" style={{ backgroundColor: 'var(--primary-color)' }}>
-            <i className="pi pi-graduation-cap text-white text-[16px] md:text-[13px] drop-shadow-sm"></i>
+      <div className="relative px-5 py-5 md:py-4 border-b border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+        <div className="flex items-center gap-3.5 md:gap-3 overflow-hidden">
+          <div className="w-10 h-10 md:w-9 md:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5 dark:border-white/10" style={{ backgroundColor: 'var(--primary-color)' }}>
+            <i className="pi pi-graduation-cap text-white text-[17px] md:text-[15px] drop-shadow-sm"></i>
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <p className="text-[14px] font-bold text-zinc-800 dark:text-zinc-200 truncate leading-normal">
+              <p className="text-[14px] font-extrabold text-zinc-900 dark:text-zinc-100 truncate tracking-tight">
                 {activeTenant.name} {activeTenant.prefix ? `[${activeTenant.prefix}]` : ''}
               </p>
-              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate leading-none mt-1 md:mt-0.5 uppercase tracking-wider">{activeUser.role}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate leading-tight mt-0.5 uppercase tracking-widest font-semibold">{activeUser.role}</p>
             </div>
           )}
         </div>
@@ -193,11 +193,11 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
           <button 
             onClick={onToggleSize}
             className={classNames(
-              "hidden md:flex absolute top-1/2 -translate-y-1/2 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full items-center justify-center text-zinc-400 hover:text-blue-600 shadow-sm transition-all z-50",
+              "hidden md:flex absolute top-1/2 -translate-y-1/2 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 rounded-full items-center justify-center text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 z-50",
               { "rotate-180": size === 'collapsed' }
             )}
           >
-            <i className="pi pi-angle-left text-sm"></i>
+            <i className="pi pi-angle-left text-[12px] font-bold"></i>
           </button>
         )}
       </div>

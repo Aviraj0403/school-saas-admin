@@ -56,10 +56,17 @@ export default function DashboardPage() {
     return (
       <DashboardLayout>
         <PageBreadcrumb title="Dashboard" />
-        <div className="flex flex-col gap-4 sm:gap-6 pb-6">
-          <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-end flex-wrap gap-4">
-            <span className="px-3 py-1 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 rounded-md text-xs font-semibold uppercase tracking-wider">
-              Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
+        <div className="flex flex-col gap-5 sm:gap-7 md:gap-8 pb-6 md:pb-10 mt-1">
+          {/* Welcome Section */}
+          <div className="border-b border-zinc-200 dark:border-zinc-800/80 pb-5 flex flex-col sm:flex-row sm:justify-between sm:items-end flex-wrap gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+                {greeting()}, {activeUser?.name?.split(' ')[0] || 'Student'} 👋
+              </h1>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5">Here is what is happening with your academics today.</p>
+            </div>
+            <span className="px-3.5 py-1.5 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg text-[11px] font-bold uppercase tracking-widest shadow-sm">
+              Term: {currentAY?.name || 'Not Configured ⚠️'}
             </span>
           </div>
 
@@ -136,19 +143,18 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Dashboard" />
-<div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10">
-        
+      <div className="flex flex-col gap-5 sm:gap-7 md:gap-8 pb-6 md:pb-10 mt-1">
         
         {/* Welcome Section */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-end flex-wrap gap-4">
-          {/* <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <div className="border-b border-zinc-200 dark:border-zinc-800/80 pb-5 flex flex-col sm:flex-row sm:justify-between sm:items-end flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
               {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
             </h1>
-            
-          </div> */}
-          <span className="px-3 py-1 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 rounded-md text-xs font-semibold uppercase tracking-wider">
-            Academic Term: {currentAY?.name || 'Not Configured ⚠️'}
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5">Here is an overview of your institution's operations today.</p>
+          </div>
+          <span className="px-3.5 py-1.5 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg text-[11px] font-bold uppercase tracking-widest shadow-sm">
+            Term: {currentAY?.name || 'Not Configured ⚠️'}
           </span>
         </div>
 

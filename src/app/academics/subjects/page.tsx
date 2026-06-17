@@ -10,6 +10,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
 export default function SubjectsPage() {
   const queryClient = useQueryClient();
@@ -119,8 +121,9 @@ export default function SubjectsPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <DashboardLayout>
+      <PageBreadcrumb title="Subjects" subtitle="Academics" />
+      <div className="flex justify-between items-end flex-wrap gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Subjects</h1>
           <p className="text-sm text-zinc-500">Manage school subjects and assigned teachers</p>
@@ -167,6 +170,6 @@ export default function SubjectsPage() {
           <Button onClick={saveSubject}>Save</Button>
         </div>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 }

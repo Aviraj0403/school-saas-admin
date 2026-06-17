@@ -163,7 +163,7 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
   return (
     <div
       className={classNames(
-        'fixed top-[70px] bottom-0 left-0 z-40 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col transition-all duration-300 ease-in-out',
+        'fixed top-[70px] bottom-0 left-0 z-40 bg-[#fcfcfc]/95 dark:bg-[#09090b]/95 backdrop-blur-2xl border-r border-zinc-200/50 dark:border-zinc-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.01)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.2)] flex flex-col transition-all duration-300 ease-in-out',
         {
           'w-[260px]': size === 'default',
           'w-[260px] md:w-[70px]': size === 'collapsed',
@@ -173,7 +173,7 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
       )}
     >
       {/* School branding strip / Hover Toggle */}
-      <div className="relative px-5 py-5 md:py-4 border-b border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+      <div className="relative px-5 py-5 md:py-4 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-transparent flex items-center justify-between">
         <div className="flex items-center gap-3.5 md:gap-3 overflow-hidden">
           <div className="w-10 h-10 md:w-9 md:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-black/5 dark:border-white/10" style={{ backgroundColor: 'var(--primary-color)' }}>
             <i className="pi pi-graduation-cap text-white text-[17px] md:text-[15px] drop-shadow-sm"></i>

@@ -59,22 +59,32 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
-    label: 'User Directories',
-    icon: PrimeIcons.USERS,
-    path: '/students',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
-    children: [
-      { label: 'Student Directory', icon: PrimeIcons.ID_CARD, path: '/students', module: 'student', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'] },
-      { label: 'Staff Directory', icon: PrimeIcons.USERS, path: '/staff/directory', module: 'staff', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-    ]
-  },
-  {
     label: 'Platform Settings',
     icon: PrimeIcons.SLIDERS_V,
     path: '/settings',
     module: 'core',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
+  {
+    label: 'User Directories',
+    isSection: true,
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+  },
+  {
+    label: 'Student Directory',
+    icon: PrimeIcons.ID_CARD,
+    path: '/students',
+    module: 'student',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+  },
+  {
+    label: 'Staff Directory',
+    icon: PrimeIcons.USERS,
+    path: '/staff/directory',
+    module: 'staff',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+
   {
     label: 'Academics & Learning',
     isSection: true,

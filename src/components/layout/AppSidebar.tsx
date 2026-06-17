@@ -81,11 +81,11 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
     return (item.path && expandedItems.includes(item.path)) || (item.children?.some((c) => c.path && isActive(c.path)) ?? false);
   };
 
-  const renderNavItem = (item: NavItem, isChild = false) => {
+  const renderNavItem = (item: NavItem, index: number, isChild = false) => {
     if (item.isSection) {
       if (isCollapsed) return <div key={item.label} className="my-2 border-t border-zinc-200 dark:border-zinc-800/50"></div>;
       return (
-        <li key={item.label} className="mt-5 mb-1.5 px-4">
+        <li key={item.label} className={classNames('mb-1.5 px-4', { 'mt-5': index > 0, 'mt-1': index === 0 })}>
           <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-400 dark:text-zinc-500">
             {item.label}
           </span>
@@ -153,7 +153,7 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
         {/* Children */}
         {hasChildren && expanded && !isCollapsed && (
           <ul className="mt-0.5 space-y-0.5">
-            {item.children!.map((child) => renderNavItem(child, true))}
+            {item.children!.map((child, idx) => renderNavItem(child, idx, true))}
           </ul>
         )}
       </li>
@@ -203,9 +203,9 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
       </div>
 
       {/* Nav items */}
-      <div className="flex-1 overflow-y-auto py-3 px-2">
+      <div className="flex-1 overflow-y-auto pt-2 pb-3 px-2">
         <ul className="space-y-0.5">
-          {filteredNav.map((item) => renderNavItem(item))}
+          {filteredNav.map((item, index) => renderNavItem(item, index))}
         </ul>
       </div>
 

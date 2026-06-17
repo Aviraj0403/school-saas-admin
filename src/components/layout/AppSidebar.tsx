@@ -78,23 +78,34 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
   };
 
   const isExpanded = (item: NavItem) => {
-    return expandedItems.includes(item.path) || (item.children?.some((c) => isActive(c.path)) ?? false);
+    return (item.path && expandedItems.includes(item.path)) || (item.children?.some((c) => c.path && isActive(c.path)) ?? false);
   };
 
   const renderNavItem = (item: NavItem, isChild = false) => {
-    const active = isActive(item.path);
+    if (item.isSection) {
+      if (isCollapsed) return <div key={item.label} className="my-2 border-t border-zinc-200 dark:border-zinc-800"></div>;
+      return (
+        <li key={item.label} className="mt-5 mb-2 px-3">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            {item.label}
+          </span>
+        </li>
+      );
+    }
+
+    const active = isActive(item.path!);
     const hasChildren = item.children && item.children.length > 0;
     const expanded = hasChildren && isExpanded(item);
 
     return (
-      <li key={item.path} className={classNames('mb-0.5', { 'ml-2': isChild })}>
+      <li key={item.path || item.label} className={classNames('mb-0.5', { 'ml-2': isChild })}>
         {hasChildren ? (
           <button
             onClick={() => {
               if (size === 'collapsed' && onToggleSize) {
                 onToggleSize();
               }
-              toggleExpand(item.path);
+              toggleExpand(item.path!);
             }}
             className={classNames(
               'w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-all duration-200 text-left relative group',
@@ -116,7 +127,7 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
           </button>
         ) : (
           <Link
-            href={item.path}
+            href={item.path!}
             onClick={() => {
               if (window.innerWidth < 768) {
                 onClose?.();

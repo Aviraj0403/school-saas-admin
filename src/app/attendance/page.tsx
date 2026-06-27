@@ -435,7 +435,7 @@ export default function AttendancePage() {
                 <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {students.map((student: any) => {
                     const record = localAttendance[student.id] || { status: 'PRESENT', note: '' };
-                    const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
+                    const fullName = student.name || 'Unnamed Student';
                     
                     return (
                       <div
@@ -445,8 +445,7 @@ export default function AttendancePage() {
                         {/* Student Info */}
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm border border-blue-100 dark:border-blue-800/30">
-                            {student.firstName ? student.firstName[0] : '?'}
-                            {student.lastName ? student.lastName[0] : ''}
+                            {student.name ? student.name[0].toUpperCase() : '?'}
                           </div>
                           <div>
                             <h3 className="font-semibold text-zinc-900 dark:text-white leading-snug">

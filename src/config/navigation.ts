@@ -10,7 +10,6 @@ export interface NavItem {
   children?: NavItem[];
   isSection?: boolean; // For grouping headers
 }
-
 export const navigationConfig: NavItem[] = [
   {
     label: 'Overview',

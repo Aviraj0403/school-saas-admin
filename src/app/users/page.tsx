@@ -37,7 +37,7 @@ export default function UsersRegistryPage() {
   const schoolLoginUrl = activeTenant ? `https://${activeTenant.subdomain}${baseDomain}/login` : 'https://demo.jdinfotechsolutions.in/login';
 
   // Get student query
-  const { data: studentsData, isPending: loadingStudents } = useStudentsList(1, 200);
+  const { data: studentsData, isPending: loadingStudents } = useStudentsList(1, 100);
   const rawStudents = studentsData?.items || studentsData?.data?.items || [];
   
   const mappedStudents: SystemUser[] = rawStudents.map((s: any) => ({

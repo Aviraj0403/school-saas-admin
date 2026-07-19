@@ -187,7 +187,7 @@ export default function DashboardPage() {
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10"
             iconColorClass="text-emerald-600 dark:text-emerald-400"
-            footerText="Successfully processed collections"
+            footerText={`Pending dues: ₹${Number(coreStats.fees?.pendingAmount ?? 0).toLocaleString('en-IN')}`}
             loading={adminPending}
           />
           <StatCard

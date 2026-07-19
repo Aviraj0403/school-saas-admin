@@ -32,7 +32,7 @@ export default function SubjectsPage() {
 
   const { data: staffData } = useQuery({
     queryKey: ['staff'],
-    queryFn: () => staffService.getStaffList(1, 1000),
+    queryFn: () => staffService.getStaffList(1, 100),
   });
   const staff = staffData?.items || [];
 

@@ -3,13 +3,23 @@ import { staffService } from '@/services/staff.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CreateStaffDto } from '@/types/api.types';
 
-export function useStaffList(page: number, limit: number, search?: string) {
+export function useStaffList(page: number, limit: number, search?: string, designationId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
-    queryKey: ['staff', { page, limit, search }],
-    queryFn: () => staffService.getStaffList(page, limit, search),
+    queryKey: ['staff', { page, limit, search, designationId }],
+    queryFn: () => staffService.getStaffList(page, limit, search, designationId),
     enabled: isAuthenticated,
     placeholderData: (previousData) => previousData,
+    retry: false,
+  });
+}
+
+export function useDesignations() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['staff-designations'],
+    queryFn: () => staffService.getDesignations(),
+    enabled: isAuthenticated,
     retry: false,
   });
 }

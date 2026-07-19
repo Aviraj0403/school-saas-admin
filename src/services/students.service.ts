@@ -23,6 +23,21 @@ export const studentsService = {
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
+  updateStudent: async (id: string, data: Partial<CreateStudentDto> & { isActive?: boolean }) => {
+    const response = await api.patch<{ success: boolean; data: Student }>(`/students/${id}`, data);
+    return response.data?.data;
+  },
+
+  // Image must already be <= 100 KB — the server rejects larger files with 413
+  uploadPhoto: async (id: string, file: Blob, fileName = 'photo.jpg') => {
+    const form = new FormData();
+    form.append('photo', file, fileName);
+    const response = await api.post<{ success: boolean; data: Student }>(`/students/${id}/photo`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data?.data;
+  },
+
   deleteStudent: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/students/${id}`);
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;

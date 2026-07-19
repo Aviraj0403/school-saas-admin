@@ -77,6 +77,16 @@ export const transportService = {
     const response = await api.get<{ success: boolean; data: any[] }>(`/transport/routes/${routeId}/students`);
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
+
+  getStudentTransport: async (studentId: string) => {
+    const response = await api.get<{ success: boolean; data: any }>(`/transport/students/${studentId}`);
+    return response.data?.data ?? null;
+  },
+
+  unassignStudent: async (studentId: string) => {
+    const response = await api.patch<{ success: boolean; data: any }>(`/transport/students/${studentId}/unassign`);
+    return response.data?.data;
+  },
 };
 
 

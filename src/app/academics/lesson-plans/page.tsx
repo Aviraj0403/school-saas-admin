@@ -24,7 +24,7 @@ export default function LessonPlansPage() {
   const { data: plansData, isPending } = useLessonPlans();
   const { data: classesData } = useClasses(1, 100);
   const { data: subjectsData } = useAllSubjects();
-  const { data: staffData } = useStaffList(1, 200);
+  const { data: staffData } = useStaffList(1, 100);
   
   const createMutation = useCreateLessonPlan();
   

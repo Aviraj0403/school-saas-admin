@@ -49,7 +49,7 @@ export default function TimetablePage() {
   const { data: classes }           = useClasses(1, 100);
   const { data: timetable, isPending } = useTimetable(selectedClassId);
   const { data: subjects }           = useAllSubjects();           // global subjects list
-  const { data: staffData }          = useStaffList(1, 200);       // all teachers
+  const { data: staffData }          = useStaffList(1, 100);       // all teachers
 
   const createMutation = useCreateTimetableEntry();
   const deleteMutation = useDeleteTimetableSlot();

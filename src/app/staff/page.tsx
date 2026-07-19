@@ -12,7 +12,10 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
-import { useStaffList, useCreateStaff, useDeleteStaff, useRoles, useDepartments } from '@/hooks/queries/useStaff';
+import { useStaffList, useCreateStaff, useDeleteStaff, useRoles, useDepartments, useDesignations } from '@/hooks/queries/useStaff';
+import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
+import { staffService } from '@/services/staff.service';
+import { useQueryClient } from '@tanstack/react-query';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
 import { 
@@ -26,6 +29,28 @@ export default function StaffPage() {
   const [showSalaryStructureDialog, setShowSalaryStructureDialog] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [uploadingStaffPhoto, setUploadingStaffPhoto] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleStaffPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>, staffId: string) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingStaffPhoto(true);
+    try {
+      const blob = await compressImageForProfile(file);
+      if (!blob) throw new Error('Image could not be compressed under 100 KB');
+      const updated = await staffService.uploadPhoto(staffId, blob);
+      setSelectedProfile((p: any) => (p && p.id === staffId ? { ...p, avatarUrl: (updated as any)?.avatarUrl ?? p.avatarUrl } : p));
+      await queryClient.invalidateQueries({ queryKey: ['staff'] });
+    } catch (err: any) {
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'error', summary: 'Photo Upload Failed', detail: err?.response?.data?.message || err?.message || 'Try a smaller image.', life: 5000 }
+      }));
+    } finally {
+      setUploadingStaffPhoto(false);
+    }
+  };
   
   // Salary structure form fields
   const [salaryForm, setSalaryForm] = useState({ baseSalary: 25000, hra: 5000, allowance: 3000, deductions: 1000 });
@@ -71,18 +96,26 @@ export default function StaffPage() {
     designation: '',
   });
 
+  const [categoryFilter, setCategoryFilter] = useState('');
+
   const { data: rolesData } = useRoles();
   const { data: deptsData } = useDepartments();
+  const { data: designationsData } = useDesignations();
 
   const roleOptions = (rolesData || []).map((r: any) => ({ label: r.name, value: r.id }));
   const deptOptions = (deptsData || []).map((d: any) => ({ label: d.name, value: d.id }));
+  const designationOptions = (designationsData || []).map((d: any) => ({
+    label: `${d.name}${d._count?.users != null ? ` (${d._count.users})` : ''}`,
+    value: d.id,
+  }));
+  const designationNameOptions = (designationsData || []).map((d: any) => ({ label: d.name, value: d.name }));
 
   const getDeptName = (deptId: string) => {
     const dept = (deptsData || []).find((d: any) => d.id === deptId);
     return dept?.name || 'General';
   };
 
-  const { data, isPending, isError, error } = useStaffList(pagination.pageIndex + 1, pagination.pageSize, search || undefined);
+  const { data, isPending, isError, error } = useStaffList(pagination.pageIndex + 1, pagination.pageSize, search || undefined, categoryFilter || undefined);
   const createMutation = useCreateStaff();
   const deleteMutation = useDeleteStaff();
 
@@ -288,7 +321,7 @@ export default function StaffPage() {
         {/* Filter and Control Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
               <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"></i>
               <InputText
@@ -298,6 +331,13 @@ export default function StaffPage() {
                 className="w-full pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-md dark:bg-zinc-950 text-sm outline-none focus:border-blue-500 transition-all"
               />
             </div>
+            <Dropdown
+              value={categoryFilter}
+              options={[{ label: 'All Categories', value: '' }, ...designationOptions]}
+              onChange={(e) => { setCategoryFilter(e.value); setPagination((p: PaginationState) => ({ ...p, pageIndex: 0 })); }}
+              placeholder="Category"
+              className="w-full sm:w-52 text-sm"
+            />
           </div>
           <div className="flex gap-2 w-full md:w-auto justify-end">
             <button
@@ -351,9 +391,18 @@ export default function StaffPage() {
                 return (
                   <div key={member.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group">
                   <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform">
-                      {initials}
-                    </div>
+                    {resolveMediaUrl(member.avatarUrl) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={resolveMediaUrl(member.avatarUrl)!}
+                        alt={member.name || 'Staff'}
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform">
+                        {initials}
+                      </div>
+                    )}
                     <div className="flex flex-col">
                       <h3 className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1">
                         {member.name}
@@ -530,14 +579,17 @@ export default function StaffPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="staffDesig" className="font-semibold text-xs text-gray-500 dark:text-gray-400">Designation</label>
-              <InputText 
-                id="staffDesig" 
-                value={newStaff.designation} 
-                onChange={(e) => setNewStaff({ ...newStaff, designation: e.target.value })} 
-                placeholder="e.g., Physics Teacher"
-                className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
+              <label htmlFor="staffDesig" className="font-semibold text-xs text-gray-500 dark:text-gray-400">Category / Designation</label>
+              <Dropdown
+                id="staffDesig"
+                editable
+                value={newStaff.designation}
+                options={designationNameOptions}
+                onChange={(e) => setNewStaff({ ...newStaff, designation: e.value })}
+                placeholder="Pick a category or type a new one"
+                className=""
               />
+              <p className="text-[11px] text-zinc-400">Typing a new name creates the category automatically.</p>
             </div>
           </div>
         </div>
@@ -631,9 +683,24 @@ export default function StaffPage() {
         {selectedProfile && (
           <div className="flex flex-col gap-6 p-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 font-bold text-2xl uppercase ring-2 ring-zinc-200 dark:ring-zinc-800">
-                {selectedProfile.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
-              </div>
+              <label className="cursor-pointer relative" title="Change profile photo">
+                {resolveMediaUrl(selectedProfile.avatarUrl) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resolveMediaUrl(selectedProfile.avatarUrl)!}
+                    alt={selectedProfile.name}
+                    className="w-16 h-16 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-800"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 font-bold text-2xl uppercase ring-2 ring-zinc-200 dark:ring-zinc-800">
+                    {selectedProfile.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow">
+                  {uploadingStaffPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
+                </span>
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingStaffPhoto} onChange={(e) => handleStaffPhotoChange(e, selectedProfile.id)} />
+              </label>
               <div>
                 <h2 className="text-xl font-bold">{selectedProfile.name}</h2>
                 <p className="text-zinc-500 dark:text-zinc-400">{selectedProfile.designation || 'Faculty'} · {getDeptName(selectedProfile.departmentId)}</p>

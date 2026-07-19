@@ -180,8 +180,8 @@ export default function FeePage() {
     { label: '2025', value: 2025 }, { label: '2026', value: 2026 }, { label: '2027', value: 2027 }
   ];
 
-  const totalRevenue = revenueSummary?.totalCollected || 184500;
-  const totalSalaries = (payslips || []).reduce((acc: number, p: any) => acc + (p.status === 'PAID' ? p.netSalary : 0), 0) || 45000;
+  const totalRevenue = Number(revenueSummary?.totalRevenue ?? revenueSummary?.totalCollected ?? 0);
+  const totalSalaries = (payslips || []).reduce((acc: number, p: any) => acc + (p.status === 'PAID' ? p.netSalary : 0), 0);
   const netFinProfit = totalRevenue - totalSalaries;
 
   return (

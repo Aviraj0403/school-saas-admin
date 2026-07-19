@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { useStudentsList, useDeleteStudent } from '@/hooks/queries/useStudents';
+import { resolveMediaUrl } from '@/lib/media';
 import Link from 'next/link';
 import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
@@ -74,16 +75,39 @@ export default function StudentsPage() {
         cell: (info) => <span className="font-medium text-zinc-700 dark:text-zinc-300">{info.getValue() as string}</span>,
       },
       {
-        accessorKey: 'firstName',
-        header: 'First Name',
-      },
-      {
-        accessorKey: 'lastName',
-        header: 'Last Name',
+        accessorKey: 'name',
+        header: 'Student',
+        cell: (info) => {
+          const s = info.row.original;
+          const url = resolveMediaUrl(s.photo);
+          const displayName = s.name || `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || '—';
+          return (
+            <div className="flex items-center gap-2.5">
+              {url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={url} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center text-xs font-bold">
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">{displayName}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'className',
         header: 'Class',
+        cell: (info) => {
+          const s = info.row.original;
+          return s.className || (s.class ? `${s.class.name} ${s.class.section ?? ''}`.trim() : '—');
+        },
+      },
+      {
+        accessorKey: 'rollNo',
+        header: 'Roll No.',
+        cell: (info) => (info.getValue() as string) || '—',
       },
       {
         accessorKey: 'status',

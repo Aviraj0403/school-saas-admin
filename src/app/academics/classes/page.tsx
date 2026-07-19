@@ -13,17 +13,20 @@ import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
-import { 
-  useClasses, 
-  useCreateClass, 
-  useSubjects, 
+import {
+  useClasses,
+  useCreateClass,
+  useSubjects,
   useAllSubjects,
-  useCreateSubject, 
+  useCreateSubject,
   useDeleteSubject,
   useCurrentAcademicYear,
   useDepartmentsList,
   useAssignSubjectsToClass,
 } from '@/hooks/queries/useAcademics';
+import { useStaffList } from '@/hooks/queries/useStaff';
+import { academicsService } from '@/services/academics.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 const SUBJECT_TYPES = [
   { label: 'Theory', value: 'theory' },
@@ -61,6 +64,31 @@ export default function ClassesPage() {
   const { data: allSubjectsData } = useAllSubjects();
   const { data: departments } = useDepartmentsList();
   
+  // Class teacher assignment
+  const queryClient = useQueryClient();
+  const { data: staffData } = useStaffList(1, 100);
+  const teacherOptions = (staffData?.items || []).map((t: any) => ({ label: t.name, value: t.id }));
+  const [savingTeacher, setSavingTeacher] = useState(false);
+
+  const handleAssignClassTeacher = async (teacherId: string) => {
+    if (!selectedClass) return;
+    setSavingTeacher(true);
+    try {
+      await academicsService.updateClass(selectedClass.id, { classTeacherId: teacherId });
+      setSelectedClass((c: any) => (c ? { ...c, classTeacherId: teacherId } : c));
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'success', summary: 'Class Teacher Assigned', detail: 'Updated successfully.', life: 3000 }
+      }));
+    } catch (err: any) {
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { severity: 'error', summary: 'Error', detail: err?.response?.data?.message || 'Failed to assign class teacher.', life: 4000 }
+      }));
+    } finally {
+      setSavingTeacher(false);
+    }
+  };
+
   // Mutations
   const createClassMutation = useCreateClass();
   const createSubjectMutation = useCreateSubject();
@@ -266,12 +294,23 @@ export default function ClassesPage() {
                 </p>
               </div>
               {selectedClass && (
-                <button
-                  onClick={() => setShowAssignDialog(true)}
-                  className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-md transition-all flex items-center gap-1.5"
-                >
-                  <i className="pi pi-link text-[10px]"></i> Link Existing
-                </button>
+                <div className="flex items-center gap-2">
+                  <Dropdown
+                    value={selectedClass.classTeacherId ?? selectedClass.classTeacher?.id ?? ''}
+                    options={teacherOptions}
+                    onChange={(e) => handleAssignClassTeacher(e.value)}
+                    placeholder="Assign class teacher"
+                    disabled={savingTeacher}
+                    filter
+                    className="w-52 text-xs"
+                  />
+                  <button
+                    onClick={() => setShowAssignDialog(true)}
+                    className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-md transition-all flex items-center gap-1.5"
+                  >
+                    <i className="pi pi-link text-[10px]"></i> Link Existing
+                  </button>
+                </div>
               )}
             </div>
 

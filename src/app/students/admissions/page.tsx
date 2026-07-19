@@ -19,6 +19,8 @@ import { useHostels, useHostelRooms } from '@/hooks/queries/useHostel';
 import { useAuthStore } from '@/store/useAuthStore';
 import { hostelService } from '@/services/hostel.service';
 import { transportService } from '@/services/transport.service';
+import { studentsService } from '@/services/students.service';
+import { compressImageForProfile } from '@/lib/media';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -73,13 +75,14 @@ const INITIAL_FORM = {
 };
 
 // ── Reusable FieldRow ────────────────────────────────────────────────
-function FieldRow({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function FieldRow({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
       {children}
+      {hint && <p className="text-[11px] text-zinc-400 dark:text-zinc-500">{hint}</p>}
     </div>
   );
 }
@@ -138,6 +141,8 @@ export default function AdmissionsPage() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState(INITIAL_FORM);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<any>(null);
   const [view, setView] = useState<'wizard' | 'list'>('list');
   const [listPage, setListPage] = useState(1);
@@ -219,6 +224,15 @@ export default function AdmissionsPage() {
       {
         onSuccess: async (student: any) => {
           const enrollments: string[] = [];
+
+          // Profile photo — compressed to the server's 100 KB cap
+          try {
+            if (photoFile && student?.id) {
+              const blob = await compressImageForProfile(photoFile);
+              if (blob) await studentsService.uploadPhoto(student.id, blob);
+            }
+          } catch {}
+
           try {
             if (form.hostelEnabled && form.hostelRoomId && student?.id) {
               await hostelService.admitBoarder({
@@ -263,6 +277,8 @@ export default function AdmissionsPage() {
 
   const resetWizard = () => {
     setForm(INITIAL_FORM);
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setCurrentStep(0);
     setSubmitted(null);
     setView('list');
@@ -425,6 +441,27 @@ export default function AdmissionsPage() {
           <div className="p-6">
             {stepId === 'basic' && (
               <div className="flex flex-col gap-5">
+                <div className="flex items-center gap-4">
+                  {photoPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photoPreview} alt="Profile preview" className="w-16 h-16 rounded-full object-cover border" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 font-bold text-xl">
+                      {(form.firstName || '?').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <FieldRow label="Profile Photo" hint="JPEG/PNG — compressed to ≤100 KB automatically">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => {
+                        const f = e.target.files?.[0] ?? null;
+                        setPhotoFile(f);
+                        setPhotoPreview(f ? URL.createObjectURL(f) : null);
+                      }}
+                    />
+                  </FieldRow>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FieldRow label="First Name" required>
                     <Input value={form.firstName} onChange={e => upd('firstName', e.target.value)} placeholder="e.g. Rahul" />
@@ -505,8 +542,8 @@ export default function AdmissionsPage() {
                       </SelectContent>
                     </Select>
                   </FieldRow>
-                  <FieldRow label="Roll Number">
-                    <Input value={form.rollNo} onChange={e => upd('rollNo', e.target.value)} placeholder="e.g. 01, A-12" />
+                  <FieldRow label="Roll Number" hint="Auto-assigned per class section if left blank">
+                    <Input value={form.rollNo} onChange={e => upd('rollNo', e.target.value)} placeholder="Auto-assigned if blank" />
                   </FieldRow>
                 </div>
                 <FieldRow label="Academic Year" required>

@@ -36,6 +36,11 @@ export const hostelService = {
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
+  getStudentBoarder: async (studentId: string) => {
+    const response = await api.get<{ success: boolean; data: any }>(`/hostel/boarders/student/${studentId}`);
+    return response.data?.data ?? null;
+  },
+
   dischargeBoarder: async (studentId: string, academicYear: string) => {
     const response = await api.patch<{ success: boolean }>(`/hostel/boarders/${studentId}/discharge`, { academicYear });
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;

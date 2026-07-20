@@ -44,7 +44,7 @@ export const whatsappService = {
     return { items, meta, data: { items, meta } };
   },
 
-  createBroadcast: async (data: { name: string; templateName: string; parameters?: any }) => {
+  createBroadcast: async (data: { name: string; templateId?: string; message?: string; targetType?: string; targetIds?: string[]; variables?: Record<string, string>; scheduledAt?: string; }) => {
     const response = await api.post<{ success: boolean; data: any }>('/whatsapp/broadcasts', data);
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },

@@ -46,7 +46,7 @@ export function useCreateBroadcast() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string; templateName: string; parameters?: any }) => whatsappService.createBroadcast(data),
+    mutationFn: (data: Parameters<typeof whatsappService.createBroadcast>[0]) => whatsappService.createBroadcast(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['whatsapp-broadcasts'] });
     },

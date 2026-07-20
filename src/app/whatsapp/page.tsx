@@ -38,7 +38,7 @@ export default function WhatsAppPage() {
   const [testingRag, setTestingRag] = useState(false);
 
   // Form configs
-  const [newBroadcast, setNewBroadcast] = useState({ name: '', templateName: 'fee_reminder' });
+  const [newBroadcast, setNewBroadcast] = useState({ name: '', templateId: 'fee_reminder' });
   const [metaConfigForm, setMetaConfigForm] = useState({
     phoneNumberId: '',
     businessId: '',
@@ -124,7 +124,7 @@ export default function WhatsAppPage() {
     createBroadcastMutation.mutate(newBroadcast, {
       onSuccess: () => {
         setShowBroadcastDialog(false);
-        setNewBroadcast({ name: '', templateName: 'fee_reminder' });
+        setNewBroadcast({ name: '', templateId: 'fee_reminder' });
       }
     });
   };
@@ -419,12 +419,12 @@ export default function WhatsAppPage() {
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Select Template *</label>
             <Dropdown 
-              value={newBroadcast.templateName} 
+              value={newBroadcast.templateId} 
               options={activeTemplates.map((t: any) => ({ label: t.name, value: t.name })) || [
                 { label: 'fee_reminder', value: 'fee_reminder' },
                 { label: 'attendance_alert', value: 'attendance_alert' }
               ]} 
-              onChange={(e) => setNewBroadcast({ ...newBroadcast, templateName: e.value })} 
+              onChange={(e) => setNewBroadcast({ ...newBroadcast, templateId: e.value })} 
               className=""
             />
           </div>

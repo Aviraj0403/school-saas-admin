@@ -40,8 +40,16 @@ export const transportService = {
 
   getBusLocations: async () => {
     try {
-      const response = await api.get<{ success: boolean; data: any[] }>('/transport/locations');
-      return ((response.data as any)?.data as any)?.items || response.data?.data;
+      const response = await api.get<{ success: boolean; data: any }>('/transport/dashboard');
+      const data = ((response.data as any)?.data as any)?.items || response.data?.data;
+      if (!data || !data.liveVehicles) return [];
+      
+      return data.liveVehicles.map((v: any) => ({
+        busRegistrationNo: v.vehicleNo,
+        routeName: 'Active Route',
+        speed: v.lastLocation?.speed || 0,
+        updatedAt: v.lastSeen
+      }));
     } catch (e) {
       return [];
     }

@@ -38,22 +38,22 @@ export interface CheckoutItemDto {
 
 export const inventoryService = {
   listItems: async (categoryId?: string): Promise<AssetItem[]> => {
-    const res = await api.get('/v1/inventory/items', { params: { categoryId } });
+    const res = await api.get('/inventory/items', { params: { categoryId } });
     return res.data;
   },
 
   listCategories: async (): Promise<AssetCategory[]> => {
-    const res = await api.get('/v1/inventory/categories');
+    const res = await api.get('/inventory/categories');
     return res.data;
   },
 
   createItem: async (data: CreateAssetItemDto): Promise<AssetItem> => {
-    const res = await api.post('/v1/inventory/items', data);
+    const res = await api.post('/inventory/items', data);
     return res.data;
   },
 
   checkoutItem: async (data: CheckoutItemDto): Promise<any> => {
-    const res = await api.post('/v1/inventory/checkout', data);
+    const res = await api.post('/inventory/checkout', data);
     return res.data;
   }
 };

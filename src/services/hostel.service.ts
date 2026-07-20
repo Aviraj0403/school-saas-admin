@@ -27,11 +27,11 @@ export const hostelService = {
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
-  admitBoarder: async (data: { studentId: string; hostelRoomId: string; academicYear: string }) => {
+  admitBoarder: async (data: { studentId: string; hostelRoomId: string; academicYearId: string }) => {
     const response = await api.post<{ success: boolean; data: HostelBoarder }>('/hostel/boarders/admit', {
       studentId: data.studentId,
       roomId: data.hostelRoomId,   // backend expects 'roomId', not 'hostelRoomId'
-      academicYear: data.academicYear,
+      academicYearId: data.academicYearId,
     });
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
@@ -41,8 +41,8 @@ export const hostelService = {
     return response.data?.data ?? null;
   },
 
-  dischargeBoarder: async (studentId: string, academicYear: string) => {
-    const response = await api.patch<{ success: boolean }>(`/hostel/boarders/${studentId}/discharge`, { academicYear });
+  dischargeBoarder: async (studentId: string, academicYearId: string) => {
+    const response = await api.patch<{ success: boolean }>(`/hostel/boarders/${studentId}/discharge`, { academicYearId });
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   }
 };

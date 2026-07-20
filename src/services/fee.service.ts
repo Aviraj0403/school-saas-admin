@@ -2,8 +2,8 @@ import { api } from './api';
 import { FeeStructure, FeeCollection, CollectFeeDto } from '@/types/api.types';
 
 export const feeService = {
-  getStructures: async (academicYear?: string) => {
-    const params = academicYear ? `?academicYear=${academicYear}` : '';
+  getStructures: async (academicYearId?: string) => {
+    const params = academicYearId ? `?academicYearId=${academicYearId}` : '';
     const response = await api.get<{ success: boolean; data: FeeStructure[] }>(`/fee/structures${params}`);
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
@@ -33,8 +33,8 @@ export const feeService = {
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
-  getRevenueSummary: async (academicYear?: string) => {
-    const params = academicYear ? `?academicYear=${academicYear}` : '';
+  getRevenueSummary: async (academicYearId?: string) => {
+    const params = academicYearId ? `?academicYearId=${academicYearId}` : '';
     const response = await api.get<{ success: boolean; data: any }>(`/fee/revenue/summary${params}`);
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },

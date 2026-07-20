@@ -47,12 +47,12 @@ export const transportService = {
     }
   },
 
-  assignStudentToRoute: async (data: { studentId: string; routeId: string; stopId?: string; academicYear?: string; feeAmount?: number }) => {
+  assignStudentToRoute: async (data: { studentId: string; routeId: string; stopId?: string; academicYearId: string; feeAmount?: number }) => {
     const payload = {
       studentId: data.studentId,
       routeId: data.routeId,
       stopId: data.stopId,
-      academicYear: data.academicYear || '2025-2026',
+      academicYearId: data.academicYearId,
       feeAmount: data.feeAmount || 0,
     };
     try {

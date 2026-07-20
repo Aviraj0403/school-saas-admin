@@ -64,7 +64,7 @@ export function useAdmitBoarder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { studentId: string; hostelRoomId: string; academicYear: string }) => 
+    mutationFn: (data: { studentId: string; hostelRoomId: string; academicYearId: string }) =>
       hostelService.admitBoarder(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['hostel-rooms'] });
@@ -77,8 +77,8 @@ export function useDischargeBoarder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ studentId, academicYear }: { studentId: string; academicYear: string }) => 
-      hostelService.dischargeBoarder(studentId, academicYear),
+    mutationFn: ({ studentId, academicYearId }: { studentId: string; academicYearId: string }) =>
+      hostelService.dischargeBoarder(studentId, academicYearId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hostel-rooms'] });
       queryClient.invalidateQueries({ queryKey: ['hostel-dashboard'] });

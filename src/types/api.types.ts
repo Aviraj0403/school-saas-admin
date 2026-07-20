@@ -76,12 +76,13 @@ export interface Student {
   parentPhone?: string;
   parentEmail?: string;
   alternatePhone?: string;
-  academicYear?: string;
+  academicYearId?: string;
+  academicYear?: AcademicYear;
 }
 
 export interface CreateStudentDto {
   name: string;
-  academicYear: string;
+  academicYearId: string;
   classId?: string;
   dob?: string;
   gender?: string;
@@ -102,12 +103,22 @@ export interface CreateStudentDto {
 }
 
 // Academics Module Types
+export interface AcademicYear {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+}
+
 export interface AcademicClass {
   id: string;
   name: string;
   section: string;
   teacherId?: string;
   capacity: number;
+  academicYearId: string;
+  academicYear?: AcademicYear;
 }
 
 export interface Subject {
@@ -198,6 +209,8 @@ export interface FeeStructure {
   type: string;
   classId?: string;
   className?: string;
+  academicYearId: string;
+  academicYear?: AcademicYear;
 }
 
 export interface FeeCollection {
@@ -341,6 +354,18 @@ export interface HostelBoarder {
   roomNo: string;
   hostelName: string;
   joinDate: string;
+  academicYearId: string;
+  academicYear?: AcademicYear;
+}
+
+export interface StudentTransport {
+  id: string;
+  studentId: string;
+  routeId: string;
+  stopId?: string;
+  feeAmount?: number;
+  academicYearId: string;
+  academicYear?: AcademicYear;
 }
 
 // Leave Module Types

@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AcademicYearSelect } from '@/components/academics/AcademicYearSelect';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,7 +67,7 @@ const INITIAL_FORM = {
   firstName: '', lastName: '', dob: undefined as Date | undefined, gender: 'male',
   bloodGroup: '', aadharNo: '', category: 'General', religion: '',
   motherTongue: '', nationality: 'Indian',
-  classId: '', rollNo: '', academicYear: '', previousSchool: '',
+  classId: '', rollNo: '', academicYearId: '', previousSchool: '',
   parentName: '', parentPhone: '', parentEmail: '', alternatePhone: '',
   address: '', city: '', pincode: '',
   hostelId: '', hostelRoomId: '', hostelEnabled: false,
@@ -192,17 +193,17 @@ export default function AdmissionsPage() {
 
   const canProceed = useCallback((): boolean => {
     if (stepId === 'basic')    return !!(form.firstName.trim() && form.lastName.trim() && form.gender);
-    if (stepId === 'academic') return !!(form.classId && (form.academicYear || currentYear?.name));
+    if (stepId === 'academic') return !!(form.classId && (form.academicYearId || currentYear?.id));
     return true;
   }, [stepId, form, currentYear]);
 
   const handleSubmit = async () => {
-    const yearLabel = form.academicYear || currentYear?.name || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+    const yearId = form.academicYearId || currentYear?.id || '';
 
     createMutation.mutate(
       {
         name: `${form.firstName} ${form.lastName}`.trim(),
-        academicYear: yearLabel,
+        academicYearId: yearId,
         classId: form.classId || undefined,
         dob: form.dob ? form.dob.toISOString().split('T')[0] : undefined,
         gender: form.gender || undefined,
@@ -238,7 +239,7 @@ export default function AdmissionsPage() {
               await hostelService.admitBoarder({
                 studentId: student.id,
                 hostelRoomId: form.hostelRoomId,
-                academicYear: yearLabel,
+                academicYearId: yearId,
               });
               enrollments.push('Hostel');
             }
@@ -250,7 +251,7 @@ export default function AdmissionsPage() {
                 studentId: student.id,
                 routeId: form.routeId,
                 stopId: undefined,
-                academicYear: yearLabel,
+                academicYearId: yearId,
               });
               enrollments.push('Transport');
             }
@@ -382,7 +383,7 @@ export default function AdmissionsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-xs">{d.className || d.class?.name || '—'}</TableCell>
-                      <TableCell className="text-xs">{d.academicYear}</TableCell>
+                      <TableCell className="text-xs">{d.academicYear?.name || '—'}</TableCell>
                       <TableCell>
                         <Badge variant={d.status === 'ACTIVE' ? 'default' : 'secondary'} className={d.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}>
                           {d.status}
@@ -547,10 +548,10 @@ export default function AdmissionsPage() {
                   </FieldRow>
                 </div>
                 <FieldRow label="Academic Year" required>
-                  <Input
-                    value={form.academicYear || currentYear?.name || ''}
-                    onChange={e => upd('academicYear', e.target.value)}
-                    placeholder={currentYear?.name || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`}
+                  <AcademicYearSelect
+                    value={form.academicYearId || currentYear?.id || ''}
+                    onChange={id => upd('academicYearId', id)}
+                    className="h-9 rounded-md border border-input bg-transparent px-3 text-sm w-full"
                   />
                 </FieldRow>
                 <FieldRow label="Previous School">

@@ -13,6 +13,7 @@ import { Toast } from 'primereact/toast';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { StatCard } from '@/components/ui/StatCard';
+import { AcademicYearSelect } from '@/components/academics/AcademicYearSelect';
 import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder, useAllBoarders } from '@/hooks/queries/useHostel';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
@@ -55,15 +56,16 @@ export default function HostelPage() {
     studentName: b.student?.name || 'Unknown',
     hostelName: b.room?.hostel?.name || 'Unknown',
     roomNo: b.room?.roomNo || 'Unknown',
-    academicYear: b.academicYear,
+    academicYear: b.academicYear?.name || 'N/A',
+    academicYearId: b.academicYearId,
     joinDate: b.joinDate ? new Date(b.joinDate).toISOString().split('T')[0] : 'N/A',
   }));
 
   const dischargeBoarderMutation = useDischargeBoarder();
 
-  const handleDischarge = (studentId: string, academicYear: string) => {
+  const handleDischarge = (studentId: string, academicYearId: string) => {
     if (confirm('Are you sure you want to discharge this resident boarder?')) {
-      dischargeBoarderMutation.mutate({ studentId, academicYear }, {
+      dischargeBoarderMutation.mutate({ studentId, academicYearId }, {
         onSuccess: () => {
           toast.current?.show({ severity: 'success', summary: 'Discharged', detail: 'Resident boarder discharged successfully', life: 3000 });
         }
@@ -85,7 +87,7 @@ export default function HostelPage() {
   const [roomForm, setRoomForm] = useState({ roomNo: '', type: 'STANDARD', capacity: 0 });
 
   const [showAdmitDialog, setShowAdmitDialog] = useState(false);
-  const [admitForm, setAdmitForm] = useState({ studentId: '', hostelRoomId: '', academicYear: new Date().getFullYear().toString() });
+  const [admitForm, setAdmitForm] = useState({ studentId: '', hostelRoomId: '', academicYearId: '' });
 
   const hostelTypes = [
     { label: 'Boys', value: 'BOYS' },
@@ -123,7 +125,7 @@ export default function HostelPage() {
     admitBoarderMutation.mutate(admitForm, {
       onSuccess: () => {
         setShowAdmitDialog(false);
-        setAdmitForm({ studentId: '', hostelRoomId: '', academicYear: new Date().getFullYear().toString() });
+        setAdmitForm({ studentId: '', hostelRoomId: '', academicYearId: '' });
         toast.current?.show({ severity: 'success', summary: 'Admitted', detail: 'Student admitted to hostel', life: 3000 });
       },
       onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to admit boarder', life: 3000 }),
@@ -328,7 +330,7 @@ export default function HostelPage() {
                         size="small" 
                         severity="danger" 
                         className="bg-red-600 hover:bg-red-700 text-white p-1 px-2.5 text-xs rounded-md border-0"
-                        onClick={() => handleDischarge(d.id, d.academicYear)}
+                        onClick={() => handleDischarge(d.id, d.academicYearId)}
                       />
                     )}
                   />
@@ -468,7 +470,11 @@ export default function HostelPage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Academic Term Year *</label>
-            <InputText value={admitForm.academicYear} onChange={(e) => setAdmitForm({ ...admitForm, academicYear: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. 2026" />
+            <AcademicYearSelect
+              value={admitForm.academicYearId}
+              onChange={(id) => setAdmitForm({ ...admitForm, academicYearId: id })}
+              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none"
+            />
           </div>
           <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
             <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowAdmitDialog(false)} />

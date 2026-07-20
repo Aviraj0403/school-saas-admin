@@ -60,7 +60,8 @@ export default function SetupWizard() {
         // Create Classes
         const validClasses = classes.filter(c => c.name && c.section);
         const activeYear = await academicsService.getCurrentAcademicYear();
-        
+        if (!activeYear) throw new Error('No active academic year found. Please create one first.');
+
         for (const c of validClasses) {
           const newClass = await academicsService.createClass({
             name: c.name,

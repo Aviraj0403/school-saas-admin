@@ -5,7 +5,6 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
@@ -20,7 +19,7 @@ import {
 
 export default function TermsPage() {
   const [showAyDialog, setShowAyDialog] = useState(false);
-  const [ayForm, setAyForm] = useState<any>({ name: '', startDate: null, endDate: null, isCurrent: false });
+  const [ayForm, setAyForm] = useState<any>({ startDate: null, endDate: null, isCurrent: false });
 
   // Queries
   const { data: academicYears, isPending: loadingYears } = useAcademicYears();
@@ -31,10 +30,9 @@ export default function TermsPage() {
   const ayList = academicYears || [];
 
   const handleCreateAy = () => {
-    if (!ayForm.name || !ayForm.startDate || !ayForm.endDate) return;
+    if (!ayForm.startDate || !ayForm.endDate) return;
     createAyMutation.mutate(
       {
-        name: ayForm.name,
         startDate: (ayForm.startDate as Date).toISOString(),
         endDate: (ayForm.endDate as Date).toISOString(),
         isCurrent: ayForm.isCurrent
@@ -42,7 +40,7 @@ export default function TermsPage() {
       {
         onSuccess: () => {
           setShowAyDialog(false);
-          setAyForm({ name: '', startDate: null, endDate: null, isCurrent: false });
+          setAyForm({ startDate: null, endDate: null, isCurrent: false });
         }
       }
     );
@@ -125,10 +123,7 @@ export default function TermsPage() {
         }
       >
         <div className="flex flex-col gap-4 mt-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">Term Name *</label>
-            <InputText value={ayForm.name} onChange={(e) => setAyForm({ ...ayForm, name: e.target.value })} className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:border-blue-500 text-sm" placeholder="e.g. 2026-2027, 2027" />
-          </div>
+          <p className="text-xs text-zinc-500 -mt-1">The term name (e.g. 2026-2027) is generated automatically from the start and end dates.</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">Start Date *</label>

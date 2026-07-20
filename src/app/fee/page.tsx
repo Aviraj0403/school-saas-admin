@@ -14,6 +14,7 @@ import { Tag } from 'primereact/tag';
 import { StatCard } from '@/components/ui/StatCard';
 import { useFeeStructures, useCreateFeeStructure, useCollectFee, useFeeCollections, useRevenueSummary, useStudentDues } from '@/hooks/queries/useFee';
 import { useClasses } from '@/hooks/queries/useAcademics';
+import { AcademicYearSelect } from '@/components/academics/AcademicYearSelect';
 import { useStudentsList } from '@/hooks/queries/useStudents';
 import { useStaffList } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -48,7 +49,7 @@ export default function FeePage() {
 
   // Form states
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [newStructure, setNewStructure] = useState({ name: '', amount: 1000, type: 'TUITION', classId: '' });
+  const [newStructure, setNewStructure] = useState({ name: '', amount: 1000, type: 'TUITION', classId: '', academicYearId: '' });
   const [collectFee, setCollectFee] = useState({ studentId: '', amount: 0, paymentMethod: 'CASH' as 'CASH' | 'ONLINE' | 'CHEQUE', remarks: '' });
 
   // Student Ledger datasets
@@ -110,7 +111,7 @@ export default function FeePage() {
     createStructureMutation.mutate(newStructure, {
       onSuccess: () => {
         setShowAddStructureDialog(false);
-        setNewStructure({ name: '', amount: 1000, type: 'TUITION', classId: '' });
+        setNewStructure({ name: '', amount: 1000, type: 'TUITION', classId: '', academicYearId: '' });
       }
     });
   };
@@ -537,11 +538,19 @@ export default function FeePage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Fee Category *</label>
-            <Dropdown 
-              value={newStructure.type} 
-              options={[{ label: 'Tuition', value: 'TUITION' }, { label: 'Transport', value: 'TRANSPORT' }, { label: 'Exam', value: 'EXAM' }, { label: 'Hostel', value: 'HOSTEL' }]} 
-              onChange={(e) => setNewStructure({ ...newStructure, type: e.value })} 
+            <Dropdown
+              value={newStructure.type}
+              options={[{ label: 'Tuition', value: 'TUITION' }, { label: 'Transport', value: 'TRANSPORT' }, { label: 'Exam', value: 'EXAM' }, { label: 'Hostel', value: 'HOSTEL' }]}
+              onChange={(e) => setNewStructure({ ...newStructure, type: e.value })}
               className=""
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Academic Year *</label>
+            <AcademicYearSelect
+              value={newStructure.academicYearId}
+              onChange={(id) => setNewStructure({ ...newStructure, academicYearId: id })}
+              className="p-2 border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full"
             />
           </div>
         </div>

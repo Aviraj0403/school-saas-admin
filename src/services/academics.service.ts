@@ -1,5 +1,5 @@
 import { api } from './api';
-import { AcademicClass, PaginatedResponse, Subject } from '@/types/api.types';
+import { AcademicClass, AcademicYear, PaginatedResponse, Subject } from '@/types/api.types';
 
 export const academicsService = {
   getClasses: async (page = 1, limit = 10) => {
@@ -78,12 +78,12 @@ export const academicsService = {
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
-  getAcademicYears: async () => {
+  getAcademicYears: async (): Promise<AcademicYear[]> => {
     const response = await api.get<{ success: boolean; data: any[] }>('/academics/academic-years');
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
-  getCurrentAcademicYear: async () => {
+  getCurrentAcademicYear: async (): Promise<AcademicYear | null> => {
     const response = await api.get<{ success: boolean; data: any }>('/academics/academic-years/current');
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
@@ -108,12 +108,12 @@ export const academicsService = {
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
-  createAcademicYear: async (data: { name: string; startDate: string; endDate: string; isCurrent?: boolean }) => {
+  createAcademicYear: async (data: { startDate: string; endDate: string; isCurrent?: boolean }) => {
     const response = await api.post<{ success: boolean; data: any }>('/academics/academic-years', data);
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
-  updateAcademicYear: async (id: string, data: { name?: string; startDate?: string; endDate?: string; isCurrent?: boolean }) => {
+  updateAcademicYear: async (id: string, data: { startDate?: string; endDate?: string; isCurrent?: boolean }) => {
     const response = await api.patch<{ success: boolean; data: any }>(`/academics/academic-years/${id}`, data);
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },

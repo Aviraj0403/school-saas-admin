@@ -141,7 +141,7 @@ export default function StudentDetailsPage() {
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 hidden sm:inline-block"></span>
                 <span className="text-xs text-zinc-500 font-medium">
-                  Academic Year: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{student.academicYear}</span>
+                  Academic Year: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{student.academicYear?.name || '—'}</span>
                 </span>
               </div>
             </div>

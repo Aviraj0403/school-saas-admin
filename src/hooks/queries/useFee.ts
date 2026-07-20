@@ -3,11 +3,11 @@ import { feeService } from '@/services/fee.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CollectFeeDto } from '@/types/api.types';
 
-export function useFeeStructures(academicYear?: string) {
+export function useFeeStructures(academicYearId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
-    queryKey: ['fee-structures', academicYear],
-    queryFn: () => feeService.getStructures(academicYear),
+    queryKey: ['fee-structures', academicYearId],
+    queryFn: () => feeService.getStructures(academicYearId),
     enabled: isAuthenticated,
     retry: false,
   });
@@ -49,11 +49,11 @@ export function useFeeCollections(
   });
 }
 
-export function useRevenueSummary(academicYear?: string) {
+export function useRevenueSummary(academicYearId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
-    queryKey: ['fee-revenue-summary', academicYear],
-    queryFn: () => feeService.getRevenueSummary(academicYear),
+    queryKey: ['fee-revenue-summary', academicYearId],
+    queryFn: () => feeService.getRevenueSummary(academicYearId),
     enabled: isAuthenticated,
     retry: false,
   });

@@ -16,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transportService } from '@/services/transport.service';
 import { studentsService } from '@/services/students.service';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { AcademicYearSelect } from '@/components/academics/AcademicYearSelect';
 
 
 
@@ -29,7 +30,7 @@ export default function TransportPage() {
 
   const [routeForm, setRouteForm] = useState({ name: '', startPoint: '', endPoint: '', stops: '' });
   const [busForm, setBusForm] = useState({ registrationNo: '', capacity: 40, routeId: '', driverName: '', driverPhone: '' });
-  const [assignForm, setAssignForm] = useState({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYear: '2025-2026' });
+  const [assignForm, setAssignForm] = useState({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYearId: '' });
 
   // URL pathname and search parameter synchronization for smooth tab changes
   useEffect(() => {
@@ -93,7 +94,7 @@ export default function TransportPage() {
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['transport-assignments'] });
       setShowAssignDialog(false); 
-      setAssignForm({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYear: '2025-2026' }); 
+      setAssignForm({ studentId: '', routeId: '', stopId: '', stopName: '', feeAmount: 1200, academicYearId: '' });
     },
   });
 
@@ -725,11 +726,10 @@ export default function TransportPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Academic Session</label>
-              <InputText 
-                value={assignForm.academicYear} 
-                onChange={(e) => setAssignForm({ ...assignForm, academicYear: e.target.value })} 
-                className="p-2.5 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" 
-                placeholder="e.g. 2025-2026" 
+              <AcademicYearSelect
+                value={assignForm.academicYearId}
+                onChange={(id) => setAssignForm({ ...assignForm, academicYearId: id })}
+                className="p-2.5 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none w-full"
               />
             </div>
           </div>

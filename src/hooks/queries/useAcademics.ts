@@ -168,7 +168,7 @@ export function useCreateDepartment() {
 export function useCreateAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; startDate: string; endDate: string; isCurrent?: boolean }) =>
+    mutationFn: (data: { startDate: string; endDate: string; isCurrent?: boolean }) =>
       academicsService.createAcademicYear(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academics', 'academic-years'] });
@@ -180,7 +180,7 @@ export function useCreateAcademicYear() {
 export function useUpdateAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string; startDate?: string; endDate?: string; isCurrent?: boolean } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { startDate?: string; endDate?: string; isCurrent?: boolean } }) =>
       academicsService.updateAcademicYear(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academics', 'academic-years'] });

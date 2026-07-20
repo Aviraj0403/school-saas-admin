@@ -51,7 +51,22 @@ export const examsService = {
 
   getSeatingChart: async (examId: string) => {
     const response = await api.get<{ success: boolean; data: any[] }>(`/exam-controller/seating/${examId}`);
-    return ((response.data as any)?.data as any)?.items || response.data?.data;
+    const halls = ((response.data as any)?.data as any)?.items || response.data?.data || [];
+    
+    const flatSeating = [];
+    for (const hall of halls) {
+      if (hall.seating) {
+        for (const seat of hall.seating) {
+          flatSeating.push({
+            hallName: hall.hallName,
+            studentName: seat.student?.name || 'Unknown',
+            admissionNo: seat.student?.admissionNo || '-',
+            seatNo: seat.seatNumber
+          });
+        }
+      }
+    }
+    return flatSeating;
   }
 };
 

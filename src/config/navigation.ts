@@ -5,7 +5,7 @@ export interface NavItem {
   label: string;
   icon?: string;
   path?: string;
-  module?: string; // Corresponds to TenantContext.activeModules
+  module?: string; // Corresponds to TenantContext.activeModule
   roles?: Role[]; // If undefined, available to all roles that have the module
   children?: NavItem[];
   isSection?: boolean; // For grouping headers

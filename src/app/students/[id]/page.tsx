@@ -13,6 +13,8 @@ import { useStudentDues } from '@/hooks/queries/useFee';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { studentsService } from '@/services/students.service';
 import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
+import { canManageProfilePhotos } from '@/lib/permissions';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 
@@ -27,6 +29,8 @@ export default function StudentDetailsPage() {
   const deleteMutation = useDeleteStudent();
   const queryClient = useQueryClient();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const activeUser = useAuthStore((s) => s.activeUser);
+  const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,7 +106,7 @@ export default function StudentDetailsPage() {
         {/* Profile Card Header */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
           <div className="flex items-center gap-4 relative z-10">
-            <label className="cursor-pointer group/photo relative" title="Change profile photo">
+            <label className={`group/photo relative ${canEditPhoto ? 'cursor-pointer' : ''}`} title={canEditPhoto ? 'Change profile photo' : fullName}>
               {resolveMediaUrl(student.photo) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -116,10 +120,14 @@ export default function StudentDetailsPage() {
                   {student.lastName ? student.lastName[0] : ''}
                 </div>
               )}
-              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow">
-                {uploadingPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
-              </span>
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
+              {canEditPhoto && (
+                <>
+                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow">
+                    {uploadingPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
+                </>
+              )}
             </label>
             <div>
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{fullName}</h1>

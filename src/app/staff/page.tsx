@@ -14,6 +14,8 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { useStaffList, useCreateStaff, useDeleteStaff, useRoles, useDepartments, useDesignations } from '@/hooks/queries/useStaff';
 import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
+import { canManageProfilePhotos } from '@/lib/permissions';
+import { useAuthStore } from '@/store/useAuthStore';
 import { staffService } from '@/services/staff.service';
 import { useQueryClient } from '@tanstack/react-query';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -31,6 +33,8 @@ export default function StaffPage() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [uploadingStaffPhoto, setUploadingStaffPhoto] = useState(false);
   const queryClient = useQueryClient();
+  const activeUser = useAuthStore((s) => s.activeUser);
+  const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
 
   const handleStaffPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>, staffId: string) => {
     const file = e.target.files?.[0];
@@ -683,7 +687,7 @@ export default function StaffPage() {
         {selectedProfile && (
           <div className="flex flex-col gap-6 p-4">
             <div className="flex items-center gap-4">
-              <label className="cursor-pointer relative" title="Change profile photo">
+              <label className={`relative ${canEditPhoto ? 'cursor-pointer' : ''}`} title={canEditPhoto ? 'Change profile photo' : selectedProfile.name}>
                 {resolveMediaUrl(selectedProfile.avatarUrl) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -696,10 +700,14 @@ export default function StaffPage() {
                     {selectedProfile.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                   </div>
                 )}
-                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow">
-                  {uploadingStaffPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
-                </span>
-                <input type="file" accept="image/*" className="hidden" disabled={uploadingStaffPhoto} onChange={(e) => handleStaffPhotoChange(e, selectedProfile.id)} />
+                {canEditPhoto && (
+                  <>
+                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow">
+                      {uploadingStaffPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingStaffPhoto} onChange={(e) => handleStaffPhotoChange(e, selectedProfile.id)} />
+                  </>
+                )}
               </label>
               <div>
                 <h2 className="text-xl font-bold">{selectedProfile.name}</h2>

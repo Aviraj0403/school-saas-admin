@@ -12,7 +12,6 @@ export function useClasses(page = 1, limit = 10) {
     retry: false,
   });
 }
-
 export function useCreateClass() {
   const queryClient = useQueryClient();
   return useMutation({

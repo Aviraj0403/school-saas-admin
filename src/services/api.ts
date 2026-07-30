@@ -24,7 +24,7 @@ api.interceptors.request.use(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
+
       // Inject tenant ID if we have it in state
       const activeTenant = useAuthStore.getState().activeTenant || useTenantStore.getState().tenant;
       const tenantId = activeTenant?.id;
@@ -33,7 +33,8 @@ api.interceptors.request.use(
       }
 
       // Inject project code if available in either auth store or tenant store
-      const projectCode = activeTenant?.projectCode || (useTenantStore.getState().tenant as any)?.projectCode;
+      const projectCode =
+        activeTenant?.projectCode || (useTenantStore.getState().tenant as any)?.projectCode;
       if (projectCode) {
         config.headers['X-Project-Code'] = projectCode;
       }
@@ -46,13 +47,20 @@ api.interceptors.request.use(
         const hostname = window.location.hostname;
         const parts = hostname.split('.');
         let derivedSubdomain = '';
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          derivedSubdomain = 'demo';
-        } else if (hostname === 'schooldemo.jdinfotechsolutions.in') {
+
+        // Use environment variables for demo domains, falling back to defaults if not set
+        const demoDomains = process.env.NEXT_PUBLIC_DEMO_DOMAINS?.split(',') || [
+          'localhost',
+          '127.0.0.1',
+          'schooldemo.jdinfotechsolutions.in',
+        ];
+
+        if (demoDomains.includes(hostname)) {
           derivedSubdomain = 'demo';
         } else if (parts.length >= 3 && parts[0] !== 'www') {
           derivedSubdomain = parts[0];
         }
+
         if (derivedSubdomain) {
           config.headers['X-Tenant-Subdomain'] = derivedSubdomain;
         }
@@ -83,22 +91,29 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.skipAuthRedirect) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.skipAuthRedirect
+    ) {
       if (isRefreshing) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers.Authorization = 'Bearer ' + token;
-          return api(originalRequest);
-        }).catch(err => {
-          return Promise.reject(err);
-        });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = 'Bearer ' + token;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+      const refreshToken =
+        typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
       if (!refreshToken) {
         useAuthStore.getState().logout();
@@ -108,11 +123,11 @@ api.interceptors.response.use(
 
       try {
         const { data } = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
-          refreshToken: refreshToken
+          refreshToken: refreshToken,
         });
-        
+
         const newAccessToken = data.data?.accessToken || data.accessToken;
-        
+
         if (newAccessToken && typeof window !== 'undefined') {
           localStorage.setItem('auth_token', newAccessToken);
           useAuthStore.setState({ token: newAccessToken });

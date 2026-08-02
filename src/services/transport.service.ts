@@ -11,14 +11,12 @@ export const transportService = {
     return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
+  // No /transport/buses fallback: that route has never existed on the backend
+  // (it is /transport/vehicles). Catching the real error and retrying against a
+  // 404 turned every genuine 400/403 here into a misleading "not found".
   getBuses: async () => {
-    try {
-      const response = await api.get<{ success: boolean; data: any[] }>('/transport/vehicles');
-      return ((response.data as any)?.data as any)?.items || response.data?.data;
-    } catch (e) {
-      const response = await api.get<{ success: boolean; data: any[] }>('/transport/buses').catch(() => ({ data: { data: [] } }));
-      return ((response.data as any)?.data as any)?.items || response.data?.data;
-    }
+    const response = await api.get<{ success: boolean; data: any[] }>('/transport/vehicles');
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   createBus: async (data: { registrationNo: string; capacity: number; routeId?: string; driverName?: string; driverPhone?: string }) => {
@@ -29,13 +27,8 @@ export const transportService = {
       driverName: data.driverName,
       driverPhone: data.driverPhone,
     };
-    try {
-      const response = await api.post<{ success: boolean; data: any }>('/transport/vehicles', backendData);
-      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-    } catch (e) {
-      const response = await api.post<{ success: boolean; data: any }>('/transport/buses', data);
-      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-    }
+    const response = await api.post<{ success: boolean; data: any }>('/transport/vehicles', backendData);
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getBusLocations: async () => {
@@ -63,27 +56,23 @@ export const transportService = {
       academicYearId: data.academicYearId,
       feeAmount: data.feeAmount || 0,
     };
-    try {
-      const response = await api.post<{ success: boolean; data: any }>('/transport/students/assign', payload);
-      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-    } catch (e) {
-      const response = await api.post<{ success: boolean; data: any }>('/transport/assign', data);
-      return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-    }
+    // Same as above — /transport/assign does not exist; the route is
+    // /transport/students/assign and its failures need to reach the caller.
+    const response = await api.post<{ success: boolean; data: any }>('/transport/students/assign', payload);
+    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
   },
 
   getAssignments: async () => {
-    try {
-      const response = await api.get<{ success: boolean; data: any[] }>('/transport/students');
-      return ((response.data as any)?.data as any)?.items || response.data?.data;
-    } catch (e) {
-      return [];
-    }
+    const response = await api.get<{ success: boolean; data: any[] }>('/transport/students');
+    return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
+  // Derived from the assignment list: the backend has no
+  // GET /transport/routes/:routeId/students endpoint, so the previous version
+  // 404'd on every call.
   getStudentsByRoute: async (routeId: string) => {
-    const response = await api.get<{ success: boolean; data: any[] }>(`/transport/routes/${routeId}/students`);
-    return ((response.data as any)?.data as any)?.items || response.data?.data;
+    const assignments = await transportService.getAssignments();
+    return (assignments ?? []).filter((a: any) => a?.route?.id === routeId || a?.routeId === routeId);
   },
 
   getStudentTransport: async (studentId: string) => {

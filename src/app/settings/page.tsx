@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsService } from '@/services/settings.service';
 import { useStaffList, useResetStaffPassword } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const ALL_MODULES = [
   {
@@ -136,6 +137,12 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'modules' | 'users'>('profile');
   const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
 
+  // Plan and module changes are commercial state — the backend only accepts
+  // them on the @SuperAdminOnly PATCH /tenants/:id routes. A school_admin sees
+  // the current tier and matrix read-only rather than controls that 403.
+  const activeUser = useAuthStore((s) => s.activeUser);
+  const canEditSubscription = Boolean(activeUser?.isSuperAdmin);
+
   const [formData, setFormData] = useState<any>({
     name: '',
     slug: '',
@@ -181,7 +188,14 @@ export default function SettingsPage() {
   }, [tenant]);
 
   const mutation = useMutation({
-    mutationFn: settingsService.updateTenantDetails,
+    // Only the fields UpdateOwnTenantDto accepts. `slug` is immutable, and
+    // `plan`/`activeModules` are rejected outright — see the superadmin
+    // mutations below.
+    mutationFn: (form: any) =>
+      settingsService.updateTenantDetails({
+        name: form.name,
+        adminEmail: form.adminEmail,
+      } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
       toast.current?.show({
@@ -201,12 +215,52 @@ export default function SettingsPage() {
     },
   });
 
+  const tenantId = (tenant as any)?.id ?? activeUser?.tenantId ?? '';
+
+  const planMutation = useMutation({
+    mutationFn: (plan: string) => settingsService.updateTenantPlan(tenantId, plan),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
+  });
+
+  const modulesMutation = useMutation({
+    mutationFn: (modules: string[]) => settingsService.updateTenantModules(tenantId, modules),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Saved',
+        detail: 'Module matrix updated',
+        life: 3000,
+      });
+    },
+    onError: () => {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to update modules',
+        life: 3000,
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutation.mutate(formData);
+    // Plan lives on a separate superadmin route, so it is a separate call and
+    // only when it actually changed.
+    if (canEditSubscription && tenantId && formData.plan !== (tenant as any)?.plan) {
+      planMutation.mutate(formData.plan);
+    }
+  };
+
+  const handleModulesSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canEditSubscription || !tenantId) return;
+    modulesMutation.mutate(formData.activeModules);
   };
 
   const toggleModule = (moduleId: string) => {
+    if (!canEditSubscription) return;
     setFormData((prev: any) => {
       const activeModules = prev.activeModules.includes(moduleId)
         ? prev.activeModules.filter((m: string) => m !== moduleId)
@@ -372,7 +426,9 @@ export default function SettingsPage() {
                     Subscription Package Tier
                   </h2>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Upgrade or inspect school subscription pricing limits.
+                    {canEditSubscription
+                      ? 'Upgrade or inspect school subscription pricing limits.'
+                      : 'Your current subscription tier. Contact your provider to change it.'}
                   </p>
                 </div>
 
@@ -382,8 +438,10 @@ export default function SettingsPage() {
                     return (
                       <div
                         key={p.value}
-                        onClick={() => setFormData({ ...formData, plan: p.value })}
-                        className={`cursor-pointer rounded-md border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:scale-[1.02] ${
+                        onClick={() =>
+                          canEditSubscription && setFormData({ ...formData, plan: p.value })
+                        }
+                        className={`${canEditSubscription ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default opacity-90'} rounded-md border p-5 flex flex-col justify-between gap-4 transition-all duration-200 ${
                           isSelected
                             ? 'border-blue-650 bg-blue-50/15 dark:bg-blue-950/10 shadow-md ring-1 ring-blue-500'
                             : 'border-zinc-150 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50/70 dark:bg-zinc-900 dark:hover:bg-zinc-850'
@@ -426,14 +484,16 @@ export default function SettingsPage() {
 
           {/* Tab 2: Module Matrix */}
           {activeTab === 'modules' && (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
+            <form onSubmit={handleModulesSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
               <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
                 <div>
                   <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">
                     Module Matrix Switcher
                   </h2>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Enable or disable panel modules in your sidebar index menu.
+                    {canEditSubscription
+                      ? 'Enable or disable panel modules in your sidebar index menu.'
+                      : 'Modules enabled for your school. Contact your provider to change them.'}
                   </p>
                 </div>
 
@@ -444,7 +504,7 @@ export default function SettingsPage() {
                       <div
                         key={m.id}
                         onClick={() => toggleModule(m.id)}
-                        className={`cursor-pointer p-4 rounded-md border flex items-start gap-3 transition-all duration-150 active:scale-98 ${
+                        className={`${canEditSubscription ? 'cursor-pointer active:scale-98' : 'cursor-default'} p-4 rounded-md border flex items-start gap-3 transition-all duration-150 ${
                           isActive
                             ? 'border-blue-650/40 bg-blue-50/20 dark:bg-blue-950/10'
                             : 'border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50/50'
@@ -474,15 +534,17 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  label="Save Modules Activation"
-                  icon="pi pi-check"
-                  loading={mutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
-                />
-              </div>
+              {canEditSubscription && (
+                <div className="flex justify-end gap-3">
+                  <Button
+                    type="submit"
+                    label="Save Modules Activation"
+                    icon="pi pi-check"
+                    loading={modulesMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
+                  />
+                </div>
+              )}
             </form>
           )}
 

@@ -187,7 +187,7 @@ export default function DashboardPage() {
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10"
             iconColorClass="text-emerald-600 dark:text-emerald-400"
-            footerText={`Pending dues: ₹${Number(coreStats.fees?.pendingAmount ?? 0).toLocaleString('en-IN')}`}
+            footerText={`Outstanding dues: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
             loading={adminPending}
           />
           <StatCard
@@ -205,8 +205,8 @@ export default function DashboardPage() {
         {/* Secondary KPIs Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <StatCard
-            label="Unpaid Fee Count"
-            value={coreStats.fees?.pendingCount ?? '—'}
+            label="Pending Transactions"
+            value={coreStats.fees?.pendingTransactions ?? '—'}
             icon="pi pi-exclamation-circle"
             gradientClass="from-rose-500 to-red-500"
             iconBgClass="bg-rose-500/10"

@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
             gradientClass="from-amber-500 to-orange-500"
             iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
             iconColorClass="text-amber-500"
-            footerText={`Unpaid Collections: ${stats?.fees?.pendingCount ?? '0'} structures`}
+            footerText={`Pending transactions: ${stats?.fees?.pendingTransactions ?? '0'}`}
             loading={loadingStats}
           />
         </div>

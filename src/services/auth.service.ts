@@ -1,5 +1,4 @@
 import { api } from './api';
-
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -14,9 +13,17 @@ export interface LoginResponse {
 }
 
 export const authService = {
-  login: async (credentials: { email: string; password: string; type?: string; schoolCode?: string }): Promise<LoginResponse> => {
+  login: async (credentials: {
+    email: string;
+    password: string;
+    type?: string;
+    schoolCode?: string;
+  }): Promise<LoginResponse> => {
     // Backend: POST /auth/login → ResponseInterceptor wraps as { success, data: { accessToken, refreshToken, user } }
-    const response = await api.post<{ success: boolean; data: LoginResponse }>('/auth/login', credentials);
+    const response = await api.post<{ success: boolean; data: LoginResponse }>(
+      '/auth/login',
+      credentials
+    );
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
@@ -29,6 +36,3 @@ export const authService = {
     await api.post('/auth/logout', { refreshToken });
   },
 };
-
-
-

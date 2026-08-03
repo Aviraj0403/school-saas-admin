@@ -35,6 +35,8 @@ export const navigationConfig: NavItem[] = [
       { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants', roles: ['SuperAdmin'] },
       { label: 'Tenant Roadmap', icon: PrimeIcons.COMPASS, path: '/superadmin/roadmap', roles: ['SuperAdmin'] },
       { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans', roles: ['SuperAdmin'] },
+      // Metrics and logs previously required SSH to the VPS.
+      { label: 'Observability', icon: PrimeIcons.CHART_LINE, path: '/superadmin/observability', roles: ['SuperAdmin'] },
     ],
   },
   {
@@ -70,6 +72,15 @@ export const navigationConfig: NavItem[] = [
     label: 'Roles & Permissions',
     icon: PrimeIcons.KEY,
     path: '/settings/roles',
+    module: 'core',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    // API access and webhooks are sold as plan features but could not be set
+    // up from the product — both endpoints existed with no UI.
+    label: 'Integrations',
+    icon: PrimeIcons.LINK,
+    path: '/settings/integrations',
     module: 'core',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },

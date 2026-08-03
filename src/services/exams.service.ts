@@ -67,8 +67,19 @@ export const examsService = {
       }
     }
     return flatSeating;
-  }
+  },
+
+  // ── Exam controller reports ────────────────────────────────────
+  // Two endpoints with no UI: the teacher/class coverage report and the
+  // weekly test summary a class teacher would use to spot gaps.
+
+  getTeacherClassReport: async () => {
+    const r = await api.get("/exam-controller/teacher-class-report");
+    return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
+  },
+
+  getWeeklySummary: async (classId: string) => {
+    const r = await api.get(`/exam-controller/weekly-summary/${classId}`);
+    return (r.data as any)?.data ?? null;
+  },
 };
-
-
-

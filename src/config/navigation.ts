@@ -162,6 +162,15 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
+    // Teacher/class coverage and the weekly test summary — two read-only
+    // exam-controller endpoints that had no UI.
+    label: 'Exam Reports',
+    icon: PrimeIcons.CHART_BAR,
+    path: '/exams/reports',
+    module: 'exam',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+  },
+  {
     label: 'Class Timetable',
     icon: PrimeIcons.CLOCK,
     path: '/academics/timetable',
@@ -288,6 +297,9 @@ export const navigationConfig: NavItem[] = [
       { label: 'Homepage Banners', icon: PrimeIcons.IMAGES, path: '/website/banners', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
       { label: 'Download Center', icon: PrimeIcons.DOWNLOAD, path: '/website/downloads', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
       { label: 'Admission Inquiries', icon: PrimeIcons.ENVELOPE, path: '/website/inquiries', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
+      // Page copy and photo gallery — public-facing and fully implemented
+      // server-side, with no UI until now.
+      { label: 'Pages & Gallery', icon: PrimeIcons.PENCIL, path: '/website/content', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
     ],
   },
   {

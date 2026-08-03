@@ -79,5 +79,45 @@ export const websiteService = {
   updateInquiryStatus: async (id: string, status: string): Promise<Inquiry> => {
     const res = await api.patch(`/website/admin/inquiries/${id}`, { status });
     return res.data;
-  }
+  },
+
+  // ── Pages & gallery ────────────────────────────────────────────
+  // The CMS shipped with banners, downloads and inquiries wired up, but the
+  // page editor and gallery endpoints had no UI at all — a school could not
+  // edit a word of its own website copy or publish a single photo.
+
+  listPages: async () => {
+    const r = await api.get("/website/admin/pages");
+    return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
+  },
+
+  upsertPage: async (slug: string, body: { title?: string; content?: string; isPublished?: boolean }) => {
+    const r = await api.patch(`/website/admin/pages/${slug}`, body);
+    return (r.data as any)?.data ?? r.data;
+  },
+
+  getGallery: async () => {
+    const r = await api.get("/website/gallery");
+    return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
+  },
+
+  getGalleryMedia: async (categoryId: string) => {
+    const r = await api.get(`/website/gallery/${categoryId}/media`);
+    return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
+  },
+
+  createGalleryCategory: async (body: { name: string; description?: string }) => {
+    const r = await api.post("/website/admin/gallery/categories", body);
+    return (r.data as any)?.data ?? r.data;
+  },
+
+  addGalleryMedia: async (categoryId: string, body: { url: string; caption?: string }) => {
+    const r = await api.post(`/website/admin/gallery/${categoryId}/media`, body);
+    return (r.data as any)?.data ?? r.data;
+  },
+
+  deleteGalleryMedia: async (id: string) => {
+    const r = await api.delete(`/website/admin/gallery/media/${id}`);
+    return (r.data as any)?.data ?? r.data;
+  },
 };

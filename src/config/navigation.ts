@@ -86,6 +86,30 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
   },
   {
+    // Employee register — a separate permission key from the classroom one
+    // (staff_attendance:*, admin-only) that had no UI at all until now.
+    label: 'Staff Attendance',
+    icon: PrimeIcons.CHECK_CIRCLE,
+    path: '/staff/attendance',
+    module: 'staff',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    label: 'Student Documents',
+    icon: PrimeIcons.ID_CARD,
+    path: '/students/documents',
+    module: 'student',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+  },
+  {
+    // Replaces the hardcoded telemetry panel that used to sit on /attendance.
+    label: 'Biometric Devices',
+    icon: PrimeIcons.SERVER,
+    path: '/attendance/devices',
+    module: 'attendance',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
     label: 'Staff Directory',
     icon: PrimeIcons.USERS,
     path: '/staff/directory',

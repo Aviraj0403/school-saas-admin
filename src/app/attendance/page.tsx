@@ -244,87 +244,24 @@ export default function AttendancePage() {
 
         {activeTab === 'biometric' ? (
           <div className="flex flex-col gap-6 animate-fade-in">
-            {/* Terminal Status telemetry */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500">Terminal Main</span>
-                    <h4 className="text-md font-bold text-zinc-900 dark:text-white mt-1">BIO-01-MAIN</h4>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                </div>
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-zinc-500">
-                  <div className="flex justify-between"><span>Status:</span><span className="text-emerald-500">ONLINE</span></div>
-                  <div className="flex justify-between"><span>IP Terminal:</span><span className="font-mono text-zinc-700 dark:text-zinc-300">192.168.1.120</span></div>
-                  <div className="flex justify-between"><span>Last Handshake:</span><span>Just now</span></div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500">Hostel Terminal</span>
-                    <h4 className="text-md font-bold text-zinc-900 dark:text-white mt-1">BIO-02-HOSTEL</h4>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                </div>
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-zinc-500">
-                  <div className="flex justify-between"><span>Status:</span><span className="text-emerald-500">ONLINE</span></div>
-                  <div className="flex justify-between"><span>IP Terminal:</span><span className="font-mono text-zinc-700 dark:text-zinc-300">192.168.1.121</span></div>
-                  <div className="flex justify-between"><span>Last Handshake:</span><span>3 mins ago</span></div>
-                </div>
-              </div>
-
-              <div className="bg-zinc-50 dark:bg-zinc-900 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col items-center justify-center text-center">
-                <i className="pi pi-plus text-lg text-blue-500 mb-1"></i>
-                <h4 className="text-xs font-bold text-zinc-800 dark:text-white">Add Biometric Terminal</h4>
-                <p className="text-[10px] text-zinc-500 mt-1 max-w-[200px]">Link physical fingerprint/face scanner punch logs uploads</p>
-              </div>
-            </div>
-
-            {/* Recent Logs Table */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm flex flex-col gap-4">
-              <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent Biometric Punches Sync Logs</h3>
-                <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">Real-Time Ingestion Enabled</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-500 uppercase font-semibold text-[10px] tracking-wider">
-                      <th className="py-2.5">User ID / Card Code</th>
-                      <th className="py-2.5">Student / Staff Name</th>
-                      <th className="py-2.5">Terminal ID</th>
-                      <th className="py-2.5">Timestamp</th>
-                      <th className="py-2.5">Auto-Resolved Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 font-medium text-zinc-700 dark:text-zinc-300">
-                    <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="py-3 font-mono">1001</td>
-                      <td className="py-3 text-zinc-900 dark:text-white">Aniket Sharma</td>
-                      <td className="py-3">BIO-01-MAIN</td>
-                      <td className="py-3">Today, 08:12 AM</td>
-                      <td className="py-3"><span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 text-[10px]">PRESENT</span></td>
-                    </tr>
-                    <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="py-3 font-mono">1002</td>
-                      <td className="py-3 text-zinc-900 dark:text-white">Kabir Mehra</td>
-                      <td className="py-3">BIO-01-MAIN</td>
-                      <td className="py-3">Today, 08:42 AM</td>
-                      <td className="py-3"><span className="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-600 text-[10px]">LATE</span></td>
-                    </tr>
-                    <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="py-3 font-mono">1003</td>
-                      <td className="py-3 text-zinc-900 dark:text-white">Rahul Sen</td>
-                      <td className="py-3">BIO-02-HOSTEL</td>
-                      <td className="py-3">Today, 11:15 AM</td>
-                      <td className="py-3"><span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[10px]">HALF_DAY</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            {/* This tab used to render hardcoded terminals — BIO-01-MAIN,
+                192.168.1.120, a pulsing ONLINE dot and a "Real-Time Ingestion
+                Enabled" badge — with no network call behind any of it, while the
+                real provisioning endpoints went unused. Device management now
+                lives on its own screen against those endpoints. */}
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-8 flex flex-col items-center text-center gap-3">
+              <i className="pi pi-server text-3xl text-blue-500"></i>
+              <h3 className="text-base font-bold text-zinc-800 dark:text-white">Biometric Units</h3>
+              <p className="text-xs text-zinc-500 max-w-md">
+                Provision fingerprint and face scanners, watch their heartbeat status, and revoke
+                units that are lost or decommissioned.
+              </p>
+              <a
+                href="/attendance/devices"
+                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md transition-all"
+              >
+                Manage Devices
+              </a>
             </div>
           </div>
         ) : (

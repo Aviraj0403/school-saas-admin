@@ -35,6 +35,32 @@ export const libraryService = {
     const response = await api.get<{ success: boolean; data: BookIssue[] }>('/library/issues/overdue');
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
+
+  // ── Fines ──────────────────────────────────────────────────────
+  // These endpoints did not exist until v34: the fines tab tracked paid/waived
+  // in React state, so every settlement was lost on refresh.
+
+  /** Outstanding fines — raised on return, neither paid nor waived. */
+  getFines: async () => {
+    const response = await api.get<{ success: boolean; data: any }>('/library/fines');
+    return (response.data as any)?.data ?? { total: 0, count: 0, issues: [] };
+  },
+
+  payFine: async (issueId: string) => {
+    const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/fine/pay`);
+    return (response.data as any)?.data ?? response.data;
+  },
+
+  waiveFine: async (issueId: string, note?: string) => {
+    const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/fine/waive`, { note });
+    return (response.data as any)?.data ?? response.data;
+  },
+
+  /** Borrowing history for one member (students see only their own). */
+  getMemberHistory: async (memberId: string) => {
+    const response = await api.get<{ success: boolean; data: BookIssue[] }>(`/library/issues/member/${memberId}`);
+    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
+  },
 };
 
 

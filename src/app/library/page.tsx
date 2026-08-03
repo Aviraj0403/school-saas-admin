@@ -12,6 +12,8 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { useBooksList, useCreateBook, useIssueBook, useReturnBook, useActiveIssues, useOverdueIssues } from '@/hooks/queries/useLibrary';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { libraryService } from '@/services/library.service';
 
 
 
@@ -30,41 +32,49 @@ export default function LibraryPage() {
   }, []);
 
   const { data: overdueIssuesData, isPending: loadingOverdues } = useOverdueIssues();
-  
-  // Local state for tracking paid/waived fines since backend doesn't persist fine payments yet
-  const [clearedFines, setClearedFines] = useState<Record<string, string>>({});
+  const queryClient = useQueryClient();
 
-  const finesList = (overdueIssuesData || []).map((issue: any) => {
-    // Calculate days overdue
+  // Fines come from the server now. This tab used to hold paid/waived in React
+  // state with a note that "backend doesn't persist fine payments yet" — every
+  // settlement was lost on refresh, and the amount shown was a hardcoded
+  // ₹10/day guess rather than the fine actually recorded on return.
+  const { data: finesData, isPending: loadingFines } = useQuery({
+    queryKey: ['library-fines'],
+    queryFn: libraryService.getFines,
+  });
+
+  const finesList = (finesData?.issues || []).map((issue: any) => {
     const due = new Date(issue.dueDate);
-    const today = new Date();
-    const diffTime = Math.abs(today.getTime() - due.getTime());
-    const daysOverdue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const fineAmount = daysOverdue * 10; // Rs 10 per day
-
+    const returned = issue.returnDate ? new Date(issue.returnDate) : new Date();
+    const daysOverdue = Math.max(0, Math.ceil((returned.getTime() - due.getTime()) / 86400000));
     return {
       id: issue.id,
-      studentName: issue.studentName || 'Unknown Student',
-      bookTitle: issue.bookTitle || issue.book?.title || 'Unknown Book',
-      fineAmount: clearedFines[issue.id] === 'WAIVED' ? 0 : fineAmount,
-      daysOverdue: daysOverdue,
-      status: clearedFines[issue.id] || 'UNPAID',
+      studentName: issue.issuedTo || 'Unknown',
+      bookTitle: issue.book?.title || 'Unknown Book',
+      fineAmount: Number(issue.fineAmount ?? 0),
+      daysOverdue,
+      status: issue.finePaid ? 'PAID' : issue.fineWaived ? 'WAIVED' : 'UNPAID',
     };
   });
 
-  const handlePayFine = (id: string) => {
-    setClearedFines(prev => ({ ...prev, [id]: 'PAID' }));
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Fine Paid', detail: 'Fine has been marked as paid.', life: 3000 }
-    }));
-  };
+  const refreshFines = () => queryClient.invalidateQueries({ queryKey: ['library-fines'] });
+  const toastEvent = (severity: string, summary: string, detail: string) =>
+    window.dispatchEvent(new CustomEvent('show-toast', { detail: { severity, summary, detail, life: 3000 } }));
 
-  const handleWaiveFine = (id: string) => {
-    setClearedFines(prev => ({ ...prev, [id]: 'WAIVED' }));
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'info', summary: 'Fine Waived', detail: 'Penalty has been waived.', life: 3000 }
-    }));
-  };
+  const payFineMutation = useMutation({
+    mutationFn: (id: string) => libraryService.payFine(id),
+    onSuccess: () => { refreshFines(); toastEvent('success', 'Fine Paid', 'Recorded against the issue.'); },
+    onError: () => toastEvent('error', 'Error', 'Could not record the payment.'),
+  });
+
+  const waiveFineMutation = useMutation({
+    mutationFn: (id: string) => libraryService.waiveFine(id),
+    onSuccess: () => { refreshFines(); toastEvent('info', 'Fine Waived', 'Penalty waived.'); },
+    onError: () => toastEvent('error', 'Error', 'Could not waive the fine.'),
+  });
+
+  const handlePayFine = (id: string) => payFineMutation.mutate(id);
+  const handleWaiveFine = (id: string) => waiveFineMutation.mutate(id);
 
   const [showAddBookDialog, setShowAddBookDialog] = useState(false);
   const [showIssueDialog, setShowIssueDialog] = useState(false);
@@ -389,10 +399,10 @@ export default function LibraryPage() {
             {/* Fine Collections Panel */}
             <TabPanel header="Fine Collections & Overdues">
               <div className="p-4">
-                {loadingOverdues ? (
+                {loadingFines ? (
                   <div className="p-12 flex flex-col items-center justify-center gap-3">
                     <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-semibold text-zinc-400">Loading overdues...</span>
+                    <span className="text-sm font-semibold text-zinc-400">Loading fines...</span>
                   </div>
                 ) : finesList.length === 0 ? (
                   <p className="p-8 text-center text-zinc-400">No overdue books or fines found.</p>

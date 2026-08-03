@@ -65,6 +65,15 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
+    // The RBAC module's ten endpoints had no UI on either client, so roles and
+    // grants could only be changed by seeding or direct SQL.
+    label: 'Roles & Permissions',
+    icon: PrimeIcons.KEY,
+    path: '/settings/roles',
+    module: 'core',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
     label: 'User Directories',
     isSection: true,
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],

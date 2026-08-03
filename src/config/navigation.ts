@@ -207,7 +207,11 @@ export const navigationConfig: NavItem[] = [
     label: 'Payroll & Salary',
     icon: PrimeIcons.MONEY_BILL,
     path: '/fee/payroll',
-    module: 'hr-payroll',
+    // Must match the backend module key exactly: @RequiresModule('hr_payroll').
+    // The sidebar filter falls back to plural/singular forms but never
+    // hyphen-to-underscore, so 'hr-payroll' never matched and the item was
+    // hidden even for schools that had the module switched on.
+    module: 'hr_payroll',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
   },
   {

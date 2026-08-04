@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { navigationConfig, NavItem } from '@/config/navigation';
+import { navigationConfig, canAccessNav, NavItem } from '@/config/navigation';
 import { classNames } from 'primereact/utils';
 
 interface AppSidebarProps {
@@ -24,8 +24,9 @@ export default function AppSidebar({ isOpen, onClose, size = 'default', onToggle
 
   // Filter navigation based on user role and tenant active modules recursively
   const filterNavItem = (item: NavItem): NavItem | null => {
-    // Check role restriction
-    if (item.roles && !item.roles.includes(activeUser.role)) {
+    // Check role restriction. Compared on normalized slugs — see canAccessNav
+    // for why raw equality against activeUser.role never matched.
+    if (!canAccessNav(item.roles, activeUser.role)) {
       return null;
     }
     // Check module restriction

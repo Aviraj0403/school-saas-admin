@@ -10,6 +10,42 @@ export interface NavItem {
   children?: NavItem[];
   isSection?: boolean; // For grouping headers
 }
+
+/**
+ * Role names in this file are display names ('Teacher', 'Parent', 'Accountant')
+ * but `activeUser.role` holds the backend role *slug* — 'teacher', 'parent',
+ * 'accountant' (useAuthStore reads `roles[0].slug` straight from the login
+ * response). String equality between the two never held, so every nav entry
+ * that did not also list 'school_admin' or 'SuperAdmin' was invisible to the
+ * exact role it was written for. Matching therefore normalizes both sides.
+ *
+ * 'Principal' and 'Warden' are not roles the backend has. TenantService
+ * .createDefaultRoles seeds precisely six: school_admin, teacher, accountant,
+ * librarian, parent, student. Both are aliased to school_admin, which is what
+ * the seed data itself does — its "Principal" staff member is created with
+ * roleSlug 'school_admin' — and it is what makes the hostel warden pages
+ * reachable at all. If either ever becomes a real seeded role, delete its alias
+ * here and the entries start resolving on their own.
+ */
+const ROLE_ALIASES: Record<string, string> = {
+  principal: 'school_admin',
+  warden: 'school_admin',
+  admin: 'school_admin',
+  schooladmin: 'school_admin',
+};
+
+export function normalizeRole(role: string): string {
+  const key = role.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  return ROLE_ALIASES[key] ?? ROLE_ALIASES[key.replace(/_/g, '')] ?? key;
+}
+
+/** An item with no `roles` is open to every role that has the module. */
+export function canAccessNav(itemRoles: Role[] | undefined, userRole: string): boolean {
+  if (!itemRoles || itemRoles.length === 0) return true;
+  const mine = normalizeRole(userRole);
+  return itemRoles.some((r) => normalizeRole(r) === mine);
+}
+
 export const navigationConfig: NavItem[] = [
   {
     label: 'Overview',
@@ -236,18 +272,20 @@ export const navigationConfig: NavItem[] = [
   {
     label: 'School Operations',
     isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent', 'Warden'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent', 'Warden', 'Librarian'],
   },
   {
+    // 'Librarian' is a seeded backend role that appeared nowhere in this file,
+    // so a librarian login reached none of the library screens.
     label: 'Library',
     icon: PrimeIcons.BOOK,
     path: '/library',
     module: 'library',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'],
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'],
     children: [
-      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library/books', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'] },
-      { label: 'Book Issue', icon: PrimeIcons.REPLAY, path: '/library/issues', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library/fines', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'] },
+      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library/books', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'] },
+      { label: 'Book Issue', icon: PrimeIcons.REPLAY, path: '/library/issues', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian'] },
+      { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library/fines', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Accountant'] },
     ],
   },
   {

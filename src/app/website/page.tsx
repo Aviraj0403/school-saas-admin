@@ -19,15 +19,25 @@ import {
 export default function WebsiteCMSPage() {
   const [activeTab, setActiveTab] = useState<'banners' | 'downloads' | 'inquiries'>('banners');
 
+  // The sidebar links to /website/banners, /website/downloads and
+  // /website/inquiries, each a re-export of this page. Only ?tab= was read, so
+  // all three landed on Banners and the three nav entries looked like one
+  // screen (§7.10). The other tabbed sections resolve the pathname too.
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam === 'banners') setActiveTab('banners');
-      else if (tabParam === 'downloads') setActiveTab('downloads');
-      else if (tabParam === 'inquiries') setActiveTab('inquiries');
+      if (pathname.includes('/banners') || tabParam === 'banners') setActiveTab('banners');
+      else if (pathname.includes('/downloads') || tabParam === 'downloads') setActiveTab('downloads');
+      else if (pathname.includes('/inquiries') || tabParam === 'inquiries') setActiveTab('inquiries');
     }
   }, []);
+
+  const selectTab = (tab: 'banners' | 'downloads' | 'inquiries') => {
+    setActiveTab(tab);
+    window.history.pushState({}, '', `/website/${tab}`);
+  };
   
   // Modals state
   const [showBannerDialog, setShowBannerDialog] = useState(false);
@@ -117,15 +127,15 @@ export default function WebsiteCMSPage() {
 
         {/* Tab Menu */}
         <div className="flex bg-zinc-100/50 dark:bg-zinc-900/60 p-1.5 rounded-md border border-zinc-200/40 dark:border-zinc-800 w-max overflow-x-auto max-w-full">
-          <button onClick={() => setActiveTab('banners')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'banners' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
+          <button onClick={() => selectTab('banners')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'banners' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
             <i className="pi pi-images mr-2 text-[10px]"></i>
             Homepage Sliders
           </button>
-          <button onClick={() => setActiveTab('downloads')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'downloads' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
+          <button onClick={() => selectTab('downloads')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'downloads' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
             <i className="pi pi-download mr-2 text-[10px]"></i>
             Download Center
           </button>
-          <button onClick={() => setActiveTab('inquiries')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'inquiries' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
+          <button onClick={() => selectTab('inquiries')} className={`p-2 px-5 rounded-md text-xs font-bold transition-all ${activeTab === 'inquiries' ? 'bg-white dark:bg-zinc-950 text-primary shadow-sm' : 'text-zinc-500'}`}>
             <i className="pi pi-envelope mr-2 text-[10px]"></i>
             Admission Leads ({inquiries.filter(i => i.status === 'NEW').length})
           </button>

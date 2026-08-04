@@ -12,10 +12,11 @@ import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents
 import { useStudentDues } from '@/hooks/queries/useFee';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { studentsService } from '@/services/students.service';
+import { analyticsService } from '@/services/analytics.service';
 import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
 import { canManageProfilePhotos } from '@/lib/permissions';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 
@@ -31,6 +32,15 @@ export default function StudentDetailsPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const activeUser = useAuthStore((s) => s.activeUser);
   const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
+
+  // Only fetched once the tab is open — the endpoint is school_admin-gated, so
+  // firing it on every student page view would 403 for everyone else.
+  const { data: activityData, isPending: loadingActivity } = useQuery({
+    queryKey: ['activity-log', 'student', id],
+    queryFn: () => analyticsService.getActivityLog(1, 50, { subjectId: id }),
+    enabled: activeTab === 'audit_logs' && Boolean(id),
+  });
+  const activityLog = activityData?.items ?? [];
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -378,29 +388,49 @@ export default function StudentDetailsPage() {
           <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden p-4">
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Student Academic & System Activity Trail</h3>
-                <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">Roster Auditing Active</span>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Student Academic &amp; System Activity Trail</h3>
+                {!loadingActivity && (
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
+                    {activityLog.length} {activityLog.length === 1 ? 'entry' : 'entries'}
+                  </span>
+                )}
               </div>
 
+              {/* This list used to be five invented events — a biometric handshake
+                  at BIO-01-MAIN, a hostel allocation, a homework submission —
+                  rendered under a "Roster Auditing Active" badge for whichever
+                  real, named student was open. It now reads the activity_logs
+                  table through /analytics/activity-log, filtered to this
+                  student, and shows nothing when there is nothing. */}
               <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-80 overflow-y-auto">
-                {[
-                  { action: 'Marked Present via biometric handshake', category: 'ATTENDANCE', terminal: 'BIO-01-MAIN', time: 'Today, 08:12 AM' },
-                  { action: 'Allocated to Hostel Room 104', category: 'HOSTEL', terminal: 'Warden Logbook', time: 'Yesterday, 04:30 PM' },
-                  { action: 'Assigned Commute stop: City Center Stop (Route A)', category: 'TRANSPORT', terminal: 'Admin console', time: '2026-05-26, 02:15 PM' },
-                  { action: 'English Poetry Homework Assignment submitted', category: 'HOMEWORK', terminal: 'Student Console', time: '2026-05-25, 08:50 PM' },
-                  { action: 'Tuition Fee invoice generated (Third Term Fees)', category: 'FINANCE', terminal: 'Automated Billing', time: '2026-05-20, 10:00 AM' }
-                ].map((log, i) => (
-                  <div key={i} className="py-3 flex justify-between items-start gap-4 text-xs font-medium">
-                    <div>
-                      <p className="text-zinc-900 dark:text-zinc-200">{log.action}</p>
-                      <div className="flex gap-2 items-center text-[10px] text-zinc-500 mt-1">
-                        <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 px-1.5 py-0.5 rounded-sm font-bold uppercase">{log.category}</span>
-                        <span>· Via {log.terminal}</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">{log.time}</span>
+                {loadingActivity ? (
+                  <p className="py-6 text-center text-xs text-zinc-500">Loading activity…</p>
+                ) : activityLog.length === 0 ? (
+                  <div className="py-8 text-center flex flex-col items-center gap-2">
+                    <i className="pi pi-inbox text-2xl text-zinc-300 dark:text-zinc-700"></i>
+                    <p className="text-xs text-zinc-500">No recorded activity for this student yet.</p>
+                    <p className="text-[10px] text-zinc-400 max-w-xs">
+                      Entries appear here as modules write to the audit log.
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  activityLog.map((log: any) => (
+                    <div key={log.id} className="py-3 flex justify-between items-start gap-4 text-xs font-medium">
+                      <div>
+                        <p className="text-zinc-900 dark:text-zinc-200">{log.action}</p>
+                        <div className="flex gap-2 items-center text-[10px] text-zinc-500 mt-1">
+                          <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 px-1.5 py-0.5 rounded-sm font-bold uppercase">
+                            {log.subject}
+                          </span>
+                          {log.user?.name && <span>· by {log.user.name}</span>}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">
+                        {new Date(log.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </Card>

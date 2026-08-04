@@ -310,109 +310,55 @@ export default function TenantsPage() {
           </button>
         </div>
 
-        {/* Dynamic Telemetry Sections */}
+        {/* Dynamic Telemetry Sections
+            Both panels below used to render fabricated data as if it were live:
+            two terminals (BIO-01-MAIN at 192.168.1.120, "Last Ping: Just now")
+            with ONLINE tags, a "JITSI INTEGRATION ACTIVE" badge over two
+            invented rooms attributed to named schools, and an "Inject Biometric
+            Punch" button that fired a success toast reading "Attendance
+            registered in the database" without making a single network call —
+            a confirmation of a write that never happened.
+
+            Neither had an endpoint behind it, and neither could: device
+            telemetry and online classes are both tenant-scoped, so there is no
+            cross-tenant feed for this superadmin view to read. They now point
+            at the real per-school screens instead of imitating them. */}
         {viewMode === 'biometrics' && (
           <div className="flex flex-col gap-6 animate-fade-in">
-            {/* Devices telemetry */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Terminal Code</span>
-                    <h4 className="text-md font-bold text-zinc-800 dark:text-white mt-1">BIO-01-MAIN</h4>
-                  </div>
-                  <Tag value="ONLINE" severity="success" className="font-bold text-[9px]" />
-                </div>
-                <div className="border-t border-zinc-100 dark:border-zinc-800/80 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-zinc-450">
-                  <div className="flex justify-between"><span>IP Address:</span><span className="font-mono text-zinc-700 dark:text-zinc-350">192.168.1.120</span></div>
-                  <div className="flex justify-between"><span>Last Ping:</span><span>Just now</span></div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Terminal Code</span>
-                    <h4 className="text-md font-bold text-zinc-800 dark:text-white mt-1">BIO-02-HOSTEL</h4>
-                  </div>
-                  <Tag value="ONLINE" severity="success" className="font-bold text-[9px]" />
-                </div>
-                <div className="border-t border-zinc-100 dark:border-zinc-800/80 pt-3 mt-4 text-xs flex flex-col gap-1.5 font-semibold text-zinc-450">
-                  <div className="flex justify-between"><span>IP Address:</span><span className="font-mono text-zinc-700 dark:text-zinc-350">192.168.1.121</span></div>
-                  <div className="flex justify-between"><span>Last Ping:</span><span>3 mins ago</span></div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm border-dashed flex flex-col items-center justify-center py-6 text-center">
-                <i className="pi pi-plus text-2xl text-blue-500 mb-2"></i>
-                <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Register Biometric Device</p>
-                <p className="text-[10px] text-zinc-400 mt-0.5">Generate API key and connect physical logs upload</p>
-              </div>
-            </div>
-
-            {/* Simulated punch test */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm flex flex-col gap-4">
-              <h3 className="text-md font-bold text-zinc-850 dark:text-white">Simulate Device Punch (API Testing)</h3>
-              <div className="flex gap-4 items-end flex-wrap">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Terminal</label>
-                  <Dropdown value="BIO-01-MAIN" options={['BIO-01-MAIN', 'BIO-02-HOSTEL']} onChange={() => {}} className="w-48" />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Roll No / Staff Code</label>
-                  <InputText placeholder="e.g. 1001" className="p-2 border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 rounded-md w-48 text-sm" />
-                </div>
-                <Button 
-                  label="Inject Biometric Punch" 
-                  icon="pi pi-bolt" 
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2.5 px-4 rounded-xl text-xs border-0" 
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('show-toast', {
-                      detail: {
-                        severity: 'success',
-                        summary: 'Punch Log Ingested',
-                        detail: 'Processed successfully. Attendance registered in the database.',
-                        life: 3000
-                      }
-                    }));
-                  }}
-                />
-              </div>
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-8 shadow-sm flex flex-col items-center text-center gap-3">
+              <i className="pi pi-print text-3xl text-blue-500"></i>
+              <h3 className="text-base font-bold text-zinc-800 dark:text-white">Biometric Terminals</h3>
+              <p className="text-xs text-zinc-500 max-w-md">
+                Device provisioning, heartbeat status and punch ingestion are per-school.
+                Switch into a tenant from the list below, then open Attendance → Devices to
+                see its real terminals.
+              </p>
+              <a
+                href="/attendance/devices"
+                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all no-underline"
+              >
+                Open Device Manager
+              </a>
             </div>
           </div>
         )}
 
         {viewMode === 'jitsi' && (
           <div className="flex flex-col gap-6 animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-5 shadow-sm flex flex-col gap-4">
-              <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
-                <h3 className="text-md font-bold text-zinc-850 dark:text-white">Active Online Class Rooms</h3>
-                <Tag value="JITSI INTEGRATION ACTIVE" severity="info" className="font-bold text-[9px]" />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-zinc-800 dark:text-white">demo-room-slot-jitsi-meet-1</span>
-                    <span className="text-[10px] text-zinc-400">Delhi Public School · Grade 10-A Math</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
-                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-xl" />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-150/40 dark:border-zinc-800/80 text-xs">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-zinc-800 dark:text-white">demo-room-slot-jitsi-meet-2</span>
-                    <span className="text-[10px] text-zinc-400">Oakridge International · Grade 11-B Physics</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button icon="pi pi-eye" rounded text severity="secondary" size="small" />
-                    <Button label="Join Meeting" icon="pi pi-video" className="bg-emerald-500 text-white font-bold text-[10px] p-1.5 px-3 border-0 rounded-xl" />
-                  </div>
-                </div>
-              </div>
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-8 shadow-sm flex flex-col items-center text-center gap-3">
+              <i className="pi pi-video text-3xl text-blue-500"></i>
+              <h3 className="text-base font-bold text-zinc-800 dark:text-white">Online Class Rooms</h3>
+              <p className="text-xs text-zinc-500 max-w-md">
+                Scheduled Jitsi rooms belong to a school&apos;s academics module. Switch into a
+                tenant from the list below, then open Academics → Online Classes to see and
+                join its real sessions. There is no cross-tenant live feed.
+              </p>
+              <a
+                href="/academics/online-classes"
+                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all no-underline"
+              >
+                Open Online Classes
+              </a>
             </div>
           </div>
         )}

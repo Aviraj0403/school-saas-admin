@@ -37,10 +37,13 @@ export const analyticsService = {
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
-  getActivityLog: async (page = 1, limit = 10) => {
+  /** `subjectId` narrows the log to one record's own history (e.g. a student). */
+  getActivityLog: async (page = 1, limit = 10, opts: { subject?: string; subjectId?: string } = {}) => {
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: limit.toString()
+      limit: limit.toString(),
+      ...(opts.subject ? { subject: opts.subject } : {}),
+      ...(opts.subjectId ? { subjectId: opts.subjectId } : {})
     });
     const response = await api.get<any>(`/analytics/activity-log?${params.toString()}`);
     const items = response.data.data?.items ?? [];

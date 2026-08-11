@@ -5,7 +5,10 @@ export const leaveService = {
   apply: async (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string; leaveType?: string }) => {
     const payload = {
       applicantId: data.applicantId,
-      applicantType: data.applicantType.toLowerCase(),
+      // Sent uppercase, as ApplyLeaveDto requires. This used to call
+      // .toLowerCase(), which the backend rejected outright — filing leave from
+      // this screen returned 400 every time.
+      applicantType: data.applicantType.toUpperCase(),
       leaveType: data.leaveType || 'sick',
       fromDate: data.startDate,
       toDate: data.endDate,

@@ -35,7 +35,10 @@ const ROLE_ALIASES: Record<string, string> = {
 };
 
 export function normalizeRole(role: string): string {
-  const key = role.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  const key = role
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
   return ROLE_ALIASES[key] ?? ROLE_ALIASES[key.replace(/_/g, '')] ?? key;
 }
 
@@ -57,71 +60,92 @@ export const navigationConfig: NavItem[] = [
     path: '/dashboard',
   },
   {
-    label: 'School Administration',
+    label: 'System Admin Registry',
     isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ['SuperAdmin'],
   },
   {
-    label: 'System Admin Registry',
+    label: 'SaaS Control Plane',
     icon: PrimeIcons.SHIELD,
     path: '/superadmin',
     roles: ['SuperAdmin'],
     children: [
       { label: 'Global Users', icon: PrimeIcons.USERS, path: '/users', roles: ['SuperAdmin'] },
-      { label: 'Tenant Schools', icon: PrimeIcons.BUILDING, path: '/superadmin/tenants', roles: ['SuperAdmin'] },
-      { label: 'Tenant Roadmap', icon: PrimeIcons.COMPASS, path: '/superadmin/roadmap', roles: ['SuperAdmin'] },
-      { label: 'SaaS Plans', icon: PrimeIcons.STAR, path: '/superadmin/plans', roles: ['SuperAdmin'] },
-      // Metrics and logs previously required SSH to the VPS.
-      { label: 'Observability', icon: PrimeIcons.CHART_LINE, path: '/superadmin/observability', roles: ['SuperAdmin'] },
+      {
+        label: 'Tenant Schools',
+        icon: PrimeIcons.BUILDING,
+        path: '/superadmin/tenants',
+        roles: ['SuperAdmin'],
+      },
+      {
+        label: 'Tenant Roadmap',
+        icon: PrimeIcons.COMPASS,
+        path: '/superadmin/roadmap',
+        roles: ['SuperAdmin'],
+      },
+      {
+        label: 'SaaS Plans',
+        icon: PrimeIcons.STAR,
+        path: '/superadmin/plans',
+        roles: ['SuperAdmin'],
+      },
+      {
+        label: 'Observability',
+        icon: PrimeIcons.CHART_LINE,
+        path: '/superadmin/observability',
+        roles: ['SuperAdmin'],
+      },
     ],
   },
   {
-    label: 'Core Setup & Mapping',
-    icon: PrimeIcons.COG,
+    label: 'School Setup (Steps 1-6)',
+    isSection: true,
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    label: '1. Academic Years',
+    icon: PrimeIcons.CALENDAR,
     path: '/academics/terms',
     module: 'academics',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
-    children: [
-      { label: 'Academic Years', icon: PrimeIcons.CALENDAR, path: '/academics/terms', module: 'academics', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Departments', icon: PrimeIcons.SITEMAP, path: '/academics/departments', module: 'academics', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Subjects', icon: PrimeIcons.BOOK, path: '/academics/subjects', module: 'academics', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Classes & Sections', icon: PrimeIcons.HOME, path: '/academics/classes', module: 'academics', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-    ],
   },
   {
-    label: 'New Admission',
+    label: '2. Staff & Teachers',
+    icon: PrimeIcons.USERS,
+    path: '/staff/directory',
+    module: 'staff',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    label: '3. Classes & Sections',
+    icon: PrimeIcons.HOME,
+    path: '/academics/classes',
+    module: 'academics',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    label: '4. Student Admission',
     icon: PrimeIcons.USER_PLUS,
     path: '/students/admissions',
     module: 'student',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
-    label: 'Platform Settings',
-    icon: PrimeIcons.SLIDERS_V,
-    path: '/settings',
-    module: 'core',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    label: '5. Fee Slabs & Invoices',
+    icon: PrimeIcons.TICKET,
+    path: '/fee/slabs',
+    module: 'fee',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
   },
   {
-    // The RBAC module's ten endpoints had no UI on either client, so roles and
-    // grants could only be changed by seeding or direct SQL.
-    label: 'Roles & Permissions',
-    icon: PrimeIcons.KEY,
-    path: '/settings/roles',
-    module: 'core',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
-  },
-  {
-    // API access and webhooks are sold as plan features but could not be set
-    // up from the product — both endpoints existed with no UI.
-    label: 'Integrations',
+    label: '6. Setup & Integrations',
     icon: PrimeIcons.LINK,
     path: '/settings/integrations',
     module: 'core',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
-    label: 'User Directories',
+    label: 'School Directories',
     isSection: true,
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
   },
@@ -133,8 +157,13 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
   },
   {
-    // Employee register — a separate permission key from the classroom one
-    // (staff_attendance:*, admin-only) that had no UI at all until now.
+    label: 'Student Documents',
+    icon: PrimeIcons.FOLDER,
+    path: '/students/documents',
+    module: 'student',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+  },
+  {
     label: 'Staff Attendance',
     icon: PrimeIcons.CHECK_CIRCLE,
     path: '/staff/attendance',
@@ -142,14 +171,6 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
-    label: 'Student Documents',
-    icon: PrimeIcons.ID_CARD,
-    path: '/students/documents',
-    module: 'student',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
-  },
-  {
-    // Replaces the hardcoded telemetry panel that used to sit on /attendance.
     label: 'Biometric Devices',
     icon: PrimeIcons.SERVER,
     path: '/attendance/devices',
@@ -157,16 +178,22 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
   {
-    label: 'Staff Directory',
-    icon: PrimeIcons.USERS,
-    path: '/staff/directory',
-    module: 'staff',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
-  },
-
-  {
     label: 'Academics & Learning',
     isSection: true,
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+  },
+  {
+    label: 'Attendance Tracker',
+    icon: PrimeIcons.CHECK_SQUARE,
+    path: '/attendance',
+    module: 'attendance',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+  },
+  {
+    label: 'Class Timetable',
+    icon: PrimeIcons.CLOCK,
+    path: '/academics/timetable',
+    module: 'academics',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
@@ -177,14 +204,7 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
   },
   {
-    label: 'Attendance',
-    icon: PrimeIcons.CHECK_SQUARE,
-    path: '/attendance',
-    module: 'attendance',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
-  },
-  {
-    label: 'Assignments',
+    label: 'Assignments & Homework',
     icon: PrimeIcons.UPLOAD,
     path: '/assignments',
     module: 'homework',
@@ -198,20 +218,11 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
-    // Teacher/class coverage and the weekly test summary — two read-only
-    // exam-controller endpoints that had no UI.
     label: 'Exam Reports',
     icon: PrimeIcons.CHART_BAR,
     path: '/exams/reports',
     module: 'exam',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
-  },
-  {
-    label: 'Class Timetable',
-    icon: PrimeIcons.CLOCK,
-    path: '/academics/timetable',
-    module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
     label: 'Online Classes',
@@ -228,9 +239,23 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'],
   },
   {
-    label: 'HR & Payroll',
+    label: 'Finance & HR',
     isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant', 'Teacher'],
+    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin', 'Parent', 'Student'],
+  },
+  {
+    label: 'Fee Payments',
+    icon: PrimeIcons.TICKET,
+    path: '/fee/slabs',
+    module: 'fee',
+    roles: ['Parent', 'Student'],
+  },
+  {
+    label: 'Online Collections',
+    icon: PrimeIcons.CREDIT_CARD,
+    path: '/fee/ledgers',
+    module: 'fee',
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
   },
   {
     label: 'Leave Applications',
@@ -243,77 +268,98 @@ export const navigationConfig: NavItem[] = [
     label: 'Payroll & Salary',
     icon: PrimeIcons.MONEY_BILL,
     path: '/fee/payroll',
-    // Must match the backend module key exactly: @RequiresModule('hr_payroll').
-    // The sidebar filter falls back to plural/singular forms but never
-    // hyphen-to-underscore, so 'hr-payroll' never matched and the item was
-    // hidden even for schools that had the module switched on.
     module: 'hr_payroll',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
   },
   {
-    label: 'Finance & Accounts',
+    label: 'Operations & Outreach',
     isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin', 'Parent', 'Student'],
+    roles: [
+      'SuperAdmin',
+      'Principal',
+      'school_admin',
+      'Teacher',
+      'Student',
+      'Parent',
+      'Warden',
+      'Librarian',
+    ],
   },
   {
-    label: 'Fee Invoices & Slabs',
-    icon: PrimeIcons.TICKET,
-    path: '/fee/slabs',
-    module: 'fee',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant', 'Parent', 'Student'],
-  },
-  {
-    label: 'Online Collections',
-    icon: PrimeIcons.CREDIT_CARD,
-    path: '/fee/ledgers',
-    module: 'fee',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
-  },
-  {
-    label: 'School Operations',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent', 'Warden', 'Librarian'],
-  },
-  {
-    // 'Librarian' is a seeded backend role that appeared nowhere in this file,
-    // so a librarian login reached none of the library screens.
-    label: 'Library',
+    label: 'Library Management',
     icon: PrimeIcons.BOOK,
     path: '/library',
     module: 'library',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'],
     children: [
-      { label: 'All Books', icon: PrimeIcons.BOOKMARK, path: '/library/books', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'] },
-      { label: 'Book Issue', icon: PrimeIcons.REPLAY, path: '/library/issues', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian'] },
-      { label: 'Fine Collections', icon: PrimeIcons.DOLLAR, path: '/library/fines', module: 'library', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Accountant'] },
+      {
+        label: 'All Books',
+        icon: PrimeIcons.BOOKMARK,
+        path: '/library/books',
+        module: 'library',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'],
+      },
+      {
+        label: 'Book Issue',
+        icon: PrimeIcons.REPLAY,
+        path: '/library/issues',
+        module: 'library',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian'],
+      },
+      {
+        label: 'Fine Collections',
+        icon: PrimeIcons.DOLLAR,
+        path: '/library/fines',
+        module: 'library',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Accountant'],
+      },
     ],
   },
   {
-    label: 'Transport',
+    label: 'Transport Management',
     icon: PrimeIcons.CAR,
     path: '/transport',
     module: 'transport',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
     children: [
-      { label: 'Vehicle Directory', icon: PrimeIcons.CAR, path: '/transport/vehicles', module: 'transport', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Routes & Stops', icon: PrimeIcons.MAP_MARKER, path: '/transport/routes', module: 'transport', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'] },
+      {
+        label: 'Vehicle Directory',
+        icon: PrimeIcons.CAR,
+        path: '/transport/vehicles',
+        module: 'transport',
+        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+      },
+      {
+        label: 'Routes & Stops',
+        icon: PrimeIcons.MAP_MARKER,
+        path: '/transport/routes',
+        module: 'transport',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+      },
     ],
   },
   {
-    label: 'Hostel',
+    label: 'Hostel Management',
     icon: PrimeIcons.BUILDING,
     path: '/hostel',
     module: 'hostel',
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden', 'Student'],
     children: [
-      { label: 'Hostel Rooms', icon: PrimeIcons.HOME, path: '/hostel/rooms', module: 'hostel', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden'] },
-      { label: 'Room Allocations', icon: PrimeIcons.KEY, path: '/hostel/allocations', module: 'hostel', roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden', 'Student'] },
+      {
+        label: 'Hostel Rooms',
+        icon: PrimeIcons.HOME,
+        path: '/hostel/rooms',
+        module: 'hostel',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden'],
+      },
+      {
+        label: 'Room Allocations',
+        icon: PrimeIcons.KEY,
+        path: '/hostel/allocations',
+        module: 'hostel',
+        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden', 'Student'],
+      },
     ],
-  },
-  {
-    label: 'Communication & Outreach',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
     label: 'Announcements',
@@ -323,7 +369,7 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
   },
   {
-    label: 'WhatsApp',
+    label: 'WhatsApp Business',
     icon: PrimeIcons.WHATSAPP,
     path: '/whatsapp',
     module: 'whatsapp',
@@ -336,19 +382,60 @@ export const navigationConfig: NavItem[] = [
     module: 'website',
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
     children: [
-      { label: 'Homepage Banners', icon: PrimeIcons.IMAGES, path: '/website/banners', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Download Center', icon: PrimeIcons.DOWNLOAD, path: '/website/downloads', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      { label: 'Admission Inquiries', icon: PrimeIcons.ENVELOPE, path: '/website/inquiries', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
-      // Page copy and photo gallery — public-facing and fully implemented
-      // server-side, with no UI until now.
-      { label: 'Pages & Gallery', icon: PrimeIcons.PENCIL, path: '/website/content', module: 'website', roles: ['SuperAdmin', 'Principal', 'school_admin'] },
+      {
+        label: 'Homepage Banners',
+        icon: PrimeIcons.IMAGES,
+        path: '/website/banners',
+        module: 'website',
+        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+      },
+      {
+        label: 'Download Center',
+        icon: PrimeIcons.DOWNLOAD,
+        path: '/website/downloads',
+        module: 'website',
+        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+      },
+      {
+        label: 'Admission Inquiries',
+        icon: PrimeIcons.ENVELOPE,
+        path: '/website/inquiries',
+        module: 'website',
+        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+      },
+      {
+        label: 'Pages & Gallery',
+        icon: PrimeIcons.PENCIL,
+        path: '/website/content',
+        module: 'website',
+        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+      },
     ],
   },
   {
-    label: 'Analytics',
+    label: 'Settings & Analytics',
+    isSection: true,
+    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
+  },
+  {
+    label: 'System Analytics',
     icon: PrimeIcons.CHART_BAR,
     path: '/analytics',
     module: 'analytics',
     roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
+  },
+  {
+    label: 'Roles & Permissions',
+    icon: PrimeIcons.KEY,
+    path: '/settings/roles',
+    module: 'core',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+  },
+  {
+    label: 'Platform Settings',
+    icon: PrimeIcons.SLIDERS_V,
+    path: '/settings',
+    module: 'core',
+    roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
 ];

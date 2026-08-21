@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -132,7 +132,10 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  transition: background-color 0.5s ease, background-image 0.5s ease, color 0.3s ease;
+  transition:
+    background-color 0.5s ease,
+    background-image 0.5s ease,
+    color 0.3s ease;
 }
 
 /* PrimeReact theme overrides - Sokudo Style Buttons */
@@ -144,7 +147,9 @@ body {
 }
 
 .p-button.p-button-primary,
-.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-success):not(.p-button-info):not(.p-button-warning):not(.p-button-danger) {
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(
+    .p-button-success
+  ):not(.p-button-info):not(.p-button-warning):not(.p-button-danger) {
   background: var(--primary-color);
   border-color: var(--primary-color);
 }
@@ -311,26 +316,30 @@ textarea:-webkit-autofill:focus {
 }
 .premium-glow-effect:hover {
   transform: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Premium PrimeReact Panel and Overlay Overrides */
-.p-dropdown-panel, 
-.p-multiselect-panel, 
-.p-datepicker, 
-.p-overlaypanel, 
+.p-dropdown-panel,
+.p-multiselect-panel,
+.p-datepicker,
+.p-overlaypanel,
 .p-selectbutton,
 .p-menu {
   background: var(--card-bg) !important;
   background-color: var(--card-bg) !important;
   color: var(--foreground) !important;
   border: 1px solid var(--border-color) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   border-radius: 0.5rem !important;
 }
 
 /* Item hover and select effects */
-.p-dropdown-items .p-dropdown-item, 
+.p-dropdown-items .p-dropdown-item,
 .p-multiselect-items .p-multiselect-item,
 .p-menuitem-link {
   color: var(--foreground) !important;
@@ -340,14 +349,14 @@ textarea:-webkit-autofill:focus {
   transition: all 0.15s ease !important;
 }
 
-.p-dropdown-items .p-dropdown-item:hover, 
+.p-dropdown-items .p-dropdown-item:hover,
 .p-multiselect-items .p-multiselect-item:hover,
 .p-menuitem-link:hover {
   background: color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
   color: var(--primary-color) !important;
 }
 
-.p-dropdown-items .p-dropdown-item.p-highlight, 
+.p-dropdown-items .p-dropdown-item.p-highlight,
 .p-multiselect-items .p-multiselect-item.p-highlight {
   background: var(--primary-color) !important;
   color: #ffffff !important;
@@ -395,9 +404,9 @@ textarea:-webkit-autofill:focus {
 }
 
 /* Dark mode specific fine-tuning */
-.dark .p-dropdown-panel, 
-.dark .p-multiselect-panel, 
-.dark .p-datepicker, 
+.dark .p-dropdown-panel,
+.dark .p-multiselect-panel,
+.dark .p-datepicker,
 .dark .p-overlaypanel,
 .dark .p-menu {
   border-color: var(--border-color) !important;
@@ -421,8 +430,14 @@ textarea:-webkit-autofill:focus {
 
 /* Elite Micro-animations */
 @keyframes slide-up-fade {
-  0% { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-slide-up {
@@ -430,8 +445,12 @@ textarea:-webkit-autofill:focus {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {
@@ -454,7 +473,11 @@ label {
   color: #94a3b8 !important; /* zinc-400 */
 }
 
-.p-inputtext, .p-dropdown, .p-multiselect, .p-calendar .p-inputtext, .p-inputnumber-input {
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-calendar .p-inputtext,
+.p-inputnumber-input {
   padding: 0.75rem 1rem !important;
   border-radius: 0.5rem !important; /* rounded-lg */
   border: 1px solid #e2e8f0 !important;
@@ -466,7 +489,10 @@ label {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.p-inputtext:enabled:focus, .p-dropdown:not(.p-disabled).p-focus, .p-inputnumber-input:focus, .p-multiselect:not(.p-disabled).p-focus {
+.p-inputtext:enabled:focus,
+.p-dropdown:not(.p-disabled).p-focus,
+.p-inputnumber-input:focus,
+.p-multiselect:not(.p-disabled).p-focus {
   background-color: #ffffff !important;
   border-color: var(--primary-color) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
@@ -479,7 +505,9 @@ label {
   font-weight: 600 !important;
   font-size: 0.875rem !important;
   letter-spacing: 0.025em !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
 .p-button-sm {
@@ -515,13 +543,19 @@ label {
 }
 
 /* Dark Mode Overrides */
-.dark .p-inputtext, .dark .p-dropdown, .dark .p-multiselect, .dark .p-calendar .p-inputtext, .dark .p-inputnumber-input {
+.dark .p-inputtext,
+.dark .p-dropdown,
+.dark .p-multiselect,
+.dark .p-calendar .p-inputtext,
+.dark .p-inputnumber-input {
   background-color: var(--background) !important;
   border-color: #1e293b !important;
   color: #f8fafc !important;
 }
 
-.dark .p-inputtext:enabled:focus, .dark .p-dropdown:not(.p-disabled).p-focus, .dark .p-multiselect:not(.p-disabled).p-focus {
+.dark .p-inputtext:enabled:focus,
+.dark .p-dropdown:not(.p-disabled).p-focus,
+.dark .p-multiselect:not(.p-disabled).p-focus {
   background-color: #020617 !important;
   border-color: var(--primary-color) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
@@ -586,6 +620,15 @@ label {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom 650 tones for School SaaS theme compatibility */
+  --color-blue-650: #1d52d6;
+  --color-purple-650: #8729de;
+  --color-teal-650: #0e837a;
+  --color-zinc-650: #484850;
+  --color-orange-650: #d24b0c;
+  --color-rose-650: #cd1641;
+  --color-emerald-650: #04845f;
 }
 
 @layer base {

@@ -100,6 +100,8 @@ export interface CreateStudentDto {
   religion?: string;
   motherTongue?: string;
   aadharNo?: string;
+  previousBalance?: number;
+  transferCertificateNo?: string;
 }
 
 // Academics Module Types
@@ -380,4 +382,3 @@ export interface LeaveApplication {
   reason: string;
   remarks?: string;
 }
-

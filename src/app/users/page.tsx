@@ -13,37 +13,66 @@ import { useStudentsList } from '@/hooks/queries/useStudents';
 import { api } from '@/services/api';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
-
 interface SystemUser {
   id: string;
   name: string;
   email: string;
   phone?: string;
-  role: 'SuperAdmin' | 'Principal' | 'Teacher' | 'Accountant' | 'school_admin' | 'Student' | 'Parent';
+  role:
+    'SuperAdmin' | 'Principal' | 'Teacher' | 'Accountant' | 'school_admin' | 'Student' | 'Parent';
   isActive: boolean;
   empIdOrAdmNo?: string;
   parentLinked?: string;
 }
 
 export default function UsersRegistryPage() {
-  const { activeTenant } = useAuthStore();
+  const { activeTenant, mirrorUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [staffList, setStaffList] = useState<SystemUser[]>([]);
   const [parentsList, setParentsList] = useState<SystemUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const baseDomain = typeof window !== 'undefined' ? `.${window.location.hostname.split('.').slice(1).join('.')}` : '.jdinfotechsolutions.in';
-  const schoolLoginUrl = activeTenant ? `https://${activeTenant.subdomain}${baseDomain}/login` : 'https://demo.jdinfotechsolutions.in/login';
+  const handleMirrorUser = (userObj: SystemUser) => {
+    mirrorUser({
+      id: userObj.id,
+      name: userObj.name,
+      role: userObj.role,
+      email: userObj.email,
+    });
+    window.dispatchEvent(
+      new CustomEvent('show-toast', {
+        detail: {
+          severity: 'warn',
+          summary: 'Mirror Mode Active',
+          detail: `Now mirroring user profile: ${userObj.name} (${userObj.role})`,
+          life: 3500,
+        },
+      })
+    );
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 300);
+  };
+
+  const baseDomain =
+    typeof window !== 'undefined'
+      ? `.${window.location.hostname.split('.').slice(1).join('.')}`
+      : '.jdinfotechsolutions.in';
+  const schoolLoginUrl = activeTenant
+    ? `https://${activeTenant.subdomain}${baseDomain}/login`
+    : 'https://demo.jdinfotechsolutions.in/login';
 
   // Get student query
   const { data: studentsData, isPending: loadingStudents } = useStudentsList(1, 100);
   const rawStudents = studentsData?.items || studentsData?.data?.items || [];
-  
+
   const mappedStudents: SystemUser[] = rawStudents.map((s: any) => ({
     id: s.id,
     name: s.name || `${s.firstName} ${s.lastName}`,
-    email: s.email || `student.${s.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '-')}@${activeTenant?.subdomain || 'school'}.com`,
+    email:
+      s.email ||
+      `student.${s.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, '-')}@${activeTenant?.subdomain || 'school'}.com`,
     phone: s.phone || 'N/A',
     role: 'Student',
     isActive: s.status === 'ACTIVE',
@@ -55,11 +84,8 @@ export default function UsersRegistryPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const [staffRes, parentRes] = await Promise.all([
-        api.get('/staff'),
-        api.get('/parents')
-      ]);
-      
+      const [staffRes, parentRes] = await Promise.all([api.get('/staff'), api.get('/parents')]);
+
       if (staffRes.data?.success) {
         const mappedStaff = staffRes.data.data.map((s: any) => ({
           id: s.id,
@@ -83,14 +109,16 @@ export default function UsersRegistryPage() {
           phone: p.phone || 'N/A',
           role: 'Parent',
           isActive: p.isActive ?? true,
-          parentLinked: p.students?.map((stu: any) => `${stu.name} (Adm: ${stu.admissionNo})`).join(', ') || 'N/A',
+          parentLinked:
+            p.students?.map((stu: any) => `${stu.name} (Adm: ${stu.admissionNo})`).join(', ') ||
+            'N/A',
         }));
         setParentsList(mappedParents);
       } else {
         setParentsList([]);
       }
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      console.error('Failed to fetch users:', error);
       setStaffList([]);
       setParentsList([]);
     } finally {
@@ -105,13 +133,25 @@ export default function UsersRegistryPage() {
   const handleCopyCredentials = (userObj: SystemUser) => {
     const credInfo = `Login URL: ${schoolLoginUrl}\nUsername/Email: ${userObj.email}\nDefault Password: ${userObj.role === 'Student' ? 'Student@123' : userObj.role === 'Parent' ? 'Parent@123' : 'School@123'}`;
     navigator.clipboard.writeText(credInfo);
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: { severity: 'success', summary: 'Credentials Copied!', detail: `Login credentials copied to clipboard for ${userObj.name}.`, life: 3000 }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('show-toast', {
+        detail: {
+          severity: 'success',
+          summary: 'Credentials Copied!',
+          detail: `Login credentials copied to clipboard for ${userObj.name}.`,
+          life: 3000,
+        },
+      })
+    );
   };
 
   const handleShareWhatsApp = (userObj: SystemUser) => {
-    const defaultPass = userObj.role === 'Student' ? 'Student@123' : userObj.role === 'Parent' ? 'Parent@123' : 'School@123';
+    const defaultPass =
+      userObj.role === 'Student'
+        ? 'Student@123'
+        : userObj.role === 'Parent'
+          ? 'Parent@123'
+          : 'School@123';
     const message = `Hello ${userObj.name},\n\nWelcome to ${activeTenant?.name || 'our school'}.\nYour dynamic portal access has been successfully configured.\n\n🌐 Login Link: ${schoolLoginUrl}\n📧 Email/Username: ${userObj.email}\n🔑 Default Password: ${defaultPass}\n\nPlease update your password upon first login!`;
     const encodedMsg = encodeURIComponent(message);
     const cleanPhone = (userObj.phone || '').replace(/[^0-9]/g, '');
@@ -119,16 +159,24 @@ export default function UsersRegistryPage() {
   };
 
   const filterList = (list: SystemUser[]) => {
-    return list.filter(u => 
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (u.phone && u.phone.includes(searchQuery)) ||
-      (u.empIdOrAdmNo && u.empIdOrAdmNo.toLowerCase().includes(searchQuery.toLowerCase()))
+    return list.filter(
+      (u) =>
+        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.phone && u.phone.includes(searchQuery)) ||
+        (u.empIdOrAdmNo && u.empIdOrAdmNo.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   };
 
   const actionsTemplate = (rowData: SystemUser) => (
     <div className="flex gap-2 items-center justify-center">
+      <Button
+        icon="pi pi-eye"
+        className="p-button-text p-button-sm p-1 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20"
+        tooltip="Mirror User View (Impersonate)"
+        tooltipOptions={{ position: 'top' }}
+        onClick={() => handleMirrorUser(rowData)}
+      />
       <Button
         icon="pi pi-copy"
         className="p-button-text p-button-sm p-1 text-zinc-500 hover:bg-zinc-100"
@@ -149,8 +197,7 @@ export default function UsersRegistryPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Users" />
-<div className="flex flex-col gap-4 pb-10 animate-fade-in">
-        
+      <div className="flex flex-col gap-4 pb-10 animate-fade-in">
         {/* Header Title */}
         <div className="flex flex-col items-start gap-4 pb-4">
           {/* <div>
@@ -161,16 +208,25 @@ export default function UsersRegistryPage() {
           </div> */}
         </div>
 
-
         {/* Credentials Share Explain Box */}
         <div className="bg-blue-50/30 dark:bg-blue-950/15 border border-blue-150/40 p-5 rounded-md flex flex-col gap-3 text-xs leading-relaxed font-semibold text-zinc-650 dark:text-blue-400/90 shadow-sm">
           <div className="flex gap-3">
             <i className="pi pi-info-circle text-blue-500 text-base mt-0.5"></i>
             <div>
-              <p className="font-extrabold uppercase tracking-wider text-[10px] text-blue-600 dark:text-blue-400 mb-1">Multi-Tenant Routing Mechanics</p>
+              <p className="font-extrabold uppercase tracking-wider text-[10px] text-blue-600 dark:text-blue-400 mb-1">
+                Multi-Tenant Routing Mechanics
+              </p>
               <p>
-                Every school in the SaaS platform runs on its own secure, sandboxed subdomain (e.g. <code>https://{activeTenant?.subdomain || 'school'}{baseDomain}</code>). 
-                When students, parents, or staff log in on this specific domain, they are automatically resolved to the correct school context. Under the hood, user emails are unique per school (<code>@@unique([email, tenantId])</code>), allowing parents with children across different schools to have completely isolated landing environments!
+                Every school in the SaaS platform runs on its own secure, sandboxed subdomain (e.g.{' '}
+                <code>
+                  https://{activeTenant?.subdomain || 'school'}
+                  {baseDomain}
+                </code>
+                ). When students, parents, or staff log in on this specific domain, they are
+                automatically resolved to the correct school context. Under the hood, user emails
+                are unique per school (<code>@@unique([email, tenantId])</code>), allowing parents
+                with children across different schools to have completely isolated landing
+                environments!
               </p>
             </div>
           </div>
@@ -189,23 +245,39 @@ export default function UsersRegistryPage() {
 
         {/* Unified Tab Cockpit */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md p-5 shadow-sm">
-          <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="custom-premium-tabs">
-            
+          <TabView
+            activeIndex={activeIndex}
+            onTabChange={(e) => setActiveIndex(e.index)}
+            className="custom-premium-tabs"
+          >
             {/* Staff / Teachers Tab */}
             <TabPanel header="Staff & Faculty" leftIcon="pi pi-briefcase mr-2">
               <DataTable
                 value={filterList(staffList)}
                 loading={loading}
                 className="p-datatable-sm mt-3"
-                paginator rows={10}
+                paginator
+                rows={10}
                 emptyMessage="No staff records match your search."
                 stripedRows
               >
-                <Column field="empIdOrAdmNo" header="Employee ID" className="font-mono text-xs font-bold" />
-                <Column field="name" header="Name" className="font-bold text-zinc-800 dark:text-zinc-150" />
+                <Column
+                  field="empIdOrAdmNo"
+                  header="Employee ID"
+                  className="font-mono text-xs font-bold"
+                />
+                <Column
+                  field="name"
+                  header="Name"
+                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                />
                 <Column field="email" header="Email Username" />
                 <Column field="phone" header="Contact Phone" />
-                <Column field="role" header="Role Badge" body={(d) => <Tag value={d.role} severity="info" className="font-bold" />} />
+                <Column
+                  field="role"
+                  header="Role Badge"
+                  body={(d) => <Tag value={d.role} severity="info" className="font-bold" />}
+                />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
               </DataTable>
             </TabPanel>
@@ -216,15 +288,37 @@ export default function UsersRegistryPage() {
                 value={filterList(mappedStudents)}
                 loading={loadingStudents}
                 className="p-datatable-sm mt-3"
-                paginator rows={10}
+                paginator
+                rows={10}
                 emptyMessage="No student records match your search."
                 stripedRows
               >
-                <Column field="empIdOrAdmNo" header="Admission No" className="font-mono text-xs font-bold" />
-                <Column field="name" header="Name" className="font-bold text-zinc-800 dark:text-zinc-150" />
-                <Column field="email" header="Assigned Username" className="text-xs text-blue-500" />
+                <Column
+                  field="empIdOrAdmNo"
+                  header="Admission No"
+                  className="font-mono text-xs font-bold"
+                />
+                <Column
+                  field="name"
+                  header="Name"
+                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                />
+                <Column
+                  field="email"
+                  header="Assigned Username"
+                  className="text-xs text-blue-500"
+                />
                 <Column field="parentLinked" header="Linked Guardian" />
-                <Column header="Status" body={(d) => <Tag value={d.isActive ? 'ACTIVE' : 'INACTIVE'} severity={d.isActive ? 'success' : 'warning'} className="font-bold text-[9px]" />} />
+                <Column
+                  header="Status"
+                  body={(d) => (
+                    <Tag
+                      value={d.isActive ? 'ACTIVE' : 'INACTIVE'}
+                      severity={d.isActive ? 'success' : 'warning'}
+                      className="font-bold text-[9px]"
+                    />
+                  )}
+                />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
               </DataTable>
             </TabPanel>
@@ -235,21 +329,28 @@ export default function UsersRegistryPage() {
                 value={filterList(parentsList)}
                 loading={loading}
                 className="p-datatable-sm mt-3"
-                paginator rows={10}
+                paginator
+                rows={10}
                 emptyMessage="No parent records match your search."
                 stripedRows
               >
-                <Column field="name" header="Parent Name" className="font-bold text-zinc-800 dark:text-zinc-150" />
+                <Column
+                  field="name"
+                  header="Parent Name"
+                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                />
                 <Column field="email" header="Parent Username" />
                 <Column field="phone" header="WhatsApp Phone" />
-                <Column field="parentLinked" header="Associated Ward(s)" className="text-xs text-zinc-500 font-semibold" />
+                <Column
+                  field="parentLinked"
+                  header="Associated Ward(s)"
+                  className="text-xs text-zinc-500 font-semibold"
+                />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
               </DataTable>
             </TabPanel>
-
           </TabView>
         </div>
-
       </div>
     </DashboardLayout>
   );

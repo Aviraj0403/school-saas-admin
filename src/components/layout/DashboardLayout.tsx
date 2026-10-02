@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
 import AppFooter from './AppFooter';
+import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLogin } from '@/hooks/queries/useAuth';
 import { Toast } from 'primereact/toast';
@@ -26,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleToggleMenu = () => {
     if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-      setSidebarSize(s => s === 'default' ? 'collapsed' : 'default');
+      setSidebarSize((s) => (s === 'default' ? 'collapsed' : 'default'));
     } else {
       setSidebarOpen(!sidebarOpen);
     }
@@ -41,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     globalMounted = true;
     setMounted(true);
-    
+
     // Auto-detect school from subdomain (Mock implementation)
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
@@ -68,17 +69,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             content: (props) => (
               <div className="flex flex-col gap-1 w-full">
                 <div className="flex items-center gap-2">
-                  <i className={`pi ${
-                    customEvent.detail.severity === 'success' ? 'pi-check-circle text-emerald-500' :
-                    customEvent.detail.severity === 'error' ? 'pi-times-circle text-rose-500' :
-                    customEvent.detail.severity === 'warn' ? 'pi-exclamation-triangle text-amber-500' :
-                    'pi-info-circle text-blue-500'
-                  } text-lg`}></i>
-                  <span className="font-bold text-sm text-zinc-800 dark:text-white">{props.message.summary}</span>
+                  <i
+                    className={`pi ${
+                      customEvent.detail.severity === 'success'
+                        ? 'pi-check-circle text-emerald-500'
+                        : customEvent.detail.severity === 'error'
+                          ? 'pi-times-circle text-rose-500'
+                          : customEvent.detail.severity === 'warn'
+                            ? 'pi-exclamation-triangle text-amber-500'
+                            : 'pi-info-circle text-blue-500'
+                    } text-lg`}
+                  ></i>
+                  <span className="font-bold text-sm text-zinc-800 dark:text-white">
+                    {props.message.summary}
+                  </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 pl-7">{props.message.detail}</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 pl-7">
+                  {props.message.detail}
+                </div>
               </div>
-            )
+            ),
           });
         }
       };
@@ -93,36 +103,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsAuthenticating(true);
-    
+
     // In a real implementation, you would pass `schoolCode` to the backend
     // to determine which table to authenticate against (users vs students).
     const loginPayload = {
       email: identifier, // This can be email or admissionNo
       password,
-      schoolCode: schoolCode
+      schoolCode: schoolCode,
     };
 
-    loginMutation.mutate(
-      loginPayload,
-      {
-        onSuccess: () => {
-          setIsAuthenticating(false);
-          if (pathname !== '/dashboard') {
-            router.replace('/dashboard');
-          }
-        },
-        onError: () => {
-          setIsAuthenticating(false);
+    loginMutation.mutate(loginPayload, {
+      onSuccess: () => {
+        setIsAuthenticating(false);
+        if (pathname !== '/dashboard') {
+          router.replace('/dashboard');
         }
       },
-    );
+      onError: () => {
+        setIsAuthenticating(false);
+      },
+    });
   };
 
   if (!mounted) return null;
 
   if (!isAuthenticated) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans bg-zinc-950 bg-cover bg-center select-none"
         style={{ backgroundImage: `url('/ai_student_bg.png')` }}
       >
@@ -133,17 +140,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none animate-pulse duration-[8000ms]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
         <div className="absolute top-[20%] right-[20%] w-[40%] h-[40%] rounded-full bg-emerald-600/10 blur-[120px] pointer-events-none"></div>
-        
+
         {/* Responsive Flex Container */}
         <div className="relative z-10 flex flex-col md:flex-row gap-8 max-w-5xl w-full items-stretch justify-center">
-          
           {/* Main Login Card */}
           <div className="backdrop-blur-2xl bg-zinc-900/60 border border-zinc-700/50 rounded-md shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex-1 flex flex-col overflow-hidden transition-all duration-500 relative">
-            
             {/* Top Branding Header */}
             <div className="bg-gradient-to-r from-zinc-900/90 to-zinc-800/90 p-8 border-b border-zinc-700/50 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-              
+
               <div className="flex flex-col items-center relative z-10">
                 <div className="relative group mb-4">
                   <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-blue-500 rounded-md opacity-40 blur-lg group-hover:opacity-75 transition duration-500"></div>
@@ -176,9 +181,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* School Code Field (Only shown if not auto-detected or if superadmin needs to switch) */}
                 {!detectedSchool && (
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="schoolCode" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between">
+                    <label
+                      htmlFor="schoolCode"
+                      className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between"
+                    >
                       <span>School Code</span>
-                      <span className="text-blue-400/70 font-normal normal-case tracking-normal">Optional for SuperAdmin</span>
+                      <span className="text-blue-400/70 font-normal normal-case tracking-normal">
+                        Optional for SuperAdmin
+                      </span>
                     </label>
                     <div className="relative flex items-center group w-full">
                       <i className="pi pi-building absolute left-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
@@ -196,7 +206,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Identifier Field (Email vs Admission No) */}
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="identifier" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">
+                  <label
+                    htmlFor="identifier"
+                    className="font-bold text-[10px] uppercase tracking-widest text-zinc-400"
+                  >
                     Email Address or Admission No.
                   </label>
                   <div className="relative flex items-center group w-full">
@@ -215,9 +228,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Password Field */}
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="password" className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between">
+                  <label
+                    htmlFor="password"
+                    className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 flex justify-between"
+                  >
                     <span>Password</span>
-                    <a href="#" className="text-blue-400/80 hover:text-blue-400 font-normal normal-case tracking-normal transition-colors">Forgot?</a>
+                    <a
+                      href="#"
+                      className="text-blue-400/80 hover:text-blue-400 font-normal normal-case tracking-normal transition-colors"
+                    >
+                      Forgot?
+                    </a>
                   </label>
                   <div className="relative flex items-center group w-full">
                     <i className="pi pi-lock absolute left-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none"></i>
@@ -265,7 +286,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Dynamic Welcome Message */}
             <div className="backdrop-blur-xl bg-zinc-900/40 border border-zinc-800/60 rounded-md p-6 shadow-xl flex flex-col h-full relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2"></div>
-              
+
               <div className="flex items-center gap-3 mb-6 relative z-10">
                 <div className="w-10 h-10 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                   <i className="pi pi-shield text-blue-400 text-lg"></i>
@@ -277,16 +298,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               <div className="flex-1 text-sm text-zinc-300 font-medium leading-relaxed relative z-10 flex flex-col justify-center gap-4">
-                <p>
-                  Welcome to the Platform Dashboard.
-                </p>
+                <p>Welcome to the Platform Dashboard.</p>
                 <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-md">
                   <p className="text-xs text-blue-200/80 leading-relaxed">
-                    Our intelligent routing automatically detects whether you are logging in as a student or staff member based on your credentials, isolating your data in optimal environments.
+                    Our intelligent routing automatically detects whether you are logging in as a
+                    student or staff member based on your credentials, isolating your data in
+                    optimal environments.
                   </p>
                 </div>
               </div>
-              
+
               <div className="mt-6 pt-6 border-t border-zinc-800/60 relative z-10">
                 <p className="text-[10px] text-zinc-500 text-center uppercase tracking-widest font-semibold">
                   Powered by EduNexus OS © 2026
@@ -294,21 +315,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           </div>
-
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300 font-sans overflow-x-hidden`}>
+    <div
+      className={`min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300 font-sans overflow-x-hidden`}
+    >
       <Toast ref={toastRef} position="top-right" />
+      <MirroringBanner />
       <AppTopbar onToggleMenu={handleToggleMenu} />
-      <AppSidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
+      <AppSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         size={sidebarSize}
-        onToggleSize={() => setSidebarSize(s => s === 'default' ? 'collapsed' : 'default')}
+        onToggleSize={() => setSidebarSize((s) => (s === 'default' ? 'collapsed' : 'default'))}
       />
 
       {/* Overlay for mobile */}

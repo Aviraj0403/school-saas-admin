@@ -2,7 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LoginResponse } from '@/services/auth.service';
 
-export type Role = 'SuperAdmin' | 'Principal' | 'Teacher' | 'Accountant' | 'school_admin' | string;
+export type Role =
+  | 'SuperAdmin'
+  | 'Principal'
+  | 'Teacher'
+  | 'Accountant'
+  | 'Librarian'
+  | 'Student'
+  | 'Parent'
+  | 'school_admin'
+  | string;
 
 export interface UserProfile {
   id: string;
@@ -39,11 +48,17 @@ interface AuthState {
   activeUser: UserProfile | null;
   activeTenant: TenantConfig | null;
 
+  isMirroring: boolean;
+  originalUser: UserProfile | null;
+
   setAuthData: (data: LoginResponse, tenantData?: TenantConfig) => void;
   setTenant: (tenant: TenantConfig) => void;
   logout: () => void;
   toggleDemoMode: () => void;
   switchTenant: (tenant: TenantConfig | null) => void;
+
+  mirrorUser: (target: { name: string; role: Role; email?: string; id?: string }) => void;
+  exitMirroring: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -58,8 +73,10 @@ export const useAuthStore = create<AuthState>()(
       activeUser: null,
       activeTenant: null,
 
+      isMirroring: false,
+      originalUser: null,
+
       setAuthData: (data: LoginResponse, tenantData?: TenantConfig) => {
-        // Derive primary role for display
         const primaryRole: Role = data.user.isSuperAdmin
           ? 'SuperAdmin'
           : (data.user.roles[0]?.slug as Role) || 'Teacher';
@@ -74,7 +91,6 @@ export const useAuthStore = create<AuthState>()(
           roles: data.user.roles,
         };
 
-        // Store token in localStorage for the axios interceptor
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', data.accessToken);
           if (data.refreshToken) {
@@ -91,6 +107,8 @@ export const useAuthStore = create<AuthState>()(
           activeUser: userProfile,
           activeTenant: tenantData ?? null,
           isDemoMode: false,
+          isMirroring: false,
+          originalUser: null,
         });
       },
 
@@ -112,16 +130,19 @@ export const useAuthStore = create<AuthState>()(
           activeUser: null,
           activeTenant: null,
           isDemoMode: false,
+          isMirroring: false,
+          originalUser: null,
         });
       },
 
       toggleDemoMode: () => {
         const { isDemoMode, user, tenant } = get();
         if (isDemoMode) {
-          set({ isDemoMode: false, activeUser: user, activeTenant: tenant });
+          set({ isDemoMode: false, activeUser: user, activeTenant: tenant, isMirroring: false });
         } else {
           set({
             isDemoMode: true,
+            isMirroring: false,
             activeUser: {
               id: 'demo-user',
               name: 'Demo Admin',
@@ -135,9 +156,22 @@ export const useAuthStore = create<AuthState>()(
               id: '00101',
               name: 'Demo SaaS Tenant',
               activeModules: [
-                'students', 'staff', 'academics', 'attendance', 'fee', 'exams',
-                'library', 'communication', 'analytics', 'whatsapp',
-                'hostel', 'leave', 'transport', 'homework', 'website', 'settings',
+                'students',
+                'staff',
+                'academics',
+                'attendance',
+                'fee',
+                'exams',
+                'library',
+                'communication',
+                'analytics',
+                'whatsapp',
+                'hostel',
+                'leave',
+                'transport',
+                'homework',
+                'website',
+                'settings',
               ],
             },
           });
@@ -146,6 +180,37 @@ export const useAuthStore = create<AuthState>()(
 
       switchTenant: (tenant: TenantConfig | null) => {
         set({ activeTenant: tenant });
+      },
+
+      mirrorUser: (target) => {
+        const { activeUser, originalUser, isMirroring } = get();
+        const baseUser = originalUser || activeUser;
+
+        const mirroredProfile: UserProfile = {
+          id: target.id || `mirrored-${target.role.toLowerCase()}`,
+          name: target.name,
+          email: target.email || `mirrored.${target.role.toLowerCase()}@school.com`,
+          role: target.role,
+          tenantId: baseUser?.tenantId || null,
+          isSuperAdmin: false,
+          roles: [{ id: 'mirrored', slug: target.role.toLowerCase(), name: target.role }],
+        };
+
+        set({
+          isMirroring: true,
+          originalUser: baseUser,
+          activeUser: mirroredProfile,
+        });
+      },
+
+      exitMirroring: () => {
+        const { originalUser, user } = get();
+        const restoreUser = originalUser || user;
+        set({
+          isMirroring: false,
+          activeUser: restoreUser,
+          originalUser: null,
+        });
       },
     }),
     {

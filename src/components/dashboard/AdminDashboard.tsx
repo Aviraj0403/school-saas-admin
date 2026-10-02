@@ -9,6 +9,7 @@ import {
   useAttendanceTrend,
 } from '@/hooks/queries/useAnalytics';
 import { useCurrentAcademicYear, useClasses } from '@/hooks/queries/useAcademics';
+import { isModuleActive } from '@/lib/moduleAccess';
 
 export function AdminDashboard() {
   const { activeUser, activeTenant } = useAuthStore();
@@ -232,94 +233,112 @@ export function AdminDashboard() {
 
       {/* Primary KPIs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <StatCard
-          label="Total Students"
-          value={coreStats.students?.total ?? '—'}
-          icon="pi pi-users"
-          gradientClass="from-blue-500 to-blue-500"
-          iconBgClass="bg-blue-500/10"
-          iconColorClass="text-blue-600 dark:text-blue-400"
-          footerText={`Active: ${coreStats.students?.active ?? '0'} Students`}
-          loading={adminPending}
-        />
-        <StatCard
-          label="Active Staff"
-          value={coreStats.staff?.total ?? '—'}
-          icon="pi pi-id-card"
-          gradientClass="from-orange-500 to-amber-500"
-          iconBgClass="bg-orange-500/10"
-          iconColorClass="text-orange-600 dark:text-orange-400"
-          footerText="Enrolled instructors & admins"
-          loading={adminPending}
-        />
-        <StatCard
-          label="Fee Collected (Month)"
-          value={
-            coreStats.fees?.monthlyRevenue
-              ? `₹${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}`
-              : '₹0'
-          }
-          icon="pi pi-wallet"
-          gradientClass="from-emerald-500 to-teal-500"
-          iconBgClass="bg-emerald-500/10"
-          iconColorClass="text-emerald-600 dark:text-emerald-400"
-          footerText={`Outstanding dues: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
-          loading={adminPending}
-        />
-        <StatCard
-          label="Attendance Rate"
-          value={coreStats.attendance?.percentage ? `${coreStats.attendance.percentage}%` : '96.2%'}
-          icon="pi pi-check-square"
-          gradientClass="from-purple-500 to-violet-500"
-          iconBgClass="bg-purple-500/10"
-          iconColorClass="text-purple-650 dark:text-purple-400"
-          footerText={`Present: ${coreStats.attendance?.today?.present ?? '5'} Students`}
-          loading={adminPending}
-        />
+        {isModuleActive(activeTenant?.activeModules, 'student') && (
+          <StatCard
+            label="Total Students"
+            value={coreStats.students?.total ?? '—'}
+            icon="pi pi-users"
+            gradientClass="from-blue-500 to-blue-500"
+            iconBgClass="bg-blue-500/10"
+            iconColorClass="text-blue-600 dark:text-blue-400"
+            footerText={`Active: ${coreStats.students?.active ?? '0'} Students`}
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'staff') && (
+          <StatCard
+            label="Active Staff"
+            value={coreStats.staff?.total ?? '—'}
+            icon="pi pi-id-card"
+            gradientClass="from-orange-500 to-amber-500"
+            iconBgClass="bg-orange-500/10"
+            iconColorClass="text-orange-600 dark:text-orange-400"
+            footerText="Enrolled instructors & admins"
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'fee') && (
+          <StatCard
+            label="Fee Collected (Month)"
+            value={
+              coreStats.fees?.monthlyRevenue
+                ? `₹${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}`
+                : '₹0'
+            }
+            icon="pi pi-wallet"
+            gradientClass="from-emerald-500 to-teal-500"
+            iconBgClass="bg-emerald-500/10"
+            iconColorClass="text-emerald-600 dark:text-emerald-400"
+            footerText={`Outstanding dues: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'attendance') && (
+          <StatCard
+            label="Attendance Rate"
+            value={
+              coreStats.attendance?.percentage ? `${coreStats.attendance.percentage}%` : '96.2%'
+            }
+            icon="pi pi-check-square"
+            gradientClass="from-purple-500 to-violet-500"
+            iconBgClass="bg-purple-500/10"
+            iconColorClass="text-purple-650 dark:text-purple-400"
+            footerText={`Present: ${coreStats.attendance?.today?.present ?? '5'} Students`}
+            loading={adminPending}
+          />
+        )}
       </div>
 
       {/* Secondary KPIs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <StatCard
-          label="Pending Transactions"
-          value={coreStats.fees?.pendingTransactions ?? '—'}
-          icon="pi pi-exclamation-circle"
-          gradientClass="from-rose-500 to-red-500"
-          iconBgClass="bg-rose-500/10"
-          iconColorClass="text-rose-600 dark:text-rose-455"
-          footerText="Pending invoice reminders"
-          loading={adminPending}
-        />
-        <StatCard
-          label="Hostel Occupancy"
-          value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : '—'}
-          icon="pi pi-home"
-          gradientClass="from-blue-500 to-violet-500"
-          iconBgClass="bg-blue-500/10"
-          iconColorClass="text-blue-600 dark:text-blue-400"
-          footerText={`Boarders: ${hostelStats.totalBoarders ?? '0'} / ${hostelStats.totalCapacity ?? '0'}`}
-          loading={adminPending}
-        />
-        <StatCard
-          label="Pending Leaves"
-          value={leaveStats.pending ?? '—'}
-          icon="pi pi-calendar-minus"
-          gradientClass="from-amber-500 to-yellow-500"
-          iconBgClass="bg-amber-500/10"
-          iconColorClass="text-amber-600 dark:text-amber-500"
-          footerText="Awaiting admin approval"
-          loading={adminPending}
-        />
-        <StatCard
-          label="Overdue Books"
-          value={coreStats.library?.overdueBooks ?? '—'}
-          icon="pi pi-book"
-          gradientClass="from-teal-500 to-cyan-500"
-          iconBgClass="bg-teal-500/10"
-          iconColorClass="text-teal-650 dark:text-teal-400"
-          footerText={`Total Library Books: ${coreStats.library?.totalBooks ?? '0'}`}
-          loading={adminPending}
-        />
+        {isModuleActive(activeTenant?.activeModules, 'fee') && (
+          <StatCard
+            label="Pending Transactions"
+            value={coreStats.fees?.pendingTransactions ?? '—'}
+            icon="pi pi-exclamation-circle"
+            gradientClass="from-rose-500 to-red-500"
+            iconBgClass="bg-rose-500/10"
+            iconColorClass="text-rose-600 dark:text-rose-455"
+            footerText="Pending invoice reminders"
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'hostel') && (
+          <StatCard
+            label="Hostel Occupancy"
+            value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : '—'}
+            icon="pi pi-home"
+            gradientClass="from-blue-500 to-violet-500"
+            iconBgClass="bg-blue-500/10"
+            iconColorClass="text-blue-600 dark:text-blue-400"
+            footerText={`Boarders: ${hostelStats.totalBoarders ?? '0'} / ${hostelStats.totalCapacity ?? '0'}`}
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'leave') && (
+          <StatCard
+            label="Pending Leaves"
+            value={leaveStats.pending ?? '—'}
+            icon="pi pi-calendar-minus"
+            gradientClass="from-amber-500 to-yellow-500"
+            iconBgClass="bg-amber-500/10"
+            iconColorClass="text-amber-600 dark:text-amber-500"
+            footerText="Awaiting admin approval"
+            loading={adminPending}
+          />
+        )}
+        {isModuleActive(activeTenant?.activeModules, 'library') && (
+          <StatCard
+            label="Overdue Books"
+            value={coreStats.library?.overdueBooks ?? '—'}
+            icon="pi pi-book"
+            gradientClass="from-teal-500 to-cyan-500"
+            iconBgClass="bg-teal-500/10"
+            iconColorClass="text-teal-650 dark:text-teal-400"
+            footerText={`Total Library Books: ${coreStats.library?.totalBooks ?? '0'}`}
+            loading={adminPending}
+          />
+        )}
       </div>
 
       {/* Analytics Charts */}
@@ -420,47 +439,55 @@ export function AdminDashboard() {
               icon: 'pi pi-user-plus',
               href: '/students',
               color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+              module: 'student',
             },
             {
               label: 'Mark Attendance',
               icon: 'pi pi-check-square',
               href: '/attendance',
               color: 'bg-green-500/10 text-green-600 dark:text-green-400',
+              module: 'attendance',
             },
             {
               label: 'Collect Fee',
               icon: 'pi pi-money-bill',
               href: '/fee',
               color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 font-bold',
+              module: 'fee',
             },
             {
               label: 'Post Notice',
               icon: 'pi pi-megaphone',
               href: '/communication',
               color: 'bg-purple-500/10 text-purple-650 dark:text-purple-400',
+              module: 'communication',
             },
             {
               label: 'Issue Book',
               icon: 'pi pi-bookmark',
               href: '/library',
               color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
+              module: 'library',
             },
             {
               label: 'View Analytics',
               icon: 'pi pi-chart-bar',
               href: '/analytics',
               color: 'bg-blue-500/10 text-blue-650 dark:text-blue-400',
+              module: 'analytics',
             },
-          ].map((action) => (
-            <a
-              key={action.label}
-              href={action.href}
-              className={`flex flex-col items-center gap-3 p-5 rounded-xl ${action.color} hover:opacity-90 hover:scale-[1.03] hover:shadow-md transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
-            >
-              <i className={`${action.icon} text-2xl`}></i>
-              <span className="text-xs font-bold text-center leading-tight">{action.label}</span>
-            </a>
-          ))}
+          ]
+            .filter((act) => isModuleActive(activeTenant?.activeModules, act.module))
+            .map((action) => (
+              <a
+                key={action.label}
+                href={action.href}
+                className={`flex flex-col items-center gap-3 p-5 rounded-xl ${action.color} hover:opacity-90 hover:scale-[1.03] hover:shadow-md transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
+              >
+                <i className={`${action.icon} text-2xl`}></i>
+                <span className="text-xs font-bold text-center leading-tight">{action.label}</span>
+              </a>
+            ))}
         </div>
       </div>
     </div>

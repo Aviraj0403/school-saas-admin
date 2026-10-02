@@ -642,3 +642,46 @@ label {
     @apply font-sans;
   }
 }
+
+/* Premium Senior Corporate UI Design Utilities */
+@layer utilities {
+  .search-filter-bar {
+    @apply flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-md shadow-sm;
+  }
+
+  .search-input-premium {
+    @apply pl-9 pr-4 py-2 text-xs rounded-xl bg-zinc-950/80 border border-zinc-800/80 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200;
+  }
+
+  .form-control-premium {
+    @apply w-full px-3.5 py-2 text-xs rounded-xl bg-zinc-950/80 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200;
+  }
+
+  .form-label-premium {
+    @apply block text-xs font-semibold text-zinc-300 mb-1.5 tracking-wide;
+  }
+
+  .grid-card-premium {
+    @apply rounded-2xl bg-zinc-900/70 border border-zinc-800/80 backdrop-blur-xl shadow-lg p-5 hover:border-zinc-700/80 transition-all duration-300;
+  }
+
+  .badge-premium-blue {
+    @apply px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20;
+  }
+
+  .badge-premium-emerald {
+    @apply px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+  }
+
+  .badge-premium-purple {
+    @apply px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20;
+  }
+
+  .badge-premium-amber {
+    @apply px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20;
+  }
+
+  .badge-premium-rose {
+    @apply px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20;
+  }
+}

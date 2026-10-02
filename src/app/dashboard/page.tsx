@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { useAuthStore } from '@/store/useAuthStore';
 import { normalizeRole } from '@/config/navigation';
+import { SuperAdminDashboard } from '@/components/dashboard/SuperAdminDashboard';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
 import { AccountantDashboard } from '@/components/dashboard/AccountantDashboard';
@@ -18,6 +19,8 @@ export default function DashboardPage() {
 
   const renderRoleDashboard = () => {
     switch (role) {
+      case 'superadmin':
+        return <SuperAdminDashboard />;
       case 'teacher':
         return <TeacherDashboard />;
       case 'accountant':
@@ -27,7 +30,6 @@ export default function DashboardPage() {
       case 'student':
       case 'parent':
         return <StudentParentDashboard />;
-      case 'superadmin':
       case 'school_admin':
       default:
         return <AdminDashboard />;

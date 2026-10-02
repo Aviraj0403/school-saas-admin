@@ -579,6 +579,125 @@ label {
   border-color: #1e293b !important;
 }
 
+/* Premium PrimeReact DataTable Overrides */
+.p-datatable {
+  font-size: 0.8125rem !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.6875rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.875rem 1rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  transition: background-color 0.2s ease !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.875rem 1rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f1f5f9/60 !important;
+}
+
+.p-paginator {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0.75rem 0 !important;
+}
+
+.p-paginator .p-paginator-page,
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+  border-radius: 0.5rem !important;
+  min-width: 2rem !important;
+  height: 2rem !important;
+  margin: 0 0.125rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+/* Dark Mode DataTable Overrides */
+.dark .p-datatable .p-datatable-thead > tr > th {
+  background-color: #090d16 !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #1e293b !important;
+}
+
+.dark .p-datatable .p-datatable-tbody > tr {
+  background-color: #0f172a/40 !important;
+}
+
+.dark .p-datatable .p-datatable-tbody > tr > td {
+  color: #f1f5f9 !important;
+  border-bottom-color: #1e293b/60 !important;
+}
+
+.dark .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #1e293b/80 !important;
+}
+
+.dark .p-paginator .p-paginator-page,
+.dark .p-paginator .p-paginator-first,
+.dark .p-paginator .p-paginator-prev,
+.dark .p-paginator .p-paginator-next,
+.dark .p-paginator .p-paginator-last {
+  color: #cbd5e1 !important;
+}
+
+.dark .p-paginator .p-paginator-page.p-highlight {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* PrimeReact TabView Enhancements */
+.p-tabview .p-tabview-nav {
+  background: transparent !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dark .p-tabview .p-tabview-nav {
+  border-bottom-color: #1e293b !important;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  font-weight: 600 !important;
+  font-size: 0.8125rem !important;
+  padding: 0.75rem 1.25rem !important;
+  color: #64748b !important;
+  transition: all 0.2s ease !important;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: #2563eb !important;
+  border-bottom-color: #2563eb !important;
+}
+
+.dark .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  color: #94a3b8 !important;
+}
+
+.dark .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: #60a5fa !important;
+  border-bottom-color: #60a5fa !important;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);

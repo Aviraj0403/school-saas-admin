@@ -196,127 +196,203 @@ export default function UsersRegistryPage() {
 
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="Users" />
-      <div className="flex flex-col gap-4 pb-10 animate-fade-in">
-        {/* Header Title */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Global User Registry</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Centralized cockpit to audit system accounts, reset passwords, and instantly dispatch portal credentials via WhatsApp.
-            </p>
-          </div> */}
-        </div>
-
-        {/* Credentials Share Explain Box */}
-        <div className="bg-blue-50/30 dark:bg-blue-950/15 border border-blue-150/40 p-5 rounded-md flex flex-col gap-3 text-xs leading-relaxed font-semibold text-zinc-650 dark:text-blue-400/90 shadow-sm">
-          <div className="flex gap-3">
-            <i className="pi pi-info-circle text-blue-500 text-base mt-0.5"></i>
+      <PageBreadcrumb title="User & Staff Management" />
+      <div className="flex flex-col gap-6 pb-12 animate-fade-in">
+        {/* Executive Header Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 border border-indigo-500/20 p-6 md:p-8 shadow-xl">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <p className="font-extrabold uppercase tracking-wider text-[10px] text-blue-600 dark:text-blue-400 mb-1">
-                Multi-Tenant Routing Mechanics
-              </p>
-              <p>
-                Every school in the SaaS platform runs on its own secure, sandboxed subdomain (e.g.{' '}
-                <code>
-                  https://{activeTenant?.subdomain || 'school'}
-                  {baseDomain}
-                </code>
-                ). When students, parents, or staff log in on this specific domain, they are
-                automatically resolved to the correct school context. Under the hood, user emails
-                are unique per school (<code>@@unique([email, tenantId])</code>), allowing parents
-                with children across different schools to have completely isolated landing
-                environments!
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-300 bg-blue-500/20 border border-blue-400/30 rounded-full">
+                  🛡️ Identity & Access Governance
+                </span>
+                <span className="text-xs text-emerald-400 font-mono flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  {activeTenant?.subdomain
+                    ? `${activeTenant.subdomain}${baseDomain}`
+                    : 'Active Subdomain Context'}
+                </span>
+              </div>
+              <h1 className="mt-2 text-2xl md:text-3xl font-black text-white tracking-tight">
+                Global User Registry & Impersonation Hub
+              </h1>
+              <p className="mt-1 text-xs md:text-sm text-zinc-300 max-w-2xl">
+                Audit system accounts across faculty, students, and parents. Trigger 1-click persona
+                mirroring or dispatch portal login credentials directly via WhatsApp.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Search Toolbar */}
-        <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md p-4 shadow-sm w-full">
-          <i className="pi pi-search text-zinc-400 pl-1"></i>
-          <InputText
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users globally by name, email, phone or admission/employee code..."
-            className="border-0 bg-transparent text-sm w-full outline-none focus:ring-0 pl-1"
-          />
+        {/* Identity & Account KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 backdrop-blur-md flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                Faculty & Staff
+              </span>
+              <div className="text-2xl font-black text-white mt-1">
+                {staffList.length || '0'} Accounts
+              </div>
+            </div>
+            <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <i className="pi pi-briefcase text-xl"></i>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 backdrop-blur-md flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                Enrolled Students
+              </span>
+              <div className="text-2xl font-black text-white mt-1">
+                {mappedStudents.length || '0'} Accounts
+              </div>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <i className="pi pi-graduation-cap text-xl"></i>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 backdrop-blur-md flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                Registered Parents
+              </span>
+              <div className="text-2xl font-black text-white mt-1">
+                {parentsList.length || '0'} Accounts
+              </div>
+            </div>
+            <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <i className="pi pi-users text-xl"></i>
+            </div>
+          </div>
         </div>
 
-        {/* Unified Tab Cockpit */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md p-5 shadow-sm">
+        {/* Multi-Tenant Subdomain Routing Banner */}
+        <div className="p-4 rounded-xl bg-blue-950/30 border border-blue-800/40 text-xs text-blue-300 flex items-start gap-3 shadow-inner">
+          <i className="pi pi-info-circle text-blue-400 text-lg mt-0.5"></i>
+          <div>
+            <span className="font-extrabold text-white block uppercase tracking-wider text-[10px] mb-0.5">
+              Multi-Tenant Subdomain Isolation
+            </span>
+            Users authenticate through secure tenant subdomains (e.g.,{' '}
+            <code>
+              https://{activeTenant?.subdomain || 'demo'}
+              {baseDomain}
+            </code>
+            ). Parent accounts with wards in multiple schools map safely with isolated landing
+            views.
+          </div>
+        </div>
+
+        {/* Main Data Registry Card */}
+        <div className="rounded-2xl bg-zinc-900/70 border border-zinc-800/80 backdrop-blur-xl p-6 shadow-xl space-y-5">
+          {/* Search Toolbar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+            <div className="relative w-full sm:w-96">
+              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400"></i>
+              <InputText
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, phone, or ID code..."
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-zinc-950/90 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="text-xs text-zinc-400 font-medium">
+              Showing matching records across active tabs
+            </div>
+          </div>
+
+          {/* Unified Tab Cockpit */}
           <TabView
             activeIndex={activeIndex}
             onTabChange={(e) => setActiveIndex(e.index)}
             className="custom-premium-tabs"
           >
             {/* Staff / Teachers Tab */}
-            <TabPanel header="Staff & Faculty" leftIcon="pi pi-briefcase mr-2">
+            <TabPanel
+              header={`Staff & Faculty (${filterList(staffList).length})`}
+              leftIcon="pi pi-briefcase mr-2"
+            >
               <DataTable
                 value={filterList(staffList)}
                 loading={loading}
                 className="p-datatable-sm mt-3"
                 paginator
                 rows={10}
-                emptyMessage="No staff records match your search."
+                emptyMessage="No staff records match your query."
                 stripedRows
               >
                 <Column
                   field="empIdOrAdmNo"
                   header="Employee ID"
-                  className="font-mono text-xs font-bold"
+                  className="font-mono text-xs font-bold text-indigo-400"
                 />
+                <Column field="name" header="Name" className="font-bold text-white text-sm" />
                 <Column
-                  field="name"
-                  header="Name"
-                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                  field="email"
+                  header="Email Username"
+                  className="text-zinc-300 font-mono text-xs"
                 />
-                <Column field="email" header="Email Username" />
-                <Column field="phone" header="Contact Phone" />
+                <Column field="phone" header="Contact Phone" className="text-zinc-300" />
                 <Column
                   field="role"
-                  header="Role Badge"
-                  body={(d) => <Tag value={d.role} severity="info" className="font-bold" />}
+                  header="Role"
+                  body={(d) => (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
+                      {d.role}
+                    </span>
+                  )}
                 />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
               </DataTable>
             </TabPanel>
 
             {/* Students Tab */}
-            <TabPanel header="Students" leftIcon="pi pi-graduation-cap mr-2">
+            <TabPanel
+              header={`Students (${filterList(mappedStudents).length})`}
+              leftIcon="pi pi-graduation-cap mr-2"
+            >
               <DataTable
                 value={filterList(mappedStudents)}
                 loading={loadingStudents}
                 className="p-datatable-sm mt-3"
                 paginator
                 rows={10}
-                emptyMessage="No student records match your search."
+                emptyMessage="No student records match your query."
                 stripedRows
               >
                 <Column
                   field="empIdOrAdmNo"
                   header="Admission No"
-                  className="font-mono text-xs font-bold"
+                  className="font-mono text-xs font-bold text-blue-400"
                 />
                 <Column
                   field="name"
-                  header="Name"
-                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                  header="Student Name"
+                  className="font-bold text-white text-sm"
                 />
                 <Column
                   field="email"
                   header="Assigned Username"
-                  className="text-xs text-blue-500"
+                  className="text-xs text-blue-400 font-mono"
                 />
-                <Column field="parentLinked" header="Linked Guardian" />
+                <Column field="parentLinked" header="Linked Guardian" className="text-zinc-300" />
                 <Column
                   header="Status"
                   body={(d) => (
-                    <Tag
-                      value={d.isActive ? 'ACTIVE' : 'INACTIVE'}
-                      severity={d.isActive ? 'success' : 'warning'}
-                      className="font-bold text-[9px]"
-                    />
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        d.isActive
+                          ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                          : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+                      }`}
+                    >
+                      {d.isActive ? 'ACTIVE' : 'INACTIVE'}
+                    </span>
                   )}
                 />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
@@ -324,27 +400,38 @@ export default function UsersRegistryPage() {
             </TabPanel>
 
             {/* Parents Tab */}
-            <TabPanel header="Parents / Guardians" leftIcon="pi pi-users mr-2">
+            <TabPanel
+              header={`Parents / Guardians (${filterList(parentsList).length})`}
+              leftIcon="pi pi-users mr-2"
+            >
               <DataTable
                 value={filterList(parentsList)}
                 loading={loading}
                 className="p-datatable-sm mt-3"
                 paginator
                 rows={10}
-                emptyMessage="No parent records match your search."
+                emptyMessage="No parent records match your query."
                 stripedRows
               >
                 <Column
                   field="name"
                   header="Parent Name"
-                  className="font-bold text-zinc-800 dark:text-zinc-150"
+                  className="font-bold text-white text-sm"
                 />
-                <Column field="email" header="Parent Username" />
-                <Column field="phone" header="WhatsApp Phone" />
+                <Column
+                  field="email"
+                  header="Parent Username"
+                  className="text-zinc-300 font-mono text-xs"
+                />
+                <Column
+                  field="phone"
+                  header="WhatsApp Phone"
+                  className="text-emerald-400 font-mono"
+                />
                 <Column
                   field="parentLinked"
                   header="Associated Ward(s)"
-                  className="text-xs text-zinc-500 font-semibold"
+                  className="text-xs text-zinc-400 font-medium"
                 />
                 <Column header="Credential Actions" body={actionsTemplate} align="center" />
               </DataTable>

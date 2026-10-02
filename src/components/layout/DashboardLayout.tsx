@@ -281,36 +281,114 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          {/* Contextual Info Panel */}
+          {/* Contextual Info & Quick Seeded Logins Panel */}
           <div className="hidden md:flex flex-col gap-6 w-80 shrink-0">
-            {/* Dynamic Welcome Message */}
-            <div className="backdrop-blur-xl bg-zinc-900/40 border border-zinc-800/60 rounded-md p-6 shadow-xl flex flex-col h-full relative overflow-hidden">
+            <div className="backdrop-blur-xl bg-zinc-900/60 border border-zinc-700/50 rounded-md p-6 shadow-xl flex flex-col justify-between h-full relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2"></div>
 
-              <div className="flex items-center gap-3 mb-6 relative z-10">
-                <div className="w-10 h-10 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <i className="pi pi-shield text-blue-400 text-lg"></i>
+              <div>
+                <div className="flex items-center gap-2.5 mb-4 relative z-10">
+                  <div className="w-8 h-8 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <i className="pi pi-key text-blue-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white leading-none">
+                      Seeded Demo Credentials
+                    </h3>
+                    <span className="text-[10px] text-zinc-400 font-medium">1-Click Auto Fill</span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white leading-none">Security Info</h3>
-                  <span className="text-[10px] text-zinc-400 font-medium">Enterprise Grade</span>
+
+                <div className="flex flex-col gap-1.5 relative z-10">
+                  {[
+                    {
+                      label: 'Super Admin',
+                      email: 'superadmin@school.com',
+                      pass: 'SuperAdmin@123',
+                      icon: 'pi-shield',
+                      color: 'text-purple-400 bg-purple-500/10',
+                    },
+                    {
+                      label: 'School Admin',
+                      email: 'admin@school.com',
+                      pass: 'School@123',
+                      icon: 'pi-building',
+                      color: 'text-blue-400 bg-blue-500/10',
+                    },
+                    {
+                      label: 'Teacher',
+                      email: 'teacher@school.com',
+                      pass: 'Teacher@123',
+                      icon: 'pi-user',
+                      color: 'text-emerald-400 bg-emerald-500/10',
+                    },
+                    {
+                      label: 'Accountant',
+                      email: 'accountant@school.com',
+                      pass: 'Accountant@123',
+                      icon: 'pi-wallet',
+                      color: 'text-amber-400 bg-amber-500/10',
+                    },
+                    {
+                      label: 'Librarian',
+                      email: 'librarian@school.com',
+                      pass: 'Librarian@123',
+                      icon: 'pi-book',
+                      color: 'text-teal-400 bg-teal-500/10',
+                    },
+                    {
+                      label: 'Student',
+                      email: 'student@school.com',
+                      pass: 'Student@123',
+                      icon: 'pi-graduation-cap',
+                      color: 'text-indigo-400 bg-indigo-500/10',
+                    },
+                    {
+                      label: 'Parent',
+                      email: 'parent@school.com',
+                      pass: 'Parent@123',
+                      icon: 'pi-users',
+                      color: 'text-rose-400 bg-rose-500/10',
+                    },
+                  ].map((demo) => (
+                    <button
+                      key={demo.label}
+                      type="button"
+                      onClick={() => {
+                        setIdentifier(demo.email);
+                        setPassword(demo.pass);
+                        window.dispatchEvent(
+                          new CustomEvent('show-toast', {
+                            detail: {
+                              severity: 'info',
+                              summary: `Auto-filled ${demo.label}`,
+                              detail: `Identifier: ${demo.email}`,
+                              life: 2500,
+                            },
+                          })
+                        );
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-md bg-zinc-950/40 hover:bg-zinc-800/80 border border-zinc-800 transition-all text-left group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-6 h-6 rounded flex items-center justify-center text-[10px] ${demo.color}`}
+                        >
+                          <i className={`pi ${demo.icon}`}></i>
+                        </div>
+                        <span className="text-xs font-semibold text-zinc-200 group-hover:text-white">
+                          {demo.label}
+                        </span>
+                      </div>
+                      <i className="pi pi-arrow-right text-[10px] text-zinc-500 group-hover:text-zinc-300"></i>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex-1 text-sm text-zinc-300 font-medium leading-relaxed relative z-10 flex flex-col justify-center gap-4">
-                <p>Welcome to the Platform Dashboard.</p>
-                <div className="p-4 bg-blue-950/20 border border-blue-900/30 rounded-md">
-                  <p className="text-xs text-blue-200/80 leading-relaxed">
-                    Our intelligent routing automatically detects whether you are logging in as a
-                    student or staff member based on your credentials, isolating your data in
-                    optimal environments.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-zinc-800/60 relative z-10">
-                <p className="text-[10px] text-zinc-500 text-center uppercase tracking-widest font-semibold">
-                  Powered by EduNexus OS © 2026
+              <div className="mt-4 pt-4 border-t border-zinc-800/60 relative z-10 text-center">
+                <p className="text-[10px] text-zinc-400 font-medium">
+                  Click any role to auto-fill credentials
                 </p>
               </div>
             </div>

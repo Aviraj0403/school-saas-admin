@@ -369,28 +369,28 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-[70px] bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors duration-300">
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-[70px] bg-white/90 dark:bg-[#070a13]/85 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 transition-colors duration-300 shadow-sm">
       {/* Left: hamburger + brand + switcher */}
       <div className="flex items-center gap-4">
         <button
           aria-label="Toggle Menu"
           onClick={onToggleMenu}
-          className="text-zinc-600 dark:text-zinc-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
         >
           <i className="pi pi-bars text-lg"></i>
         </button>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <div className="relative group">
-            <div className="absolute -inset-1 rounded-md bg-gradient-to-r from-blue-500 to-blue-500 opacity-60 blur-sm group-hover:opacity-100 transition duration-300"></div>
+            <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 opacity-70 blur-md group-hover:opacity-100 transition duration-300"></div>
             <div
-              className="relative w-8 h-8 rounded-md flex items-center justify-center shadow-inner border border-white/20"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center shadow-lg border border-white/20"
               style={{ backgroundColor: 'var(--primary-color)' }}
             >
-              <i className="pi pi-graduation-cap text-white text-[14px] drop-shadow-md"></i>
+              <i className="pi pi-graduation-cap text-white text-[15px] drop-shadow-md"></i>
             </div>
           </div>
-          <span className="font-bold tracking-tight text-zinc-800 dark:text-white hidden sm:block bg-clip-text">
+          <span className="font-extrabold tracking-tight text-slate-900 dark:text-slate-100 hidden sm:block bg-clip-text text-base">
             School SaaS
           </span>
         </div>
@@ -400,24 +400,24 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <div className="relative ml-2">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-all"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/90 transition-all shadow-sm"
             >
               <i
-                className="pi pi-briefcase text-[10px]"
+                className="pi pi-briefcase text-[11px]"
                 style={{ color: 'var(--primary-color)' }}
               ></i>
               <span className="max-w-[140px] truncate">
                 {activeTenant?.name || 'Select School'}
               </span>
-              <i className="pi pi-chevron-down text-[9px] text-zinc-400"></i>
+              <i className="pi pi-chevron-down text-[9px] text-slate-400"></i>
             </button>
 
             {dropdownOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
-                <div className="absolute left-0 mt-2 w-64 rounded-md bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/60 dark:border-zinc-700/60 shadow-xl z-40 p-2 animate-fade-in shadow-blue-500/5">
-                  <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800/80">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500">
+                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in shadow-blue-500/10">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                       Switch Workspace
                     </p>
                   </div>
@@ -428,10 +428,10 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
                         <button
                           key={school.id}
                           onClick={() => handleTenantSwitch(school)}
-                          className={`w-full flex items-center justify-between p-2.5 rounded-md text-left transition-all ${
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
                             isActive
-                              ? 'bg-blue-500/10 text-blue-650 dark:text-blue-400 font-bold'
-                              : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-600 dark:text-zinc-350'
+                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300'
                           }`}
                           style={
                             isActive
@@ -445,7 +445,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
                         >
                           <div className="flex flex-col gap-0.5">
                             <span className="text-xs font-semibold">{school.name}</span>
-                            <span className="text-[9px] opacity-60 uppercase tracking-wider">
+                            <span className="text-[9px] opacity-70 uppercase tracking-wider font-extrabold">
                               {school.plan} Plan
                             </span>
                           </div>
@@ -472,7 +472,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <Tag
             value="DEMO MODE"
             severity="danger"
-            className="text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider"
+            className="text-[9px] px-2.5 py-1 font-extrabold uppercase tracking-wider rounded-lg shadow-sm"
           />
         )}
 
@@ -480,16 +480,16 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <button
             aria-label="Theme Customizer"
             onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-            className="text-zinc-600 dark:text-zinc-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
           >
-            <i className="pi pi-palette text-[17px]"></i>
+            <i className="pi pi-palette text-[16px]"></i>
           </button>
           {themeDropdownOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setThemeDropdownOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 rounded-md bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/60 dark:border-zinc-700/60 shadow-xl z-40 p-2 animate-fade-in shadow-blue-500/5">
-                <div className="px-2.5 py-1.5 border-b border-zinc-100 dark:border-zinc-800/80">
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500">
+              <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in shadow-blue-500/10">
+                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                     Brand Color Theme
                   </p>
                 </div>
@@ -498,10 +498,10 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
                     <button
                       key={t.name}
                       onClick={() => handleThemeSwitch(t)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-md text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-all text-xs font-semibold text-zinc-700 dark:text-zinc-350"
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all text-xs font-semibold text-slate-700 dark:text-slate-300"
                     >
                       <span
-                        className={`w-3.5 h-3.5 rounded-full ${t.previewClass} border border-white/20`}
+                        className={`w-4 h-4 rounded-full ${t.previewClass} border border-white/20 shadow-sm`}
                       />
                       {t.name}
                     </button>
@@ -516,32 +516,36 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         <button
           aria-label="Toggle Theme Mode"
           onClick={toggleThemeMode}
-          className="text-zinc-600 dark:text-zinc-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
         >
           <i
-            className={themeMode === 'dark' ? 'pi pi-sun text-[17px]' : 'pi pi-moon text-[17px]'}
+            className={
+              themeMode === 'dark'
+                ? 'pi pi-sun text-[16px] text-amber-400'
+                : 'pi pi-moon text-[16px] text-indigo-400'
+            }
           ></i>
         </button>
 
         <button
           aria-label="Notifications"
-          className="relative text-zinc-600 dark:text-zinc-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="relative text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
         >
-          <i className="pi pi-bell text-[17px]"></i>
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+          <i className="pi pi-bell text-[16px]"></i>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
         </button>
 
-        <div className="flex items-center gap-2 pl-3 border-l border-zinc-200 dark:border-zinc-700 ml-1">
+        <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200/80 dark:border-slate-800/80 ml-1">
           <div className="hidden sm:flex flex-col text-right">
-            <span className="text-[13px] font-semibold text-zinc-800 dark:text-zinc-100 leading-tight">
+            <span className="text-[13px] font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {activeUser?.name || 'Guest'}
             </span>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight capitalize mt-0.5">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight capitalize mt-0.5 font-bold uppercase tracking-wider">
               {activeUser?.role || 'No Role'}
             </span>
           </div>
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ml-1 overflow-hidden shadow-sm"
+            className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer ml-1 overflow-hidden shadow-md border border-white/20 transition-transform hover:scale-105"
             style={{ backgroundColor: 'var(--primary-color)' }}
             onClick={(e) => userMenuRef.current?.toggle(e)}
           >
@@ -551,7 +555,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
             ref={userMenuRef}
             model={userMenuItems}
             popup
-            className="rounded-md shadow-lg dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm"
+            className="rounded-2xl shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm"
           />
         </div>
       </div>

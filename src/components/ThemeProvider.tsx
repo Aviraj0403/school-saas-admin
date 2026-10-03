@@ -35,7 +35,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     const applyTheme = () => {
       let resolvedTheme = activeTenant?.theme || tenant?.theme;
-      
+
       // Override with user selected custom theme if saved in localStorage
       try {
         const localThemeStr = localStorage.getItem('selected-theme');
@@ -53,7 +53,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       const schoolName = (activeTenant?.name || tenant?.name || '').toLowerCase();
       const subdomain = (activeTenant?.subdomain || tenant?.subdomain || '').toLowerCase();
       const isAnglo = schoolName.includes('anglo') || subdomain.includes('anglo');
-      
+
       if (isAnglo && (!resolvedTheme || Object.keys(resolvedTheme).length === 0)) {
         resolvedTheme = {
           primaryColor: '#1e40af', // Dark Blue
@@ -61,12 +61,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         };
       }
 
-      // Get theme mode (light is default now)
-      let themeMode = 'light';
+      // Get theme mode (dark is default now)
+      let themeMode = 'dark';
       try {
         const savedMode = localStorage.getItem('theme-mode');
         if (savedMode === 'light' || savedMode === 'dark') {
           themeMode = savedMode;
+        } else {
+          localStorage.setItem('theme-mode', 'dark');
         }
       } catch (e) {
         // Safe fallback
@@ -89,13 +91,13 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         }
       }
 
-      // Keep backgrounds pure and ultra-clean for CRM Premium Elite
+      // Keep backgrounds pure and ultra-clean for Modern Glassmorphism
       if (themeMode === 'dark') {
-        root.style.setProperty('--background', '#0B1437'); // Rich Navy Dark
-        root.style.setProperty('--foreground', '#F4F7FE');
+        root.style.setProperty('--background', '#090d16'); // Rich Dark Backdrop
+        root.style.setProperty('--foreground', '#f8fafc');
       } else {
-        root.style.setProperty('--background', '#F4F7FE'); // Premium Light CRM Background
-        root.style.setProperty('--foreground', '#1B254B'); // Rich Indigo Text
+        root.style.setProperty('--background', '#f8fafc'); // Premium Light CRM Background
+        root.style.setProperty('--foreground', '#0f172a'); // Rich Slate Text
       }
     };
 

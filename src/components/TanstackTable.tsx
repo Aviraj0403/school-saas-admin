@@ -4,7 +4,7 @@ import {
   getCoreRowModel,
   flexRender,
   ColumnDef,
-  PaginationState
+  PaginationState,
 } from '@tanstack/react-table';
 
 interface TanstackTableProps<T> {
@@ -40,31 +40,30 @@ export function TanstackTable<T>({
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className="w-full overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-        <table className="w-full text-sm text-left text-zinc-600 dark:text-zinc-300">
-          <thead className="text-xs text-zinc-500 uppercase bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+          <thead className="text-[11px] text-slate-400 dark:text-slate-400 uppercase font-extrabold tracking-wider bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200/60 dark:border-slate-800/80">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="px-6 py-4 font-semibold whitespace-nowrap">
+                  <th key={header.id} className="px-6 py-4 font-extrabold whitespace-nowrap">
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
-                    <span className="text-sm font-medium text-zinc-500">Loading data...</span>
+                    <div className="w-7 h-7 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      Loading records...
+                    </span>
                   </div>
                 </td>
               </tr>
@@ -72,10 +71,13 @@ export function TanstackTable<T>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="bg-white dark:bg-zinc-950 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors duration-150"
+                  className="bg-transparent hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors duration-150"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-zinc-700 dark:text-zinc-200">
+                    <td
+                      key={cell.id}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200 font-medium"
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -83,7 +85,10 @@ export function TanstackTable<T>({
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-zinc-500">
+                <td
+                  colSpan={columns.length}
+                  className="px-6 py-12 text-center text-slate-400 font-medium text-sm"
+                >
                   {emptyMessage}
                 </td>
               </tr>
@@ -91,7 +96,7 @@ export function TanstackTable<T>({
           </tbody>
         </table>
       </div>
-      
+
       {/* Pagination Controls */}
       {pagination && setPagination && (
         <div className="flex items-center justify-between">

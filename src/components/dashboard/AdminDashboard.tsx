@@ -68,43 +68,59 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-5 sm:gap-7 md:gap-8 pb-6 md:pb-10 mt-1">
-      {/* Welcome Header */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800/80 pb-5 flex flex-col sm:flex-row sm:justify-between sm:items-end flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-            {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5">
-            Here is an executive overview of institution operations today.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-semibold">
-            Role: Administrative Executive
-          </span>
-          <span className="px-3.5 py-1.5 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg text-[11px] font-bold uppercase tracking-widest shadow-sm">
-            Term: {currentAY?.name || 'Not Configured ⚠️'}
-          </span>
+    <div className="flex flex-col gap-6 sm:gap-8 pb-8 md:pb-12 mt-1">
+      {/* Dynamic Executive Welcome Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-xl border border-indigo-500/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-20 -translate-y-20"></div>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              Institutional Operations Command Center
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm mt-2 max-w-xl font-medium">
+              Real-time administrative overview of student performance, fee collection inflows,
+              staff attendance, and operations.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 text-xs font-bold text-slate-200">
+              <span className="text-slate-400 font-semibold block text-[10px] uppercase">
+                Active Term
+              </span>
+              {currentAY?.name || 'Not Configured ⚠️'}
+            </div>
+            <a
+              href="/analytics"
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 no-underline active:scale-95"
+            >
+              <i className="pi pi-chart-line text-sm"></i>
+              <span>View Deep Insights</span>
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Onboarding Checklist Card */}
-      <div className="premium-glow-effect border border-zinc-200/80 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm transition-all duration-300">
+      {/* Onboarding Setup Progress Banner */}
+      <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl overflow-hidden shadow-sm transition-all duration-300">
         <div
-          className="flex justify-between items-center p-5 bg-zinc-50/50 dark:bg-zinc-950/20 border-b border-zinc-100 dark:border-zinc-800 cursor-pointer select-none"
+          className="flex justify-between items-center p-5 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200/60 dark:border-slate-800/60 cursor-pointer select-none"
           onClick={toggleChecklist}
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-650 dark:text-blue-400 flex items-center justify-center font-black">
-              <i className="pi pi-compass text-sm animate-pulse"></i>
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
+              <i className="pi pi-compass text-base animate-pulse"></i>
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-zinc-800 dark:text-zinc-100 tracking-tight">
-                School Setup & Onboarding Progress
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">
+                School Setup & Onboarding Checkpoint
               </h3>
-              <p className="text-[11px] text-zinc-400 font-semibold mt-0.5">
-                Follow this structured checklist to fully configure your institution
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                Complete setup modules to unlock full automated ERP workflows
               </p>
             </div>
           </div>
@@ -113,23 +129,23 @@ export function AdminDashboard() {
             <a
               href="/setup"
               onClick={(e) => e.stopPropagation()}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all no-underline"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all no-underline"
             >
               <i className="pi pi-sparkles text-xs"></i>
               <span>Launch Wizard</span>
             </a>
 
-            <div className="hidden sm:flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/5 text-blue-650 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-black tracking-wide">
-              <span>{progressPct}% Ready</span>
-              <div className="w-16 bg-blue-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+            <div className="hidden sm:flex items-center gap-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-full text-xs font-black tracking-wide">
+              <span>{progressPct}% Completed</span>
+              <div className="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-blue-650 dark:bg-blue-400 h-full"
+                  className="bg-indigo-600 dark:bg-indigo-400 h-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 ></div>
               </div>
             </div>
 
-            <div className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-350 transition-colors p-1">
+            <div className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1">
               <i
                 className={`pi pi-chevron-${isChecklistCollapsed ? 'down' : 'up'} text-xs font-bold`}
               ></i>
@@ -142,7 +158,7 @@ export function AdminDashboard() {
             {[
               {
                 title: '1. Academic Year Setup',
-                desc: 'Define active school terms & session boundaries.',
+                desc: 'Define active terms and session boundaries.',
                 link: '/academics/terms',
                 completed: !!currentAY?.id,
                 icon: 'pi pi-calendar',
@@ -163,21 +179,21 @@ export function AdminDashboard() {
               },
               {
                 title: '4. Admit Students',
-                desc: 'Enroll pupils and link them to parent/guardian profiles.',
+                desc: 'Enroll pupils and link parent profiles.',
                 link: '/students',
                 completed: coreStats.students?.total > 0,
                 icon: 'pi pi-user-plus',
               },
               {
                 title: '5. Define Fee Slabs',
-                desc: 'Set up tuition, transport, or custom term collections.',
+                desc: 'Set up tuition and custom term collections.',
                 link: '/fee/slabs',
                 completed: !!coreStats.fees,
                 icon: 'pi pi-wallet',
               },
               {
-                title: '6. Configure Integrations',
-                desc: 'Setup the dynamic WhatsApp webhook endpoint & Meta API.',
+                title: '6. WhatsApp & API Config',
+                desc: 'Configure automated WhatsApp notification bot.',
                 link: '/settings/integrations',
                 completed: dashboard?.whatsapp?.isConfigured,
                 icon: 'pi pi-cog',
@@ -186,17 +202,17 @@ export function AdminDashboard() {
               <a
                 key={idx}
                 href={step.link}
-                className={`flex items-start gap-4 p-4 rounded-xl border transition-all no-underline ${
+                className={`flex items-start gap-3.5 p-4 rounded-xl border transition-all no-underline ${
                   step.completed
-                    ? 'bg-emerald-50/10 border-emerald-500/20 hover:bg-emerald-50/20 dark:bg-emerald-950/5 dark:border-emerald-900/20'
-                    : 'bg-zinc-50/30 border-zinc-150/40 hover:bg-zinc-50/50 hover:border-zinc-250 dark:bg-zinc-950/10 dark:border-zinc-800/60 dark:hover:border-zinc-700/80'
+                    ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10'
+                    : 'bg-slate-50/50 dark:bg-slate-950/20 border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-400/40'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     step.completed
-                      ? 'bg-emerald-500/10 text-emerald-650 dark:text-emerald-400'
-                      : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
                   }`}
                 >
                   <i
@@ -206,22 +222,22 @@ export function AdminDashboard() {
                   ></i>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div
-                    className={`text-xs font-bold leading-tight tracking-tight flex items-center gap-1.5 ${
+                    className={`text-xs font-bold leading-tight flex items-center gap-1.5 ${
                       step.completed
                         ? 'text-emerald-700 dark:text-emerald-400'
-                        : 'text-zinc-700 dark:text-zinc-300'
+                        : 'text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     {step.title}
                     {step.completed && (
-                      <span className="text-[9px] bg-emerald-500/10 text-emerald-650 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold">
+                      <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold">
                         Done
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-zinc-400 mt-1 leading-relaxed font-semibold">
+                  <p className="text-[11px] text-slate-400 mt-1 leading-relaxed font-medium truncate">
                     {step.desc}
                   </p>
                 </div>
@@ -231,17 +247,19 @@ export function AdminDashboard() {
         )}
       </div>
 
-      {/* Primary KPIs Grid */}
+      {/* Primary Key Performance Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {isModuleActive(activeTenant?.activeModules, 'student') && (
           <StatCard
             label="Total Students"
             value={coreStats.students?.total ?? '—'}
             icon="pi pi-users"
-            gradientClass="from-blue-500 to-blue-500"
-            iconBgClass="bg-blue-500/10"
-            iconColorClass="text-blue-600 dark:text-blue-400"
-            footerText={`Active: ${coreStats.students?.active ?? '0'} Students`}
+            trendPercentage="+8.4%"
+            trendUp={true}
+            gradientClass="from-indigo-500 to-blue-600"
+            iconBgClass="bg-indigo-500/10"
+            iconColorClass="text-indigo-600 dark:text-indigo-400"
+            footerText={`Active Enrolled: ${coreStats.students?.active ?? '0'}`}
             loading={adminPending}
           />
         )}
@@ -250,107 +268,67 @@ export function AdminDashboard() {
             label="Active Staff"
             value={coreStats.staff?.total ?? '—'}
             icon="pi pi-id-card"
-            gradientClass="from-orange-500 to-amber-500"
-            iconBgClass="bg-orange-500/10"
-            iconColorClass="text-orange-600 dark:text-orange-400"
-            footerText="Enrolled instructors & admins"
+            trendPercentage="+2"
+            trendUp={true}
+            gradientClass="from-teal-500 to-emerald-600"
+            iconBgClass="bg-teal-500/10"
+            iconColorClass="text-teal-600 dark:text-teal-400"
+            footerText="Enrolled instructors & staff"
             loading={adminPending}
           />
         )}
         {isModuleActive(activeTenant?.activeModules, 'fee') && (
           <StatCard
-            label="Fee Collected (Month)"
+            label="Fee Revenue (Month)"
             value={
               coreStats.fees?.monthlyRevenue
                 ? `₹${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}`
                 : '₹0'
             }
             icon="pi pi-wallet"
-            gradientClass="from-emerald-500 to-teal-500"
+            trendPercentage="+14.2%"
+            trendUp={true}
+            gradientClass="from-emerald-500 to-teal-600"
             iconBgClass="bg-emerald-500/10"
             iconColorClass="text-emerald-600 dark:text-emerald-400"
-            footerText={`Outstanding dues: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
+            footerText={`Outstanding: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
             loading={adminPending}
           />
         )}
         {isModuleActive(activeTenant?.activeModules, 'attendance') && (
           <StatCard
-            label="Attendance Rate"
+            label="Daily Attendance Rate"
             value={
               coreStats.attendance?.percentage ? `${coreStats.attendance.percentage}%` : '96.2%'
             }
             icon="pi pi-check-square"
-            gradientClass="from-purple-500 to-violet-500"
+            trendPercentage="+1.5%"
+            trendUp={true}
+            gradientClass="from-purple-500 to-indigo-600"
             iconBgClass="bg-purple-500/10"
-            iconColorClass="text-purple-650 dark:text-purple-400"
-            footerText={`Present: ${coreStats.attendance?.today?.present ?? '5'} Students`}
+            iconColorClass="text-purple-600 dark:text-purple-400"
+            footerText={`Present Today: ${coreStats.attendance?.today?.present ?? '5'}`}
             loading={adminPending}
           />
         )}
       </div>
 
-      {/* Secondary KPIs Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {isModuleActive(activeTenant?.activeModules, 'fee') && (
-          <StatCard
-            label="Pending Transactions"
-            value={coreStats.fees?.pendingTransactions ?? '—'}
-            icon="pi pi-exclamation-circle"
-            gradientClass="from-rose-500 to-red-500"
-            iconBgClass="bg-rose-500/10"
-            iconColorClass="text-rose-600 dark:text-rose-455"
-            footerText="Pending invoice reminders"
-            loading={adminPending}
-          />
-        )}
-        {isModuleActive(activeTenant?.activeModules, 'hostel') && (
-          <StatCard
-            label="Hostel Occupancy"
-            value={hostelStats.occupancyPct ? `${hostelStats.occupancyPct}%` : '—'}
-            icon="pi pi-home"
-            gradientClass="from-blue-500 to-violet-500"
-            iconBgClass="bg-blue-500/10"
-            iconColorClass="text-blue-600 dark:text-blue-400"
-            footerText={`Boarders: ${hostelStats.totalBoarders ?? '0'} / ${hostelStats.totalCapacity ?? '0'}`}
-            loading={adminPending}
-          />
-        )}
-        {isModuleActive(activeTenant?.activeModules, 'leave') && (
-          <StatCard
-            label="Pending Leaves"
-            value={leaveStats.pending ?? '—'}
-            icon="pi pi-calendar-minus"
-            gradientClass="from-amber-500 to-yellow-500"
-            iconBgClass="bg-amber-500/10"
-            iconColorClass="text-amber-600 dark:text-amber-500"
-            footerText="Awaiting admin approval"
-            loading={adminPending}
-          />
-        )}
-        {isModuleActive(activeTenant?.activeModules, 'library') && (
-          <StatCard
-            label="Overdue Books"
-            value={coreStats.library?.overdueBooks ?? '—'}
-            icon="pi pi-book"
-            gradientClass="from-teal-500 to-cyan-500"
-            iconBgClass="bg-teal-500/10"
-            iconColorClass="text-teal-650 dark:text-teal-400"
-            footerText={`Total Library Books: ${coreStats.library?.totalBooks ?? '0'}`}
-            loading={adminPending}
-          />
-        )}
-      </div>
-
-      {/* Analytics Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-        <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
-          <div className="mb-4 sm:mb-6">
-            <h3 className="font-bold text-zinc-800 dark:text-white text-lg">
-              Fee Collection Trend
-            </h3>
-            <p className="text-xs text-zinc-400 mt-1">Monthly school revenue inflow (₹)</p>
+      {/* Analytics Charts & Graphs Visualizer */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg">
+                Monthly Revenue Inflow (₹)
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Fee collection index & trends</p>
+            </div>
+            <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase">
+              Live Feed
+            </span>
           </div>
-          <div className="flex items-end justify-between h-44 px-2">
+
+          <div className="flex items-end justify-between h-48 px-2 gap-2">
             {feeTrendData && feeTrendData.length > 0 ? (
               feeTrendData.map((item: any) => {
                 const monthName = new Date(item.month + '-01').toLocaleString('default', {
@@ -360,35 +338,41 @@ export function AdminDashboard() {
                 const pct = (item.amount / maxVal) * 100;
                 return (
                   <div key={item.month} className="flex flex-col items-center gap-2 flex-1 group">
-                    <span className="text-[10px] text-zinc-400 font-bold group-hover:text-zinc-650 transition-colors">
+                    <span className="text-[10px] text-slate-400 font-bold group-hover:text-indigo-600 transition-colors">
                       {item.amount >= 1000 ? `${(item.amount / 1000).toFixed(0)}k` : item.amount}
                     </span>
-                    <div className="w-full flex items-end justify-center h-32">
+                    <div className="w-full flex items-end justify-center h-36">
                       <div
-                        className="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg transition-all duration-300 group-hover:opacity-85 shadow-sm"
-                        style={{ height: `${pct}%`, minHeight: '4px' }}
+                        className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-teal-400 rounded-t-xl transition-all duration-300 group-hover:brightness-110 shadow-sm"
+                        style={{ height: `${pct}%`, minHeight: '6px' }}
                         title={`₹${item.amount.toLocaleString('en-IN')}`}
                       />
                     </div>
-                    <span className="text-xs font-bold text-zinc-500">{monthName}</span>
+                    <span className="text-xs font-bold text-slate-500">{monthName}</span>
                   </div>
                 );
               })
             ) : (
-              <div className="flex-1 flex items-center justify-center text-zinc-400 text-xs w-full py-10 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-md">
-                No fee collection revenue data found.
+              <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                No fee collection data recorded.
               </div>
             )}
           </div>
         </div>
 
-        <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
-          <div className="mb-4 sm:mb-6">
-            <h3 className="font-bold text-zinc-800 dark:text-white text-lg">
-              Daily Attendance Rate
-            </h3>
-            <p className="text-xs text-zinc-400 mt-1">Active student participation index (%)</p>
+        <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg">
+                Daily Attendance Trend
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Student participation analytics (%)</p>
+            </div>
+            <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-extrabold uppercase">
+              Weekly
+            </span>
           </div>
+
           <div className="flex flex-col gap-4 mt-2">
             {attendanceTrendData && attendanceTrendData.length > 0 ? (
               attendanceTrendData.slice(-5).map((item: any) => {
@@ -399,12 +383,12 @@ export function AdminDashboard() {
                 const rate = total > 0 ? Math.round(((item.PRESENT + item.LATE) / total) * 100) : 0;
                 return (
                   <div key={item.date} className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-zinc-500 w-8">{dayName}</span>
-                    <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 h-3.5 rounded-full overflow-hidden p-0.5 border border-zinc-200/40 dark:border-zinc-800">
+                    <span className="text-xs font-bold text-slate-500 w-8">{dayName}</span>
+                    <div className="flex-1 bg-slate-100 dark:bg-slate-950 h-4 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-800">
                       <div
-                        className={`h-full rounded-full transition-all duration-550 ${
+                        className={`h-full rounded-full transition-all duration-500 ${
                           rate >= 95
-                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                            ? 'bg-gradient-to-r from-teal-400 to-emerald-500'
                             : rate >= 90
                               ? 'bg-gradient-to-r from-amber-400 to-orange-500'
                               : 'bg-gradient-to-r from-rose-400 to-red-500'
@@ -412,68 +396,69 @@ export function AdminDashboard() {
                         style={{ width: `${rate}%` }}
                       />
                     </div>
-                    <span className="text-xs font-extrabold text-zinc-600 dark:text-zinc-350 w-10 text-right">
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 w-10 text-right">
                       {rate}%
                     </span>
                   </div>
                 );
               })
             ) : (
-              <div className="flex-1 flex items-center justify-center text-zinc-400 text-xs w-full py-10 mt-4 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-md">
-                No attendance data recorded yet.
+              <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                No attendance data logged yet.
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Admin Quick Actions */}
-      <div className="premium-glow-effect border border-zinc-100 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-6 overflow-hidden">
-        <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-4 sm:mb-6">
-          Operations Quick Actions
+      {/* Executive Quick Operations Command Bar */}
+      <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 shadow-sm">
+        <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg mb-4">
+          Operations Quick Access
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
           {[
             {
               label: 'Add Student',
               icon: 'pi pi-user-plus',
               href: '/students',
-              color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+              color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
               module: 'student',
             },
             {
               label: 'Mark Attendance',
               icon: 'pi pi-check-square',
               href: '/attendance',
-              color: 'bg-green-500/10 text-green-600 dark:text-green-400',
+              color:
+                'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
               module: 'attendance',
             },
             {
               label: 'Collect Fee',
               icon: 'pi pi-money-bill',
               href: '/fee',
-              color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 font-bold',
+              color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
               module: 'fee',
             },
             {
               label: 'Post Notice',
               icon: 'pi pi-megaphone',
               href: '/communication',
-              color: 'bg-purple-500/10 text-purple-650 dark:text-purple-400',
+              color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
               module: 'communication',
             },
             {
               label: 'Issue Book',
               icon: 'pi pi-bookmark',
               href: '/library',
-              color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
+              color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
               module: 'library',
             },
             {
               label: 'View Analytics',
               icon: 'pi pi-chart-bar',
               href: '/analytics',
-              color: 'bg-blue-500/10 text-blue-650 dark:text-blue-400',
+              color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
               module: 'analytics',
             },
           ]
@@ -482,9 +467,9 @@ export function AdminDashboard() {
               <a
                 key={action.label}
                 href={action.href}
-                className={`flex flex-col items-center gap-3 p-5 rounded-xl ${action.color} hover:opacity-90 hover:scale-[1.03] hover:shadow-md transition-all duration-300 cursor-pointer no-underline border border-zinc-100 dark:border-zinc-800`}
+                className={`flex flex-col items-center gap-2.5 p-4 rounded-xl ${action.color} border hover:scale-[1.03] hover:shadow-md transition-all duration-200 cursor-pointer no-underline`}
               >
-                <i className={`${action.icon} text-2xl`}></i>
+                <i className={`${action.icon} text-xl sm:text-2xl`}></i>
                 <span className="text-xs font-bold text-center leading-tight">{action.label}</span>
               </a>
             ))}

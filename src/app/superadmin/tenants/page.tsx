@@ -2,20 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
-import { DataTable, DataTablePageEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
-import { Tag } from 'primereact/tag';
-import { InputNumber } from 'primereact/inputnumber';
-import { useTenantsList, useCreateTenant, useSuspendTenant, useActivateTenant, useSetTenantPlan, useSetTenantModules, useUpdateTenant, useTenantInvoices, useTenantActivityLogs } from '@/modules/superadmin/hooks/useTenants';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import {
+  useTenantsList,
+  useCreateTenant,
+  useSuspendTenant,
+  useActivateTenant,
+  useSetTenantPlan,
+  useSetTenantModules,
+  useUpdateTenant,
+  useTenantInvoices,
+  useTenantActivityLogs,
+} from '@/modules/superadmin/hooks/useTenants';
 import { CreateTenantDto, Tenant } from '@/types/api.types';
 import { useAuthStore } from '@/store/useAuthStore';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
+import { toast } from 'sonner';
+import {
+  Plus,
+  Eye,
+  ArrowRightLeft,
+  Ban,
+  CheckCircle,
+  Building,
+  Printer,
+  Video,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 
 const PLANS = [
   { label: 'Basic', value: 'BASIC' },
@@ -24,17 +43,11 @@ const PLANS = [
   { label: 'Enterprise', value: 'ENTERPRISE' },
 ];
 
-const PLAN_THEMES: Record<string, { bg: string, text: string, border: string, badge: string }> = {
-  BASIC: { bg: 'from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900', text: 'text-zinc-700 dark:text-zinc-300', border: 'border-zinc-200 dark:border-zinc-800', badge: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300' },
-  STANDARD: { bg: 'from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-950/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-100 dark:border-blue-950', badge: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
-  PREMIUM: { bg: 'from-amber-50 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-100 dark:border-amber-950', badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-300' },
-  ENTERPRISE: { bg: 'from-purple-50 to-fuchsia-100 dark:from-purple-950/40 dark:to-fuchsia-950/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-100 dark:border-purple-950', badge: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
-};
-
 export default function TenantsPage() {
   const { switchTenant, activeTenant } = useAuthStore();
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'biometrics' | 'jitsi'>('grid');
-  const [lazyState, setLazyState] = useState({ first: 0, rows: 10, page: 1 });
+  const [page, setPage] = useState(1);
+  const rows = 10;
   const [showDialog, setShowDialog] = useState(false);
   const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
   const [formData, setFormData] = useState<CreateTenantDto>({
@@ -56,32 +69,21 @@ export default function TenantsPage() {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       const parts = hostname.split('.');
-      if (parts.length >= 2) {
-        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-          const suffix = parts.slice(1).join('.');
-          setBaseDomain(`.${suffix}`);
-        }
+      if (parts.length >= 2 && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        const suffix = parts.slice(1).join('.');
+        setBaseDomain(`.${suffix}`);
       }
     }
   }, []);
 
-  const { data, isPending } = useTenantsList(lazyState.page, lazyState.rows);
+  const { data, isPending } = useTenantsList(page, rows);
   const createMutation = useCreateTenant();
   const suspendMutation = useSuspendTenant();
   const activateMutation = useActivateTenant();
 
   const tenants: Tenant[] = data?.data?.items || [];
   const totalRecords = data?.data?.meta?.total || 0;
-
-  // Stats calculation
-  const totalCount = totalRecords;
-  const activeCount = tenants.filter(t => t.isActive && !t.isSuspended).length;
-  const suspendedCount = tenants.filter(t => t.isSuspended).length;
-  const premiumPlansCount = tenants.filter(t => t.plan === 'PREMIUM' || t.plan === 'ENTERPRISE').length;
-
-  const onPage = (event: DataTablePageEvent) => {
-    setLazyState({ first: event.first, rows: event.rows, page: (event.page || 0) + 1 });
-  };
+  const totalPages = Math.ceil(totalRecords / rows) || 1;
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,21 +104,18 @@ export default function TenantsPage() {
           latitude: undefined,
           longitude: undefined,
         });
+        toast.success('New school onboarded successfully.');
       },
     });
-  };
-
-  const statusTemplate = (rowData: any) => {
-    if (rowData.isSuspended) return <Tag value="SUSPENDED" severity="danger" className="font-semibold text-xs" />;
-    if (rowData.isActive) return <Tag value="ACTIVE" severity="success" className="font-semibold text-xs" />;
-    return <Tag value="INACTIVE" severity="warning" className="font-semibold text-xs" />;
   };
 
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('BASIC');
   const [tenantModules, setTenantModules] = useState<string[]>([]);
-  const [detailsTab, setDetailsTab] = useState<'config' | 'subscriptions' | 'ledger' | 'audit_logs' | 'theme'>('config');
+  const [detailsTab, setDetailsTab] = useState<
+    'config' | 'subscriptions' | 'ledger' | 'audit_logs' | 'theme'
+  >('config');
 
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [secondaryColor, setSecondaryColor] = useState('#8b5cf6');
@@ -125,856 +124,485 @@ export default function TenantsPage() {
   const modulesMutation = useSetTenantModules();
   const updateTenantMutation = useUpdateTenant();
 
-  const { data: invoicesData, isPending: isLedgerPending } = useTenantInvoices(selectedTenant?.id || '');
-  const { data: logsData, isPending: isLogsPending } = useTenantActivityLogs(selectedTenant?.id || '');
-  
-  // Safely extract the array from the paginated response
-  const invoices: any[] = Array.isArray(invoicesData?.data) 
-    ? invoicesData.data 
-    : (invoicesData?.data?.items || (invoicesData as any)?.data?.data || (invoicesData as any)?.items || []);
-    
-  const activityLogs: any[] = Array.isArray(logsData?.data) 
-    ? logsData.data 
-    : (logsData?.data?.items || (logsData as any)?.data?.data || (logsData as any)?.items || []);
+  const { data: invoicesData } = useTenantInvoices(selectedTenant?.id || '');
+  const { data: logsData } = useTenantActivityLogs(selectedTenant?.id || '');
+
+  const invoices: any[] = Array.isArray(invoicesData?.data)
+    ? invoicesData.data
+    : invoicesData?.data?.items ||
+      (invoicesData as any)?.data?.data ||
+      (invoicesData as any)?.items ||
+      [];
+
+  const activityLogs: any[] = Array.isArray(logsData?.data)
+    ? logsData.data
+    : logsData?.data?.items || (logsData as any)?.data?.data || (logsData as any)?.items || [];
 
   const handleOpenDetails = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     setSelectedPlan(tenant.plan);
     setTenantModules(tenant.activeModules || []);
-    
+
     const theme = (tenant as any).theme || {};
     setPrimaryColor(theme.primaryColor || '#6366f1');
     setSecondaryColor(theme.secondaryColor || '#8b5cf6');
-    
+
     setDetailsTab('config');
     setShowDetailDialog(true);
   };
 
   const handleSaveTheme = () => {
     if (!selectedTenant) return;
-    updateTenantMutation.mutate({
-      id: selectedTenant.id,
-      data: {
-        theme: {
-          primaryColor,
-          secondaryColor
-        }
+    updateTenantMutation.mutate(
+      {
+        id: selectedTenant.id,
+        data: {
+          theme: {
+            primaryColor,
+            secondaryColor,
+          },
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success(`School theme primary color is now ${primaryColor}.`);
+          setSelectedTenant((prev) =>
+            prev ? { ...prev, theme: { primaryColor, secondaryColor } } : null
+          );
+        },
       }
-    }, {
-      onSuccess: () => {
-        window.dispatchEvent(new CustomEvent('show-toast', {
-          detail: {
-            severity: 'success',
-            summary: 'Theme Colors Saved',
-            detail: `School theme primary color is now ${primaryColor}.`,
-            life: 3000
-          }
-        }));
-        setSelectedTenant(prev => prev ? { ...prev, theme: { primaryColor, secondaryColor } } : null);
-      }
-    });
+    );
   };
 
   const handleUpdatePlan = (plan: string) => {
     if (!selectedTenant) return;
-    planMutation.mutate({ id: selectedTenant.id, plan }, {
-      onSuccess: () => {
-        setSelectedPlan(plan);
-        setSelectedTenant(prev => prev ? { ...prev, plan: plan as any } : null);
+    planMutation.mutate(
+      { id: selectedTenant.id, plan },
+      {
+        onSuccess: () => {
+          setSelectedPlan(plan);
+          setSelectedTenant((prev) => (prev ? { ...prev, plan: plan as any } : null));
+          toast.success(`Updated plan to ${plan}`);
+        },
       }
-    });
+    );
   };
 
   const handleToggleModule = (mod: string) => {
     if (!selectedTenant) return;
     const isEnabled = tenantModules.includes(mod);
-    const updated = isEnabled ? tenantModules.filter(m => m !== mod) : [...tenantModules, mod];
+    const updated = isEnabled ? tenantModules.filter((m) => m !== mod) : [...tenantModules, mod];
     setTenantModules(updated);
     modulesMutation.mutate({ id: selectedTenant.id, modules: updated });
-  };
-
-  const planTemplate = (rowData: any) => {
-    const theme = PLAN_THEMES[rowData.plan] || PLAN_THEMES.BASIC;
-    return <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${theme.badge}`}>{rowData.plan}</span>;
   };
 
   const handleSwitchTenant = (tenant: Tenant) => {
     switchTenant({
       id: tenant.id,
       name: tenant.name,
-      activeModules: tenant.activeModules || ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'],
+      activeModules: tenant.activeModules || [
+        'students',
+        'staff',
+        'academics',
+        'attendance',
+        'fee',
+        'exams',
+        'library',
+        'communication',
+        'whatsapp',
+        'hostel',
+        'leave',
+        'transport',
+        'homework',
+        'website',
+        'settings',
+      ],
       projectCode: tenant.projectCode,
       subdomain: tenant.subdomain,
       theme: tenant.theme as any,
     });
 
-    window.dispatchEvent(new CustomEvent('show-toast', {
-      detail: {
-        severity: 'success',
-        summary: 'Workspace Connected',
-        detail: `Connecting context to ${tenant.name}. Re-initializing systems...`,
-        life: 2500
-      }
-    }));
-
-    // Redirect to dashboard and force complete page reload to flush all query caches cleanly!
+    toast.success(`Connecting workspace context to ${tenant.name}...`);
     setTimeout(() => {
       window.location.href = '/dashboard';
     }, 1200);
   };
 
-  const actionsTemplate = (rowData: any) => (
-    <div className="flex gap-2 justify-center items-center">
-      <Button
-        icon="pi pi-eye"
-        rounded text severity="secondary" size="small"
-        tooltip="View Details & Modules"
-        tooltipOptions={{ position: 'bottom' }}
-        onClick={() => handleOpenDetails(rowData)}
-      />
-      {activeTenant?.id !== rowData.id ? (
-        <Button
-          icon="pi pi-directions"
-          rounded text severity="info" size="small"
-          tooltip="Switch Workspace"
-          tooltipOptions={{ position: 'bottom' }}
-          onClick={() => handleSwitchTenant(rowData)}
-        />
-      ) : (
-        <span className="text-xs font-bold text-emerald-600 px-2">CURRENT</span>
-      )}
-      {!rowData.isSuspended ? (
-        <Button
-          icon="pi pi-ban"
-          rounded text severity="danger" size="small"
-          tooltip="Suspend School"
-          tooltipOptions={{ position: 'bottom' }}
-          onClick={() => {
-            if (confirm(`Suspend ${rowData.name}?`)) suspendMutation.mutate(rowData.id);
-          }}
-        />
-      ) : (
-        <Button
-          icon="pi pi-check-circle"
-          rounded text severity="success" size="small"
-          tooltip="Activate School"
-          tooltipOptions={{ position: 'bottom' }}
-          onClick={() => {
-            if (confirm(`Reactivate ${rowData.name}?`)) activateMutation.mutate(rowData.id);
-          }}
-        />
-      )}
-    </div>
-  );
-
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="Tenants" subtitle="Superadmin" />
-<div className="flex flex-col gap-4 pb-10">
-        
-        {/* Header Section */}
-        <div className="flex justify-end w-full -mt-8 mb-2 z-10 relative">
-          
-          <Button 
-            label="Onboard New School" 
-            icon="pi pi-plus" 
-            className="bg-blue-600 hover:bg-blue-700 border-none text-white font-bold shadow-md shadow-blue-500/10 border-0 p-3 px-5 transition-all rounded-xl" 
-            onClick={() => setShowDialog(true)} 
-          />
+      <PageBreadcrumb title="Tenants Directory" subtitle="Superadmin" />
+
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
+        {/* Header Block */}
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Building className="w-6 h-6 text-brand" /> Tenant Schools Directory
+            </h1>
+            <p className="text-xs text-zinc-500 mt-1">
+              Onboard new institute domains, configure active modules, and route multi-tenant SaaS
+              environments.
+            </p>
+          </div>
+
+          <Button onClick={() => setShowDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" /> Onboard New School
+          </Button>
         </div>
-
-
 
         {/* Global Multi-Tab Control Menu */}
-        <div className="flex bg-zinc-100/60 dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/40 dark:border-zinc-800/80 w-max overflow-x-auto max-w-full">
-          <button 
+        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max">
+          <button
             onClick={() => setViewMode('grid')}
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'grid' || viewMode === 'table' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
+              viewMode === 'grid' || viewMode === 'table'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
           >
-            <i className="pi pi-building"></i>
-            Active Schools Directory
+            <Building className="w-3.5 h-3.5" /> Schools Directory
           </button>
-          <button 
-            onClick={() => setViewMode('biometrics')} 
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'biometrics' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+          <button
+            onClick={() => setViewMode('biometrics')}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
+              viewMode === 'biometrics'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
           >
-            <i className="pi pi-print"></i>
-            Biometric Terminals
+            <Printer className="w-3.5 h-3.5" /> Biometric Terminals
           </button>
-          <button 
-            onClick={() => setViewMode('jitsi')} 
-            className={`p-2.5 px-5 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${viewMode === 'jitsi' ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm' : 'text-zinc-500'}`}
+          <button
+            onClick={() => setViewMode('jitsi')}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
+              viewMode === 'jitsi'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
           >
-            <i className="pi pi-video"></i>
-            Live Jitsi Telemetry
+            <Video className="w-3.5 h-3.5" /> Jitsi Telemetry
           </button>
         </div>
 
-        {/* Dynamic Telemetry Sections
-            Both panels below used to render fabricated data as if it were live:
-            two terminals (BIO-01-MAIN at 192.168.1.120, "Last Ping: Just now")
-            with ONLINE tags, a "JITSI INTEGRATION ACTIVE" badge over two
-            invented rooms attributed to named schools, and an "Inject Biometric
-            Punch" button that fired a success toast reading "Attendance
-            registered in the database" without making a single network call —
-            a confirmation of a write that never happened.
-
-            Neither had an endpoint behind it, and neither could: device
-            telemetry and online classes are both tenant-scoped, so there is no
-            cross-tenant feed for this superadmin view to read. They now point
-            at the real per-school screens instead of imitating them. */}
         {viewMode === 'biometrics' && (
-          <div className="flex flex-col gap-6 animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-8 shadow-sm flex flex-col items-center text-center gap-3">
-              <i className="pi pi-print text-3xl text-blue-500"></i>
-              <h3 className="text-base font-bold text-zinc-800 dark:text-white">Biometric Terminals</h3>
-              <p className="text-xs text-zinc-500 max-w-md">
-                Device provisioning, heartbeat status and punch ingestion are per-school.
-                Switch into a tenant from the list below, then open Attendance → Devices to
-                see its real terminals.
-              </p>
-              <a
-                href="/attendance/devices"
-                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all no-underline"
-              >
-                Open Device Manager
-              </a>
-            </div>
+          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-8 bg-white dark:bg-zinc-900/60 backdrop-blur-xl flex flex-col items-center text-center gap-3">
+            <Printer className="w-10 h-10 text-brand" />
+            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              Biometric Hardware Terminals
+            </h3>
+            <p className="text-xs text-zinc-500 max-w-md">
+              Device provisioning and punch ingestion are per-school. Switch into a tenant from the
+              directory below, then open Attendance → Devices.
+            </p>
+            <a href="/attendance/devices">
+              <Button variant="outline">Open Device Manager</Button>
+            </a>
           </div>
         )}
 
         {viewMode === 'jitsi' && (
-          <div className="flex flex-col gap-6 animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-150/60 dark:border-zinc-850 rounded-xl p-8 shadow-sm flex flex-col items-center text-center gap-3">
-              <i className="pi pi-video text-3xl text-blue-500"></i>
-              <h3 className="text-base font-bold text-zinc-800 dark:text-white">Online Class Rooms</h3>
-              <p className="text-xs text-zinc-500 max-w-md">
-                Scheduled Jitsi rooms belong to a school&apos;s academics module. Switch into a
-                tenant from the list below, then open Academics → Online Classes to see and
-                join its real sessions. There is no cross-tenant live feed.
-              </p>
-              <a
-                href="/academics/online-classes"
-                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all no-underline"
-              >
-                Open Online Classes
-              </a>
-            </div>
+          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-8 bg-white dark:bg-zinc-900/60 backdrop-blur-xl flex flex-col items-center text-center gap-3">
+            <Video className="w-10 h-10 text-purple-500" />
+            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              Online Class Rooms
+            </h3>
+            <p className="text-xs text-zinc-500 max-w-md">
+              Scheduled Jitsi rooms belong to a school's academics module. Switch into a tenant from
+              the directory below, then open Academics → Online Classes.
+            </p>
+            <a href="/academics/online-classes">
+              <Button variant="outline">Open Online Classes</Button>
+            </a>
           </div>
         )}
 
-        {/* Original Grid/Table Sections for schools onboarding */}
-        {viewMode === 'grid' ? (
-          /* Premium Card Grid View */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tenants.map((tenant) => {
-              const theme = PLAN_THEMES[tenant.plan] || PLAN_THEMES.BASIC;
-              return (
-                <div 
-                  key={tenant.id}
-                  onClick={() => handleSwitchTenant(tenant)}
-                  className={`bg-white dark:bg-zinc-900/90 border ${tenant.isSuspended ? 'border-rose-200 dark:border-rose-950/40 bg-rose-50/10' : 'border-zinc-250 dark:border-zinc-800/80 hover:border-blue-500/80 dark:hover:border-blue-500/80'} rounded-xl shadow-sm hover:shadow-xl hover:translate-y-[-4px] cursor-pointer transition-all duration-300 flex flex-col justify-between overflow-hidden relative group`}
-                >
-                  {/* Card Header Gradient banner */}
-                  <div className={`h-24 bg-gradient-to-r ${theme.bg} p-6 flex justify-between items-start relative`}>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-white/80 dark:bg-zinc-900/80 px-2 py-0.5 rounded-full text-zinc-600 dark:text-zinc-300 w-max shadow-sm">
-                        {tenant.projectCode || 'No Code'}
-                      </span>
-                    </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm ${theme.badge} bg-white dark:bg-zinc-950`}>
-                      {tenant.plan}
+        {/* Schools Directory Grid */}
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {tenants.map((tenant) => (
+              <div
+                key={tenant.id}
+                onClick={() => handleSwitchTenant(tenant)}
+                className={`bg-white dark:bg-zinc-900/60 border rounded-xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4 backdrop-blur-xl ${
+                  tenant.isSuspended
+                    ? 'border-rose-200 dark:border-rose-950/40'
+                    : 'border-zinc-200/80 dark:border-zinc-800/80'
+                }`}
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-zinc-400 block uppercase">
+                      {tenant.projectCode || 'NO CODE'}
+                    </span>
+                    <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                      {tenant.name}
+                    </h4>
+                    <p className="text-xs font-mono text-brand mt-1 flex items-center gap-1">
+                      {tenant.subdomain}
+                      {baseDomain} <ExternalLink className="w-3 h-3" />
+                    </p>
+                  </div>
+                  <Badge variant={tenant.isSuspended ? 'danger' : 'success'}>{tenant.plan}</Badge>
+                </div>
+
+                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 flex flex-col gap-1.5 text-xs text-zinc-500">
+                  <div>
+                    Admin:{' '}
+                    <span className="text-zinc-900 dark:text-zinc-100 font-mono">
+                      {tenant.adminEmail}
                     </span>
                   </div>
-
-                  {/* School Profile Image placeholder / Avatar */}
-                  <div className="absolute top-12 left-6">
-                    <div className="w-16 h-16 rounded-md bg-white dark:bg-zinc-950 shadow-md flex items-center justify-center border-2 border-white dark:border-zinc-900 text-2xl font-black text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform duration-300">
-                      {tenant.prefix || tenant.name.substring(0, 2).toUpperCase()}
-                    </div>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="p-6 pt-10 flex-grow flex flex-col justify-between gap-6">
-                    <div>
-                      <h4 className="text-xl font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors duration-300">
-                        {tenant.name}
-                      </h4>
-                      <p className="text-xs text-blue-600/85 dark:text-blue-400 mt-1 font-semibold flex items-center gap-1.5">
-                        <i className="pi pi-link text-[10px]"></i>
-                        {tenant.subdomain}{baseDomain}
-                      </p>
-                      
-                      <div className="mt-4 flex flex-col gap-2.5 border-t border-zinc-100 dark:border-zinc-800/80 pt-4">
-                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                          <i className="pi pi-envelope text-zinc-400 text-sm"></i>
-                          <span className="truncate">{tenant.adminEmail}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                          <i className="pi pi-calendar text-zinc-400 text-sm"></i>
-                          <span>Onboarded: {new Date(tenant.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                          <i className="pi pi-cog text-zinc-400 text-sm"></i>
-                          <span>{tenant.activeModules?.length || 0} Modules enabled</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status & Actions Footer */}
-                    <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 pt-4 mt-2">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2.5 h-2.5 rounded-full ${tenant.isSuspended ? 'bg-rose-500' : 'bg-emerald-500'} animate-pulse`}></div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                          {tenant.isSuspended ? 'Suspended' : 'Active'}
-                        </span>
-                      </div>
-                      
-                      <div className="flex gap-1.5 items-center">
-                        <Button
-                          icon="pi pi-eye"
-                          className="p-button-rounded p-button-text p-button-secondary hover:bg-zinc-500/10 p-2"
-                          tooltip="View Details"
-                          tooltipOptions={{ position: 'top' }}
-                          onClick={(e) => { e.stopPropagation(); handleOpenDetails(tenant); }}
-                        />
-                        {activeTenant?.id !== tenant.id ? (
-                          <Button
-                            icon="pi pi-directions"
-                            className="p-button-rounded p-button-text p-button-info hover:bg-sky-500/10 p-2"
-                            tooltip="Switch Workspace"
-                            tooltipOptions={{ position: 'top' }}
-                            onClick={(e) => { e.stopPropagation(); handleSwitchTenant(tenant); }}
-                          />
-                        ) : (
-                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md border border-emerald-200/30" onClick={(e) => e.stopPropagation()}>CURRENT</span>
-                        )}
-                        {!tenant.isSuspended ? (
-                          <Button
-                            icon="pi pi-ban"
-                            className="p-button-rounded p-button-text p-button-danger hover:bg-rose-500/10 p-2"
-                            tooltip="Suspend Tenant"
-                            tooltipOptions={{ position: 'top' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`Suspend ${tenant.name}?`)) suspendMutation.mutate(tenant.id);
-                            }}
-                          />
-                        ) : (
-                          <Button
-                            icon="pi pi-check-circle"
-                            className="p-button-rounded p-button-text p-button-success hover:bg-emerald-500/10 p-2"
-                            tooltip="Reactivate Tenant"
-                            tooltipOptions={{ position: 'top' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`Reactivate ${tenant.name}?`)) activateMutation.mutate(tenant.id);
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
+                  <div>
+                    Modules:{' '}
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      {tenant.activeModules?.length || 0} Enabled
+                    </span>
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 flex justify-between items-center">
+                  <Badge variant={tenant.isSuspended ? 'danger' : 'success'}>
+                    {tenant.isSuspended ? 'SUSPENDED' : 'ACTIVE'}
+                  </Badge>
+
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleOpenDetails(tenant)}
+                      title="View Details"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+
+                    {activeTenant?.id !== tenant.id ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => handleSwitchTenant(tenant)}
+                        title="Switch Workspace"
+                      >
+                        <ArrowRightLeft className="w-3.5 h-3.5 text-brand" />
+                      </Button>
+                    ) : (
+                      <Badge variant="success">CURRENT</Badge>
+                    )}
+
+                    {!tenant.isSuspended ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          if (confirm(`Suspend ${tenant.name}?`)) suspendMutation.mutate(tenant.id);
+                        }}
+                        className="text-rose-600 border-rose-200/80 hover:bg-rose-50"
+                        title="Suspend"
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          if (confirm(`Reactivate ${tenant.name}?`))
+                            activateMutation.mutate(tenant.id);
+                        }}
+                        className="text-emerald-600 border-emerald-200/80 hover:bg-emerald-50"
+                        title="Reactivate"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          /* Modern Table View */
-          <Card className="shadow-sm border border-zinc-100 dark:border-zinc-800/80 rounded-xl overflow-hidden bg-white dark:bg-zinc-900">
-            <DataTable
-              value={tenants}
-              lazy
-              paginator
-              first={lazyState.first}
-              rows={lazyState.rows}
-              totalRecords={totalRecords}
-              onPage={onPage}
-              loading={isPending}
-              className="p-datatable-sm"
-              emptyMessage="No schools onboarded yet."
-              stripedRows
-            >
-              <Column field="projectCode" header="Code" body={(d) => d.projectCode || '—'} className="font-bold text-xs" />
-              <Column field="prefix" header="Prefix" body={(d) => d.prefix || '—'} className="font-semibold text-xs text-zinc-500" />
-              <Column field="name" header="School Name" sortable className="font-bold" />
-              <Column field="subdomain" header="Subdomain" body={(d) => <span className="text-primary font-semibold">{d.subdomain}{baseDomain}</span>} />
-              <Column field="adminEmail" header="Admin Email" />
-              <Column field="plan" header="Plan" body={planTemplate} align="center" />
-              <Column header="Status" body={statusTemplate} align="center" />
-              <Column header="Actions" body={actionsTemplate} align="center" />
-            </DataTable>
-          </Card>
         )}
-        {/* Dialog Modal - Create */}
-        <Dialog 
-          header="Onboard New School" 
-          visible={showDialog} 
-          style={{ width: '680px' }} 
-          modal 
-          onHide={() => setShowDialog(false)}
-          className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
-          contentClassName="p-6"
-          headerClassName="border-b border-gray-150 dark:border-zinc-800 p-6 font-bold"
-        >
-          <form onSubmit={handleCreate} className="flex flex-col gap-6 mt-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">School Name *</label>
-                <InputText
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="e.g. Oakridge International School"
-                />
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Subdomain *</label>
-                <InputText
-                  value={formData.subdomain}
-                  onChange={(e) => setFormData({ ...formData, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
-                  required
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 font-semibold text-primary text-sm"
-                  placeholder="e.g. oakridge"
-                />
-              </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center mt-2 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
+            <span className="text-xs text-zinc-500 font-mono">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+              </Button>
+              <Button
+                variant="outline"
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Onboard Dialog */}
+      <Dialog isOpen={showDialog} onClose={() => setShowDialog(false)} title="Onboard New School">
+        <form onSubmit={handleCreate} className="flex flex-col gap-4 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                School Name *
+              </label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Oakridge International"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Subdomain *
+              </label>
+              <Input
+                value={formData.subdomain}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+                  })
+                }
+                placeholder="e.g. oakridge"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Admin Email *
+              </label>
+              <Input
+                type="email"
+                value={formData.adminEmail}
+                onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                placeholder="admin@school.com"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Admin Phone *
+              </label>
+              <Input
+                value={formData.adminPhone || ''}
+                onChange={(e) => setFormData({ ...formData, adminPhone: e.target.value })}
+                placeholder="+91 98765 43210"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Prefix Code
+              </label>
+              <Input
+                value={formData.prefix || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, prefix: e.target.value.toUpperCase().slice(0, 4) })
+                }
+                placeholder="OAKR"
+                maxLength={4}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">Plan</label>
+              <Select
+                value={formData.plan}
+                options={PLANS}
+                onChange={(e) => setFormData({ ...formData, plan: e.target.value as any })}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" type="button" onClick={() => setShowDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createMutation.isPending}>
+              Onboard School
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+
+      {/* Details Dialog */}
+      <Dialog
+        isOpen={showDetailDialog}
+        onClose={() => setShowDetailDialog(false)}
+        title={`Workspace Config — ${selectedTenant?.name || ''}`}
+      >
+        {selectedTenant && (
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-xs font-mono font-bold text-brand">
+                {selectedTenant.subdomain}
+                {baseDomain}
+              </span>
+              <Badge variant="info">{selectedPlan}</Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Admin Email *</label>
-                <InputText
-                  type="email"
-                  value={formData.adminEmail}
-                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                  required
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="admin@school.com"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Admin Phone (Contact) *</label>
-                <InputText
-                  value={formData.adminPhone || ''}
-                  onChange={(e) => setFormData({ ...formData, adminPhone: e.target.value })}
-                  required
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="e.g. +91 98765 43210"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">School Prefix Code (Optional)</label>
-                <InputText
-                  value={formData.prefix || ''}
-                  onChange={(e) => setFormData({ ...formData, prefix: e.target.value.toUpperCase().slice(0, 4) })}
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm uppercase font-mono"
-                  placeholder="e.g. OAKR (Max 4 letters)"
-                  maxLength={4}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Subscription Plan</label>
-                <Dropdown 
-                  value={formData.plan} 
-                  options={PLANS} 
-                  onChange={(e) => setFormData({ ...formData, plan: e.value })} 
-                  className="text-sm" 
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Street Address</label>
-              <InputText
-                value={formData.address || ''}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                placeholder="e.g. 123 Main Street, Sector 4"
+            <div className="flex flex-col gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-3">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Change Plan
+              </label>
+              <Select
+                value={selectedPlan}
+                options={PLANS}
+                onChange={(e) => handleUpdatePlan(e.target.value)}
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">City</label>
-                <InputText
-                  value={formData.city || ''}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="e.g. Mumbai"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">State</label>
-                <InputText
-                  value={formData.state || ''}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="e.g. Maharashtra"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">Pincode</label>
-                <InputText
-                  value={formData.pincode || ''}
-                  onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                  className="p-3 border border-zinc-200 dark:border-zinc-850 rounded-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:bg-zinc-950 text-sm"
-                  placeholder="e.g. 400001"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">School Latitude</label>
-                <InputNumber 
-                  value={formData.latitude} 
-                  onValueChange={(e) => setFormData({ ...formData, latitude: e.value || undefined })} 
-                  mode="decimal" 
-                  minFractionDigits={2} 
-                  maxFractionDigits={6} 
-                  className="border border-zinc-200 dark:border-zinc-850 rounded-md dark:bg-zinc-950" 
-                  inputClassName="p-3 rounded-md w-full text-sm"
-                  placeholder="e.g. 19.0760 (Optional)"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-bold text-xs uppercase tracking-wider text-zinc-500">School Longitude</label>
-                <InputNumber 
-                  value={formData.longitude} 
-                  onValueChange={(e) => setFormData({ ...formData, longitude: e.value || undefined })} 
-                  mode="decimal" 
-                  minFractionDigits={2} 
-                  maxFractionDigits={6} 
-                  className="border border-zinc-200 dark:border-zinc-850 rounded-md dark:bg-zinc-950" 
-                  inputClassName="p-3 rounded-md w-full text-sm"
-                  placeholder="e.g. 72.8777 (Optional)"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 border-t border-zinc-100 dark:border-zinc-800/80 pt-5 mt-4">
-              <Button type="button" label="Cancel" className="p-button-text p-3 px-5 rounded-md font-semibold" onClick={() => setShowDialog(false)} />
-              <Button type="submit" label="Onboard School" icon="pi pi-check" loading={createMutation.isPending} className="bg-primary text-white p-3 px-6 rounded-md font-semibold shadow-md shadow-blue-500/10 border-0 hover:opacity-95 text-sm" />
-            </div>
-          </form>
-        </Dialog>
-
-        {/* Dialog Modal - Deep Details */}
-        <Dialog
-          header={`Workspace Detail Config — ${selectedTenant?.name || ''}`}
-          visible={showDetailDialog}
-          style={{ width: '680px' }}
-          modal
-          onHide={() => setShowDetailDialog(false)}
-          className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
-          contentClassName="p-6"
-          headerClassName="border-b border-gray-150 dark:border-zinc-800 p-6 font-bold text-zinc-850 dark:text-zinc-100"
-        >
-          {selectedTenant && (
-            <div className="flex flex-col gap-6">
-              {/* Profile identity strip */}
-              <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-150/40 dark:border-zinc-800/80">
-                <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-black">
-                  {selectedTenant.prefix || selectedTenant.name.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-lg font-extrabold text-zinc-800 dark:text-white">{selectedTenant.name}</h3>
-                  <p className="text-xs font-semibold text-zinc-400 mt-0.5">Project Code: <span className="font-bold text-zinc-500">{selectedTenant.projectCode || '—'}</span></p>
-                </div>
-              </div>
-
-              {/* Details Sub-Tabs Selector */}
-              <div className="flex border-b border-zinc-100 dark:border-zinc-800 -mt-2">
+            <div className="flex flex-col gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-3">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Active Modules
+              </label>
+              <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: 'config', label: 'Identity & Modules', icon: 'pi-cog' },
-                  { id: 'theme', label: 'Theme Configuration', icon: 'pi-palette' },
-                  { id: 'subscriptions', label: 'Subscription Specs', icon: 'pi-star' },
-                  { id: 'ledger', label: 'Billing Ledger', icon: 'pi-wallet' },
-                  { id: 'audit_logs', label: 'System Logs', icon: 'pi-list' }
-                ].map((tb) => (
-                  <button
-                    key={tb.id}
-                    type="button"
-                    onClick={() => setDetailsTab(tb.id as any)}
-                    className={`p-3 px-4 font-bold text-xs uppercase tracking-wider transition-all border-b-2 -mb-[2px] flex items-center gap-1.5 ${
-                      detailsTab === tb.id
-                        ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                        : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
-                    }`}
-                  >
-                    <i className={`pi ${tb.icon} text-[10px]`}></i>
-                    <span>{tb.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab Contents: Config & Modules */}
-              {detailsTab === 'config' && (
-                <div className="flex flex-col gap-6 animate-fade-in">
-                  {/* Grid details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm border-b border-zinc-100 dark:border-zinc-800/80 pb-6">
-                    <div>
-                      <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Subdomain Link</label>
-                      
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Administrative Contact</label>
-                      <p className="font-semibold text-zinc-700 dark:text-zinc-350 mt-1 truncate">{selectedTenant.adminEmail}</p>
-                    </div>
-                  </div>
-
-                  {/* Plan controls */}
-                  <div className="flex flex-col gap-3">
-                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">SaaS Subscription Level</label>
-                    <div className="flex gap-4 items-center">
-                      <Dropdown
-                        value={selectedPlan}
-                        options={PLANS}
-                        onChange={(e) => handleUpdatePlan(e.value)}
-                        className="w-48 font-bold"
+                  'students',
+                  'staff',
+                  'academics',
+                  'attendance',
+                  'fee',
+                  'exams',
+                  'library',
+                  'communication',
+                  'whatsapp',
+                  'hostel',
+                  'leave',
+                  'transport',
+                ].map((mod) => {
+                  const active = tenantModules.includes(mod);
+                  return (
+                    <button
+                      type="button"
+                      key={mod}
+                      onClick={() => handleToggleModule(mod)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium capitalize flex items-center justify-between ${
+                        active
+                          ? 'border-brand bg-brand/10 text-brand'
+                          : 'border-zinc-200 dark:border-zinc-800 text-zinc-400'
+                      }`}
+                    >
+                      {mod}
+                      <span
+                        className={`w-2 h-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-zinc-300'}`}
                       />
-                      <small className="text-xs text-zinc-400">Upgrades or downgrades tenant access tier instantly.</small>
-                    </div>
-                  </div>
-
-                  {/* Active Modules Toggles */}
-                  <div className="flex flex-col gap-3 mt-2">
-                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Enabled Modules ({tenantModules.length})</label>
-                    <div className="grid grid-cols-3 gap-2.5">
-                      {['core', 'student', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'whatsapp', 'hostel', 'leave', 'transport', 'homework', 'website', 'settings'].map(mod => {
-                        const active = tenantModules.includes(mod);
-                        return (
-                          <button
-                            type="button"
-                            key={mod}
-                            onClick={() => handleToggleModule(mod)}
-                            className={`p-2.5 px-3 rounded-md border text-xs font-bold flex items-center justify-between transition-all active:scale-95 ${
-                              active 
-                                ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/20 dark:border-blue-900 dark:text-blue-400' 
-                                : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400'
-                            }`}
-                          >
-                            <span className="capitalize">{mod}</span>
-                            <i className={`pi ${active ? 'pi-check-circle text-blue-500' : 'pi-circle text-zinc-300'}`}></i>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab Contents: Theme Configuration */}
-              {detailsTab === 'theme' && (
-                <div className="flex flex-col gap-6 animate-fade-in text-sm">
-                  <div className="bg-zinc-50 dark:bg-zinc-950 p-5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80 flex flex-col gap-4">
-                    <h4 className="font-extrabold text-zinc-800 dark:text-white uppercase tracking-wider text-xs">Color Scheme Customization</h4>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-zinc-400">Primary Color</label>
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="color" 
-                            value={primaryColor} 
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            className="w-10 h-10 border-0 rounded-md cursor-pointer bg-transparent"
-                          />
-                          <InputText 
-                            value={primaryColor} 
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            className="p-2 border border-zinc-200 dark:border-zinc-850 rounded-md text-xs font-mono w-full dark:bg-zinc-950"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-zinc-400">Secondary Color</label>
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="color" 
-                            value={secondaryColor} 
-                            onChange={(e) => setSecondaryColor(e.target.value)}
-                            className="w-10 h-10 border-0 rounded-md cursor-pointer bg-transparent"
-                          />
-                          <InputText 
-                            value={secondaryColor} 
-                            onChange={(e) => setSecondaryColor(e.target.value)}
-                            className="p-2 border border-zinc-200 dark:border-zinc-850 rounded-md text-xs font-mono w-full dark:bg-zinc-950"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Real-time Theme Preview */}
-                  <div className="border border-zinc-200 dark:border-zinc-800/80 p-5 rounded-md flex flex-col gap-3">
-                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Live Preview</label>
-                    <div className="p-4 rounded-md border border-zinc-100 dark:border-zinc-850 bg-zinc-900/10 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-md flex items-center justify-center text-white text-sm font-black transition-all"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          {selectedTenant.prefix || selectedTenant.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <span className="font-bold text-zinc-850 dark:text-white block">{selectedTenant.name}</span>
-                          <span className="text-[10px] text-zinc-400">Previewing custom school theme</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          className="p-2 px-4 rounded-md text-white text-xs font-bold transition-all border-0"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          Primary
-                        </button>
-                        <button 
-                          className="p-2 px-4 rounded-md text-white text-xs font-bold transition-all border-0"
-                          style={{ backgroundColor: secondaryColor }}
-                        >
-                          Secondary
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-3">
-                    <Button 
-                      label="Save Theme Colors" 
-                      icon="pi pi-check" 
-                      onClick={handleSaveTheme}
-                      loading={updateTenantMutation.isPending}
-                      className="bg-blue-600 text-white p-3 px-6 rounded-md font-bold border-0 hover:opacity-95 text-xs shadow-md shadow-blue-500/10"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Tab Contents: Subscription Specs */}
-              {detailsTab === 'subscriptions' && (
-                <div className="flex flex-col gap-4 animate-fade-in text-xs">
-                  <div className="grid grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-950 p-5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
-                    <div>
-                      <span className="text-zinc-400 font-bold block">PLAN IDENTIFIER:</span>
-                      <span className="text-sm font-extrabold text-blue-500">{selectedTenant.plan || 'STANDARD'}</span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-400 font-bold block">PLAN ESTIMATED PRICE:</span>
-                      <span className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200">
-                        {selectedTenant.plan === 'ENTERPRISE' ? '₹9,999 / mo' :
-                         selectedTenant.plan === 'PREMIUM' ? '₹4,999 / mo' :
-                         selectedTenant.plan === 'STANDARD' ? '₹2,499 / mo' : '₹999 / mo'}
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-zinc-400 font-bold block">TRIAL EXPIRATION:</span>
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-350">
-                        {selectedTenant.createdAt ? new Date(new Date(selectedTenant.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN') : '—'}
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-zinc-400 font-bold block">COUNTRY / TAX ZONE:</span>
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-350">India (GST 18% Applicable)</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50/20 dark:bg-blue-950/10 border border-blue-150/30 p-4 rounded-md flex gap-3 text-zinc-650 dark:text-blue-400/90 leading-relaxed font-semibold">
-                    <i className="pi pi-info-circle text-blue-500 text-sm mt-0.5"></i>
-                    <p>
-                      Upgrade/downgrade of school plans instantly updates module configurations, concurrency ceilings, and API rate limits. Notifications are automatically dispatched to the school billing contact.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab Contents: Billing Ledger */}
-              {detailsTab === 'ledger' && (
-                <div className="flex flex-col gap-3 animate-fade-in">
-                  <DataTable
-                    value={invoices}
-                    loading={isLedgerPending}
-                    className="p-datatable-sm"
-                    stripedRows
-                  >
-                    <Column field="invoiceNo" header="Invoice ID" className="font-bold text-xs" />
-                    <Column field="dueDate" header="Due Date" body={(d) => new Date(d.dueDate).toLocaleDateString()} className="text-xs" />
-                    <Column 
-                      header="SaaS Fee" 
-                      body={(d) => <span className="font-bold font-mono text-zinc-800 dark:text-zinc-200">₹{d.amount.toLocaleString('en-IN')}</span>} 
-                    />
-                    <Column field="paymentMethod" header="Gateway" className="text-xs font-semibold text-zinc-500" body={(d) => d.paymentMethod || 'Manual'} />
-                    <Column 
-                      header="Status" 
-                      body={(d) => <Tag value={d.status} severity="success" className="font-bold text-[9px] rounded px-2" />} 
-                    />
-                    <Column 
-                      header="Action" 
-                      body={() => (
-                        <Button 
-                          icon="pi pi-download" 
-                          className="p-button-text p-button-sm p-1 text-blue-500" 
-                          tooltip="Download Receipt"
-                          onClick={() => {
-                            window.dispatchEvent(new CustomEvent('show-toast', {
-                              detail: {
-                                severity: 'success',
-                                summary: 'PDF Receipt Rendered',
-                                detail: 'SaaS fee tax invoice receipt compiled and downloaded successfully.',
-                                life: 3500
-                              }
-                            }));
-                          }}
-                        />
-                      )} 
-                      align="center"
-                    />
-                  </DataTable>
-                </div>
-              )}
-
-              {/* Tab Contents: System Activity Audit Logs */}
-              {detailsTab === 'audit_logs' && (
-                <div className="flex flex-col gap-3 animate-fade-in max-h-72 overflow-y-auto">
-                  {isLogsPending ? (
-                    <div className="p-4 text-center text-zinc-500 text-xs">Loading logs...</div>
-                  ) : activityLogs.length === 0 ? (
-                    <div className="p-4 text-center text-zinc-500 text-xs">No activity logs found.</div>
-                  ) : (
-                    <div className="divide-y divide-zinc-100 dark:divide-zinc-850">
-                      {activityLogs.map((log: any, i: number) => (
-                        <div key={log.id || i} className="py-3 flex justify-between items-start gap-4 text-xs font-semibold">
-                          <div>
-                            <p className="text-zinc-800 dark:text-zinc-350">{log.action} - {log.subject}</p>
-                            <div className="flex gap-2 items-center text-[10px] text-zinc-400 mt-1">
-                              <span className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase">{log.subject}</span>
-                              <span>· By {log.user?.name || 'System'}</span>
-                            </div>
-                          </div>
-                          <span className="text-[10px] text-zinc-400/80 font-medium whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Done Action */}
-              <div className="flex justify-end border-t border-zinc-100 dark:border-zinc-800/80 pt-5 mt-4">
-                <Button label="Done" className="bg-primary text-white p-3 px-6 rounded-md font-bold border-0 hover:opacity-95" onClick={() => setShowDetailDialog(false)} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </Dialog>
-      </div>
+          </div>
+        )}
+      </Dialog>
     </DashboardLayout>
   );
 }

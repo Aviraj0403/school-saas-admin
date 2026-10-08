@@ -1,20 +1,19 @@
 import * as React from 'react';
-import { Input as InputPrimitive } from '@base-ui/react/input';
-
+import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
-  return (
-    <InputPrimitive
-      type={type}
-      data-slot="input"
-      className={cn(
-        'h-9 w-full min-w-0 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/60 px-3 py-1.5 text-sm transition-all duration-200 outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-3 focus-visible:ring-indigo-500/20 focus-visible:bg-white dark:focus-visible:bg-slate-950 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-rose-500 aria-invalid:ring-3 aria-invalid:ring-rose-500/20',
-        className
-      )}
-      {...props}
-    />
-  );
-}
+const inputVariants = cva(
+  'w-full rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-xs font-medium px-3.5 py-2.5 transition-all duration-200 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50'
+);
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement>, VariantProps<typeof inputVariants> {}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, ...props }, ref) => {
+    return <input type={type} className={cn(inputVariants(), className)} ref={ref} {...props} />;
+  }
+);
+Input.displayName = 'Input';
 
 export { Input };

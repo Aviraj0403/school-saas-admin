@@ -3,11 +3,9 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
-import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Trash2 } from 'lucide-react';
 import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents';
 import { useStudentDues } from '@/hooks/queries/useFee';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -17,14 +15,15 @@ import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
 import { canManageProfilePhotos } from '@/lib/permissions';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-
+import { toast } from 'sonner';
 
 export default function StudentDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [activeTab, setActiveTab] = useState<'personal' | 'guardian' | 'ledger' | 'audit_logs' | 'facilities'>('personal');
+  const [activeTab, setActiveTab] = useState<
+    'personal' | 'guardian' | 'ledger' | 'audit_logs' | 'facilities'
+  >('personal');
   const { data: student, isPending, isError } = useStudentDetails(id);
   const { data: ledgerDuesData, isPending: loadingLedger } = useStudentDues(id);
   const deleteMutation = useDeleteStudent();
@@ -53,9 +52,16 @@ export default function StudentDetailsPage() {
       await studentsService.uploadPhoto(id, blob);
       await queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (err: any) {
-      window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { severity: 'error', summary: 'Photo Upload Failed', detail: err?.response?.data?.message || err?.message || 'Try a smaller image.', life: 5000 }
-      }));
+      window.dispatchEvent(
+        new CustomEvent('show-toast', {
+          detail: {
+            severity: 'error',
+            summary: 'Photo Upload Failed',
+            detail: err?.response?.data?.message || err?.message || 'Try a smaller image.',
+            life: 5000,
+          },
+        })
+      );
     } finally {
       setUploadingPhoto(false);
     }
@@ -74,10 +80,12 @@ export default function StudentDetailsPage() {
   if (isPending) {
     return (
       <DashboardLayout>
-      <PageBreadcrumb title="Students Details" subtitle="Students" />
-<div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
+        <PageBreadcrumb title="Students Details" subtitle="Students" />
+        <div className="p-20 flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
           <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium text-zinc-500">Loading student details profile...</span>
+          <span className="text-sm font-medium text-zinc-500">
+            Loading student details profile...
+          </span>
         </div>
       </DashboardLayout>
     );
@@ -86,39 +94,53 @@ export default function StudentDetailsPage() {
   if (isError || !student) {
     return (
       <DashboardLayout>
-      <PageBreadcrumb title="Students Details" subtitle="Students" />
-<div className="p-12 text-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
+        <PageBreadcrumb title="Students Details" subtitle="Students" />
+        <div className="p-12 text-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md max-w-4xl mx-auto mt-10">
           <i className="pi pi-exclamation-triangle text-4xl text-rose-500 mb-3"></i>
-          <p className="text-zinc-900 dark:text-zinc-200 font-bold text-lg">Failed to Load Profile</p>
-          <p className="text-zinc-500 text-sm mt-1">Student details could not be found or retrieved.</p>
-          <Button label="Back to Directory" className="mt-4 bg-blue-600 text-white p-2.5 px-5 rounded-md font-medium" onClick={() => router.push('/students')} />
+          <p className="text-zinc-900 dark:text-zinc-200 font-bold text-lg">
+            Failed to Load Profile
+          </p>
+          <p className="text-zinc-500 text-sm mt-1">
+            Student details could not be found or retrieved.
+          </p>
+          <Button className="mt-4" onClick={() => router.push('/students')}>
+            Back to Directory
+          </Button>
         </div>
       </DashboardLayout>
     );
   }
 
-  const fullName = student.name || `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unnamed Student';
+  const fullName =
+    student.name ||
+    `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
+    'Unnamed Student';
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Students Details" subtitle="Students" />
-<div className="flex flex-col gap-4 pb-10">
-        
+      <div className="flex flex-col gap-4 pb-10">
         {/* Header Navigation & Breadcrumb */}
         <div className="flex flex-col gap-2">
-          
-          <div className="flex items-center gap-2 cursor-pointer text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 transition-colors" onClick={() => router.push('/students')}>
+          <div
+            className="flex items-center gap-2 cursor-pointer text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 transition-colors"
+            onClick={() => router.push('/students')}
+          >
             <i className="pi pi-arrow-left text-xs"></i>
-            <span className="text-xs font-semibold uppercase tracking-wider">Back to Directory</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Back to Directory
+            </span>
           </div>
         </div>
 
         {/* Profile Card Header */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
           <div className="flex items-center gap-4 relative z-10">
-            <label className={`group/photo relative ${canEditPhoto ? 'cursor-pointer' : ''}`} title={canEditPhoto ? 'Change profile photo' : fullName}>
+            <label
+              className={`group/photo relative ${canEditPhoto ? 'cursor-pointer' : ''}`}
+              title={canEditPhoto ? 'Change profile photo' : fullName}
+            >
               {resolveMediaUrl(student.photo) ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={resolveMediaUrl(student.photo)!}
                   alt={fullName}
@@ -133,9 +155,19 @@ export default function StudentDetailsPage() {
               {canEditPhoto && (
                 <>
                   <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow">
-                    {uploadingPhoto ? <i className="pi pi-spinner pi-spin" /> : <i className="pi pi-camera" />}
+                    {uploadingPhoto ? (
+                      <i className="pi pi-spinner pi-spin" />
+                    ) : (
+                      <i className="pi pi-camera" />
+                    )}
                   </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                    disabled={uploadingPhoto}
+                  />
                 </>
               )}
             </label>
@@ -143,33 +175,42 @@ export default function StudentDetailsPage() {
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{fullName}</h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5">
                 <span className="text-xs text-zinc-500 font-medium">
-                  Admission No: <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">{student.admissionNo}</span>
+                  Admission No:{' '}
+                  <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">
+                    {student.admissionNo}
+                  </span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 hidden sm:inline-block"></span>
                 <span className="text-xs text-zinc-500 font-medium">
-                  Class: <span className="font-semibold text-blue-600 dark:text-blue-400">{student.className || 'Not Assigned'}</span>
+                  Class:{' '}
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    {student.className || 'Not Assigned'}
+                  </span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 hidden sm:inline-block"></span>
                 <span className="text-xs text-zinc-500 font-medium">
-                  Academic Year: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{student.academicYear?.name || '—'}</span>
+                  Academic Year:{' '}
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    {student.academicYear?.name || '—'}
+                  </span>
                 </span>
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 relative z-10 self-stretch md:self-auto justify-end border-t md:border-t-0 border-zinc-100 dark:border-zinc-800 pt-4 md:pt-0">
-            <Tag 
-              value={student.status || 'ACTIVE'} 
-              severity={student.status === 'ACTIVE' || !student.status ? 'success' : 'warning'} 
-              className="px-3 py-1 font-bold rounded-full text-xs shadow-sm"
-            />
-            <Button 
-              icon="pi pi-trash" 
-              className="p-button-rounded p-button-text p-button-danger hover:bg-rose-500/10 p-2"
-              tooltip="Remove Student" 
+            <Badge variant={student.status === 'ACTIVE' || !student.status ? 'success' : 'warning'}>
+              {student.status || 'ACTIVE'}
+            </Badge>
+            <Button
+              variant="danger"
+              size="icon-sm"
+              title="Remove Student"
               onClick={handleDelete}
-              loading={deleteMutation.isPending}
-            />
+              isLoading={deleteMutation.isPending}
+            >
+              <Trash2 className="size-4" />
+            </Button>
           </div>
         </div>
 
@@ -180,7 +221,7 @@ export default function StudentDetailsPage() {
             { id: 'guardian', label: 'Parent & Guardian Info', icon: 'pi-users' },
             { id: 'facilities', label: 'Transport & Hostel', icon: 'pi-home' },
             { id: 'ledger', label: 'Academic Fee Ledger', icon: 'pi-wallet' },
-            { id: 'audit_logs', label: 'Activity Logs', icon: 'pi-list' }
+            { id: 'audit_logs', label: 'Activity Logs', icon: 'pi-list' },
           ].map((tb) => (
             <button
               key={tb.id}
@@ -199,196 +240,308 @@ export default function StudentDetailsPage() {
 
         {/* Dynamic tab contents */}
         {activeTab === 'personal' && (
-          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Date of Birth</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.dob ? new Date(student.dob).toLocaleDateString() : '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Date of Birth
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">
+                  {student.dob ? new Date(student.dob).toLocaleDateString() : '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Gender</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">{student.gender || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Gender
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">
+                  {student.gender || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Blood Group</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 uppercase">{student.bloodGroup || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Blood Group
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 uppercase">
+                  {student.bloodGroup || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Aadhar / National ID</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.aadharNo || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Aadhar / National ID
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">
+                  {student.aadharNo || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Mother Tongue</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">{student.motherTongue || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Mother Tongue
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 capitalize">
+                  {student.motherTongue || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Previous School Attended</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.previousSchool || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Previous School Attended
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">
+                  {student.previousSchool || '—'}
+                </p>
               </div>
               <div className="md:col-span-2 border-t border-zinc-100 dark:border-zinc-800 pt-5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Permanent Residential Address</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Permanent Residential Address
+                </label>
                 <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 leading-relaxed">
-                  {student.address || ''} {student.city ? `, ${student.city}` : ''} {student.pincode ? ` - ${student.pincode}` : ''}
+                  {student.address || ''} {student.city ? `, ${student.city}` : ''}{' '}
+                  {student.pincode ? ` - ${student.pincode}` : ''}
                   {!student.address && !student.city && '—'}
                 </p>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'guardian' && (
-          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Parent / Guardian Name</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.parentName || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Parent / Guardian Name
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">
+                  {student.parentName || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Primary contact Phone</label>
-                <p className="font-medium text-blue-600 dark:text-blue-400 mt-1">{student.parentPhone || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Primary contact Phone
+                </label>
+                <p className="font-medium text-blue-600 dark:text-blue-400 mt-1">
+                  {student.parentPhone || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Guardian Email Address</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 truncate">{student.parentEmail || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Guardian Email Address
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1 truncate">
+                  {student.parentEmail || '—'}
+                </p>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Alternate Phone</label>
-                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">{student.alternatePhone || '—'}</p>
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Alternate Phone
+                </label>
+                <p className="font-medium text-zinc-900 dark:text-zinc-200 mt-1">
+                  {student.alternatePhone || '—'}
+                </p>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'ledger' && (
-          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden p-4">
+          <div className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden p-4">
             <div className="flex flex-col gap-6">
               {/* Fees quick metrics */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-md border border-zinc-200 dark:border-zinc-800">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">Total Billed (Annual)</span>
-                  <span className="text-lg font-bold text-zinc-900 dark:text-white mt-1 block">₹{((ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)).toLocaleString()}</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">
+                    Total Billed (Annual)
+                  </span>
+                  <span className="text-lg font-bold text-zinc-900 dark:text-white mt-1 block">
+                    ₹
+                    {(
+                      (ledgerDuesData?.totalDue || 0) + (ledgerDuesData?.totalPaid || 0)
+                    ).toLocaleString()}
+                  </span>
                 </div>
                 <div className="p-4 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-md border border-emerald-200/50">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider block">Fees Paid</span>
-                  <span className="text-lg font-bold mt-1 block">₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider block">
+                    Fees Paid
+                  </span>
+                  <span className="text-lg font-bold mt-1 block">
+                    ₹{(ledgerDuesData?.totalPaid || 0).toLocaleString()}
+                  </span>
                 </div>
                 <div className="p-4 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 rounded-md border border-red-200/50 col-span-2 md:col-span-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider block">Outstanding Due</span>
-                  <span className="text-lg font-bold mt-1 block">₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider block">
+                    Outstanding Due
+                  </span>
+                  <span className="text-lg font-bold mt-1 block">
+                    ₹{(ledgerDuesData?.totalDue || 0).toLocaleString()}
+                  </span>
                 </div>
               </div>
 
               {/* Transactions Ledger Table */}
               {loadingLedger ? (
-                <div className="p-8 text-center text-zinc-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
+                <div className="p-8 text-center text-zinc-400">
+                  <i className="pi pi-spin pi-spinner text-2xl"></i>
+                </div>
               ) : (
-                <DataTable
-                  value={[
-                    ...(ledgerDuesData?.outstanding || []).map((o: any) => ({
-                      id: `out-${o.id}`,
-                      term: o.name,
-                      invoiced: o.amount,
-                      date: o.createdAt,
-                      method: '—',
-                      status: 'DUE'
-                    })),
-                    ...(ledgerDuesData?.paid || []).map((p: any) => ({
-                      id: `paid-${p.id}`,
-                      term: p.feeStructure?.name || 'Fee Collection',
-                      invoiced: p.totalAmount,
-                      date: p.paidAt,
-                      method: p.paymentMethod,
-                      status: 'PAID'
-                    }))
-                  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
-                  className="p-datatable-sm mt-2 text-xs"
-                  stripedRows
-                  emptyMessage="No fee transactions found for this student."
-                >
-                  <Column field="id" header="Transaction Ref" body={(d) => d.id.replace('out-', '').replace('paid-', '').substring(0,8).toUpperCase()} className="font-mono font-medium text-xs text-zinc-700 dark:text-zinc-300" />
-                  <Column field="term" header="Term Particulars" className="font-medium text-zinc-900 dark:text-zinc-200" />
-                  <Column field="date" header="Due / Pay Date" body={(d) => new Date(d.date).toLocaleDateString()} />
-                  <Column 
-                    header="Amount" 
-                    body={(d) => <span className="font-medium font-mono">₹{Number(d.invoiced).toLocaleString('en-IN')}</span>} 
-                  />
-                  <Column field="method" header="Payment Method" />
-                  <Column 
-                    header="Status" 
-                    body={(d) => (
-                      <Tag 
-                        value={d.status} 
-                        severity={d.status === 'PAID' ? 'success' : 'danger'} 
-                        className="font-bold text-[9px] rounded-md px-2 py-0.5" 
-                      />
-                    )} 
-                  />
-                  <Column 
-                    header="Print" 
-                    body={(d) => d.status === 'PAID' && (
-                      <Button 
-                        icon="pi pi-print" 
-                        className="p-button-text p-button-sm p-1 text-blue-600 dark:text-blue-400" 
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent('show-toast', {
-                            detail: {
-                              severity: 'success',
-                              summary: 'Invoice Receipt Compiled',
-                              detail: `Tax receipt generated. Printing queue initialized.`,
-                              life: 3000
-                            }
-                          }));
-                        }}
-                      />
-                    )} 
-                    align="center"
-                  />
-                </DataTable>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th className="p-3">Transaction Ref</th>
+                        <th className="p-3">Term Particulars</th>
+                        <th className="p-3">Due / Pay Date</th>
+                        <th className="p-3">Amount</th>
+                        <th className="p-3">Payment Method</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {[
+                        ...(ledgerDuesData?.outstanding || []).map((o: any) => ({
+                          id: `out-${o.id}`,
+                          term: o.name,
+                          invoiced: o.amount,
+                          date: o.createdAt,
+                          method: '—',
+                          status: 'DUE',
+                        })),
+                        ...(ledgerDuesData?.paid || []).map((p: any) => ({
+                          id: `paid-${p.id}`,
+                          term: p.feeStructure?.name || 'Fee Collection',
+                          invoiced: p.totalAmount,
+                          date: p.paidAt,
+                          method: p.paymentMethod,
+                          status: 'PAID',
+                        })),
+                      ]
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((d: any) => (
+                          <tr
+                            key={d.id}
+                            className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
+                          >
+                            <td className="p-3 font-mono font-medium text-slate-700 dark:text-slate-300">
+                              {d.id
+                                .replace('out-', '')
+                                .replace('paid-', '')
+                                .substring(0, 8)
+                                .toUpperCase()}
+                            </td>
+                            <td className="p-3 font-medium text-slate-900 dark:text-slate-100">
+                              {d.term}
+                            </td>
+                            <td className="p-3 text-slate-500">
+                              {new Date(d.date).toLocaleDateString()}
+                            </td>
+                            <td className="p-3 font-mono font-medium">
+                              ₹{Number(d.invoiced).toLocaleString('en-IN')}
+                            </td>
+                            <td className="p-3 text-slate-500">{d.method}</td>
+                            <td className="p-3">
+                              <Badge variant={d.status === 'PAID' ? 'success' : 'danger'}>
+                                {d.status}
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-center">
+                              {d.status === 'PAID' && (
+                                <Button
+                                  variant="ghost"
+                                  size="xs"
+                                  onClick={() => toast.success('Tax receipt generated.')}
+                                >
+                                  Print
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'facilities' && (
-          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-4">
               <div className="border border-zinc-100 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900/50">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Transport Allocation</h3>
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
+                  Transport Allocation
+                </h3>
                 {student.transport && student.transport.length > 0 ? (
                   student.transport.map((t: any) => (
                     <div key={t.id} className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2"><i className="pi pi-car text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Route: {t.route?.name || 'N/A'}</span></div>
-                      <div className="flex items-center gap-2"><i className="pi pi-map-marker text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Pickup: {t.pickupStop?.stopName || 'N/A'}</span></div>
-                      {t.feeAmount && <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">Fee: ₹{t.feeAmount}</div>}
+                      <div className="flex items-center gap-2">
+                        <i className="pi pi-car text-zinc-400"></i>{' '}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                          Route: {t.route?.name || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <i className="pi pi-map-marker text-zinc-400"></i>{' '}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                          Pickup: {t.pickupStop?.stopName || 'N/A'}
+                        </span>
+                      </div>
+                      {t.feeAmount && (
+                        <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">
+                          Fee: ₹{t.feeAmount}
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm font-medium text-zinc-500 italic mt-1">No transport allocated.</p>
+                  <p className="text-sm font-medium text-zinc-500 italic mt-1">
+                    No transport allocated.
+                  </p>
                 )}
               </div>
               <div className="border border-zinc-100 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50 dark:bg-zinc-900/50">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Hostel Allocation</h3>
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
+                  Hostel Allocation
+                </h3>
                 {student.hostelBoarder && student.hostelBoarder.length > 0 ? (
                   student.hostelBoarder.map((h: any) => (
                     <div key={h.id} className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2"><i className="pi pi-building text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Room: {h.room?.roomNumber || 'N/A'} ({h.room?.roomType || ''})</span></div>
-                      <div className="flex items-center gap-2"><i className="pi pi-calendar text-zinc-400"></i> <span className="font-medium text-zinc-900 dark:text-zinc-200">Joined: {new Date(h.joinDate).toLocaleDateString()}</span></div>
-                      {h.feeAmount && <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">Fee: ₹{h.feeAmount}</div>}
+                      <div className="flex items-center gap-2">
+                        <i className="pi pi-building text-zinc-400"></i>{' '}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                          Room: {h.room?.roomNumber || 'N/A'} ({h.room?.roomType || ''})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <i className="pi pi-calendar text-zinc-400"></i>{' '}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                          Joined: {new Date(h.joinDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {h.feeAmount && (
+                        <div className="text-xs text-zinc-500 mt-1 font-semibold text-blue-600">
+                          Fee: ₹{h.feeAmount}
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm font-medium text-zinc-500 italic mt-1">No hostel allocated.</p>
+                  <p className="text-sm font-medium text-zinc-500 italic mt-1">
+                    No hostel allocated.
+                  </p>
                 )}
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'audit_logs' && (
-          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 overflow-hidden p-4">
+          <div className="shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden p-4">
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Student Academic &amp; System Activity Trail</h3>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                  Student Academic &amp; System Activity Trail
+                </h3>
                 {!loadingActivity && (
                   <span className="text-[10px] font-bold text-zinc-500 uppercase bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                     {activityLog.length} {activityLog.length === 1 ? 'entry' : 'entries'}
@@ -408,14 +561,19 @@ export default function StudentDetailsPage() {
                 ) : activityLog.length === 0 ? (
                   <div className="py-8 text-center flex flex-col items-center gap-2">
                     <i className="pi pi-inbox text-2xl text-zinc-300 dark:text-zinc-700"></i>
-                    <p className="text-xs text-zinc-500">No recorded activity for this student yet.</p>
+                    <p className="text-xs text-zinc-500">
+                      No recorded activity for this student yet.
+                    </p>
                     <p className="text-[10px] text-zinc-400 max-w-xs">
                       Entries appear here as modules write to the audit log.
                     </p>
                   </div>
                 ) : (
                   activityLog.map((log: any) => (
-                    <div key={log.id} className="py-3 flex justify-between items-start gap-4 text-xs font-medium">
+                    <div
+                      key={log.id}
+                      className="py-3 flex justify-between items-start gap-4 text-xs font-medium"
+                    >
                       <div>
                         <p className="text-zinc-900 dark:text-zinc-200">{log.action}</p>
                         <div className="flex gap-2 items-center text-[10px] text-zinc-500 mt-1">
@@ -433,7 +591,7 @@ export default function StudentDetailsPage() {
                 )}
               </div>
             </div>
-          </Card>
+          </div>
         )}
       </div>
     </DashboardLayout>

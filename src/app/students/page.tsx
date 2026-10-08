@@ -2,10 +2,23 @@
 
 import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { Tag } from 'primereact/tag';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Eye,
+  Trash2,
+  Plus,
+  Users,
+  CheckCircle,
+  AlertTriangle,
+  UserPlus,
+  Search,
+  LayoutGrid,
+  List,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import { useStudentsList, useDeleteStudent } from '@/hooks/queries/useStudents';
 import { resolveMediaUrl } from '@/lib/media';
 import Link from 'next/link';
@@ -13,7 +26,7 @@ import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { StatCard } from '@/components/ui/StatCard';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-import { FormFilterBar } from '@/components/ui/FormFilterBar';
+import { toast } from 'sonner';
 
 export default function StudentsPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -29,23 +42,16 @@ export default function StudentsPage() {
 
   const handleDelete = (id: string) => {
     if (confirm('Soft-delete this student? Their data will be retained.')) {
-      deleteMutation.mutate(id);
+      deleteMutation.mutate(id, {
+        onSuccess: () => toast.success('Student deleted'),
+        onError: (err: any) => toast.error(err?.message || 'Failed to delete student'),
+      });
     }
   };
 
   const statusTemplate = (rowData: any) => {
     const isActive = rowData.status === 'ACTIVE';
-    return (
-      <Tag
-        value={rowData.status}
-        severity={isActive ? 'success' : 'warning'}
-        className={`px-3 py-1 text-xs font-bold rounded-full ${
-          isActive
-            ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400'
-            : 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400'
-        }`}
-      />
-    );
+    return <Badge variant={isActive ? 'success' : 'warning'}>{rowData.status}</Badge>;
   };
 
   const actionsTemplate = (rowData: any) => (
@@ -55,7 +61,7 @@ export default function StudentsPage() {
           className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-md transition-all active:scale-95"
           title="View Profile"
         >
-          <i className="pi pi-eye"></i>
+          <Eye className="w-4 h-4" />
         </button>
       </Link>
       <button
@@ -64,7 +70,11 @@ export default function StudentsPage() {
         className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
         title="Remove"
       >
-        <i className={deleteMutation.isPending ? 'pi pi-spin pi-spinner' : 'pi pi-trash'}></i>
+        {deleteMutation.isPending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Trash2 className="w-4 h-4" />
+        )}
       </button>
     </div>
   );
@@ -142,17 +152,11 @@ export default function StudentsPage() {
       <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full">
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Student Directory</h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              Manage student profiles, academic admissions, and records.
-            </p>
-          </div> */}
           <Link href="/students/admissions" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold border-0 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ring-1 ring-slate-900/5 dark:ring-white/10 px-5 py-3">
-              <i className="pi pi-plus text-xs"></i>
+            <Button className="w-full sm:w-auto font-bold rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm px-5 py-3">
+              <Plus className="w-4 h-4" />
               New Admission
-            </button>
+            </Button>
           </Link>
         </div>
 
@@ -161,7 +165,7 @@ export default function StudentsPage() {
           <StatCard
             label="Total Enrolled"
             value={isPending ? '...' : totalRecords}
-            icon="pi pi-users"
+            icon={Users}
             gradientClass="from-blue-500 to-blue-600"
             iconBgClass="bg-blue-50 dark:bg-blue-900/20"
             iconColorClass="text-blue-600 dark:text-blue-400"
@@ -172,7 +176,7 @@ export default function StudentsPage() {
             value={
               isPending ? '...' : studentsList.filter((s: any) => s.status === 'ACTIVE').length
             }
-            icon="pi pi-check-circle"
+            icon={CheckCircle}
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
             iconColorClass="text-emerald-600 dark:text-emerald-400"
@@ -183,7 +187,7 @@ export default function StudentsPage() {
             value={
               isPending ? '...' : studentsList.filter((s: any) => s.status !== 'ACTIVE').length
             }
-            icon="pi pi-exclamation-triangle"
+            icon={AlertTriangle}
             gradientClass="from-amber-500 to-orange-500"
             iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
             iconColorClass="text-amber-600 dark:text-amber-400"
@@ -192,7 +196,7 @@ export default function StudentsPage() {
           <StatCard
             label="Newly Added"
             value={isPending ? '...' : Math.min(totalRecords, 5)}
-            icon="pi pi-user-plus"
+            icon={UserPlus}
             gradientClass="from-purple-500 to-purple-600"
             iconBgClass="bg-purple-50 dark:bg-purple-900/20"
             iconColorClass="text-purple-600 dark:text-purple-400"
@@ -204,39 +208,39 @@ export default function StudentsPage() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-80">
-              <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-              <InputText
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Input
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPagination((p) => ({ ...p, pageIndex: 0 }));
                 }}
                 placeholder="Search students..."
-                className="w-full pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-md dark:bg-zinc-950 text-sm outline-none focus:border-blue-500 transition-all"
+                className="w-full pl-10"
               />
             </div>
           </div>
           <div className="flex gap-2 w-full md:w-auto justify-end">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                 viewMode === 'grid'
                   ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
                   : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
-              <i className="pi pi-th-large text-sm mr-2"></i>
+              <LayoutGrid className="w-4 h-4" />
               <span className="hidden sm:inline">Grid</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all ${
+              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                 viewMode === 'table'
                   ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
                   : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
-              <i className="pi pi-list text-sm mr-2"></i>
+              <List className="w-4 h-4" />
               <span className="hidden sm:inline">List</span>
             </button>
           </div>
@@ -245,7 +249,7 @@ export default function StudentsPage() {
         {/* Dynamic Catalog Section */}
         {isError ? (
           <div className="p-6 bg-red-50 text-red-600 rounded-md border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
-            <i className="pi pi-exclamation-circle text-2xl"></i>
+            <AlertCircle className="w-6 h-6" />
             <div>
               <h3 className="font-bold">Failed to load</h3>
               <p className="text-sm opacity-80">{(error as any)?.message}</p>
@@ -255,7 +259,7 @@ export default function StudentsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {isPending ? (
               <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
-                <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin"></div>
+                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
                 <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
               </div>
             ) : studentsList.length === 0 ? (
@@ -304,10 +308,10 @@ export default function StudentsPage() {
                         </Link>
                         <button
                           onClick={() => handleDelete(student.id)}
-                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors"
+                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex items-center justify-center"
                           title="Delete Student"
                         >
-                          <i className="pi pi-trash"></i>
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

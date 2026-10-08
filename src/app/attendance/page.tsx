@@ -5,12 +5,10 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useClasses } from '@/hooks/queries/useAcademics';
 import { useStudentsList } from '@/hooks/queries/useStudents';
 import { useAttendance, useMarkBulkAttendance } from '@/hooks/queries/useAttendance';
-import { Calendar } from 'primereact/calendar';
-import { Toast } from 'primereact/toast';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import { StatCard } from '@/components/ui/StatCard';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
-
 
 interface LocalRecord {
   status: 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY';
@@ -23,7 +21,6 @@ export default function AttendancePage() {
   const [date, setDate] = useState<Date>(new Date());
   const [localAttendance, setLocalAttendance] = useState<Record<string, LocalRecord>>({});
   const [isModified, setIsModified] = useState(false);
-  const toastRef = React.useRef<Toast>(null);
 
   // Format date to YYYY-MM-DD
   const formattedDate = date ? date.toISOString().split('T')[0] : '';
@@ -56,12 +53,15 @@ export default function AttendancePage() {
   const markedAttendance = attendanceData?.items || [];
 
   const studentsKey = studentsData?.items?.map((s: any) => s.id).join(',') || '';
-  const attendanceKey = attendanceData?.items?.map((a: any) => `${a.studentId}-${a.status}-${a.remarks || ''}`).join(',') || '';
+  const attendanceKey =
+    attendanceData?.items
+      ?.map((a: any) => `${a.studentId}-${a.status}-${a.remarks || ''}`)
+      .join(',') || '';
 
   // Sync marked attendance into local state
   useEffect(() => {
     const initialRecords: Record<string, LocalRecord> = {};
-    
+
     // Default all students to PRESENT
     const activeStudents = studentsData?.items || [];
     activeStudents.forEach((student: any) => {
@@ -89,7 +89,10 @@ export default function AttendancePage() {
   // Mutation
   const markBulkMutation = useMarkBulkAttendance();
 
-  const handleStatusChange = (studentId: string, status: 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY') => {
+  const handleStatusChange = (
+    studentId: string,
+    status: 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY'
+  ) => {
     setLocalAttendance((prev) => ({
       ...prev,
       [studentId]: {
@@ -121,17 +124,14 @@ export default function AttendancePage() {
     });
     setLocalAttendance(updated);
     setIsModified(true);
-    toastRef.current?.show({
-      severity: 'info',
-      summary: 'Bulk Action',
-      detail: `All students marked as ${status.toLowerCase()}`,
-      life: 3000,
+    toast.info('Bulk Action', {
+      description: `All students marked as ${status.toLowerCase()}`,
     });
   };
 
   const handleSave = () => {
     if (!selectedClassId) return;
-    
+
     const records = Object.entries(localAttendance).map(([studentId, data]) => ({
       studentId,
       status: data.status,
@@ -147,20 +147,10 @@ export default function AttendancePage() {
       {
         onSuccess: () => {
           setIsModified(false);
-          toastRef.current?.show({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Attendance saved successfully',
-            life: 3000,
-          });
+          toast.success('Attendance saved successfully');
         },
         onError: (err: any) => {
-          toastRef.current?.show({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.message || 'Failed to save attendance',
-            life: 3000,
-          });
+          toast.error(err.message || 'Failed to save attendance');
         },
       }
     );
@@ -170,29 +160,33 @@ export default function AttendancePage() {
   const totalCount = students.length;
   const presentCount = Object.values(localAttendance).filter((r) => r.status === 'PRESENT').length;
   const absentCount = Object.values(localAttendance).filter((r) => r.status === 'ABSENT').length;
-  const lateCount = Object.values(localAttendance).filter((r) => r.status === 'LATE' || r.status === 'HALF_DAY').length;
-  const attendanceRate = totalCount > 0 ? Math.round(((presentCount + lateCount * 0.5) / totalCount) * 100) : 0;
+  const lateCount = Object.values(localAttendance).filter(
+    (r) => r.status === 'LATE' || r.status === 'HALF_DAY'
+  ).length;
+  const attendanceRate =
+    totalCount > 0 ? Math.round(((presentCount + lateCount * 0.5) / totalCount) * 100) : 0;
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Attendance" />
-<Toast ref={toastRef} />
       <div className="flex flex-col gap-4 pb-10">
-        
         {/* Header Section */}
         <div className="flex flex-col items-start gap-4 pb-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Attendance Management</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Attendance Management
+              </h1>
             </div>
             <p className="text-blue-100 mt-1 text-sm md:text-base">
               Mark, review, and synchronize student attendance status.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 bg-white/10 backdrop-blur-md p-2 rounded-xl border border-white/20">
-
             <div className="flex flex-col">
-              <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">Select Class</span>
+              <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">
+                Select Class
+              </span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
@@ -202,7 +196,11 @@ export default function AttendancePage() {
                   <option className="text-zinc-800">Loading...</option>
                 ) : (
                   classes.map((cls: any) => (
-                    <option key={cls.id} value={cls.id} className="text-zinc-800 dark:text-zinc-200">
+                    <option
+                      key={cls.id}
+                      value={cls.id}
+                      className="text-zinc-800 dark:text-zinc-200"
+                    >
                       {cls.name} - {cls.section}
                     </option>
                   ))
@@ -211,14 +209,14 @@ export default function AttendancePage() {
             </div>
             <div className="h-8 w-px bg-zinc-300 dark:bg-zinc-700"></div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">Select Date</span>
-              <Calendar
-                value={date}
-                onChange={(e) => setDate(e.value as Date)}
-                maxDate={new Date()}
-                dateFormat="yy-mm-dd"
-                className="bg-transparent text-zinc-800 dark:text-zinc-200 border-none py-0 focus:ring-0 calendar-custom"
-                inputClassName="bg-transparent text-zinc-800 dark:text-zinc-200 border-none p-0 w-24 outline-none font-medium cursor-pointer shadow-none focus:shadow-none text-sm"
+              <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">
+                Select Date
+              </span>
+              <Input
+                type="date"
+                value={date.toISOString().split('T')[0]}
+                onChange={(e) => setDate(new Date(e.target.value))}
+                className="bg-transparent text-zinc-800 dark:text-zinc-200 border-none py-0 w-36 text-sm"
               />
             </div>
           </div>
@@ -284,7 +282,9 @@ export default function AttendancePage() {
                 gradientClass="from-emerald-500 to-teal-500"
                 iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
                 iconColorClass="text-emerald-600 dark:text-emerald-400"
-                footerText={totalCount > 0 ? `(${Math.round((presentCount / totalCount) * 100)}%)` : 'Active'}
+                footerText={
+                  totalCount > 0 ? `(${Math.round((presentCount / totalCount) * 100)}%)` : 'Active'
+                }
               />
               <StatCard
                 label="Absent"
@@ -293,7 +293,9 @@ export default function AttendancePage() {
                 gradientClass="from-rose-500 to-red-500"
                 iconBgClass="bg-rose-500/10 dark:bg-rose-500/20"
                 iconColorClass="text-rose-600 dark:text-rose-400"
-                footerText={totalCount > 0 ? `(${Math.round((absentCount / totalCount) * 100)}%)` : 'Inactive'}
+                footerText={
+                  totalCount > 0 ? `(${Math.round((absentCount / totalCount) * 100)}%)` : 'Inactive'
+                }
               />
               <StatCard
                 label="Attendance Rate"
@@ -337,9 +339,24 @@ export default function AttendancePage() {
                 >
                   {markBulkMutation.isPending ? (
                     <>
-                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
                       </svg>
                       Saving...
                     </>
@@ -353,7 +370,9 @@ export default function AttendancePage() {
             {/* Students List Card */}
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden mt-4">
               <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Student Roster</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  Student Roster
+                </h2>
                 <span className="text-xs font-semibold text-zinc-500">
                   {students.length} students enrolled
                 </span>
@@ -362,18 +381,22 @@ export default function AttendancePage() {
               {loadingStudents || loadingAttendance ? (
                 <div className="p-12 flex flex-col items-center justify-center gap-3">
                   <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Loading student profiles...</span>
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Loading student profiles...
+                  </span>
                 </div>
               ) : students.length === 0 ? (
                 <div className="p-12 text-center">
-                  <p className="text-zinc-500 dark:text-zinc-400">No students found in this class.</p>
+                  <p className="text-zinc-500 dark:text-zinc-400">
+                    No students found in this class.
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {students.map((student: any) => {
                     const record = localAttendance[student.id] || { status: 'PRESENT', note: '' };
                     const fullName = student.name || 'Unnamed Student';
-                    
+
                     return (
                       <div
                         key={student.id}
@@ -389,7 +412,10 @@ export default function AttendancePage() {
                               {fullName}
                             </h3>
                             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                              Adm No: <span className="font-mono text-zinc-500 dark:text-zinc-400">{student.admissionNo}</span>
+                              Adm No:{' '}
+                              <span className="font-mono text-zinc-500 dark:text-zinc-400">
+                                {student.admissionNo}
+                              </span>
                             </p>
                           </div>
                         </div>
@@ -448,7 +474,6 @@ export default function AttendancePage() {
                             className="w-full px-3 py-1.5 text-xs border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md text-zinc-700 dark:text-zinc-300 outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
                           />
                         </div>
-
                       </div>
                     );
                   })}
@@ -457,7 +482,6 @@ export default function AttendancePage() {
             </div>
           </>
         )}
-
       </div>
     </DashboardLayout>
   );

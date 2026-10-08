@@ -3,26 +3,16 @@
 import React, { useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Checkbox } from 'primereact/checkbox';
-import { Toast } from 'primereact/toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rbacService, RbacRole, RbacPermission } from '@/services/rbac.service';
+import { Plus, Key, Trash2, Shield } from 'lucide-react';
 
-/**
- * Roles & Permissions editor.
- *
- * The RBAC module has ten endpoints and had no UI on either client, so the
- * permission model could only be changed by seeding or direct SQL. A school
- * admin could see role names (the staff form reads them for a dropdown) but
- * could not create a role, inspect what it grants, or change it.
- */
 export default function RolesPermissionsPage() {
-  const toast = React.useRef<Toast>(null);
   const queryClient = useQueryClient();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -40,7 +30,6 @@ export default function RolesPermissionsPage() {
     queryFn: rbacService.getPermissions,
   });
 
-  /** Permissions grouped by module, so the editor reads as a matrix. */
   const grouped = useMemo(() => {
     const map = new Map<string, RbacPermission[]>();
     for (const p of permissions) {
@@ -50,9 +39,6 @@ export default function RolesPermissionsPage() {
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [permissions]);
 
-  const notify = (severity: 'success' | 'error', detail: string) =>
-    toast.current?.show({ severity, summary: severity === 'success' ? 'Saved' : 'Error', detail, life: 3000 });
-
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['rbac-roles'] });
 
   const createMutation = useMutation({
@@ -61,21 +47,28 @@ export default function RolesPermissionsPage() {
       invalidate();
       setShowCreate(false);
       setForm({ name: '', slug: '', description: '' });
-      notify('success', 'Role created');
+      toast.success('Role created successfully.');
     },
-    onError: () => notify('error', 'Could not create the role'),
+    onError: () => toast.error('Could not create the role.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => rbacService.deleteRole(id),
-    onSuccess: () => { invalidate(); notify('success', 'Role deleted'); },
-    onError: () => notify('error', 'Could not delete the role — system roles cannot be removed'),
+    onSuccess: () => {
+      invalidate();
+      toast.success('Role deleted.');
+    },
+    onError: () => toast.error('Could not delete system role.'),
   });
 
   const savePermissionsMutation = useMutation({
     mutationFn: () => rbacService.assignPermissions(editingRole!.id, Array.from(checked)),
-    onSuccess: () => { invalidate(); setEditingRole(null); notify('success', 'Permissions updated'); },
-    onError: () => notify('error', 'Could not update permissions'),
+    onSuccess: () => {
+      invalidate();
+      setEditingRole(null);
+      toast.success('Permissions updated successfully.');
+    },
+    onError: () => toast.error('Could not update permissions.'),
   });
 
   const openPermissions = async (role: RbacRole) => {
@@ -87,7 +80,8 @@ export default function RolesPermissionsPage() {
   const toggle = (id: string) => {
     setChecked((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -104,129 +98,191 @@ export default function RolesPermissionsPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Roles & Permissions" subtitle="Settings" />
-      <Toast ref={toast} />
 
-      <div className="flex flex-col gap-4 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center">
-          <p className="text-xs text-zinc-500 max-w-2xl">
-            System roles are seeded per school and cannot be deleted. Their grants can still be
-            adjusted — note that defaults are reconciled on every server boot, so custom roles are
-            the right place for per-school tailoring.
-          </p>
-          <Button
-            label="New Role"
-            icon="pi pi-plus"
-            onClick={() => setShowCreate(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-5 rounded-md border-0"
-          />
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Shield className="w-6 h-6 text-brand" /> RBAC Authorization Matrix
+            </h1>
+            <p className="text-xs text-zinc-500 max-w-2xl mt-1">
+              System roles are seeded per school domain. Fine-tune granular operation permissions or
+              create custom roles.
+            </p>
+          </div>
+
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="w-4 h-4 mr-2" /> New Role
+          </Button>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm">
-          <DataTable value={roles} loading={loadingRoles} emptyMessage="No roles found." dataKey="id">
-            <Column field="name" header="Role" body={(r: RbacRole) => (
-              <div className="flex flex-col">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-100">{r.name}</span>
-                <span className="text-[10px] font-mono text-zinc-400">{r.slug}</span>
-              </div>
-            )} />
-            <Column header="Type" body={(r: RbacRole) => (
-              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                r.isSystem ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40'
-              }`}>
-                {r.isSystem ? 'System' : 'Custom'}
-              </span>
-            )} />
-            <Column header="Permissions" body={(r: RbacRole) => (
-              <span className="text-xs text-zinc-500">{r._count?.permissions ?? r.permissions?.length ?? 0} granted</span>
-            )} />
-            <Column header="Actions" body={(r: RbacRole) => (
-              <div className="flex gap-2">
-                <Button
-                  label="Permissions"
-                  icon="pi pi-key"
-                  onClick={() => openPermissions(r)}
-                  className="p-2 px-3 text-xs rounded-md border border-zinc-200 dark:border-zinc-700"
-                />
-                {!r.isSystem && (
-                  <Button
-                    icon="pi pi-trash"
-                    onClick={() => confirm(`Delete role "${r.name}"?`) && deleteMutation.mutate(r.id)}
-                    className="p-2 px-3 text-xs rounded-md border border-rose-200 text-rose-600"
-                  />
-                )}
-              </div>
-            )} />
-          </DataTable>
+        <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <tr>
+                <th className="px-4 py-3.5">Role</th>
+                <th className="px-4 py-3.5">Type</th>
+                <th className="px-4 py-3.5">Granted Permissions</th>
+                <th className="px-4 py-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+              {loadingRoles ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-zinc-500">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
+                    <p className="text-xs">Loading roles...</p>
+                  </td>
+                </tr>
+              ) : roles.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                    No roles found.
+                  </td>
+                </tr>
+              ) : (
+                roles.map((r: RbacRole) => (
+                  <tr key={r.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          {r.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-400">{r.slug}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={r.isSystem ? 'secondary' : 'info'}>
+                        {r.isSystem ? 'System' : 'Custom'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-300">
+                      {r._count?.permissions ?? r.permissions?.length ?? 0} granted
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => openPermissions(r)}>
+                          <Key className="w-3.5 h-3.5 mr-1" /> Permissions
+                        </Button>
+                        {!r.isSystem && (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              confirm(`Delete role "${r.name}"?`) && deleteMutation.mutate(r.id)
+                            }
+                            className="text-rose-600 border-rose-200/80 hover:bg-rose-50"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Create role */}
-      <Dialog header="New Role" visible={showCreate} onHide={() => setShowCreate(false)} style={{ width: '420px' }}>
-        <div className="flex flex-col gap-3 pt-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-zinc-500 uppercase">Name</label>
-            <InputText
+      <Dialog isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create New Role">
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Role Name *
+            </label>
+            <Input
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '_') })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name: e.target.value,
+                  slug: form.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                })
+              }
               placeholder="e.g. Lab Assistant"
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-zinc-500 uppercase">Slug</label>
-            <InputText
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Role Slug *
+            </label>
+            <Input
               value={form.slug}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
               placeholder="lab_assistant"
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md font-mono text-xs"
+              className="font-mono"
             />
-            <span className="text-[10px] text-zinc-400">
-              The slug is what @Roles() checks on the server — it cannot be changed later.
-            </span>
+            <span className="text-[10px] text-zinc-400">Unique server slug check key.</span>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-zinc-500 uppercase">Description</label>
-            <InputText
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Description
+            </label>
+            <Input
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md"
+              placeholder="Description of permissions..."
             />
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowCreate(false)}>
+            Cancel
+          </Button>
           <Button
-            label="Create"
-            loading={createMutation.isPending}
-            disabled={!form.name || !form.slug}
             onClick={() => createMutation.mutate()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-md border-0 mt-2"
-          />
+            isLoading={createMutation.isPending}
+            disabled={!form.name || !form.slug}
+          >
+            Create Role
+          </Button>
         </div>
       </Dialog>
 
       {/* Permission matrix */}
       <Dialog
-        header={editingRole ? `Permissions — ${editingRole.name}` : 'Permissions'}
-        visible={!!editingRole}
-        onHide={() => setEditingRole(null)}
-        style={{ width: '640px' }}
+        isOpen={!!editingRole}
+        onClose={() => setEditingRole(null)}
+        title={editingRole ? `Manage Permissions — ${editingRole.name}` : 'Permissions'}
       >
-        <div className="flex flex-col gap-4 pt-2 max-h-[60vh] overflow-y-auto">
-          {grouped.length === 0 && <p className="text-sm text-zinc-500">No permissions in the catalogue.</p>}
+        <div className="flex flex-col gap-4 py-2 max-h-[60vh] overflow-y-auto">
+          {grouped.length === 0 && (
+            <p className="text-xs text-zinc-400">No permissions available.</p>
+          )}
           {grouped.map(([mod, perms]) => (
-            <div key={mod} className="border border-zinc-150 dark:border-zinc-800 rounded-md p-3">
+            <div
+              key={mod}
+              className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 bg-zinc-50/50 dark:bg-zinc-900/30"
+            >
               <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-xs uppercase tracking-wider text-zinc-600 dark:text-zinc-300">{mod}</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                  {mod}
+                </span>
                 <button
                   type="button"
                   onClick={() => toggleModule(mod, perms)}
-                  className="text-[10px] font-bold text-blue-600 uppercase"
+                  className="text-[10px] font-semibold text-brand hover:underline"
                 >
-                  {perms.every((p) => checked.has(p.id)) ? 'Clear' : 'Select all'}
+                  {perms.every((p) => checked.has(p.id)) ? 'Clear All' : 'Select All'}
                 </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {perms.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
-                    <Checkbox checked={checked.has(p.id)} onChange={() => toggle(p.id)} />
+                  <label
+                    key={p.id}
+                    className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked.has(p.id)}
+                      onChange={() => toggle(p.id)}
+                      className="rounded border-zinc-300 text-brand focus:ring-brand"
+                    />
                     <span>{p.action}</span>
                   </label>
                 ))}
@@ -234,14 +290,17 @@ export default function RolesPermissionsPage() {
             </div>
           ))}
         </div>
-        <div className="flex justify-end gap-2 pt-4">
-          <Button label="Cancel" onClick={() => setEditingRole(null)} className="p-2 px-4 text-sm rounded-md border border-zinc-200" />
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setEditingRole(null)}>
+            Cancel
+          </Button>
           <Button
-            label="Save Permissions"
-            loading={savePermissionsMutation.isPending}
             onClick={() => savePermissionsMutation.mutate()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 px-5 rounded-md border-0"
-          />
+            isLoading={savePermissionsMutation.isPending}
+          >
+            Save Grant Changes
+          </Button>
         </div>
       </Dialog>
     </DashboardLayout>

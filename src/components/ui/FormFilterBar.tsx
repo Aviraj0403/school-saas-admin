@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Search, X, FilterX, LayoutGrid, List } from 'lucide-react';
 
 export interface FormFilterBarProps {
   searchValue?: string;
@@ -24,34 +25,36 @@ export interface FormFilterBarProps {
 export function FormFilterBar({
   searchValue = '',
   onSearchChange,
-  searchPlaceholder = 'Search records...',
+  searchPlaceholder = 'Search...',
   filters = [],
   actions,
   onClearFilters,
-  viewMode,
+  viewMode = 'grid',
   onViewModeChange,
 }: FormFilterBarProps) {
   const hasActiveFilters =
-    searchValue || filters.some((f) => f.value !== '' && f.value !== null && f.value !== undefined);
+    searchValue.trim().length > 0 ||
+    filters.some((f) => f.value !== undefined && f.value !== '' && f.value !== null);
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300 flex flex-col gap-4 mb-6">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 flex-wrap">
+    <div className="w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-sm mb-6 transition-all">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Search Input Box */}
-        <div className="relative flex-1 min-w-[240px]">
-          <i className="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm"></i>
-          <InputText
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
+          <Input
+            type="text"
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all"
+            className="pl-10 pr-9"
           />
           {searchValue && (
             <button
               onClick={() => onSearchChange?.('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
-              <i className="pi pi-times text-xs"></i>
+              <X className="size-4" />
             </button>
           )}
         </div>
@@ -60,13 +63,14 @@ export function FormFilterBar({
         <div className="flex items-center gap-2.5 flex-wrap">
           {filters.map((filter) => (
             <div key={filter.id} className="min-w-[140px] sm:min-w-[160px]">
-              <Dropdown
-                value={filter.value}
-                options={filter.options}
-                onChange={(e) => filter.onChange(e.value)}
-                placeholder={filter.label}
-                className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-none focus:ring-2 focus:ring-indigo-500/20"
-              />
+              <Select value={filter.value || ''} onChange={(e) => filter.onChange(e.target.value)}>
+                <option value="">{filter.label}</option>
+                {filter.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
             </div>
           ))}
 
@@ -75,7 +79,7 @@ export function FormFilterBar({
               onClick={onClearFilters}
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all active:scale-95"
             >
-              <i className="pi pi-filter-slash text-xs"></i>
+              <FilterX className="size-4" />
               <span>Clear</span>
             </button>
           )}
@@ -87,28 +91,28 @@ export function FormFilterBar({
                 onClick={() => onViewModeChange('grid')}
                 className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'grid'
-                    ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xs'
+                    ? 'bg-white dark:bg-brand text-brand dark:text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
                 title="Grid View"
               >
-                <i className="pi pi-th-large"></i>
+                <LayoutGrid className="size-4" />
               </button>
               <button
                 onClick={() => onViewModeChange('table')}
                 className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'table'
-                    ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xs'
+                    ? 'bg-white dark:bg-brand text-brand dark:text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
                 title="Table View"
               >
-                <i className="pi pi-list"></i>
+                <List className="size-4" />
               </button>
             </div>
           )}
 
-          {/* Action Buttons (e.g. Add Student, Export CSV) */}
+          {/* Action Buttons */}
           {actions}
         </div>
       </div>

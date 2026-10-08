@@ -1,12 +1,9 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
-import { Button } from 'primereact/button';
-import { Avatar } from 'primereact/avatar';
-import { Menu } from 'primereact/menu';
-import { Tag } from 'primereact/tag';
 import { useTenantsList } from '@/modules/superadmin/hooks/useTenants';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface SwitchableSchool {
   id: string;
@@ -86,9 +83,9 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
     mirrorUser,
     exitMirroring,
   } = useAuthStore();
-  const userMenuRef = useRef<Menu>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
 
   React.useEffect(() => {
@@ -469,11 +466,9 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
       {/* Right: actions + user */}
       <div className="flex items-center gap-2">
         {isDemoMode && (
-          <Tag
-            value="DEMO MODE"
-            severity="danger"
-            className="text-[9px] px-2.5 py-1 font-extrabold uppercase tracking-wider rounded-lg shadow-sm"
-          />
+          <span className="text-[9px] px-2.5 py-1 font-extrabold uppercase tracking-wider rounded-lg shadow-sm bg-rose-500/10 text-rose-500 border border-rose-500/20">
+            DEMO MODE
+          </span>
         )}
 
         <div className="relative">
@@ -535,7 +530,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
         </button>
 
-        <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200/80 dark:border-slate-800/80 ml-1">
+        <div className="relative flex items-center gap-2.5 pl-3 border-l border-slate-200/80 dark:border-slate-800/80 ml-1">
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-[13px] font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {activeUser?.name || 'Guest'}
@@ -544,19 +539,48 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
               {activeUser?.role || 'No Role'}
             </span>
           </div>
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer ml-1 overflow-hidden shadow-md border border-white/20 transition-transform hover:scale-105"
-            style={{ backgroundColor: 'var(--primary-color)' }}
-            onClick={(e) => userMenuRef.current?.toggle(e)}
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer ml-1 overflow-hidden shadow-md border border-white/20 transition-transform hover:scale-105 bg-brand text-white"
           >
             <i className="pi pi-user text-white text-sm"></i>
-          </div>
-          <Menu
-            ref={userMenuRef}
-            model={userMenuItems}
-            popup
-            className="rounded-2xl shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm"
-          />
+          </button>
+
+          {userMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
+              <div className="absolute right-0 top-12 w-56 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in">
+                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                    {activeUser?.name}
+                  </p>
+                  <p className="text-[10px] text-slate-400 truncate">{activeUser?.role}</p>
+                </div>
+                <div className="mt-1 flex flex-col gap-1">
+                  <button
+                    onClick={() => {
+                      toggleDemoMode();
+                      setUserMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all text-slate-700 dark:text-slate-200"
+                  >
+                    <i className={isDemoMode ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'}></i>
+                    <span>{isDemoMode ? 'Exit Demo Mode' : 'Enter Demo Mode'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setUserMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold hover:bg-rose-500/10 text-rose-500 transition-all"
+                  >
+                    <i className="pi pi-sign-out text-xs"></i>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

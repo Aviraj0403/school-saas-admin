@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
-import { PrimeReactProvider } from 'primereact/api';
-import ThemeProvider from "@/components/ThemeProvider";
-import QueryProvider from "@/providers/QueryProvider";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import ThemeProvider from '@/components/ThemeProvider';
+import QueryProvider from '@/providers/QueryProvider';
+import { ToastProvider } from '@/components/ui/toast-provider';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "School SaaS Admin",
-  description: "Enterprise School Management SaaS Panel",
+  title: 'EduNexus OS — School SaaS Admin',
+  description: 'Enterprise School Management SaaS Platform',
 };
 
 export default function RootLayout({
@@ -30,14 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
-        <PrimeReactProvider>
-          <QueryProvider>
-            <ThemeProvider>
-              {children}
-            </ThemeProvider>
-          </QueryProvider>
-        </PrimeReactProvider>
+      <body className="antialiased">
+        <QueryProvider>
+          <ThemeProvider>
+            {children}
+            <ToastProvider />
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

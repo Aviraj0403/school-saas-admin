@@ -8,7 +8,7 @@ import AppFooter from './AppFooter';
 import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLogin } from '@/hooks/queries/useAuth';
-import { Toast } from 'primereact/toast';
+import { toast } from 'sonner';
 
 let globalMounted = false;
 
@@ -17,7 +17,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarSize, setSidebarSize] = useState<'default' | 'collapsed'>('default');
   const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(globalMounted);
-  const toastRef = useRef<Toast>(null);
 
   // Login State
   const [schoolCode, setSchoolCode] = useState('');
@@ -60,36 +59,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const handleShowToast = (e: Event) => {
         const customEvent = e as CustomEvent;
-        if (toastRef.current && customEvent.detail) {
-          toastRef.current.show({
-            severity: customEvent.detail.severity || 'info',
-            summary: customEvent.detail.summary || 'Notification',
-            detail: customEvent.detail.detail || '',
-            life: customEvent.detail.life || 4000,
-            content: (props) => (
-              <div className="flex flex-col gap-1 w-full">
-                <div className="flex items-center gap-2">
-                  <i
-                    className={`pi ${
-                      customEvent.detail.severity === 'success'
-                        ? 'pi-check-circle text-emerald-500'
-                        : customEvent.detail.severity === 'error'
-                          ? 'pi-times-circle text-rose-500'
-                          : customEvent.detail.severity === 'warn'
-                            ? 'pi-exclamation-triangle text-amber-500'
-                            : 'pi-info-circle text-blue-500'
-                    } text-lg`}
-                  ></i>
-                  <span className="font-bold text-sm text-zinc-800 dark:text-white">
-                    {props.message.summary}
-                  </span>
-                </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 pl-7">
-                  {props.message.detail}
-                </div>
-              </div>
-            ),
-          });
+        if (customEvent.detail) {
+          const { severity, summary, detail } = customEvent.detail;
+          if (severity === 'success') {
+            toast.success(summary, { description: detail });
+          } else if (severity === 'error') {
+            toast.error(summary, { description: detail });
+          } else if (severity === 'warn') {
+            toast.warning(summary, { description: detail });
+          } else {
+            toast.info(summary, { description: detail });
+          }
         }
       };
 
@@ -402,7 +382,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div
       className={`min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300 font-sans overflow-x-hidden`}
     >
-      <Toast ref={toastRef} position="top-right" />
       <MirroringBanner />
       <AppTopbar onToggleMenu={handleToggleMenu} />
       <AppSidebar

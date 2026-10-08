@@ -1,26 +1,29 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
-import { Dropdown } from 'primereact/dropdown';
-import { Toast } from 'primereact/toast';
-import { Tag } from 'primereact/tag';
-import { Button } from 'primereact/button';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/ui/StatCard';
 import { AcademicYearSelect } from '@/components/academics/AcademicYearSelect';
-import { useHostelDashboard, useHostels, useCreateHostel, useHostelRooms, useCreateHostelRoom, useAdmitBoarder, useDischargeBoarder, useAllBoarders } from '@/hooks/queries/useHostel';
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
-
+import {
+  useHostelDashboard,
+  useHostels,
+  useCreateHostel,
+  useHostelRooms,
+  useCreateHostelRoom,
+  useAdmitBoarder,
+  useDischargeBoarder,
+  useAllBoarders,
+} from '@/hooks/queries/useHostel';
+import { toast } from 'sonner';
+import { Building, Plus, UserPlus, LogOut, Home, Users, ShieldCheck } from 'lucide-react';
 
 export default function HostelPage() {
-  const toast = useRef<Toast>(null);
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
@@ -37,8 +40,8 @@ export default function HostelPage() {
   const { data: dashboard } = useHostelDashboard();
   const { data: hostels, isLoading: isLoadingHostels } = useHostels();
   const { data: allBoardersData, isPending: isLoadingBoarders } = useAllBoarders();
-  
-  const hostelList = Array.isArray(hostels) ? hostels : (hostels?.data || []);
+
+  const hostelList = Array.isArray(hostels) ? hostels : hostels?.data || [];
 
   const wardensList = hostelList.map((h: any) => ({
     id: h.id,
@@ -46,13 +49,13 @@ export default function HostelPage() {
     hostelBlock: h.name,
     phone: h.wardenPhone || 'N/A',
     email: 'N/A',
-    status: 'ON_DUTY'
+    status: 'ON_DUTY',
   }));
 
-  const wardenLogs: any[] = []; // Logs UI telemetry, waiting on backend logs module
+  const wardenLogs: any[] = [];
 
   const boardersList = (allBoardersData || []).map((b: any) => ({
-    id: b.studentId, // We use studentId for discharge action
+    id: b.studentId,
     studentName: b.student?.name || 'Unknown',
     hostelName: b.room?.hostel?.name || 'Unknown',
     roomNo: b.room?.roomNo || 'Unknown',
@@ -65,11 +68,13 @@ export default function HostelPage() {
 
   const handleDischarge = (studentId: string, academicYearId: string) => {
     if (confirm('Are you sure you want to discharge this resident boarder?')) {
-      dischargeBoarderMutation.mutate({ studentId, academicYearId }, {
-        onSuccess: () => {
-          toast.current?.show({ severity: 'success', summary: 'Discharged', detail: 'Resident boarder discharged successfully', life: 3000 });
+      dischargeBoarderMutation.mutate(
+        { studentId, academicYearId },
+        {
+          onSuccess: () => toast.success('Resident boarder discharged successfully.'),
+          onError: () => toast.error('Failed to discharge boarder.'),
         }
-      });
+      );
     }
   };
 
@@ -81,109 +86,111 @@ export default function HostelPage() {
   const { data: rooms, isLoading: isLoadingRooms } = useHostelRooms(selectedHostel?.id || '');
 
   const [showHostelDialog, setShowHostelDialog] = useState(false);
-  const [hostelForm, setHostelForm] = useState({ name: '', type: 'BOYS', capacity: 0, address: '' });
+  const [hostelForm, setHostelForm] = useState({
+    name: '',
+    type: 'BOYS',
+    capacity: 0,
+    address: '',
+  });
 
   const [showRoomDialog, setShowRoomDialog] = useState(false);
   const [roomForm, setRoomForm] = useState({ roomNo: '', type: 'STANDARD', capacity: 0 });
 
   const [showAdmitDialog, setShowAdmitDialog] = useState(false);
-  const [admitForm, setAdmitForm] = useState({ studentId: '', hostelRoomId: '', academicYearId: '' });
+  const [admitForm, setAdmitForm] = useState({
+    studentId: '',
+    hostelRoomId: '',
+    academicYearId: '',
+  });
 
   const hostelTypes = [
-    { label: 'Boys', value: 'BOYS' },
-    { label: 'Girls', value: 'GIRLS' },
-    { label: 'Co-ed', value: 'COED' },
+    { label: 'Boys Hostel', value: 'BOYS' },
+    { label: 'Girls Hostel', value: 'GIRLS' },
+    { label: 'Co-ed Residence', value: 'COED' },
   ];
 
   const handleCreateHostel = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hostelForm.name) {
+      toast.error('Hostel name is required.');
+      return;
+    }
     createHostelMutation.mutate(hostelForm as any, {
       onSuccess: () => {
         setShowHostelDialog(false);
         setHostelForm({ name: '', type: 'BOYS', capacity: 0, address: '' });
-        toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Hostel added successfully', life: 3000 });
+        toast.success('Hostel block added successfully.');
       },
-      onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create hostel', life: 3000 }),
+      onError: () => toast.error('Failed to create hostel block.'),
     });
   };
 
   const handleCreateRoom = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedHostel) return;
-    createRoomMutation.mutate({ hostelId: selectedHostel.id, data: roomForm }, {
-      onSuccess: () => {
-        setShowRoomDialog(false);
-        setRoomForm({ roomNo: '', type: 'STANDARD', capacity: 0 });
-        toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Room added successfully', life: 3000 });
-      },
-      onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create room', life: 3000 }),
-    });
+    if (!selectedHostel || !roomForm.roomNo) {
+      toast.error('Room number is required.');
+      return;
+    }
+    createRoomMutation.mutate(
+      { hostelId: selectedHostel.id, data: roomForm },
+      {
+        onSuccess: () => {
+          setShowRoomDialog(false);
+          setRoomForm({ roomNo: '', type: 'STANDARD', capacity: 0 });
+          toast.success('Room added successfully.');
+        },
+        onError: () => toast.error('Failed to create room.'),
+      }
+    );
   };
 
   const handleAdmitBoarder = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!admitForm.studentId || !admitForm.hostelRoomId) {
+      toast.error('Student and room selection are required.');
+      return;
+    }
     admitBoarderMutation.mutate(admitForm, {
       onSuccess: () => {
         setShowAdmitDialog(false);
         setAdmitForm({ studentId: '', hostelRoomId: '', academicYearId: '' });
-        toast.current?.show({ severity: 'success', summary: 'Admitted', detail: 'Student admitted to hostel', life: 3000 });
+        toast.success('Student admitted to hostel room.');
       },
-      onError: () => toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to admit boarder', life: 3000 }),
+      onError: () => toast.error('Failed to admit boarder.'),
     });
   };
 
-  const statusBodyTemplate = (rowData: any) => {
-    const isFull = rowData.occupied >= rowData.capacity;
-    return (
-      <Tag 
-        value={isFull ? 'Full' : 'Available'} 
-        severity={isFull ? 'danger' : 'success'} 
-        className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-          isFull 
-            ? 'bg-rose-500/10 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400' 
-            : 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400'
-        }`}
-      />
-    );
-  };
-
-  const roomList = Array.isArray(rooms) ? rooms : (rooms?.data || []);
+  const roomList = Array.isArray(rooms) ? rooms : rooms?.data || [];
 
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="Hostel" />
-<Toast ref={toast} />
-      <div className="flex flex-col gap-4 pb-10">
-        
-        {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Hostel & Residences</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage residential blocks, configure capacities, and assign student boarders.
-            </p>
-          </div> */}
-          <div className="flex gap-2">
+      <PageBreadcrumb title="Hostels & Residences" />
 
-            <button 
-              onClick={() => setShowAdmitDialog(true)}
-              className="flex-1 md:flex-none px-4 py-2 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium rounded-md shadow-sm transition-all text-sm flex items-center justify-center gap-2"
-            >
-              <i className="pi pi-user-plus text-xs"></i>
-              Admit Boarder
-            </button>
-            <button 
-              onClick={() => setShowHostelDialog(true)}
-              className="flex-1 md:flex-none bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <i className="pi pi-plus text-xs"></i>
-              Add Hostel
-            </button>
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
+        {/* Header Block */}
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Building className="w-6 h-6 text-brand" />
+              Hostels & Residential Blocks
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Manage residential halls, room allocations, and warden access logs
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setShowAdmitDialog(true)}>
+              <UserPlus className="w-4 h-4 mr-2" /> Admit Boarder
+            </Button>
+            <Button onClick={() => setShowHostelDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Add Hostel Block
+            </Button>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           <StatCard
             label="Total Hostels"
             value={dashboard?.totalHostels ?? hostelList.length}
@@ -213,272 +220,484 @@ export default function HostelPage() {
           />
         </div>
 
-        {/* Tabbed view for Hostel registry sections */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
-          <style>{`
-            .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
-              background: transparent !important;
-            }
-            .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
-              background: transparent !important;
-            }
-            .p-tabview-nav li .p-tabview-nav-link {
-              background: transparent !important;
-            }
-          `}</style>
-          
-          <TabView activeIndex={activeTab} onTabChange={(e) => {
-            setActiveTab(e.index);
-            const tabPaths = ['/hostel/rooms', '/hostel/allocations', '/hostel/wardens'];
-            window.history.pushState({}, '', tabPaths[e.index]);
-          }}>
-            
-            {/* Tab 0: Hostel Rooms & Blocks split board */}
-            <TabPanel header="Hostel Rooms & Blocks">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
-                {/* Hostel list panel */}
-                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Hostel Blocks</h2>
-                    <p className="text-xs text-zinc-500">Select a block to inspect room allotments.</p>
-                  </div>
-                  
-                  <DataTable
-                    value={hostelList}
-                    loading={isLoadingHostels}
-                    selectionMode="single"
-                    selection={selectedHostel}
-                    onSelectionChange={(e) => setSelectedHostel(e.value)}
-                    dataKey="id"
-                    emptyMessage="No hostels found."
-                    className="p-datatable-sm"
-                    rowClassName={(data: any) => `cursor-pointer transition-all duration-100 ${selectedHostel?.id === data.id ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
-                  >
-                    <Column field="name" header="Block Name" sortable className="font-semibold text-zinc-900 dark:text-white" />
-                    <Column field="type" header="Type" sortable body={(d) => <Tag value={d.type} className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 font-bold text-[9px] px-2.5 py-0.5 rounded-md" />} />
-                    <Column field="capacity" header="Bed Capacity" sortable />
-                  </DataTable>
-                </div>
-
-                {/* Rooms List Panel */}
-                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-                        {selectedHostel ? `Rooms — ${selectedHostel.name}` : 'Rooms Allotment'}
-                      </h2>
-                      <p className="text-xs text-zinc-500">
-                        {selectedHostel ? 'Beds configuration details.' : 'Select block to view rooms list.'}
-                      </p>
-                    </div>
-                    {selectedHostel && (
-                      <button 
-                        onClick={() => setShowRoomDialog(true)}
-                        className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-xs flex items-center gap-1.5 transition-all"
-                      >
-                        <i className="pi pi-plus text-[10px]"></i>
-                        Add Room
-                      </button>
-                    )}
-                  </div>
-
-                  {selectedHostel ? (
-                    <DataTable
-                      value={roomList}
-                      loading={isLoadingRooms}
-                      emptyMessage="No rooms mapped to this hostel block yet."
-                      className="p-datatable-sm mt-1"
-                    >
-                      <Column field="roomNo" header="Room" className="font-semibold text-zinc-900 dark:text-white" />
-                      <Column field="type" header="Room Type" />
-                      <Column field="occupied" header="Occupied" body={(d) => `${d.occupied}/${d.capacity} beds`} />
-                      <Column body={statusBodyTemplate} header="Status" />
-                    </DataTable>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-12 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md">
-                      <i className="pi pi-home text-3xl mb-2"></i>
-                      <p className="text-xs font-semibold">No Hostel Selected</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabPanel>
-
-            {/* Tab 1: Room Allocations list & management */}
-            <TabPanel header="Room Allocations">
-              <div className="p-4 flex flex-col gap-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Active Resident Boarders</h2>
-                    <p className="text-xs text-zinc-500">Manage all student allocations across residential block beds.</p>
-                  </div>
-                </div>
-
-                <DataTable value={boardersList} className="p-datatable-sm" emptyMessage="No resident boarders found.">
-                  <Column field="studentName" header="Student Name" className="font-semibold text-zinc-900 dark:text-white" />
-                  <Column field="hostelName" header="Hostel Block" />
-                  <Column field="roomNo" header="Room No" className="font-mono text-zinc-600 dark:text-zinc-400" />
-                  <Column field="academicYear" header="Academic Term" />
-                  <Column field="joinDate" header="Admission Date" />
-                  <Column 
-                    header="Actions" 
-                    align="center"
-                    body={(d) => (
-                      <Button 
-                        label="Discharge" 
-                        icon="pi pi-sign-out" 
-                        size="small" 
-                        severity="danger" 
-                        className="bg-red-600 hover:bg-red-700 text-white p-1 px-2.5 text-xs rounded-md border-0"
-                        onClick={() => handleDischarge(d.id, d.academicYearId)}
-                      />
-                    )}
-                  />
-                </DataTable>
-              </div>
-            </TabPanel>
-
-            {/* Tab 2: Warden Logbook */}
-            <TabPanel header="Warden Logbook & Entry Logs">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-4">
-                
-                {/* Wardens List */}
-                <div className="lg:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
-                  <div>
-                    <h2 className="text-base font-bold text-zinc-900 dark:text-white">Hostel Wardens</h2>
-                    <p className="text-[11px] text-zinc-500">Assigned wardens for safety & oversight.</p>
-                  </div>
-                  
-                  <div className="flex flex-col gap-3">
-                    {wardensList.map((warden: any) => (
-                      <div key={warden.id} className="p-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 flex justify-between items-center shadow-sm">
-                        <div>
-                          <h4 className="font-semibold text-zinc-900 dark:text-white text-xs">{warden.name}</h4>
-                          <span className="text-[10px] text-zinc-500">{warden.hostelBlock}</span>
-                          <div className="text-[9px] text-zinc-400 mt-1 flex flex-col">
-                            <span>Phone: {warden.phone}</span>
-                            <span>Email: {warden.email}</span>
-                          </div>
-                        </div>
-                        <Tag 
-                          value={warden.status === 'ON_DUTY' ? 'On Duty' : 'Off Duty'} 
-                          className={warden.status === 'ON_DUTY' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 font-bold text-[9px] rounded-md' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 font-bold text-[9px] rounded-md'}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Entry/Exit logs */}
-                <div className="lg:col-span-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 flex flex-col gap-4">
-                  <div>
-                    <h2 className="text-base font-bold text-zinc-900 dark:text-white">Access Entry & Exit Logbook</h2>
-                    <p className="text-[11px] text-zinc-500">Real-time gate check logs managed by wardens.</p>
-                  </div>
-                  
-                  <DataTable value={wardenLogs} className="p-datatable-sm" emptyMessage="No gate logs recorded today.">
-                    <Column field="boarderName" header="Student" className="font-semibold text-zinc-900 dark:text-white text-xs" />
-                    <Column field="roomNo" header="Room" className="font-mono text-xs text-zinc-600 dark:text-zinc-400" />
-                    <Column 
-                      field="action" 
-                      header="Action" 
-                      body={(d) => (
-                        <Tag 
-                          value={d.action} 
-                          className={`font-bold text-[9px] px-2 py-0.5 rounded-md ${
-                            d.action === 'CHECK_IN' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
-                          }`}
-                        />
-                      )}
-                    />
-                    <Column field="time" header="Time Logged" className="text-zinc-500 text-[10px]" />
-                    <Column field="remarks" header="Remarks" className="text-zinc-500 text-[10px]" />
-                  </DataTable>
-                </div>
-              </div>
-            </TabPanel>
-
-          </TabView>
+        {/* Tab Navigation */}
+        <div className="flex bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 w-fit">
+          <button
+            onClick={() => {
+              setActiveTab(0);
+              window.history.pushState({}, '', '/hostel/rooms');
+            }}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+              activeTab === 0
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            Hostel Rooms & Blocks
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab(1);
+              window.history.pushState({}, '', '/hostel/allocations');
+            }}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+              activeTab === 1
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            Room Allocations
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab(2);
+              window.history.pushState({}, '', '/hostel/wardens');
+            }}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+              activeTab === 2
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            Warden Logbook & Entry Logs
+          </button>
         </div>
 
+        {/* Tab Content Board */}
+        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm">
+          {activeTab === 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* Hostel Blocks Table */}
+              <div className="lg:col-span-3 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 flex flex-col gap-3 bg-zinc-50/50 dark:bg-zinc-900/30">
+                <div>
+                  <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                    Hostel Blocks
+                  </h2>
+                  <p className="text-xs text-zinc-500">Select a block to inspect room allotments</p>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Block Name</th>
+                        <th className="px-4 py-3">Type</th>
+                        <th className="px-4 py-3">Bed Capacity</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {isLoadingHostels ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-8 text-center text-zinc-500">
+                            <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-brand border-t-transparent" />
+                          </td>
+                        </tr>
+                      ) : hostelList.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-8 text-center text-zinc-500">
+                            No hostel blocks registered.
+                          </td>
+                        </tr>
+                      ) : (
+                        hostelList.map((h: any) => {
+                          const isSel = selectedHostel?.id === h.id;
+                          return (
+                            <tr
+                              key={h.id}
+                              onClick={() => setSelectedHostel(h)}
+                              className={`cursor-pointer transition-colors ${
+                                isSel
+                                  ? 'bg-brand/10 dark:bg-brand/20 font-semibold text-brand'
+                                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
+                              }`}
+                            >
+                              <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                                {h.name}
+                              </td>
+                              <td className="px-4 py-3">
+                                <Badge variant="secondary">{h.type}</Badge>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
+                                {h.capacity} beds
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Rooms List Panel */}
+              <div className="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-4 bg-white dark:bg-zinc-900">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {selectedHostel ? `Rooms — ${selectedHostel.name}` : 'Rooms Allotment'}
+                    </h2>
+                    <p className="text-xs text-zinc-500">
+                      {selectedHostel
+                        ? 'Bed capacity & allotment status'
+                        : 'Select a block to inspect rooms'}
+                    </p>
+                  </div>
+                  {selectedHostel && (
+                    <Button size="sm" onClick={() => setShowRoomDialog(true)}>
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Room
+                    </Button>
+                  )}
+                </div>
+
+                {selectedHostel ? (
+                  <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                        <tr>
+                          <th className="px-4 py-3">Room</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th className="px-4 py-3">Beds</th>
+                          <th className="px-4 py-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                        {isLoadingRooms ? (
+                          <tr>
+                            <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                              <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-brand border-t-transparent" />
+                            </td>
+                          </tr>
+                        ) : roomList.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                              No rooms configured yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          roomList.map((r: any) => {
+                            const isFull = r.occupied >= r.capacity;
+                            return (
+                              <tr
+                                key={r.id}
+                                className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
+                              >
+                                <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                                  {r.roomNo}
+                                </td>
+                                <td className="px-4 py-3 text-zinc-500">{r.type}</td>
+                                <td className="px-4 py-3 font-mono">
+                                  {r.occupied}/{r.capacity}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <Badge variant={isFull ? 'danger' : 'success'}>
+                                    {isFull ? 'Full' : 'Available'}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-12 text-zinc-400 min-h-[220px]">
+                    <Home className="w-10 h-10 mb-2 opacity-50" />
+                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      No Block Selected
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 1 && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  Active Resident Boarders
+                </h2>
+                <p className="text-xs text-zinc-500">
+                  All current resident allocations across hostel beds
+                </p>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <tr>
+                      <th className="px-4 py-3">Student Name</th>
+                      <th className="px-4 py-3">Hostel Block</th>
+                      <th className="px-4 py-3">Room No</th>
+                      <th className="px-4 py-3">Academic Term</th>
+                      <th className="px-4 py-3">Admission Date</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                    {boardersList.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
+                          No resident boarders found.
+                        </td>
+                      </tr>
+                    ) : (
+                      boardersList.map((b: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                          <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                            {b.studentName}
+                          </td>
+                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
+                            {b.hostelName}
+                          </td>
+                          <td className="px-4 py-3 font-mono font-bold text-brand">{b.roomNo}</td>
+                          <td className="px-4 py-3 text-zinc-500">{b.academicYear}</td>
+                          <td className="px-4 py-3 font-mono text-zinc-500">{b.joinDate}</td>
+                          <td className="px-4 py-3 text-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs text-rose-600 hover:text-rose-700 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                              onClick={() => handleDischarge(b.id, b.academicYearId)}
+                            >
+                              <LogOut className="w-3 h-3 mr-1" /> Discharge
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 2 && (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* Wardens List */}
+              <div className="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 flex flex-col gap-4 bg-zinc-50/50 dark:bg-zinc-900/30">
+                <div>
+                  <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                    Hostel Wardens
+                  </h2>
+                  <p className="text-xs text-zinc-500">Assigned safety and oversight wardens</p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {wardensList.map((warden: any) => (
+                    <div
+                      key={warden.id}
+                      className="p-3 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900 flex justify-between items-center shadow-sm"
+                    >
+                      <div>
+                        <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
+                          {warden.name}
+                        </h4>
+                        <span className="text-[10px] text-zinc-400 font-medium">
+                          {warden.hostelBlock}
+                        </span>
+                        <div className="text-[10px] text-zinc-500 mt-1 flex flex-col">
+                          <span>Phone: {warden.phone}</span>
+                          <span>Email: {warden.email}</span>
+                        </div>
+                      </div>
+                      <Badge variant="success">On Duty</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gate Entry / Exit logs */}
+              <div className="lg:col-span-3 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-4 bg-white dark:bg-zinc-900">
+                <div>
+                  <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                    Access Entry & Exit Logbook
+                  </h2>
+                  <p className="text-xs text-zinc-500">Real-time gate logs managed by wardens</p>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Student</th>
+                        <th className="px-4 py-3">Room</th>
+                        <th className="px-4 py-3">Action</th>
+                        <th className="px-4 py-3">Time Logged</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                          No gate logs recorded today.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Dialog: Add Hostel */}
-      <Dialog header="Add New Hostel" visible={showHostelDialog} style={{ width: '450px' }} modal onHide={() => setShowHostelDialog(false)} className="dialog-custom rounded-md">
-        <form onSubmit={handleCreateHostel} className="flex flex-col gap-4 mt-3">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Name *</label>
-            <InputText value={hostelForm.name} onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. Boys Hostel Block A" />
+      <Dialog
+        isOpen={showHostelDialog}
+        onClose={() => setShowHostelDialog(false)}
+        title="Add New Hostel Block"
+      >
+        <form onSubmit={handleCreateHostel} className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Hostel Block Name *
+            </label>
+            <Input
+              value={hostelForm.name}
+              onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })}
+              placeholder="e.g. Boys Hostel Block A"
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Type *</label>
-            <Dropdown value={hostelForm.type} options={hostelTypes} onChange={(e) => setHostelForm({ ...hostelForm, type: e.value })} className="" />
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Hostel Category *
+            </label>
+            <Select
+              value={hostelForm.type}
+              options={hostelTypes}
+              onChange={(e) => setHostelForm({ ...hostelForm, type: e.target.value })}
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Total Bed Capacity *</label>
-            <InputNumber value={hostelForm.capacity} onValueChange={(e) => setHostelForm({ ...hostelForm, capacity: e.value || 0 })} required className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Total Bed Capacity *
+            </label>
+            <Input
+              type="number"
+              value={hostelForm.capacity}
+              onChange={(e) => setHostelForm({ ...hostelForm, capacity: Number(e.target.value) })}
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Address Location</label>
-            <InputText value={hostelForm.address} onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })} className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="Campus block location details" />
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Address / Location
+            </label>
+            <Input
+              value={hostelForm.address}
+              onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })}
+              placeholder="Campus location details..."
+            />
           </div>
-          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowHostelDialog(false)} />
-            <Button type="submit" label="Save Block" icon="pi pi-check" loading={createHostelMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" type="button" onClick={() => setShowHostelDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createHostelMutation.isPending}>
+              Save Block
+            </Button>
           </div>
         </form>
       </Dialog>
 
       {/* Dialog: Add Room */}
-      <Dialog header={`Add Room to ${selectedHostel?.name || 'Hostel'}`} visible={showRoomDialog} style={{ width: '400px' }} modal onHide={() => setShowRoomDialog(false)} className="dialog-custom rounded-md">
-        <form onSubmit={handleCreateRoom} className="flex flex-col gap-4 mt-3">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Room Number *</label>
-            <InputText value={roomForm.roomNo} onChange={(e) => setRoomForm({ ...roomForm, roomNo: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. 101" />
+      <Dialog
+        isOpen={showRoomDialog}
+        onClose={() => setShowRoomDialog(false)}
+        title={`Add Room to ${selectedHostel?.name || 'Block'}`}
+      >
+        <form onSubmit={handleCreateRoom} className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Room Number *
+            </label>
+            <Input
+              value={roomForm.roomNo}
+              onChange={(e) => setRoomForm({ ...roomForm, roomNo: e.target.value })}
+              placeholder="e.g. 101"
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Room Category Type *</label>
-            <InputText value={roomForm.type} onChange={(e) => setRoomForm({ ...roomForm, type: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="e.g. STANDARD" />
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Category Type *
+            </label>
+            <Input
+              value={roomForm.type}
+              onChange={(e) => setRoomForm({ ...roomForm, type: e.target.value })}
+              placeholder="e.g. STANDARD"
+            />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Bed Capacity Count *</label>
-            <InputNumber value={roomForm.capacity} onValueChange={(e) => setRoomForm({ ...roomForm, capacity: e.value || 0 })} required className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" />
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Bed Capacity Count *
+            </label>
+            <Input
+              type="number"
+              value={roomForm.capacity}
+              onChange={(e) => setRoomForm({ ...roomForm, capacity: Number(e.target.value) })}
+            />
           </div>
-          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowRoomDialog(false)} />
-            <Button type="submit" label="Add Room" icon="pi pi-check" loading={createRoomMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" type="button" onClick={() => setShowRoomDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createRoomMutation.isPending}>
+              Add Room
+            </Button>
           </div>
         </form>
       </Dialog>
 
       {/* Dialog: Admit Boarder */}
-      <Dialog header="Admit Student as Resident" visible={showAdmitDialog} style={{ width: '420px' }} modal onHide={() => setShowAdmitDialog(false)} className="dialog-custom rounded-md">
-        <form onSubmit={handleAdmitBoarder} className="flex flex-col gap-4 mt-3">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Student ID *</label>
-            <InputText value={admitForm.studentId} onChange={(e) => setAdmitForm({ ...admitForm, studentId: e.target.value })} required className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none" placeholder="Student UUID or Admission No" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Hostel Room *</label>
-            <Dropdown
-              value={admitForm.hostelRoomId}
-              options={roomList.map((r: any) => ({ label: `Room ${r.roomNo} (${r.occupied}/${r.capacity} occupied)`, value: r.id }))}
-              onChange={(e) => setAdmitForm({ ...admitForm, hostelRoomId: e.value })}
-              placeholder="Select Room"
-              className=""
+      <Dialog
+        isOpen={showAdmitDialog}
+        onClose={() => setShowAdmitDialog(false)}
+        title="Admit Student as Resident"
+      >
+        <form onSubmit={handleAdmitBoarder} className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Student UUID / Adm No *
+            </label>
+            <Input
+              value={admitForm.studentId}
+              onChange={(e) => setAdmitForm({ ...admitForm, studentId: e.target.value })}
+              placeholder="Enter Student ID..."
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Academic Term Year *</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Hostel Room *
+            </label>
+            <Select
+              value={admitForm.hostelRoomId}
+              options={[
+                { label: 'Select Room', value: '' },
+                ...roomList.map((r: any) => ({
+                  label: `Room ${r.roomNo} (${r.occupied}/${r.capacity} occupied)`,
+                  value: r.id,
+                })),
+              ]}
+              onChange={(e) => setAdmitForm({ ...admitForm, hostelRoomId: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Academic Term Year *
+            </label>
             <AcademicYearSelect
               value={admitForm.academicYearId}
               onChange={(id) => setAdmitForm({ ...admitForm, academicYearId: id })}
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md outline-none"
+              className="w-full"
             />
           </div>
-          <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-2">
-            <Button type="button" label="Cancel" className="p-button-text p-2 text-zinc-500" onClick={() => setShowAdmitDialog(false)} />
-            <Button type="submit" label="Admit Resident" icon="pi pi-check" loading={admitBoarderMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md font-medium" />
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" type="button" onClick={() => setShowAdmitDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={admitBoarderMutation.isPending}>
+              Admit Resident
+            </Button>
           </div>
         </form>
       </Dialog>

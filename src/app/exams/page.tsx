@@ -2,30 +2,45 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
-import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Tag } from 'primereact/tag';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Calendar } from 'primereact/calendar';
-import { Dropdown } from 'primereact/dropdown';
-import { useExamsList, useCreateExam, useAutoAssignSeating, useSeatingChart, useStudentExamResults } from '@/hooks/queries/useExams';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import {
+  useExamsList,
+  useCreateExam,
+  useAutoAssignSeating,
+  useSeatingChart,
+  useStudentExamResults,
+} from '@/hooks/queries/useExams';
 import { useClasses } from '@/hooks/queries/useAcademics';
 import { studentsService } from '@/services/students.service';
 import { useQuery } from '@tanstack/react-query';
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
-
+import { toast } from 'sonner';
+import {
+  Award,
+  Plus,
+  Network,
+  LayoutGrid,
+  List,
+  Calendar,
+  Printer,
+  FileText,
+  CheckCircle,
+  Search,
+  User,
+} from 'lucide-react';
 
 export default function ExamsPage() {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<'schedules' | 'seating' | 'admit-cards' | 'reports'>(
+    'schedules'
+  );
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSeatingDialog, setShowSeatingDialog] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  
+
   // Admit Card and Results States
   const [admitCardStudentId, setAdmitCardStudentId] = useState('');
   const [admitCardExamId, setAdmitCardExamId] = useState('');
@@ -41,7 +56,10 @@ export default function ExamsPage() {
   const { data: exams, isPending: loadingExams } = useExamsList();
   const { data: classes } = useClasses(1, 100);
   const { data: seatingChart, isPending: loadingSeating } = useSeatingChart(selectedExamId);
-  const { data: studentResults, isPending: loadingStudentResults } = useStudentExamResults(resultsSearchExamId, resultsSearchStudentId);
+  const { data: studentResults, isPending: loadingStudentResults } = useStudentExamResults(
+    resultsSearchExamId,
+    resultsSearchStudentId
+  );
 
   // Load students for admit card selection dropdown
   const { data: studentsResponse } = useQuery({
@@ -53,598 +71,774 @@ export default function ExamsPage() {
   const autoAssignMutation = useAutoAssignSeating();
 
   const handleCreateExam = () => {
+    if (!newExam.name || !newExam.startDate || !newExam.endDate) {
+      toast.error('Exam name, start date, and end date are required.');
+      return;
+    }
     createMutation.mutate(newExam, {
       onSuccess: () => {
         setShowAddDialog(false);
         setNewExam({ name: '', classId: '', startDate: '', endDate: '' });
-      }
+        toast.success('Exam term scheduled successfully.');
+      },
+      onError: () => toast.error('Failed to schedule exam.'),
     });
   };
 
   const handleAutoAssign = () => {
-    autoAssignMutation.mutate({ examId: selectedExamId, classIds: selectedClassIds }, {
-      onSuccess: () => {
-        setShowSeatingDialog(false);
-        setSelectedClassIds([]);
-      }
-    });
-  };
-
-  const statusBodyTemplate = (rowData: any) => {
-    const status = rowData.status || 'DRAFT';
-    let style = 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400';
-    if (status === 'COMPLETED') {
-      style = 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400';
-    } else if (status === 'PUBLISHED') {
-      style = 'bg-blue-500/10 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400';
+    if (!selectedExamId) {
+      toast.error('Please select an exam term.');
+      return;
     }
-    return <Tag value={status} className={`px-2.5 py-1 text-xs font-bold rounded-full ${style}`} />;
+    autoAssignMutation.mutate(
+      { examId: selectedExamId, classIds: selectedClassIds },
+      {
+        onSuccess: () => {
+          setShowSeatingDialog(false);
+          setSelectedClassIds([]);
+          toast.success('Seating chart auto-allocated successfully.');
+        },
+        onError: () => toast.error('Failed to assign seating chart.'),
+      }
+    );
   };
 
-  const classOptions = classes?.data?.items?.map((c: any) => ({ label: `${c.name} - ${c.section}`, value: c.id })) || [];
+  const getStatusBadge = (status: string) => {
+    const s = status || 'DRAFT';
+    let variant: 'warning' | 'success' | 'info' = 'warning';
+    if (s === 'COMPLETED') variant = 'success';
+    if (s === 'PUBLISHED') variant = 'info';
+    return <Badge variant={variant}>{s}</Badge>;
+  };
+
+  const classOptions =
+    classes?.data?.items?.map((c: any) => ({ label: `${c.name} - ${c.section}`, value: c.id })) ||
+    [];
   const activeExams = exams?.data || [];
   const studentsList = studentsResponse?.items ?? [];
 
   const studentOptions = studentsList.map((s: any) => ({
     label: `${s.name} (Admission: ${s.admissionNo})`,
-    value: s.id
+    value: s.id,
   }));
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Exams" />
-<div className="flex flex-col gap-4 pb-10">
-        
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Exams & Seat Allocations</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Establish exam dates, publish term sheets, and trigger automatic seat allocations.
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Award className="w-6 h-6 text-brand" />
+              Exams & Seat Allocations
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Manage terms, seating charts, admit cards, and report sheets
             </p>
-          </div> */}
+          </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button 
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
               onClick={() => {
                 if (activeExams.length) {
                   setSelectedExamId(activeExams[0].id);
                 }
                 setShowSeatingDialog(true);
               }}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
             >
-              <i className="pi pi-sitemap"></i>
-              Assign Seatings
+              <Network className="w-4 h-4 mr-2" /> Assign Seatings
+            </Button>
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Schedule Exam
+            </Button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs Bar */}
+        <div className="flex justify-between items-center flex-wrap gap-4 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+          <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg flex-wrap">
+            <button
+              onClick={() => setActiveTab('schedules')}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                activeTab === 'schedules'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500'
+              }`}
+            >
+              Exam Schedules
             </button>
-            <button 
-              onClick={() => setShowAddDialog(true)}
-              className="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-md shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2"
+            <button
+              onClick={() => setActiveTab('seating')}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                activeTab === 'seating'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500'
+              }`}
             >
-              <i className="pi pi-calendar-plus"></i>
-              Schedule Exam
+              Seating Maps
+            </button>
+            <button
+              onClick={() => setActiveTab('admit-cards')}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                activeTab === 'admit-cards'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500'
+              }`}
+            >
+              Admit Cards
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                activeTab === 'reports'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500'
+              }`}
+            >
+              Report Sheets
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm'
+                  : 'text-zinc-400'
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === 'table'
+                  ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm'
+                  : 'text-zinc-400'
+              }`}
+            >
+              <List className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* View mode toggle */}
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-md border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex justify-end gap-2">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-md transition-all ${
-              viewMode === 'grid' 
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
-                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-            }`}
-            title="Grid Mode"
-          >
-            <i className="pi pi-th-large text-sm"></i>
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`p-2 rounded-md transition-all ${
-              viewMode === 'table' 
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400' 
-                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-            }`}
-            title="Tabular View"
-          >
-            <i className="pi pi-list text-sm"></i>
-          </button>
-        </div>
-
         {/* Tab Boards */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
-          <style>{`
-            .p-tabview, .p-tabview-nav, .p-tabview-panels, .p-datatable, .p-datatable-wrapper, .p-paginator {
-              background: transparent !important;
-            }
-            .p-datatable-thead > tr > th, .p-datatable-tbody > tr, .p-datatable-tbody > tr > td {
-              background: transparent !important;
-            }
-            .p-tabview-nav li .p-tabview-nav-link {
-              background: transparent !important;
-            }
-          `}</style>
-          <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
-            
-            {/* Active Exams Panel */}
-            <TabPanel header="Exam Schedules">
-              <div className="p-4">
-                {loadingExams ? (
-                  <div className="p-12 flex flex-col items-center justify-center gap-3">
-                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-semibold text-zinc-400">Loading schedules...</span>
-                  </div>
-                ) : activeExams.length === 0 ? (
-                  <p className="p-8 text-center text-zinc-400">No examinations configured yet.</p>
-                ) : viewMode === 'grid' ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-2">
-                    {activeExams.map((exam: any) => (
-                      <div 
-                        key={exam.id} 
-                        className="border border-zinc-105 dark:border-zinc-805 p-5 rounded-md bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-200"
-                      >
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-extrabold text-zinc-850 dark:text-white text-base leading-snug">{exam.name}</h3>
-                          {statusBodyTemplate(exam)}
+        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm">
+          {activeTab === 'schedules' && (
+            <div>
+              {loadingExams ? (
+                <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-500">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent" />
+                  <span className="text-xs">Loading schedules...</span>
+                </div>
+              ) : activeExams.length === 0 ? (
+                <div className="p-12 text-center text-zinc-500 dark:text-zinc-400">
+                  No examinations configured yet.
+                </div>
+              ) : viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {activeExams.map((exam: any) => (
+                    <div
+                      key={exam.id}
+                      className="border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                    >
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base leading-snug">
+                          {exam.name}
+                        </h3>
+                        {getStatusBadge(exam.status)}
+                      </div>
+
+                      <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg text-xs font-medium flex flex-col gap-1.5 border border-zinc-200/60 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400">
+                        <div className="flex justify-between">
+                          <span>Class:</span>
+                          <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                            {exam.className || 'All Classes'}
+                          </span>
                         </div>
-                        
-                        <div className="bg-zinc-100/50 dark:bg-zinc-850 p-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex flex-col gap-1.5 border border-zinc-150/40 text-zinc-400 mt-2">
-                          <div className="flex justify-between">
-                            <span>Class:</span>
-                            <span className="text-zinc-850 dark:text-zinc-300 font-extrabold">{exam.className || 'All Classes'}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Term Start:</span>
-                            <span className="text-zinc-850 dark:text-zinc-350">{exam.startDate}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Term End:</span>
-                            <span className="text-zinc-850 dark:text-zinc-350">{exam.endDate}</span>
-                          </div>
+                        <div className="flex justify-between">
+                          <span>Term Start:</span>
+                          <span className="text-zinc-900 dark:text-zinc-300 font-mono">
+                            {exam.startDate}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Term End:</span>
+                          <span className="text-zinc-900 dark:text-zinc-300 font-mono">
+                            {exam.endDate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-6 py-4">Exam Term</th>
+                        <th className="px-6 py-4">Class Room</th>
+                        <th className="px-6 py-4">Starts On</th>
+                        <th className="px-6 py-4">Ends On</th>
+                        <th className="px-6 py-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {activeExams.map((exam: any) => (
+                        <tr
+                          key={exam.id}
+                          className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                            {exam.name}
+                          </td>
+                          <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
+                            {exam.className || 'All Classes'}
+                          </td>
+                          <td className="px-6 py-4 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+                            {exam.startDate}
+                          </td>
+                          <td className="px-6 py-4 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+                            {exam.endDate}
+                          </td>
+                          <td className="px-6 py-4">{getStatusBadge(exam.status)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'seating' && (
+            <div className="flex flex-col gap-5">
+              <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl flex-wrap">
+                <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                  Inspect Scheduled Exam:
+                </label>
+                <div className="w-64">
+                  <Select
+                    value={selectedExamId}
+                    options={[
+                      { label: 'Select Term', value: '' },
+                      ...activeExams.map((e: any) => ({ label: e.name, value: e.id })),
+                    ]}
+                    onChange={(e) => setSelectedExamId(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {loadingSeating ? (
+                <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-500">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent" />
+                  <span className="text-xs">Querying chart data...</span>
+                </div>
+              ) : selectedExamId && seatingChart && seatingChart.length > 0 ? (
+                viewMode === 'grid' ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {seatingChart.map((slot: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl bg-white dark:bg-zinc-900 flex flex-col gap-2 hover:border-brand/40 transition-all duration-200"
+                      >
+                        <div>
+                          <Badge variant="secondary">{slot.hallName || 'Hall'}</Badge>
+                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs mt-1.5">
+                            {slot.studentName}
+                          </h4>
+                        </div>
+                        <div className="flex justify-between items-center text-xs border-t border-zinc-100 dark:border-zinc-800 pt-2 mt-1">
+                          <span className="text-zinc-500">Seat No.</span>
+                          <span className="text-brand font-mono font-bold">{slot.seatNo}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <DataTable 
-                    value={activeExams} 
-                    loading={loadingExams} 
-                    className="p-datatable-sm mt-1" 
-                  >
-                    <Column field="name" header="Exam Term" className="font-semibold text-zinc-850 dark:text-white"></Column>
-                    <Column field="className" header="Class Room" body={(d) => d.className || 'All Classes'}></Column>
-                    <Column field="startDate" header="Starts On" sortable></Column>
-                    <Column field="endDate" header="Ends On" sortable></Column>
-                    <Column field="status" header="Status" body={statusBodyTemplate}></Column>
-                  </DataTable>
-                )}
-              </div>
-            </TabPanel>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                        <tr>
+                          <th className="px-6 py-4">Student Name</th>
+                          <th className="px-6 py-4">Roll No.</th>
+                          <th className="px-6 py-4">Exam Hall</th>
+                          <th className="px-6 py-4">Seat Number</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                        {seatingChart.map((slot: any, idx: number) => (
+                          <tr
+                            key={idx}
+                            className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
+                          >
+                            <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                              {slot.studentName}
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                              {slot.admissionNo}
+                            </td>
+                            <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
+                              {slot.hallName}
+                            </td>
+                            <td className="px-6 py-4 font-mono font-bold text-brand">
+                              {slot.seatNo}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              ) : (
+                <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+                  <Network className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    No allocations calculated.
+                  </p>
+                  <p className="text-xs mt-1 text-zinc-500">
+                    Choose a term, then select assign seatings to auto allocate desk arrangements.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
-            {/* Seating chart Panel */}
-            <TabPanel header="Seating Allocation Maps">
-              <div className="p-4 flex flex-col gap-5">
-                <div className="flex items-center gap-3 bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-850 p-4 rounded-md flex-wrap">
-                  <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">Inspect Scheduled Exam:</label>
-                  <Dropdown 
-                    value={selectedExamId} 
-                    options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
-                    onChange={(e) => setSelectedExamId(e.value)} 
-                    placeholder="Select Term"
-                    className="min-w-60"
+          {activeTab === 'admit-cards' && (
+            <div className="flex flex-col gap-6">
+              <div className="flex bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl gap-4 flex-wrap">
+                <div className="flex flex-col gap-1.5 w-64">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    1. Choose Exam Term *
+                  </label>
+                  <Select
+                    value={admitCardExamId}
+                    options={[
+                      { label: 'Select Term', value: '' },
+                      ...activeExams.map((e: any) => ({ label: e.name, value: e.id })),
+                    ]}
+                    onChange={(e) => setAdmitCardExamId(e.target.value)}
                   />
                 </div>
-
-                {loadingSeating ? (
-                  <div className="p-12 flex flex-col items-center justify-center gap-3">
-                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-semibold text-zinc-400">Querying chart data...</span>
-                  </div>
-                ) : selectedExamId && seatingChart && seatingChart.length > 0 ? (
-                  viewMode === 'grid' ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {seatingChart.map((slot: any, idx: number) => (
-                        <div 
-                          key={idx} 
-                          className="border border-blue-100/55 dark:border-blue-900/20 p-4 rounded-md bg-blue-50/20 dark:bg-blue-950/10 flex flex-col gap-2 hover:scale-[1.02] hover:bg-blue-50/40 transition-all duration-200"
-                        >
-                          <div>
-                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">{slot.hallName || 'Hall'}</span>
-                            <h4 className="font-extrabold text-zinc-850 dark:text-white text-xs mt-0.5">{slot.studentName}</h4>
-                          </div>
-                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-zinc-400 border-t border-zinc-100/50 dark:border-blue-900/10 pt-2 mt-1">
-                            <span>Seat No.</span>
-                            <span className="text-blue-700 dark:text-blue-300 font-mono font-extrabold">{slot.seatNo}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <DataTable 
-                      value={seatingChart || []} 
-                      className="p-datatable-sm" 
-                    >
-                      <Column field="studentName" header="Student Name" className="font-semibold" />
-                      <Column field="admissionNo" header="Roll No." />
-                      <Column field="hallName" header="Exam Hall" />
-                      <Column field="seatNo" header="Seat Number" className="font-mono" />
-                    </DataTable>
-                  )
-                ) : (
-                  <div className="p-12 text-center text-zinc-400">
-                    <i className="pi pi-sitemap text-4xl mb-2"></i>
-                    <p className="text-sm font-semibold">No allocations calculated.</p>
-                    <p className="text-xs mt-1">Choose a term, then select assign seatings to auto allocate desk arrangements.</p>
-                  </div>
-                )}
-              </div>
-            </TabPanel>
-
-            {/* Admit Card Generation Portal Tab */}
-            <TabPanel header="Admit Card Generator">
-              <div className="p-4 flex flex-col gap-6">
-                <div className="flex bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-5 rounded-md gap-4 flex-wrap">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">1. Choose Exam Term *</label>
-                    <Dropdown 
-                      value={admitCardExamId} 
-                      options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
-                      onChange={(e) => setAdmitCardExamId(e.value)} 
-                      placeholder="Select term"
-                      className="w-60"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">2. Select Student *</label>
-                    <Dropdown 
-                      value={admitCardStudentId} 
-                      options={studentOptions} 
-                      onChange={(e) => setAdmitCardStudentId(e.value)} 
-                      filter
-                      placeholder="Search student by name/admission"
-                      className="w-72" 
-                    />
-                  </div>
+                <div className="flex flex-col gap-1.5 w-72">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    2. Select Student *
+                  </label>
+                  <Select
+                    value={admitCardStudentId}
+                    options={[{ label: 'Select Student', value: '' }, ...studentOptions]}
+                    onChange={(e) => setAdmitCardStudentId(e.target.value)}
+                  />
                 </div>
-
-                {admitCardExamId && admitCardStudentId ? (
-                  (() => {
-                    const selStudentObj = studentsList.find((s: any) => s.id === admitCardStudentId);
-                    const selExamObj = activeExams.find((e: any) => e.id === admitCardExamId);
-                    const fullName = selStudentObj ? selStudentObj.name || `${selStudentObj.firstName} ${selStudentObj.lastName}` : '—';
-                    
-                    return (
-                      <div className="max-w-xl mx-auto w-full animate-fade-in">
-                        {/* Premium Printable Admit Card Visualizer */}
-                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden shadow-lg bg-white dark:bg-zinc-950 relative">
-                          {/* Card header banner */}
-                          <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-violet-700 p-5 text-white flex justify-between items-center">
-                            <div>
-                              <span className="text-[9px] font-extrabold uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded">Official Admit Card</span>
-                              <h3 className="text-md font-black mt-1 uppercase tracking-wide">{selExamObj?.name || 'TERMINAL EXAMINATION'}</h3>
-                            </div>
-                            <i className="pi pi-graduation-cap text-3xl opacity-20"></i>
-                          </div>
-
-                          {/* Student Demographics details */}
-                          <div className="p-6 flex flex-col gap-5">
-                            <div className="flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-900 pb-4">
-                              <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-md flex items-center justify-center font-bold text-sm border border-blue-500/20">
-                                {selStudentObj?.firstName ? selStudentObj.firstName[0] : '?'}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-sm font-extrabold text-zinc-850 dark:text-white">{fullName}</h4>
-                                <div className="flex gap-4 text-[10px] text-zinc-450 mt-1 font-semibold">
-                                  <span>ADM: <span className="font-bold font-mono text-zinc-700 dark:text-zinc-300">{selStudentObj?.admissionNo || '—'}</span></span>
-                                  <span>CLASS: <span className="font-bold text-blue-500">{selStudentObj?.className || 'Class 10A'}</span></span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Desk allocation strips */}
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
-                                <span className="text-[8px] font-extrabold text-zinc-400 uppercase tracking-widest block">ALLOCATED HALL</span>
-                                <span className="text-xs font-bold text-zinc-850 dark:text-zinc-200 mt-1 block">Hall-A (North Wing)</span>
-                              </div>
-                              <div className="bg-zinc-50 dark:bg-zinc-900 p-3.5 rounded-md border border-zinc-150/40 dark:border-zinc-800/80">
-                                <span className="text-[8px] font-extrabold text-zinc-400 uppercase tracking-widest block">ASSIGNED DESK / SEAT</span>
-                                <span className="text-xs font-black text-blue-600 dark:text-blue-400 font-mono mt-1 block">Desk Seat #42</span>
-                              </div>
-                            </div>
-
-                            {/* Timetable schedule mini logs */}
-                            <div className="mt-2">
-                              <span className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block mb-2">Examination Timetable</span>
-                              <div className="border border-zinc-100 dark:border-zinc-900 rounded-md overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-900 text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 bg-zinc-50/20">
-                                <div className="p-3 flex justify-between bg-zinc-50 dark:bg-zinc-900 font-bold text-zinc-400 text-[9px] uppercase tracking-wider">
-                                  <span>Subject</span>
-                                  <span>Schedule Time</span>
-                                </div>
-                                <div className="p-3 flex justify-between"><span>English Literature</span><span className="font-mono text-zinc-500">2026-06-01 · 09:00 AM</span></div>
-                                <div className="p-3 flex justify-between"><span>Mathematics Core</span><span className="font-mono text-zinc-500">2026-06-03 · 09:00 AM</span></div>
-                                <div className="p-3 flex justify-between"><span>Science & Physics</span><span className="font-mono text-zinc-500">2026-06-05 · 09:00 AM</span></div>
-                              </div>
-                            </div>
-
-                            {/* Signature / stamp blocks */}
-                            <div className="flex justify-between items-end border-t border-zinc-100 dark:border-zinc-900 pt-5 mt-3 text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
-                              <div className="flex flex-col items-center">
-                                <div className="h-8 w-24 border-b border-dashed border-zinc-200 dark:border-zinc-800"></div>
-                                <span className="mt-2">Invigilator Sign</span>
-                              </div>
-                              <div className="flex flex-col items-center">
-                                <div className="h-8 w-24 border-b border-dashed border-zinc-200 dark:border-zinc-800"></div>
-                                <span className="mt-2">Principal Seal</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Print Action Trigger */}
-                        <div className="flex justify-center mt-5">
-                          <button 
-                            onClick={() => {
-                              window.dispatchEvent(new CustomEvent('show-toast', {
-                                detail: {
-                                  severity: 'success',
-                                  summary: 'Admit Card Print Job Sent',
-                                  detail: `Official Admit Card generated for ${fullName}. Printing queue initialized.`,
-                                  life: 3500
-                                }
-                              }));
-                            }}
-                            className="p-3 px-6 bg-blue-600 hover:bg-blue-700 border-none text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-md transition-all active:scale-95 flex items-center gap-2"
-                          >
-                            <i className="pi pi-print"></i>
-                            Print Admit Card
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })()
-                ) : (
-                  <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50/20 max-w-lg mx-auto">
-                    <i className="pi pi-id-card text-4xl mb-2 text-blue-400"></i>
-                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-350">Admit Card Visualizer</p>
-                    <p className="text-xs text-zinc-400 mt-1">Select an active exam term and student roll number to generate and review their printable exam hall admit card.</p>
-                  </div>
-                )}
               </div>
-            </TabPanel>
 
-            {/* Terminal Exam Results Sheets Tab */}
-            <TabPanel header="Exam Report Sheets">
-              <div className="p-4 flex flex-col gap-6">
-                <div className="flex bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-5 rounded-md gap-4 flex-wrap">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">Select Exam Term *</label>
-                    <Dropdown 
-                      value={resultsSearchExamId} 
-                      options={activeExams.map((e: any) => ({ label: e.name, value: e.id }))} 
-                      onChange={(e) => setResultsSearchExamId(e.value)} 
-                      placeholder="Select term"
-                      className="w-60"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-450">Search Student Profile *</label>
-                    <Dropdown 
-                      value={resultsSearchStudentId} 
-                      options={studentOptions} 
-                      onChange={(e) => setResultsSearchStudentId(e.value)} 
-                      filter
-                      placeholder="Search student by name/admission"
-                      className="w-72" 
-                    />
-                  </div>
-                </div>
+              {admitCardExamId && admitCardStudentId ? (
+                (() => {
+                  const selStudentObj = studentsList.find((s: any) => s.id === admitCardStudentId);
+                  const selExamObj = activeExams.find((e: any) => e.id === admitCardExamId);
+                  const fullName = selStudentObj
+                    ? selStudentObj.name || `${selStudentObj.firstName} ${selStudentObj.lastName}`
+                    : '—';
 
-                {resultsSearchStudentId && resultsSearchExamId ? (
-                  (() => {
-                    const selStudentObj = studentsList.find((s: any) => s.id === resultsSearchStudentId);
-                    const fullName = selStudentObj ? selStudentObj.name || `${selStudentObj.firstName} ${selStudentObj.lastName}` : '—';
-                    
-                    const totalMarks = studentResults?.reduce((acc: number, curr: any) => acc + (curr.marks || 0), 0) || 0;
-                    const maxMarks = studentResults?.reduce((acc: number, curr: any) => acc + (curr.maxMarks || 100), 0) || 1;
-                    const overallPct = studentResults?.length ? Math.round((totalMarks / maxMarks) * 100) : 0;
-                    const overallGrade = overallPct >= 90 ? 'A+' : overallPct >= 80 ? 'A' : overallPct >= 70 ? 'B' : overallPct >= 60 ? 'C' : 'F';
-                    const overallStatus = overallPct >= 40 ? 'PASS' : 'FAIL';
-
-                    return (
-                      <div className="flex flex-col gap-6 animate-fade-in">
-                        {/* Report card overview banner */}
-                        <div className="p-5 rounded-md bg-blue-500/5 dark:bg-blue-950/10 border border-blue-150/30 flex justify-between items-center">
+                  return (
+                    <div className="max-w-xl mx-auto w-full">
+                      <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden shadow-lg bg-white dark:bg-zinc-900 relative">
+                        <div className="bg-gradient-to-r from-brand to-purple-600 p-5 text-white flex justify-between items-center">
                           <div>
-                            <h4 className="text-sm font-extrabold text-zinc-800 dark:text-white">{fullName} Report Sheet</h4>
-                            <p className="text-[10px] text-zinc-400 font-semibold mt-1">Class: {selStudentObj?.className || 'Class'} · Roll Code: {selStudentObj?.admissionNo || '—'}</p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-400 block">Overall Grade</span>
-                            <span className={`text-lg font-black block mt-0.5 ${overallStatus === 'PASS' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                              {studentResults?.length ? `${overallGrade} (${overallStatus}) - ${overallPct}%` : 'N/A'}
+                            <span className="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded">
+                              Official Admit Card
                             </span>
+                            <h3 className="text-lg font-bold mt-1 uppercase">
+                              {selExamObj?.name || 'TERMINAL EXAMINATION'}
+                            </h3>
                           </div>
+                          <Award className="w-10 h-10 opacity-30" />
                         </div>
 
-                        {/* Results DataTable */}
-                        {loadingStudentResults ? (
-                          <div className="p-8 text-center text-zinc-400"><i className="pi pi-spin pi-spinner text-2xl"></i></div>
-                        ) : (
-                          <DataTable
-                            value={studentResults || []}
-                            className="p-datatable-sm"
-                            stripedRows
-                            emptyMessage="No results published for this student."
-                          >
-                            <Column field="subject" header="Subject Particulars" body={(d) => d.subject?.name || d.subjectName || 'Subject'} className="font-semibold" />
-                          <Column 
-                            header="Marks Obtained" 
-                            body={(d) => (
-                              <span className="font-bold font-mono text-zinc-800 dark:text-zinc-200">
-                                {d.marks} / {d.maxMarks}
-                              </span>
-                            )} 
-                          />
-                          <Column 
-                            header="Percentage" 
-                            body={(d) => (
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs text-zinc-600 dark:text-zinc-350">{Math.round((d.marks / d.maxMarks) * 100)}%</span>
-                                <div className="w-16 h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-500" style={{ width: `${(d.marks / d.maxMarks) * 100}%` }}></div>
-                                </div>
+                        <div className="p-6 flex flex-col gap-5">
+                          <div className="flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                            <div className="w-12 h-12 bg-brand/10 text-brand rounded-xl flex items-center justify-center font-bold text-lg">
+                              {selStudentObj?.firstName ? selStudentObj.firstName[0] : 'S'}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                                {fullName}
+                              </h4>
+                              <div className="flex gap-4 text-xs text-zinc-500 mt-1 font-medium">
+                                <span>
+                                  ADM:{' '}
+                                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                                    {selStudentObj?.admissionNo || '—'}
+                                  </span>
+                                </span>
+                                <span>
+                                  CLASS:{' '}
+                                  <span className="font-bold text-brand">
+                                    {selStudentObj?.className || 'Class 10A'}
+                                  </span>
+                                </span>
                               </div>
-                            )}
-                          />
-                          <Column 
-                            header="Subject Grade" 
-                            body={(d) => {
-                              const pct = (d.marks / d.maxMarks) * 100;
-                              const grade = pct >= 90 ? 'A+' : pct >= 80 ? 'A' : 'B';
-                              return <span className="font-extrabold text-blue-500 font-mono">{grade}</span>;
-                            }} 
-                            align="center"
-                          />
-                          <Column 
-                            header="Status" 
-                            body={(d) => <Tag value={d.status} severity="success" className="font-bold text-[9px] px-2 py-0.5 rounded-full" />} 
-                            align="center"
-                          />
-                          <Column field="remarks" header="Remarks / Feedback" className="text-xs text-zinc-450" />
-                          </DataTable>
-                        )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
+                              <span className="text-[10px] font-semibold text-zinc-400 uppercase block">
+                                ALLOCATED HALL
+                              </span>
+                              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
+                                Hall-A (North Wing)
+                              </span>
+                            </div>
+                            <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
+                              <span className="text-[10px] font-semibold text-zinc-400 uppercase block">
+                                ASSIGNED DESK
+                              </span>
+                              <span className="text-xs font-bold text-brand font-mono mt-1 block">
+                                Desk Seat #42
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-2">
+                            <span className="text-[10px] font-semibold text-zinc-400 uppercase block mb-2">
+                              Examination Timetable
+                            </span>
+                            <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden divide-y divide-zinc-200/80 dark:divide-zinc-800/80 text-xs">
+                              <div className="p-3 flex justify-between bg-zinc-50 dark:bg-zinc-800/40 font-semibold text-zinc-500">
+                                <span>Subject</span>
+                                <span>Schedule Time</span>
+                              </div>
+                              <div className="p-3 flex justify-between">
+                                <span>English Literature</span>
+                                <span className="font-mono text-zinc-500">
+                                  2026-06-01 · 09:00 AM
+                                </span>
+                              </div>
+                              <div className="p-3 flex justify-between">
+                                <span>Mathematics Core</span>
+                                <span className="font-mono text-zinc-500">
+                                  2026-06-03 · 09:00 AM
+                                </span>
+                              </div>
+                              <div className="p-3 flex justify-between">
+                                <span>Science & Physics</span>
+                                <span className="font-mono text-zinc-500">
+                                  2026-06-05 · 09:00 AM
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    );
-                  })()
-                ) : (
-                  <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50/20 max-w-lg mx-auto">
-                    <i className="pi pi-file text-4xl mb-2 text-blue-400"></i>
-                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-350">Academic Report Card</p>
-                    <p className="text-xs text-zinc-400 mt-1">Select an active exam term and a student to pull and inspect their live subject-wise marks, grades, and PASS/FAIL metrics.</p>
-                  </div>
-                )}
+
+                      <div className="flex justify-center mt-5">
+                        <Button
+                          onClick={() =>
+                            toast.success(`Admit card printable job sent for ${fullName}.`)
+                          }
+                        >
+                          <Printer className="w-4 h-4 mr-2" /> Print Admit Card
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl max-w-lg mx-auto">
+                  <Printer className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Admit Card Visualizer
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Select an active exam term and student to generate their printable exam hall
+                    admit card.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className="flex flex-col gap-6">
+              <div className="flex bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl gap-4 flex-wrap">
+                <div className="flex flex-col gap-1.5 w-64">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    Select Exam Term *
+                  </label>
+                  <Select
+                    value={resultsSearchExamId}
+                    options={[
+                      { label: 'Select Term', value: '' },
+                      ...activeExams.map((e: any) => ({ label: e.name, value: e.id })),
+                    ]}
+                    onChange={(e) => setResultsSearchExamId(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 w-72">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    Search Student Profile *
+                  </label>
+                  <Select
+                    value={resultsSearchStudentId}
+                    options={[{ label: 'Select Student', value: '' }, ...studentOptions]}
+                    onChange={(e) => setResultsSearchStudentId(e.target.value)}
+                  />
+                </div>
               </div>
-            </TabPanel>
 
-          </TabView>
+              {resultsSearchStudentId && resultsSearchExamId ? (
+                (() => {
+                  const selStudentObj = studentsList.find(
+                    (s: any) => s.id === resultsSearchStudentId
+                  );
+                  const fullName = selStudentObj
+                    ? selStudentObj.name || `${selStudentObj.firstName} ${selStudentObj.lastName}`
+                    : '—';
+
+                  const totalMarks =
+                    studentResults?.reduce(
+                      (acc: number, curr: any) => acc + (curr.marks || 0),
+                      0
+                    ) || 0;
+                  const maxMarks =
+                    studentResults?.reduce(
+                      (acc: number, curr: any) => acc + (curr.maxMarks || 100),
+                      0
+                    ) || 1;
+                  const overallPct = studentResults?.length
+                    ? Math.round((totalMarks / maxMarks) * 100)
+                    : 0;
+                  const overallGrade =
+                    overallPct >= 90
+                      ? 'A+'
+                      : overallPct >= 80
+                        ? 'A'
+                        : overallPct >= 70
+                          ? 'B'
+                          : overallPct >= 60
+                            ? 'C'
+                            : 'F';
+                  const overallStatus = overallPct >= 40 ? 'PASS' : 'FAIL';
+
+                  return (
+                    <div className="flex flex-col gap-6">
+                      <div className="p-5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 flex justify-between items-center">
+                        <div>
+                          <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                            {fullName} Report Sheet
+                          </h4>
+                          <p className="text-xs text-zinc-500 mt-1">
+                            Class: {selStudentObj?.className || 'Class'} · Roll Code:{' '}
+                            {selStudentObj?.admissionNo || '—'}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-semibold text-zinc-400 block">
+                            Overall Grade
+                          </span>
+                          <span
+                            className={`text-lg font-bold block mt-0.5 ${overallStatus === 'PASS' ? 'text-emerald-500' : 'text-rose-500'}`}
+                          >
+                            {studentResults?.length
+                              ? `${overallGrade} (${overallStatus}) - ${overallPct}%`
+                              : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {loadingStudentResults ? (
+                        <div className="p-8 text-center text-zinc-500">
+                          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-sm">
+                            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                              <tr>
+                                <th className="px-6 py-4">Subject Particulars</th>
+                                <th className="px-6 py-4">Marks Obtained</th>
+                                <th className="px-6 py-4">Percentage</th>
+                                <th className="px-6 py-4">Grade</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4">Remarks</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                              {studentResults?.map((d: any, idx: number) => {
+                                const pct = Math.round((d.marks / d.maxMarks) * 100);
+                                const grade = pct >= 90 ? 'A+' : pct >= 80 ? 'A' : 'B';
+                                return (
+                                  <tr
+                                    key={idx}
+                                    className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
+                                  >
+                                    <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                                      {d.subject?.name || d.subjectName || 'Subject'}
+                                    </td>
+                                    <td className="px-6 py-4 font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                                      {d.marks} / {d.maxMarks}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                                          {pct}%
+                                        </span>
+                                        <div className="w-16 h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                          <div
+                                            className="h-full bg-brand rounded-full"
+                                            style={{ width: `${pct}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-brand">{grade}</td>
+                                    <td className="px-6 py-4">
+                                      <Badge variant="success">PASS</Badge>
+                                    </td>
+                                    <td className="px-6 py-4 text-xs text-zinc-500 dark:text-zinc-400">
+                                      {d.remarks || '-'}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl max-w-lg mx-auto">
+                  <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Academic Report Card
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Select an active exam term and student to inspect their marks and grades.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-
       </div>
 
-      {/* Dialog: Schedule Exam */}
-      <Dialog 
-        header="Schedule New Exam Term" 
-        visible={showAddDialog} 
-        style={{ width: '400px' }} 
-        modal 
-        onHide={() => setShowAddDialog(false)}
-        className="dialog-custom rounded-md"
-        footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAddDialog(false)} />
-            <Button 
-              label="Schedule Term" 
-              icon="pi pi-check" 
-              onClick={handleCreateExam} 
-              loading={createMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
-            />
-          </div>
-        }
+      {/* Schedule Exam Dialog */}
+      <Dialog
+        isOpen={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        title="Schedule New Exam Term"
       >
-        <div className="flex flex-col gap-4 mt-2">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Exam Term Name *</label>
-            <InputText 
-              value={newExam.name} 
-              onChange={(e) => setNewExam({ ...newExam, name: e.target.value })} 
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Exam Term Name *
+            </label>
+            <Input
+              value={newExam.name}
+              onChange={(e) => setNewExam({ ...newExam, name: e.target.value })}
               placeholder="e.g. Mid-Term 2026"
-              className="p-2 border border-gray-255 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Target Class *</label>
-            <Dropdown 
-              value={newExam.classId} 
-              options={classOptions} 
-              onChange={(e) => setNewExam({ ...newExam, classId: e.value })} 
-              placeholder="Select Class"
-              className=""
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Target Class *
+            </label>
+            <Select
+              value={newExam.classId}
+              options={[{ label: 'Select Class', value: '' }, ...classOptions]}
+              onChange={(e) => setNewExam({ ...newExam, classId: e.target.value })}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Start Date *</label>
-            <Calendar 
-              value={newExam.startDate ? new Date(newExam.startDate) : null} 
-              onChange={(e) => setNewExam({ ...newExam, startDate: e.value ? e.value.toISOString().split('T')[0] : '' })} 
-              dateFormat="yy-mm-dd"
-              showIcon
-              className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Start Date *
+              </label>
+              <Input
+                type="date"
+                value={newExam.startDate}
+                onChange={(e) => setNewExam({ ...newExam, startDate: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                End Date *
+              </label>
+              <Input
+                type="date"
+                value={newExam.endDate}
+                onChange={(e) => setNewExam({ ...newExam, endDate: e.target.value })}
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">End Date *</label>
-            <Calendar 
-              value={newExam.endDate ? new Date(newExam.endDate) : null} 
-              onChange={(e) => setNewExam({ ...newExam, endDate: e.value ? e.value.toISOString().split('T')[0] : '' })} 
-              dateFormat="yy-mm-dd"
-              showIcon
-              className="border border-gray-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md w-full"
-            />
-          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateExam} isLoading={createMutation.isPending}>
+            Schedule Term
+          </Button>
         </div>
       </Dialog>
 
-      {/* Dialog: Assign Seating */}
-      <Dialog 
-        header="Auto-Allocate Seating Chart" 
-        visible={showSeatingDialog} 
-        style={{ width: '400px' }} 
-        modal 
-        onHide={() => setShowSeatingDialog(false)}
-        className="dialog-custom rounded-md"
-        footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowSeatingDialog(false)} />
-            <Button 
-              label="Run Allocations" 
-              icon="pi pi-check" 
-              onClick={handleAutoAssign} 
-              loading={autoAssignMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
-            />
-          </div>
-        }
+      {/* Assign Seating Dialog */}
+      <Dialog
+        isOpen={showSeatingDialog}
+        onClose={() => setShowSeatingDialog(false)}
+        title="Auto-Allocate Seating Chart"
       >
-        <div className="flex flex-col gap-4 mt-2">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Select Exam Term *</label>
-            <Dropdown 
-              value={selectedExamId} 
-              options={activeExams.map((e: any) => ({ label: e.name, value: e.id })) || []} 
-              onChange={(e) => setSelectedExamId(e.value)} 
-              className=""
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Select Exam Term *
+            </label>
+            <Select
+              value={selectedExamId}
+              options={[
+                { label: 'Select Exam Term', value: '' },
+                ...activeExams.map((e: any) => ({ label: e.name, value: e.id })),
+              ]}
+              onChange={(e) => setSelectedExamId(e.target.value)}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">Select Classroom Sections * (Hold Ctrl for multi)</label>
-            <select 
-              multiple 
-              className="w-full p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md h-32 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Select Classroom Sections *
+            </label>
+            <select
+              multiple
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all h-32"
               value={selectedClassIds}
               onChange={(e) => {
-                const options = Array.from(e.target.selectedOptions, option => option.value);
+                const options = Array.from(e.target.selectedOptions, (option) => option.value);
                 setSelectedClassIds(options);
               }}
             >
               {classOptions.map((opt: any) => (
-                <option key={opt.value} value={opt.value} className="p-1 rounded">{opt.label}</option>
+                <option key={opt.value} value={opt.value} className="py-1 px-2">
+                  {opt.label}
+                </option>
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowSeatingDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleAutoAssign} isLoading={autoAssignMutation.isPending}>
+            Run Allocations
+          </Button>
         </div>
       </Dialog>
     </DashboardLayout>

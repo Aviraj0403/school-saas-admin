@@ -5,7 +5,108 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { navigationConfig, canAccessNav, NavItem } from '@/config/navigation';
-import { classNames } from 'primereact/utils';
+import { clsx } from 'clsx';
+import {
+  Home,
+  Shield,
+  Users,
+  Building,
+  Compass,
+  Star,
+  TrendingUp,
+  Calendar,
+  UserPlus,
+  Ticket,
+  Link as LinkIcon,
+  IdCard,
+  Folder,
+  CheckCircle,
+  Server,
+  CheckSquare,
+  Clock,
+  FileEdit,
+  Upload,
+  Pencil,
+  BarChart3,
+  Video,
+  HelpCircle,
+  CreditCard,
+  CalendarMinus,
+  DollarSign,
+  BookOpen,
+  Bookmark,
+  RotateCcw,
+  Bus,
+  MapPin,
+  Building2,
+  Key,
+  Bell,
+  MessageSquare,
+  Globe,
+  Image,
+  Download,
+  Mail,
+  Settings,
+  Sliders,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  ChevronLeft,
+  Zap,
+} from 'lucide-react';
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  Home,
+  Shield,
+  Users,
+  Building,
+  Compass,
+  Star,
+  TrendingUp,
+  Calendar,
+  UserPlus,
+  Ticket,
+  Link: LinkIcon,
+  IdCard,
+  Folder,
+  CheckCircle,
+  Server,
+  CheckSquare,
+  Clock,
+  FileEdit,
+  Upload,
+  Pencil,
+  BarChart3,
+  Video,
+  HelpCircle,
+  CreditCard,
+  CalendarMinus,
+  DollarSign,
+  BookOpen,
+  Bookmark,
+  RotateCcw,
+  Bus,
+  MapPin,
+  Building2,
+  Key,
+  Bell,
+  MessageSquare,
+  Globe,
+  Image,
+  Download,
+  Mail,
+  Settings,
+  Sliders,
+};
+
+function RenderIcon({ name, className }: { name?: string; className?: string }) {
+  if (!name) return null;
+  const IconComp = ICON_MAP[name];
+  if (!IconComp) {
+    return <Home className={className} />;
+  }
+  return <IconComp className={className} />;
+}
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -29,12 +130,9 @@ export default function AppSidebar({
 
   // Filter navigation based on user role and tenant active modules recursively
   const filterNavItem = (item: NavItem): NavItem | null => {
-    // Check role restriction. Compared on normalized slugs — see canAccessNav
-    // for why raw equality against activeUser.role never matched.
     if (!canAccessNav(item.roles, activeUser.role)) {
       return null;
     }
-    // Check module restriction
     if (item.module) {
       const normalizedModule = item.module.endsWith('s') ? item.module : `${item.module}s`;
       const singularModule = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
@@ -49,14 +147,12 @@ export default function AppSidebar({
       }
     }
 
-    // If has children, filter them recursively
-    if (item.children && item.children.length > 0) {
+    if (item.children) {
       const filteredChildren = item.children
         .map(filterNavItem)
         .filter((child): child is NavItem => child !== null);
 
-      // If all children were filtered out, hide this entire category
-      if (filteredChildren.length === 0) {
+      if (filteredChildren.length === 0 && !item.path) {
         return null;
       }
 
@@ -79,45 +175,33 @@ export default function AppSidebar({
     );
   };
 
-  const isActive = (path: string) => {
-    if (path === '/dashboard') return pathname === '/dashboard';
-    return pathname.startsWith(path);
-  };
-
-  const isExpanded = (item: NavItem) => {
-    return (
-      (item.path && expandedItems.includes(item.path)) ||
-      (item.children?.some((c) => c.path && isActive(c.path)) ?? false)
-    );
+  const isPathActive = (item: NavItem): boolean => {
+    if (item.path && pathname === item.path) return true;
+    if (item.children) {
+      return item.children.some((child) => isPathActive(child));
+    }
+    return false;
   };
 
   const renderNavItem = (item: NavItem, index: number, isChild = false) => {
     if (item.isSection) {
-      if (isCollapsed)
-        return (
-          <div
-            key={item.label}
-            className="my-2 border-t border-zinc-200 dark:border-zinc-800/50"
-          ></div>
-        );
+      if (isCollapsed) return null;
       return (
         <li
-          key={item.label}
-          className={classNames('mb-1.5 px-4', { 'mt-5': index > 0, 'mt-1': index === 0 })}
+          key={item.label + index}
+          className="px-3 pt-5 pb-1.5 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
         >
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-400 dark:text-zinc-500">
-            {item.label}
-          </span>
+          {item.label}
         </li>
       );
     }
 
-    const active = isActive(item.path!);
-    const hasChildren = item.children && item.children.length > 0;
-    const expanded = hasChildren && isExpanded(item);
+    const active = isPathActive(item);
+    const hasChildren = Boolean(item.children && item.children.length > 0);
+    const expanded = item.path ? expandedItems.includes(item.path) : false;
 
     return (
-      <li key={item.path || item.label} className={classNames('mb-1 px-2', { 'ml-2': isChild })}>
+      <li key={item.path || item.label} className={clsx('mb-1 px-2', { 'ml-2': isChild })}>
         {hasChildren ? (
           <button
             onClick={() => {
@@ -126,7 +210,7 @@ export default function AppSidebar({
               }
               toggleExpand(item.path!);
             }}
-            className={classNames(
+            className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ease-out text-left relative group',
               {
                 'justify-center md:justify-center px-0': isCollapsed,
@@ -138,21 +222,18 @@ export default function AppSidebar({
             )}
             title={isCollapsed ? item.label : undefined}
           >
-            <i
-              className={classNames(
-                item.icon,
-                'text-[16px] w-5 text-center shrink-0 transition-transform group-hover:scale-110'
-              )}
-            ></i>
+            <RenderIcon
+              name={item.icon}
+              className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110"
+            />
             {!isCollapsed && (
               <>
                 <span className="flex-1 text-[13px] truncate">{item.label}</span>
-                <i
-                  className={classNames(
-                    'pi text-[9px] transition-transform duration-200 opacity-60',
-                    { 'pi-chevron-down': expanded, 'pi-chevron-right': !expanded }
-                  )}
-                ></i>
+                {expanded ? (
+                  <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                )}
               </>
             )}
           </button>
@@ -164,7 +245,7 @@ export default function AppSidebar({
                 onClose?.();
               }
             }}
-            className={classNames(
+            className={clsx(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ease-out no-underline group',
               {
                 'justify-center md:justify-center px-0': isCollapsed,
@@ -176,12 +257,10 @@ export default function AppSidebar({
             )}
             title={isCollapsed ? item.label : undefined}
           >
-            <i
-              className={classNames(
-                item.icon,
-                'text-[16px] w-5 text-center shrink-0 transition-transform group-hover:scale-110'
-              )}
-            ></i>
+            <RenderIcon
+              name={item.icon}
+              className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110"
+            />
             {!isCollapsed && <span className="text-[13px] truncate">{item.label}</span>}
           </Link>
         )}
@@ -198,7 +277,7 @@ export default function AppSidebar({
 
   return (
     <div
-      className={classNames(
+      className={clsx(
         'fixed top-[70px] bottom-0 left-0 z-40 bg-[#fcfcfc]/95 dark:bg-[#070a13]/90 backdrop-blur-2xl border-r border-slate-200/50 dark:border-slate-800/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-[4px_0_30px_rgba(0,0,0,0.5)] flex flex-col transition-all duration-300 ease-in-out',
         {
           'w-[260px]': size === 'default',
@@ -215,7 +294,7 @@ export default function AppSidebar({
             className="w-10 h-10 md:w-9 md:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/10 border border-white/20"
             style={{ backgroundColor: 'var(--primary-color)' }}
           >
-            <i className="pi pi-graduation-cap text-white text-[17px] md:text-[15px] drop-shadow-sm"></i>
+            <GraduationCap className="w-5 h-5 text-white drop-shadow-sm" />
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
@@ -233,12 +312,12 @@ export default function AppSidebar({
         {onToggleSize && (
           <button
             onClick={onToggleSize}
-            className={classNames(
+            className={clsx(
               'hidden md:flex absolute top-1/2 -translate-y-1/2 -right-3.5 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-full items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 shadow-md transition-all duration-300 z-50',
               { 'rotate-180': size === 'collapsed' }
             )}
           >
-            <i className="pi pi-angle-left text-[12px] font-bold"></i>
+            <ChevronLeft className="w-3.5 h-3.5 font-bold" />
           </button>
         )}
       </div>
@@ -257,7 +336,7 @@ export default function AppSidebar({
             EDUMANAGE PLATFORM
           </p>
         ) : (
-          <i className="pi pi-bolt text-zinc-400"></i>
+          <Zap className="w-4 h-4 text-zinc-400" />
         )}
       </div>
     </div>

@@ -1,102 +1,107 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsService } from '@/services/settings.service';
 import { useStaffList, useResetStaffPassword } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { useAuthStore } from '@/store/useAuthStore';
+import { toast } from 'sonner';
+import {
+  Building,
+  Sliders,
+  ShieldCheck,
+  Check,
+  LockKeyhole,
+  Users,
+  BookOpen,
+  CheckSquare,
+  Wallet,
+  BookMarked,
+  Megaphone,
+  MessageSquare,
+  Home,
+  CalendarMinus,
+  MapPin,
+  IdCard,
+} from 'lucide-react';
 
 const ALL_MODULES = [
   {
     id: 'students',
     label: 'Students',
     desc: 'Manage admission files, profile rosters, and student metrics.',
-    icon: 'pi pi-users',
-    color: 'text-blue-500',
+    icon: Users,
   },
   {
     id: 'staff',
     label: 'Staff Directory',
     desc: 'Track employee listings, admin roles, and instructor files.',
-    icon: 'pi pi-id-card',
-    color: 'text-orange-500',
+    icon: IdCard,
   },
   {
     id: 'academics',
     label: 'Academics Suite',
     desc: 'Timetables, classes, subject schedules, and syllabi.',
-    icon: 'pi pi-book',
-    color: 'text-purple-500',
+    icon: BookOpen,
   },
   {
     id: 'attendance',
     label: 'Attendance Roster',
     desc: 'Daily attendance registry with bulk check-in tools.',
-    icon: 'pi pi-check-square',
-    color: 'text-emerald-500',
+    icon: CheckSquare,
   },
   {
     id: 'fee',
     label: 'Finance & Fees',
     desc: 'Slabs, invoices, receipt collections, and transaction logs.',
-    icon: 'pi pi-wallet',
-    color: 'text-teal-500',
+    icon: Wallet,
   },
   {
     id: 'exams',
     label: 'Exams & Seating',
     desc: 'Define exam terms, schedules, and seating layouts.',
-    icon: 'pi pi-sitemap',
-    color: 'text-blue-500',
+    icon: Sliders,
   },
   {
     id: 'library',
     label: 'Library Catalog',
     desc: 'Track book catalogs, borrowing logs, and return status.',
-    icon: 'pi pi-bookmark',
-    color: 'text-rose-500',
+    icon: BookMarked,
   },
   {
     id: 'communication',
     label: 'Communication Hub',
     desc: 'Post bulletins, newsletters, and announcements.',
-    icon: 'pi pi-megaphone',
-    color: 'text-pink-500',
+    icon: Megaphone,
   },
   {
     id: 'whatsapp',
     label: 'WhatsApp Bot',
     desc: 'Trigger chatbot auto-responders and template logs.',
-    icon: 'pi pi-whatsapp',
-    color: 'text-green-500',
+    icon: MessageSquare,
   },
   {
     id: 'hostel',
     label: 'Hostel System',
     desc: 'Manage room boarding, capacities, and occupancies.',
-    icon: 'pi pi-home',
-    color: 'text-violet-500',
+    icon: Home,
   },
   {
     id: 'leave',
     label: 'Leave Manager',
     desc: 'Process student/staff leaves and request approvals.',
-    icon: 'pi pi-calendar-minus',
-    color: 'text-amber-500',
+    icon: CalendarMinus,
   },
   {
     id: 'transport',
     label: 'Transport Fleet',
     desc: 'Configure route roadmaps, stops, and coordinates.',
-    icon: 'pi pi-map-marker',
-    color: 'text-cyan-500',
+    icon: MapPin,
   },
 ];
 
@@ -106,40 +111,32 @@ const PLANS = [
     label: 'Basic Slab',
     price: '₹4,999/mo',
     desc: 'Core student directory, library catalog, and leave approvals.',
-    color: 'from-zinc-400 to-zinc-500',
   },
   {
     value: 'STANDARD',
     label: 'Standard Tier',
     price: '₹9,999/mo',
     desc: 'Includes fee management, staff metrics, and exams scheduling.',
-    color: 'from-blue-500 to-blue-650',
   },
   {
     value: 'PREMIUM',
     label: 'Premium Gold',
     price: '₹19,999/mo',
     desc: 'Includes auto seating charts, WhatsApp bots, and advanced analytics.',
-    color: 'from-amber-500 to-orange-650',
   },
   {
     value: 'ENTERPRISE',
     label: 'Enterprise Pro',
     price: 'Custom Quote',
     desc: 'Full transport timeline mappings, multi-branch panels, and dedicated databases.',
-    color: 'from-purple-500 to-fuchsia-700',
   },
 ];
 
 export default function SettingsPage() {
-  const toast = useRef<Toast>(null);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'profile' | 'modules' | 'users'>('profile');
   const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
 
-  // Plan and module changes are commercial state — the backend only accepts
-  // them on the @SuperAdminOnly PATCH /tenants/:id routes. A school_admin sees
-  // the current tier and matrix read-only rather than controls that 403.
   const activeUser = useAuthStore((s) => s.activeUser);
   const canEditSubscription = Boolean(activeUser?.isSuperAdmin);
 
@@ -151,7 +148,6 @@ export default function SettingsPage() {
     activeModules: [],
   });
 
-  // Queries
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsService.getTenantDetails,
@@ -166,11 +162,9 @@ export default function SettingsPage() {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       const parts = hostname.split('.');
-      if (parts.length >= 2) {
-        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-          const suffix = parts.slice(1).join('.');
-          setBaseDomain(`.${suffix}`);
-        }
+      if (parts.length >= 2 && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        const suffix = parts.slice(1).join('.');
+        setBaseDomain(`.${suffix}`);
       }
     }
   }, []);
@@ -188,9 +182,6 @@ export default function SettingsPage() {
   }, [tenant]);
 
   const mutation = useMutation({
-    // Only the fields UpdateOwnTenantDto accepts. `slug` is immutable, and
-    // `plan`/`activeModules` are rejected outright — see the superadmin
-    // mutations below.
     mutationFn: (form: any) =>
       settingsService.updateTenantDetails({
         name: form.name,
@@ -198,21 +189,9 @@ export default function SettingsPage() {
       } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Saved',
-        detail: 'Settings updated successfully',
-        life: 3000,
-      });
+      toast.success('Settings updated successfully.');
     },
-    onError: () => {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to update settings',
-        life: 3000,
-      });
-    },
+    onError: () => toast.error('Failed to update settings.'),
   });
 
   const tenantId = (tenant as any)?.id ?? activeUser?.tenantId ?? '';
@@ -226,28 +205,14 @@ export default function SettingsPage() {
     mutationFn: (modules: string[]) => settingsService.updateTenantModules(tenantId, modules),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Saved',
-        detail: 'Module matrix updated',
-        life: 3000,
-      });
+      toast.success('Module matrix updated.');
     },
-    onError: () => {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to update modules',
-        life: 3000,
-      });
-    },
+    onError: () => toast.error('Failed to update modules.'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutation.mutate(formData);
-    // Plan lives on a separate superadmin route, so it is a separate call and
-    // only when it actually changed.
     if (canEditSubscription && tenantId && formData.plan !== (tenant as any)?.plan) {
       planMutation.mutate(formData.plan);
     }
@@ -273,21 +238,9 @@ export default function SettingsPage() {
     if (confirm(`Reset login password to a secure temporary password for ${name}?`)) {
       resetPasswordMutation.mutate(id, {
         onSuccess: () => {
-          toast.current?.show({
-            severity: 'success',
-            summary: 'Password Reset',
-            detail: `Successfully reset password for ${name}. They must change it upon login.`,
-            life: 4000,
-          });
+          toast.success(`Successfully reset password for ${name}.`);
         },
-        onError: () => {
-          toast.current?.show({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to reset password',
-            life: 3000,
-          });
-        },
+        onError: () => toast.error('Failed to reset password.'),
       });
     }
   };
@@ -297,8 +250,8 @@ export default function SettingsPage() {
       <DashboardLayout>
         <PageBreadcrumb title="Settings" />
         <div className="flex flex-col items-center justify-center h-96 gap-4">
-          <div className="w-10 h-10 border-4 border-blue-650 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-semibold text-zinc-400">Loading settings...</span>
+          <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs text-zinc-400">Loading settings...</span>
         </div>
       </DashboardLayout>
     );
@@ -307,353 +260,297 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Settings" />
-      <Toast ref={toast} />
-      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full animate-fade-in">
-        {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">School Settings & Credentials Control</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Manage your institute's profile parameters, subscription plan levels, modules, and app login credentials.
-            </p>
-          </div> */}
-        </div>
 
-        {/* Configurations Sub-Tabs Selector */}
-        <div className="flex bg-zinc-100/60 dark:bg-zinc-900/60 p-1.5 rounded-md border border-zinc-200/40 dark:border-zinc-800/80 w-max overflow-x-auto max-w-full">
+      <div className="flex flex-col gap-6 pb-10 w-full animate-fade-in">
+        {/* Navigation Tabs */}
+        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'profile'
-                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-700'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <i className="pi pi-building"></i>
-            <span>Identity & Subscription</span>
+            <Building className="w-3.5 h-3.5" /> Identity & Subscription
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('modules')}
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'modules'
-                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-700'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <i className="pi pi-cog"></i>
-            <span>Module Matrix</span>
+            <Sliders className="w-3.5 h-3.5" /> Module Matrix
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('users')}
-            className={`p-2.5 px-5 rounded-md flex items-center gap-2 font-bold text-xs transition-all border-0 ${
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'users'
-                ? 'bg-white dark:bg-zinc-950 text-blue-500 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-700'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
-            <i className="pi pi-id-card"></i>
-            <span>App Login Credentials (Users)</span>
+            <ShieldCheck className="w-3.5 h-3.5" /> Login Credentials
           </button>
         </div>
 
-        {/* Tab Content Rendering */}
-        <div className="mt-2">
-          {/* Tab 1: Profile & Pricing */}
-          {activeTab === 'profile' && (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
-                <div>
-                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">
-                    School Profile Parameters
-                  </h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Basic metadata details about this institutional workspace.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">
-                      School / Tenant Name *
-                    </label>
-                    <InputText
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="e.g. Heights Academy Junior Wing"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">
-                      Subdomain Slug
-                    </label>
-                    <div className="relative">
-                      <InputText
-                        value={formData.slug}
-                        disabled
-                        className="p-3 w-full border border-zinc-200 dark:border-zinc-850 dark:bg-zinc-800/50 rounded-md cursor-not-allowed text-zinc-400 font-mono text-xs pl-3 pr-28"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-blue-550 uppercase tracking-widest bg-blue-50 dark:bg-blue-950/40 p-1 px-2.5 rounded-md border border-blue-100/50 dark:border-blue-900/30">
-                        {baseDomain}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 md:col-span-2">
-                    <label className="font-bold text-xs text-zinc-500 uppercase tracking-wider">
-                      Administrative Contact Email *
-                    </label>
-                    <InputText
-                      value={formData.adminEmail}
-                      onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                      className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="admin@heights.edu"
-                      required
-                    />
-                  </div>
-                </div>
+        {/* Tab 1: Profile & Pricing */}
+        {activeTab === 'profile' && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-6 backdrop-blur-xl">
+              <div>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  School Profile Parameters
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Basic metadata details about this institutional workspace.
+                </p>
               </div>
 
-              {/* Pricing package slabs */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
-                <div>
-                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">
-                    Subscription Package Tier
-                  </h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    {canEditSubscription
-                      ? 'Upgrade or inspect school subscription pricing limits.'
-                      : 'Your current subscription tier. Contact your provider to change it.'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {PLANS.map((p) => {
-                    const isSelected = formData.plan === p.value;
-                    return (
-                      <div
-                        key={p.value}
-                        onClick={() =>
-                          canEditSubscription && setFormData({ ...formData, plan: p.value })
-                        }
-                        className={`${canEditSubscription ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default opacity-90'} rounded-md border p-5 flex flex-col justify-between gap-4 transition-all duration-200 ${
-                          isSelected
-                            ? 'border-blue-650 bg-blue-50/15 dark:bg-blue-950/10 shadow-md ring-1 ring-blue-500'
-                            : 'border-zinc-150 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50/70 dark:bg-zinc-900 dark:hover:bg-zinc-850'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-black uppercase tracking-wider text-zinc-400">
-                              {p.label}
-                            </span>
-                            {isSelected && (
-                              <i className="pi pi-check-circle text-blue-600 text-sm animate-pulse"></i>
-                            )}
-                          </div>
-                          <h3 className="text-xl font-black mt-2 text-zinc-800 dark:text-white">
-                            {p.price}
-                          </h3>
-                          <p className="text-[10px] text-zinc-450 mt-2 leading-relaxed">{p.desc}</p>
-                        </div>
-
-                        <div className={`h-1.5 rounded-full w-full bg-gradient-to-r ${p.color}`} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Submit actions */}
-              <div className="flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  label="Save Profile Settings"
-                  icon="pi pi-check"
-                  loading={mutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
-                />
-              </div>
-            </form>
-          )}
-
-          {/* Tab 2: Module Matrix */}
-          {activeTab === 'modules' && (
-            <form onSubmit={handleModulesSubmit} className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 sm:gap-6 premium-glow-effect">
-                <div>
-                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">
-                    Module Matrix Switcher
-                  </h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    {canEditSubscription
-                      ? 'Enable or disable panel modules in your sidebar index menu.'
-                      : 'Modules enabled for your school. Contact your provider to change them.'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {ALL_MODULES.map((m) => {
-                    const isActive = formData.activeModules.includes(m.id);
-                    return (
-                      <div
-                        key={m.id}
-                        onClick={() => toggleModule(m.id)}
-                        className={`${canEditSubscription ? 'cursor-pointer active:scale-98' : 'cursor-default'} p-4 rounded-md border flex items-start gap-3 transition-all duration-150 ${
-                          isActive
-                            ? 'border-blue-650/40 bg-blue-50/20 dark:bg-blue-950/10'
-                            : 'border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50/50'
-                        }`}
-                      >
-                        <div
-                          className={`p-2.5 rounded-md ${isActive ? 'bg-blue-100 text-blue-650 dark:bg-blue-900/40' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800'} transition-colors`}
-                        >
-                          <i className={`${m.icon} text-md`}></i>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center gap-1">
-                            <span className="font-bold text-xs text-zinc-800 dark:text-zinc-200 truncate">
-                              {m.label}
-                            </span>
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? 'bg-emerald-500 scale-100' : 'bg-zinc-300 scale-75'}`}
-                            />
-                          </div>
-                          <p className="text-[9px] text-zinc-400 mt-1 leading-snug break-words">
-                            {m.desc}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {canEditSubscription && (
-                <div className="flex justify-end gap-3">
-                  <Button
-                    type="submit"
-                    label="Save Modules Activation"
-                    icon="pi pi-check"
-                    loading={modulesMutation.isPending}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 px-6 rounded-md border-0 shadow-md transition-all active:scale-95"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    School / Tenant Name *
+                  </label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Heights Academy Junior Wing"
+                    required
                   />
                 </div>
-              )}
-            </form>
-          )}
 
-          {/* Tab 3: App Login Credentials */}
-          {activeTab === 'users' && (
-            <div className="flex flex-col gap-6 animate-fade-in">
-              {/* Educational info strip */}
-              <div className="bg-zinc-900 border border-zinc-850 p-4 sm:p-5 rounded-md text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                <div className="absolute top-0 right-0 w-44 h-44 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
-                <div className="z-10">
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
-                    SaaS Portal Workflows
-                  </span>
-                  <h3 className="text-xl font-black mt-2">
-                    School Login & Subdomain Context Routing
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-1.5 max-w-xl leading-relaxed">
-                    Staff and teachers login using their registered emails. The SaaS cockpit maps
-                    their school automatically via domain matching, separating rosters securely.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-1.5 bg-zinc-950/70 p-3.5 rounded-md border border-zinc-800/80 text-[10px] text-zinc-400 font-bold tracking-wide uppercase min-w-[200px] shadow-inner backdrop-blur-sm">
-                  <div className="flex justify-between">
-                    <span>Default Password:</span>
-                    <span className="text-blue-400 font-mono">Auto-generated via email</span>
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span>Target School Subdomain:</span>
-                    <span className="text-emerald-400 font-mono lowercase">
-                      {formData.slug}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    Subdomain Slug
+                  </label>
+                  <div className="relative">
+                    <Input
+                      value={formData.slug}
+                      disabled
+                      className="pr-32 font-mono text-zinc-400"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-brand bg-brand/10 px-2 py-1 rounded">
                       {baseDomain}
                     </span>
                   </div>
                 </div>
-              </div>
 
-              {/* Roster list */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/80 rounded-md p-4 sm:p-6 shadow-sm flex flex-col gap-4 premium-glow-effect">
-                <div>
-                  <h2 className="text-base font-extrabold text-zinc-800 dark:text-white">
-                    Active Login Users
-                  </h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    List of active school administrators, teachers, and accountants authorized to
-                    sign in.
-                  </p>
+                <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                    Administrative Contact Email *
+                  </label>
+                  <Input
+                    value={formData.adminEmail}
+                    onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                    placeholder="admin@heights.edu"
+                    required
+                  />
                 </div>
-
-                <DataTable
-                  value={staffItems}
-                  loading={loadingStaff}
-                  emptyMessage="No login users registered yet in this school."
-                  className="p-datatable-sm"
-                >
-                  <Column
-                    field="name"
-                    header="Name"
-                    sortable
-                    className="font-bold text-zinc-850 dark:text-zinc-100"
-                  />
-                  <Column
-                    field="email"
-                    header="Login Email (Username)"
-                    className="font-mono text-xs text-blue-600 dark:text-blue-400"
-                  />
-                  <Column
-                    field="roles"
-                    header="Role Context"
-                    body={(d) => {
-                      const rolesList = Array.isArray(d.roles) ? d.roles : [];
-                      const primary = rolesList[0]?.name || d.designation || 'Teacher';
-                      return (
-                        <span className="px-2 py-0.5 bg-blue-500/10 text-blue-650 dark:text-blue-400 rounded-md text-[10px] font-black uppercase tracking-wider border border-blue-500/20">
-                          {primary}
-                        </span>
-                      );
-                    }}
-                  />
-                  <Column
-                    header="Account Status"
-                    body={(d) => (
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full ${d.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-350'}`}
-                        ></span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                          {d.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    )}
-                  />
-                  <Column
-                    header="Actions (Credentials)"
-                    align="center"
-                    body={(d) => (
-                      <Button
-                        label="Reset Password"
-                        icon="pi pi-lock-open"
-                        onClick={() => handleResetPassword(d.id, d.name)}
-                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold p-1 px-3 border-0 text-[10px] rounded-md shadow-sm transition-all active:scale-95 flex items-center gap-1"
-                      />
-                    )}
-                  />
-                </DataTable>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Pricing package slabs */}
+            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-6 backdrop-blur-xl">
+              <div>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  Subscription Tier
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {canEditSubscription
+                    ? 'Upgrade or inspect school subscription pricing limits.'
+                    : 'Your current subscription tier.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {PLANS.map((p) => {
+                  const isSelected = formData.plan === p.value;
+                  return (
+                    <div
+                      key={p.value}
+                      onClick={() =>
+                        canEditSubscription && setFormData({ ...formData, plan: p.value })
+                      }
+                      className={`rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-200 ${
+                        canEditSubscription
+                          ? 'cursor-pointer hover:border-zinc-400'
+                          : 'cursor-default'
+                      } ${
+                        isSelected
+                          ? 'border-brand bg-brand/5 dark:bg-brand/10 shadow-sm'
+                          : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
+                            {p.label}
+                          </span>
+                          {isSelected && <Badge variant="success">ACTIVE</Badge>}
+                        </div>
+                        <h3 className="text-xl font-bold mt-2 text-zinc-900 dark:text-zinc-100">
+                          {p.price}
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-2 leading-relaxed">{p.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button type="submit" isLoading={mutation.isPending}>
+                <Check className="w-4 h-4 mr-2" /> Save Profile Settings
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Tab 2: Module Matrix */}
+        {activeTab === 'modules' && (
+          <form onSubmit={handleModulesSubmit} className="flex flex-col gap-6">
+            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-6 backdrop-blur-xl">
+              <div>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  Module Matrix Switcher
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {canEditSubscription
+                    ? 'Enable or disable modules in sidebar index navigation.'
+                    : 'Active modules for your school domain.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {ALL_MODULES.map((m) => {
+                  const isActive = formData.activeModules.includes(m.id);
+                  const IconComp = m.icon;
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => toggleModule(m.id)}
+                      className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${
+                        canEditSubscription ? 'cursor-pointer' : 'cursor-default'
+                      } ${
+                        isActive
+                          ? 'border-brand/50 bg-brand/5 dark:bg-brand/10'
+                          : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900'
+                      }`}
+                    >
+                      <div
+                        className={`p-2.5 rounded-lg ${isActive ? 'bg-brand text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center gap-1">
+                          <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate">
+                            {m.label}
+                          </span>
+                          <span
+                            className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-zinc-300'}`}
+                          />
+                        </div>
+                        <p className="text-[10px] text-zinc-400 mt-1 leading-snug">{m.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {canEditSubscription && (
+              <div className="flex justify-end gap-3">
+                <Button type="submit" isLoading={modulesMutation.isPending}>
+                  <Check className="w-4 h-4 mr-2" /> Save Module Matrix
+                </Button>
+              </div>
+            )}
+          </form>
+        )}
+
+        {/* Tab 3: App Login Credentials */}
+        {activeTab === 'users' && (
+          <div className="flex flex-col gap-6">
+            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-4 backdrop-blur-xl">
+              <div>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  Active Login Credentials
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Authorized personnel and faculty with administrative login access.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <tr>
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Login Email</th>
+                      <th className="px-4 py-3">Role Context</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                    {loadingStaff ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
+                          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
+                          <p className="text-xs">Loading user credentials...</p>
+                        </td>
+                      </tr>
+                    ) : staffItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-12 text-center text-zinc-400">
+                          No login users registered yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      staffItems.map((d: any) => {
+                        const rolesList = Array.isArray(d.roles) ? d.roles : [];
+                        const primary = rolesList[0]?.name || d.designation || 'Teacher';
+                        return (
+                          <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                            <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                              {d.name}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-brand">{d.email}</td>
+                            <td className="px-4 py-3">
+                              <Badge variant="info">{primary}</Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge variant={d.isActive ? 'success' : 'secondary'}>
+                                {d.isActive ? 'ACTIVE' : 'INACTIVE'}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleResetPassword(d.id, d.name)}
+                                className="text-xs"
+                              >
+                                <LockKeyhole className="w-3.5 h-3.5 mr-1" /> Reset Password
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -1,19 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Dropdown } from 'primereact/dropdown';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Calendar } from 'primereact/calendar';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useClasses, useOnlineClasses, useCreateOnlineClass } from '@/hooks/queries/useAcademics';
 import { useAuthStore } from '@/store/useAuthStore';
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
-
+import { toast } from 'sonner';
+import { Video, Plus, Search, ExternalLink, Power, CheckCircle } from 'lucide-react';
 
 interface OnlineClass {
   id: string;
@@ -34,9 +32,8 @@ interface OnlineClass {
 }
 
 export default function OnlineClassesPage() {
-  const { activeTenant, user } = useAuthStore();
-  const activeModules = activeTenant?.activeModules || [];
-  
+  const { user } = useAuthStore();
+
   const { data: classesData, isPending: loading } = useOnlineClasses();
   const classesList = classesData || [];
   const createMutation = useCreateOnlineClass();
@@ -44,11 +41,12 @@ export default function OnlineClassesPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeJitsiRoom, setActiveJitsiRoom] = useState<OnlineClass | null>(null);
   const [search, setSearch] = useState('');
-  
-  const filteredClasses = classesList.filter((c: any) => 
-    c.title?.toLowerCase().includes(search.toLowerCase()) ||
-    c.className?.toLowerCase().includes(search.toLowerCase()) ||
-    c.subjectName?.toLowerCase().includes(search.toLowerCase())
+
+  const filteredClasses = classesList.filter(
+    (c: any) =>
+      c.title?.toLowerCase().includes(search.toLowerCase()) ||
+      c.className?.toLowerCase().includes(search.toLowerCase()) ||
+      c.subjectName?.toLowerCase().includes(search.toLowerCase())
   );
 
   // Form state
@@ -57,7 +55,7 @@ export default function OnlineClassesPage() {
     subjectId: '',
     title: '',
     description: '',
-    scheduledAt: null as Date | null,
+    scheduledAt: '',
     duration: 60,
   });
 
@@ -67,85 +65,93 @@ export default function OnlineClassesPage() {
     value: c.id,
   }));
 
-
-
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.classId || !form.title || !form.scheduledAt) {
-      window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { severity: 'warn', summary: 'Validation', detail: 'Class, Title and Schedule date are required.', life: 3000 }
-      }));
+      toast.error('Class, Title and Schedule date are required.');
       return;
     }
 
-    createMutation.mutate({
-      classId: form.classId,
-      subjectId: form.subjectId || undefined,
-      title: form.title,
-      description: form.description || undefined,
-      scheduledAt: form.scheduledAt.toISOString(),
-      duration: Number(form.duration),
-    }, {
-      onSuccess: () => {
-        window.dispatchEvent(new CustomEvent('show-toast', {
-          detail: { severity: 'success', summary: '🎓 Room Scheduled!', detail: `Online class room "${form.title}" created successfully. Jitsi link generated!`, life: 4000 }
-        }));
-        setShowCreateDialog(false);
-        setForm({ classId: '', subjectId: '', title: '', description: '', scheduledAt: null, duration: 60 });
+    createMutation.mutate(
+      {
+        classId: form.classId,
+        subjectId: form.subjectId || undefined,
+        title: form.title,
+        description: form.description || undefined,
+        scheduledAt: new Date(form.scheduledAt).toISOString(),
+        duration: Number(form.duration),
+      },
+      {
+        onSuccess: () => {
+          toast.success(`Online class room "${form.title}" created successfully!`);
+          setShowCreateDialog(false);
+          setForm({
+            classId: '',
+            subjectId: '',
+            title: '',
+            description: '',
+            scheduledAt: '',
+            duration: 60,
+          });
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.message || 'Failed to schedule class.');
+        },
       }
-    });
+    );
   };
 
-  const getStatusTag = (status: OnlineClass['status']) => {
+  const getStatusBadge = (status: OnlineClass['status']) => {
     const map = {
-      LIVE: { label: 'LIVE / ACTIVE', severity: 'success' },
-      SCHEDULED: { label: 'SCHEDULED', severity: 'info' },
-      COMPLETED: { label: 'COMPLETED', severity: 'secondary' },
-      CANCELLED: { label: 'CANCELLED', severity: 'danger' },
+      LIVE: { label: 'LIVE', variant: 'success' as const },
+      SCHEDULED: { label: 'SCHEDULED', variant: 'info' as const },
+      COMPLETED: { label: 'COMPLETED', variant: 'secondary' as const },
+      CANCELLED: { label: 'CANCELLED', variant: 'danger' as const },
     };
     const s = map[status] || map.SCHEDULED;
-    return <Tag value={s.label} severity={s.severity as any} className="font-extrabold text-[10px]" />;
+    return <Badge variant={s.variant}>{s.label}</Badge>;
   };
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Online Classes" subtitle="Academics" />
-<div className="flex flex-col gap-4 pb-10 animate-fade-in">
-        
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Header Area */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Jitsi Meet Online Classrooms</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Schedule premium zero-latency video lectures, track live attendance telemetry, and share records with students.
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Video className="w-6 h-6 text-brand" />
+              Online Classrooms
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Schedule zero-latency video lectures with live attendance
             </p>
-          </div> */}
+          </div>
 
-          <button 
-            onClick={() => setShowCreateDialog(true)}
-            className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-          >
-            <i className="pi pi-video text-xs"></i>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
             Schedule Online Class
-          </button>
+          </Button>
         </div>
 
         {/* Live Classroom Embedded Frame (Overlay/View Pane) */}
         {activeJitsiRoom && (
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col gap-0 animate-fade-in relative z-20">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col animate-fade-in relative z-20">
             <div className="flex justify-between items-center px-4 py-3 text-white bg-zinc-900 border-b border-zinc-800">
               <div>
-                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live Room Active</span>
-                <h3 className="font-semibold text-sm mt-0.5">{activeJitsiRoom.title} ({activeJitsiRoom.className})</h3>
+                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Live Room
+                  Active
+                </span>
+                <h3 className="font-semibold text-sm mt-0.5">
+                  {activeJitsiRoom.title} ({activeJitsiRoom.className})
+                </h3>
               </div>
-              <button 
-                onClick={() => setActiveJitsiRoom(null)}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md text-xs flex items-center gap-1 transition-all"
-              >
-                <i className="pi pi-power-off text-[10px]"></i> Disconnect
-              </button>
+              <Button variant="danger" size="sm" onClick={() => setActiveJitsiRoom(null)}>
+                <Power className="w-3.5 h-3.5 mr-1" /> Disconnect
+              </Button>
             </div>
-            
+
             {/* Jitsi Meet Secure Embedded Sandbox Iframe */}
             <div className="w-full aspect-video md:h-[500px] bg-black relative">
               <iframe
@@ -154,7 +160,7 @@ export default function OnlineClassesPage() {
                 className="w-full h-full border-0"
               />
             </div>
-            
+
             <div className="flex justify-between items-center px-4 py-2 text-xs text-zinc-400 font-medium bg-zinc-900 border-t border-zinc-800">
               <span>Platform: {process.env.NEXT_PUBLIC_JITSI_DOMAIN || 'meet.jit.si'}</span>
               <span className="flex items-center gap-1.5 text-emerald-500">
@@ -165,96 +171,117 @@ export default function OnlineClassesPage() {
         )}
 
         {/* Classes List section */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-
             <div>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-white">Active Room Rosters</h2>
-              <p className="text-[11px] text-zinc-500 mt-0.5">Click "Join Room" to launch Jitsi Meet secure video stream.</p>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Active Room Rosters
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Launch rooms for live interactive video streams.
+              </p>
             </div>
             <div className="relative w-full sm:w-64">
-              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"></i>
-              <input 
-                type="text" 
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Input
+                type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search rooms..." 
-                className="w-full pl-9 pr-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md outline-none focus:border-blue-500 transition-colors text-sm"
+                placeholder="Search rooms..."
+                className="pl-9"
               />
             </div>
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <i className="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
+            <div className="flex justify-center items-center py-20 text-zinc-500">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
             </div>
           ) : filteredClasses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md">
-              <i className="pi pi-video text-4xl mb-2"></i>
+            <div className="flex flex-col items-center justify-center py-16 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <Video className="w-10 h-10 mb-2 opacity-50" />
               <p className="text-sm font-semibold">No Classes Found</p>
-              <p className="text-xs mt-0.5">Try a different search term or schedule a new class.</p>
+              <p className="text-xs mt-0.5 text-zinc-500">
+                Try a different search term or schedule a new class.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClasses.map((c: any) => (
-                <div key={c.id} className="border border-zinc-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-800 rounded-xl p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between gap-4">
+                <div
+                  key={c.id}
+                  className="border border-zinc-200/80 dark:border-zinc-800/80 hover:border-brand/40 rounded-xl p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-start gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200/50 dark:border-blue-800/50">
-                        {c.subjectName || 'Study Room'}
-                      </span>
-                      {getStatusTag(c.status)}
+                      <Badge variant="secondary">{c.subjectName || 'Study Room'}</Badge>
+                      {getStatusBadge(c.status)}
                     </div>
-                    
-                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1 leading-snug">{c.title}</h3>
-                    <p className="text-xs text-zinc-500 line-clamp-2 mt-0.5 leading-relaxed">{c.description || 'No class summary description provided.'}</p>
+
+                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1 leading-snug">
+                      {c.title}
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5 leading-relaxed">
+                      {c.description || 'No class summary description provided.'}
+                    </p>
                   </div>
 
                   <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-1 flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                     <div className="flex justify-between items-center">
                       <span>Grade:</span>
-                      <span className="text-zinc-900 dark:text-zinc-300 font-semibold">{c.className || 'General'}</span>
+                      <span className="text-zinc-900 dark:text-zinc-300 font-semibold">
+                        {c.className || 'General'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Schedule:</span>
                       <span className="text-zinc-900 dark:text-zinc-300">
-                        {new Date(c.scheduledAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} at {new Date(c.scheduledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(c.scheduledAt).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}{' '}
+                        at{' '}
+                        {new Date(c.scheduledAt).toLocaleTimeString('en-IN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Host Teacher:</span>
-                      <span className="text-zinc-900 dark:text-zinc-300 truncate max-w-40">{c.teacher?.name || 'System Faculty'}</span>
+                      <span className="text-zinc-900 dark:text-zinc-300 truncate max-w-40">
+                        {c.teacher?.name || 'System Faculty'}
+                      </span>
                     </div>
                   </div>
 
                   <div className="mt-2">
                     {c.status === 'LIVE' ? (
-                      <button 
+                      <Button
+                        variant="gradient"
+                        className="w-full"
                         onClick={() => {
                           setActiveJitsiRoom(c);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center gap-2 text-xs transition-all"
                       >
-                        <i className="pi pi-video"></i> Join Classroom Now
-                      </button>
+                        <Video className="w-4 h-4 mr-2" /> Join Classroom Now
+                      </Button>
                     ) : c.status === 'SCHEDULED' ? (
-                      <button 
+                      <Button
+                        variant="primary"
+                        className="w-full"
                         onClick={() => {
                           setActiveJitsiRoom(c);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md flex items-center justify-center gap-2 text-xs transition-all"
                       >
-                        <i className="pi pi-external-link"></i> Launch Room
-                      </button>
+                        <ExternalLink className="w-4 h-4 mr-2" /> Launch Room
+                      </Button>
                     ) : (
-                      <button 
-                        disabled
-                        className="w-full py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 font-medium rounded-md flex items-center justify-center gap-2 text-xs cursor-not-allowed"
-                      >
-                        <i className="pi pi-check"></i> Session Completed
-                      </button>
+                      <Button disabled variant="ghost" className="w-full">
+                        <CheckCircle className="w-4 h-4 mr-2 text-zinc-400" /> Session Completed
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -262,93 +289,86 @@ export default function OnlineClassesPage() {
             </div>
           )}
         </div>
-
       </div>
 
-      {/* ── Dialog: Schedule Class ─────────────────────────────────── */}
+      {/* Schedule Class Dialog */}
       <Dialog
-        header="Schedule Online Jitsi Lecture"
-        visible={showCreateDialog}
-        style={{ width: '480px' }}
-        modal
-        onHide={() => setShowCreateDialog(false)}
-        className="rounded-xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
-        contentClassName="p-6"
-        headerClassName="border-b border-zinc-100 dark:border-zinc-800 p-5 font-bold text-zinc-900 dark:text-white"
-        footer={
-          <div className="flex justify-end gap-2 p-4 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" className="p-button-text p-2 font-medium text-sm text-zinc-500" onClick={() => setShowCreateDialog(false)} />
-            <Button 
-              label="Schedule Room" 
-              icon="pi pi-check" 
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-0 font-medium text-sm" 
-              onClick={handleCreateClass} 
-            />
-          </div>
-        }
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        title="Schedule Online Lecture"
       >
-        <div className="flex flex-col gap-4 mt-3">
+        <div className="flex flex-col gap-4 py-2">
           <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Class Title / Topic *</label>
-            <InputText 
-              value={form.title} 
-              onChange={(e) => setForm({ ...form, title: e.target.value })} 
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:border-blue-500 text-sm" 
-              placeholder="e.g. Advanced Trigonometry Session" 
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Class Title / Topic *
+            </label>
+            <Input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="e.g. Advanced Trigonometry Session"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Class *</label>
-              <Dropdown 
-                value={form.classId} 
-                options={classOptions} 
-                onChange={(e) => setForm({ ...form, classId: e.value })} 
-                placeholder="Select Class"
-                className="text-sm"
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Target Class *
+              </label>
+              <Select
+                value={form.classId}
+                options={[{ label: 'Select Class', value: '' }, ...classOptions]}
+                onChange={(e) => setForm({ ...form, classId: e.target.value })}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Duration (Mins)</label>
-              <Dropdown 
-                value={form.duration} 
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Duration (Mins)
+              </label>
+              <Select
+                value={form.duration.toString()}
                 options={[
-                  { label: '30 Mins', value: 30 },
-                  { label: '45 Mins', value: 45 },
-                  { label: '60 Mins', value: 60 },
-                  { label: '90 Mins', value: 90 },
-                ]} 
-                onChange={(e) => setForm({ ...form, duration: e.value })} 
-                className="text-sm"
+                  { label: '30 Mins', value: '30' },
+                  { label: '45 Mins', value: '45' },
+                  { label: '60 Mins', value: '60' },
+                  { label: '90 Mins', value: '90' },
+                ]}
+                onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Schedule Time *</label>
-            <Calendar
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Schedule Date & Time *
+            </label>
+            <Input
+              type="datetime-local"
               value={form.scheduledAt}
-              onChange={(e) => setForm({ ...form, scheduledAt: e.value as Date })}
-              showTime
-              hourFormat="24"
-              className="w-full"
-              inputClassName="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm outline-none"
-              placeholder="Select Date and Time"
-              minDate={new Date()}
+              onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Lecture Agenda / Details</label>
-            <InputTextarea 
-              value={form.description} 
-              onChange={(e) => setForm({ ...form, description: e.target.value })} 
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md outline-none focus:border-blue-500 text-sm resize-none" 
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Lecture Agenda / Details
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none"
               rows={3}
-              placeholder="e.g. Please bring textbook and solved assignments." 
+              placeholder="e.g. Please bring textbook and solved assignments."
             />
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateClass} isLoading={createMutation.isPending}>
+            Schedule Room
+          </Button>
         </div>
       </Dialog>
     </DashboardLayout>

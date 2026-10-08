@@ -2,21 +2,32 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card } from 'primereact/card';
-import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable, DataTablePageEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Dropdown } from 'primereact/dropdown';
-import { Tag } from 'primereact/tag';
-import { InputSwitch } from 'primereact/inputswitch';
-import { useWhatsAppConfig, useUpdateWhatsAppConfig, useWhatsAppTemplates, useWhatsAppSessions, useWhatsAppBroadcasts, useCreateBroadcast, useSendBroadcast } from '@/hooks/queries/useWhatsApp';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import {
+  useWhatsAppConfig,
+  useUpdateWhatsAppConfig,
+  useWhatsAppTemplates,
+  useWhatsAppSessions,
+  useWhatsAppBroadcasts,
+  useCreateBroadcast,
+  useSendBroadcast,
+} from '@/hooks/queries/useWhatsApp';
 import { whatsappService } from '@/services/whatsapp.service';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
+import {
+  MessageSquare,
+  RefreshCw,
+  Send,
+  Settings,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
 interface ChatMessage {
   sender: 'user' | 'bot';
@@ -25,36 +36,36 @@ interface ChatMessage {
 }
 
 export default function WhatsAppPage() {
-  const [activeTab, setTab] = useState(0);
-  const [showConfigDialog, setShowConfigDialog] = useState(false);
+  const [activeTab, setTab] = useState<'templates' | 'conversations' | 'broadcasts'>('templates');
   const [showBroadcastDialog, setShowBroadcastDialog] = useState(false);
   const [showMetaConfigDialog, setShowMetaConfigDialog] = useState(false);
 
-  // Simulated Chat Console
   const [testQuery, setTestQuery] = useState({ phone: '+91 99999 88888', question: '' });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    { sender: 'bot', text: 'Hello! I am your school AI assistant. Ask me anything about students, grades, fees, or events.', timestamp: 'Just now' }
+    {
+      sender: 'bot',
+      text: 'Hello! I am your school AI assistant. Ask me anything about students, grades, fees, or events.',
+      timestamp: 'Just now',
+    },
   ]);
   const [testingRag, setTestingRag] = useState(false);
 
-  // Form configs
   const [newBroadcast, setNewBroadcast] = useState({ name: '', templateId: 'fee_reminder' });
   const [metaConfigForm, setMetaConfigForm] = useState({
     phoneNumberId: '',
     businessId: '',
     wabaId: '',
-    accessToken: ''
+    accessToken: '',
   });
 
-  // Pagination states
-  const [sessionLazy, setSessionLazy] = useState({ first: 0, rows: 10, page: 1 });
-  const [broadcastLazy, setBroadcastLazy] = useState({ first: 0, rows: 10, page: 1 });
+  const [sessionPage, setSessionPage] = useState(1);
+  const [broadcastPage, setBroadcastPage] = useState(1);
+  const limit = 10;
 
-  // Queries
   const { data: config, refetch: reloadConfig } = useWhatsAppConfig();
   const { data: templates, refetch: reloadTemplates } = useWhatsAppTemplates();
-  const { data: sessions } = useWhatsAppSessions(sessionLazy.page, sessionLazy.rows);
-  const { data: broadcasts } = useWhatsAppBroadcasts(broadcastLazy.page, broadcastLazy.rows);
+  const { data: sessions } = useWhatsAppSessions(sessionPage, limit);
+  const { data: broadcasts } = useWhatsAppBroadcasts(broadcastPage, limit);
 
   const updateConfigMutation = useUpdateWhatsAppConfig();
   const createBroadcastMutation = useCreateBroadcast();
@@ -65,7 +76,8 @@ export default function WhatsAppPage() {
       onSuccess: () => {
         reloadConfig();
         setShowMetaConfigDialog(false);
-      }
+        toast.success('WhatsApp API credentials updated.');
+      },
     });
   };
 
@@ -75,45 +87,52 @@ export default function WhatsAppPage() {
       phoneNumberId: currentConfig?.phoneNumberId || '',
       businessId: currentConfig?.businessId || '',
       wabaId: currentConfig?.wabaId || '',
-      accessToken: currentConfig?.accessToken || ''
+      accessToken: currentConfig?.accessToken || '',
     });
     setShowMetaConfigDialog(true);
   };
 
   const handleSeedTemplates = async () => {
-    if (confirm('Do you want to sync meta system templates?')) {
+    if (confirm('Sync Meta system templates now?')) {
       await whatsappService.seedTemplates();
       reloadTemplates();
+      toast.success('Synced WhatsApp message templates.');
     }
   };
 
   const handleTestRag = async () => {
     if (!testQuery.question.trim()) return;
-    
+
     const userMsg = testQuery.question;
-    setChatHistory((prev) => [...prev, { sender: 'user', text: userMsg, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    setChatHistory((prev) => [
+      ...prev,
+      {
+        sender: 'user',
+        text: userMsg,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
     setTestQuery((prev) => ({ ...prev, question: '' }));
     setTestingRag(true);
 
     try {
       await whatsappService.testRagChatbot(testQuery.phone, userMsg);
-      // Simulate bot typing response
       setChatHistory((prev) => [
-        ...prev, 
-        { 
-          sender: 'bot', 
-          text: 'Response processed successfully. Auto-notification dispatched to the parent WhatsApp number.', 
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-        }
+        ...prev,
+        {
+          sender: 'bot',
+          text: 'Response processed successfully by RAG model. Auto-notification dispatched to parent WhatsApp number.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
       ]);
     } catch (e: any) {
       setChatHistory((prev) => [
-        ...prev, 
-        { 
-          sender: 'bot', 
-          text: `RAG System Error: ${e.message}`, 
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-        }
+        ...prev,
+        {
+          sender: 'bot',
+          text: `RAG System Error: ${e.message}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
       ]);
     } finally {
       setTestingRag(false);
@@ -125,52 +144,17 @@ export default function WhatsAppPage() {
       onSuccess: () => {
         setShowBroadcastDialog(false);
         setNewBroadcast({ name: '', templateId: 'fee_reminder' });
-      }
+        toast.success('Broadcast campaign created.');
+      },
     });
   };
 
   const handleSendBroadcast = (id: string) => {
     if (confirm('Send this campaign to target audiences now?')) {
-      sendBroadcastMutation.mutate(id);
+      sendBroadcastMutation.mutate(id, {
+        onSuccess: () => toast.success('Broadcast campaign sent!'),
+      });
     }
-  };
-
-  const onSessionPage = (e: DataTablePageEvent) => {
-    setSessionLazy({ first: e.first, rows: e.rows, page: (e.page || 0) + 1 });
-  };
-
-  const onBroadcastPage = (e: DataTablePageEvent) => {
-    setBroadcastLazy({ first: e.first, rows: e.rows, page: (e.page || 0) + 1 });
-  };
-
-  const statusTemplate = (rowData: any) => {
-    const isApproved = rowData.status === 'APPROVED' || rowData.status === 'SENT';
-    return (
-      <Tag 
-        value={rowData.status || 'ACTIVE'} 
-        severity={isApproved ? 'success' : 'warning'} 
-        className={`px-2.5 py-1 text-xs font-bold rounded-full ${
-          isApproved 
-            ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400' 
-            : 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400'
-        }`}
-      />
-    );
-  };
-
-  const broadcastActions = (rowData: any) => {
-    if (rowData.status === 'DRAFT') {
-      return (
-        <button 
-          className="w-full md:w-auto px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white text-white font-bold rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-xs tracking-wide"
-          onClick={() => handleSendBroadcast(rowData.id)}
-        >
-          <i className="pi pi-send text-[10px]"></i>
-          Send Now
-        </button>
-      );
-    }
-    return <span className="text-xs text-zinc-400 dark:text-zinc-500 font-bold">Dispatched</span>;
   };
 
   const activeTemplates = (templates as any)?.data || templates || [];
@@ -179,318 +163,409 @@ export default function WhatsAppPage() {
 
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="Whatsapp" />
-<div className="flex flex-col gap-4 pb-10">
-        
+      <PageBreadcrumb title="WhatsApp Automation & RAG Bot" />
+
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">WhatsApp & RAG Integration</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage WhatsApp broadcasts, automated triggers, and evaluate the RAG AI chatbot live.
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <MessageSquare className="w-6 h-6 text-emerald-500" /> WhatsApp & RAG AI Hub
+            </h1>
+            <p className="text-xs text-zinc-500 mt-1">
+              Manage Meta API integration, broadcast notifications, and test live AI parent inquiry
+              responses.
             </p>
-          </div> */}
+          </div>
 
           <div className="flex gap-2">
-            <button 
-              onClick={handleSeedTemplates}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-md transition-all active:scale-95 flex items-center gap-2 text-sm"
-            >
-              <i className="pi pi-sync"></i>
-              Sync Templates
-            </button>
-            <button 
-              onClick={() => setShowBroadcastDialog(true)}
-              className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <i className="pi pi-megaphone"></i>
-              Create Campaign
-            </button>
+            <Button variant="outline" onClick={handleSeedTemplates}>
+              <RefreshCw className="w-4 h-4 mr-2" /> Sync Templates
+            </Button>
+            <Button onClick={() => setShowBroadcastDialog(true)}>
+              <Send className="w-4 h-4 mr-2" /> Create Campaign
+            </Button>
           </div>
         </div>
 
-        {/* Configurations & Interactive RAG Simulation */}
+        {/* Credentials & Chatbot Console */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
           {/* Credentials Card */}
-          <div className="lg:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md p-6 shadow-sm flex flex-col justify-between gap-6">
+          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-5 shadow-sm flex flex-col justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-zinc-800 dark:text-white mb-1">Credentials & Agent Settings</h2>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500">Configure Meta connection parameters and AI chatbot options.</p>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Credentials & Agent Settings
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">Meta API parameters & RAG AI switch.</p>
             </div>
-            
+
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-zinc-400">Meta Phone Number ID</span>
-                  <button onClick={openMetaConfigDialog} className="text-[10px] text-blue-500 hover:text-blue-600 font-bold uppercase">Configure Credentials</button>
+                  <span className="text-xs font-semibold text-zinc-500">Phone Number ID</span>
+                  <button
+                    onClick={openMetaConfigDialog}
+                    className="text-[10px] text-brand font-bold uppercase hover:underline"
+                  >
+                    Configure
+                  </button>
                 </div>
-                <span className="font-mono text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-850 p-2 rounded-md border border-zinc-150/50 truncate">
+                <div className="font-mono text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 p-2.5 rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 truncate">
                   {((config as any)?.data || config)?.phoneNumberId || 'Masked (Not Seeded)'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-blue-50/40 dark:bg-blue-950/10 rounded-md border border-blue-100/50 dark:border-blue-900/10">
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-blue-900 dark:text-blue-300">RAG Chatbot Agent</span>
-                  <span className="text-[10px] text-blue-600/70">Let AI reply to queries</span>
                 </div>
-                <InputSwitch 
-                  checked={((config as any)?.data || config)?.enableRag || false} 
-                  onChange={(e) => handleUpdateConfig({ enableRag: e.value })} 
-                />
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-zinc-400">Agent Welcome Message</span>
-                <InputTextarea 
-                  value={((config as any)?.data || config)?.welcomeMessage || 'Hello! I am your school assistant...'} 
-                  onChange={(e) => handleUpdateConfig({ welcomeMessage: e.target.value })} 
-                  rows={3}
-                  className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md p-3 text-xs w-full outline-none focus:border-blue-500"
-                />
+
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block">
+                    RAG Chatbot Agent
+                  </span>
+                  <span className="text-[10px] text-zinc-500">Automated AI WhatsApp Replies</span>
+                </div>
+                <Badge
+                  variant={((config as any)?.data || config)?.enableRag ? 'success' : 'secondary'}
+                >
+                  {((config as any)?.data || config)?.enableRag ? 'ENABLED' : 'DISABLED'}
+                </Badge>
               </div>
             </div>
+
+            <Button variant="outline" onClick={openMetaConfigDialog} className="w-full">
+              <Settings className="w-4 h-4 mr-2" /> Meta API Credentials
+            </Button>
           </div>
 
-          {/* Interactive Chatbot Simulator */}
-          <div className="lg:col-span-2 bg-zinc-950 rounded-md p-6 shadow-xl flex flex-col justify-between gap-4 border border-zinc-800 text-zinc-200 min-h-[400px]">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          {/* Interactive RAG Simulator */}
+          <div className="lg:col-span-2 border border-zinc-800 rounded-xl bg-zinc-950 p-5 shadow-lg flex flex-col justify-between gap-4 text-zinc-200 min-h-[380px]">
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></div>
-                <h2 className="text-sm font-extrabold uppercase tracking-widest text-zinc-400">RAG Chatbot Console</h2>
+                <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                  RAG AI Chatbot Console
+                </h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 uppercase font-bold">Simulator Target Phone</span>
-                <input 
-                  type="text" 
+                <span className="text-[10px] text-zinc-500 uppercase font-mono">Target Phone:</span>
+                <input
+                  type="text"
                   value={testQuery.phone}
                   onChange={(e) => setTestQuery({ ...testQuery, phone: e.target.value })}
-                  className="bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-md text-xs text-blue-400 font-mono outline-none"
+                  className="bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded text-xs text-emerald-400 font-mono focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto max-h-64 flex flex-col gap-3 py-2 scrollbar-thin">
+            {/* Chat History */}
+            <div className="flex-1 overflow-y-auto max-h-56 flex flex-col gap-3 py-2">
               {chatHistory.map((msg, index) => {
                 const isBot = msg.sender === 'bot';
                 return (
                   <div key={index} className={`flex ${isBot ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[80%] rounded-md px-4 py-2.5 text-xs ${
-                      isBot 
-                        ? 'bg-zinc-900 text-zinc-300 border border-zinc-800/80 rounded-tl-none' 
-                        : 'bg-blue-600 text-white rounded-tr-none'
-                    }`}>
-                      <p className="leading-relaxed">{msg.text}</p>
-                      <span className="block text-[8px] mt-1 text-zinc-500 text-right uppercase tracking-wider">{msg.timestamp}</span>
+                    <div
+                      className={`max-w-[80%] rounded-xl px-4 py-2 text-xs ${
+                        isBot
+                          ? 'bg-zinc-900 text-zinc-300 border border-zinc-800'
+                          : 'bg-brand text-white'
+                      }`}
+                    >
+                      <p>{msg.text}</p>
+                      <span className="block text-[8px] mt-1 text-zinc-500 text-right">
+                        {msg.timestamp}
+                      </span>
                     </div>
                   </div>
                 );
               })}
               {testingRag && (
-                <div className="flex justify-start">
-                  <div className="bg-zinc-900 text-zinc-500 border border-zinc-850 px-4 py-2 rounded-md rounded-tl-none text-xs flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-100"></span>
-                    <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-200"></span>
-                  </div>
-                </div>
+                <p className="text-xs text-zinc-500 italic">RAG AI model thinking...</p>
               )}
             </div>
 
             {/* Chat Input Console */}
-            <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-850 p-1.5 rounded-md">
+            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 p-1.5 rounded-lg">
               <input
                 type="text"
                 value={testQuery.question}
                 onChange={(e) => setTestQuery({ ...testQuery, question: e.target.value })}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleTestRag(); }}
-                placeholder="Ask simulator query, e.g. 'Rahul fee structure status?'"
-                className="flex-1 bg-transparent px-3 py-2 text-xs text-white outline-none border-none focus:ring-0 placeholder:text-zinc-650"
+                onKeyDown={(e) => e.key === 'Enter' && handleTestRag()}
+                placeholder="Ask query, e.g. 'What is the fee due date for Class 10?'"
+                className="flex-1 bg-transparent px-3 py-1.5 text-xs text-white focus:outline-none placeholder:text-zinc-600"
               />
-              <button 
+              <Button
                 onClick={handleTestRag}
-                disabled={testingRag || !testQuery.question.trim()}
-                className="w-full md:w-auto px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white text-white font-bold rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-xs tracking-wide"
+                isLoading={testingRag}
+                disabled={!testQuery.question.trim()}
               >
-                Send Query
-              </button>
+                <Send className="w-3.5 h-3.5" />
+              </Button>
             </div>
           </div>
-
         </div>
 
-        {/* Tables Board */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
-          <TabView activeIndex={activeTab} onTabChange={(e) => setTab(e.index)}>
-            
-            <TabPanel header="Meta Message Templates">
-              <div className="p-3">
-                <DataTable 
-                  value={activeTemplates} 
-                  className="p-datatable-sm mt-1" 
-                  emptyMessage="No templates found. Click 'Sync Templates' to pull defaults."
-                >
-                  <Column field="name" header="Template Name" className="font-semibold"></Column>
-                  <Column field="category" header="Category"></Column>
-                  <Column field="language" header="Language" className="font-mono text-xs"></Column>
-                  <Column field="status" header="Approval Status" body={statusTemplate}></Column>
-                </DataTable>
-              </div>
-            </TabPanel>
+        {/* Tab Switcher & Data Tables */}
+        <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-5 shadow-sm space-y-4">
+          <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 gap-1 w-max">
+            <button
+              onClick={() => setTab('templates')}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'templates'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Meta Templates ({activeTemplates.length})
+            </button>
+            <button
+              onClick={() => setTab('conversations')}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'conversations'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Parent Conversations
+            </button>
+            <button
+              onClick={() => setTab('broadcasts')}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'broadcasts'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Broadcast Campaigns
+            </button>
+          </div>
 
-            <TabPanel header="Parent Conversations">
-              <div className="p-3">
-                <DataTable 
-                  value={activeSessions} 
-                  lazy 
-                  paginator 
-                  first={sessionLazy.first}
-                  rows={sessionLazy.rows}
-                  totalRecords={sessions?.data?.meta.total || 0}
-                  onPage={onSessionPage}
-                  className="p-datatable-sm mt-1" 
-                  emptyMessage="No active parent conversation sessions logged."
-                >
-                  <Column field="contactName" header="Contact Name" className="font-semibold"></Column>
-                  <Column field="phoneNumber" header="WhatsApp Number" className="font-mono text-xs"></Column>
-                  <Column field="lastMessage" header="Last Message Received"></Column>
-                  <Column field="updatedAt" header="Last Active" body={(d) => d.updatedAt ? new Date(d.updatedAt).toLocaleString() : '—'}></Column>
-                </DataTable>
-              </div>
-            </TabPanel>
+          {activeTab === 'templates' && (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                  <tr>
+                    <th className="px-4 py-3">Template Name</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Language</th>
+                    <th className="px-4 py-3">Approval Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                  {activeTemplates.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                        No templates found. Click 'Sync Templates' to pull defaults.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeTemplates.map((t: any, i: number) => (
+                      <tr key={t.id || i} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                        <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                          {t.name}
+                        </td>
+                        <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{t.category}</td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{t.language}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={t.status === 'APPROVED' ? 'success' : 'warning'}>
+                            {t.status || 'APPROVED'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-            <TabPanel header="Broadcast Campaigns">
-              <div className="p-3">
-                <DataTable 
-                  value={activeBroadcasts} 
-                  lazy 
-                  paginator 
-                  first={broadcastLazy.first}
-                  rows={broadcastLazy.rows}
-                  totalRecords={broadcasts?.data?.meta.total || 0}
-                  onPage={onBroadcastPage}
-                  className="p-datatable-sm mt-1" 
-                  emptyMessage="No broadcast campaigns created yet."
-                >
-                  <Column field="name" header="Campaign Name" className="font-semibold"></Column>
-                  <Column field="templateName" header="Applied Template" className="font-mono text-xs"></Column>
-                  <Column field="status" header="Status" body={statusTemplate}></Column>
-                  <Column header="Actions" body={broadcastActions} align="center"></Column>
-                </DataTable>
-              </div>
-            </TabPanel>
+          {activeTab === 'conversations' && (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                  <tr>
+                    <th className="px-4 py-3">Contact Name</th>
+                    <th className="px-4 py-3">WhatsApp Number</th>
+                    <th className="px-4 py-3">Last Message Received</th>
+                    <th className="px-4 py-3">Last Active</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                  {activeSessions.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                        No active parent conversation sessions logged.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeSessions.map((s: any, i: number) => (
+                      <tr key={s.id || i} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                        <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                          {s.contactName}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-emerald-500">{s.phoneNumber}</td>
+                        <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                          {s.lastMessage}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">
+                          {s.updatedAt ? new Date(s.updatedAt).toLocaleString() : '—'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-          </TabView>
+          {activeTab === 'broadcasts' && (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                  <tr>
+                    <th className="px-4 py-3">Campaign Name</th>
+                    <th className="px-4 py-3">Applied Template</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                  {activeBroadcasts.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                        No broadcast campaigns created yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeBroadcasts.map((b: any, i: number) => (
+                      <tr key={b.id || i} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                        <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                          {b.name}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{b.templateName}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={b.status === 'SENT' ? 'success' : 'warning'}>
+                            {b.status}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {b.status === 'DRAFT' ? (
+                            <Button onClick={() => handleSendBroadcast(b.id)}>
+                              <Send className="w-3.5 h-3.5 mr-1" /> Send Now
+                            </Button>
+                          ) : (
+                            <span className="text-[10px] font-mono text-zinc-400">DISPATCHED</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-
       </div>
 
-      {/* Dialog: Create Campaign */}
-      <Dialog 
-        header="Create Broadcast Campaign" 
-        visible={showBroadcastDialog} 
-        style={{ width: '400px' }} 
-        modal 
-        onHide={() => setShowBroadcastDialog(false)}
-        className="dialog-custom rounded-md"
-        footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" icon="pi pi-times" onClick={() => setShowBroadcastDialog(false)} className="p-button-text p-2" />
-            <Button 
-              label="Create Campaign" 
-              icon="pi pi-check" 
-              onClick={handleCreateBroadcast} 
-              loading={createBroadcastMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
-            />
-          </div>
-        }
+      {/* Broadcast Dialog */}
+      <Dialog
+        isOpen={showBroadcastDialog}
+        onClose={() => setShowBroadcastDialog(false)}
+        title="Create Broadcast Campaign"
       >
-        <div className="flex flex-col gap-4 mt-2">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Campaign Name *</label>
-            <InputText 
-              value={newBroadcast.name} 
-              onChange={(e) => setNewBroadcast({ ...newBroadcast, name: e.target.value })} 
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Campaign Name *
+            </label>
+            <Input
+              value={newBroadcast.name}
+              onChange={(e) => setNewBroadcast({ ...newBroadcast, name: e.target.value })}
               placeholder="e.g. Q1 Fee Pending Alert"
-              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Select Template *</label>
-            <Dropdown 
-              value={newBroadcast.templateId} 
-              options={activeTemplates.map((t: any) => ({ label: t.name, value: t.name })) || [
-                { label: 'fee_reminder', value: 'fee_reminder' },
-                { label: 'attendance_alert', value: 'attendance_alert' }
-              ]} 
-              onChange={(e) => setNewBroadcast({ ...newBroadcast, templateId: e.value })} 
-              className=""
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Select Template *
+            </label>
+            <Select
+              value={newBroadcast.templateId}
+              options={
+                activeTemplates.map((t: any) => ({ label: t.name, value: t.name })) || [
+                  { label: 'fee_reminder', value: 'fee_reminder' },
+                  { label: 'attendance_alert', value: 'attendance_alert' },
+                ]
+              }
+              onChange={(e) => setNewBroadcast({ ...newBroadcast, templateId: e.target.value })}
             />
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowBroadcastDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateBroadcast} isLoading={createBroadcastMutation.isPending}>
+            Create Campaign
+          </Button>
         </div>
       </Dialog>
 
-      {/* Dialog: Meta API Configuration */}
-      <Dialog 
-        header="Configure Meta API Credentials" 
-        visible={showMetaConfigDialog} 
-        style={{ width: '450px' }} 
-        modal 
-        onHide={() => setShowMetaConfigDialog(false)}
-        className="dialog-custom rounded-md"
-        footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" icon="pi pi-times" onClick={() => setShowMetaConfigDialog(false)} className="p-button-text p-2" />
-            <Button 
-              label="Save Configuration" 
-              icon="pi pi-save" 
-              onClick={() => handleUpdateConfig(metaConfigForm)} 
-              loading={updateConfigMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md" 
-            />
-          </div>
-        }
+      {/* Meta API Config Dialog */}
+      <Dialog
+        isOpen={showMetaConfigDialog}
+        onClose={() => setShowMetaConfigDialog(false)}
+        title="Configure Meta API Credentials"
       >
-        <div className="flex flex-col gap-4 mt-2">
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Phone Number ID</label>
-            <InputText 
-              value={metaConfigForm.phoneNumberId} 
-              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, phoneNumberId: e.target.value })} 
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Phone Number ID
+            </label>
+            <Input
+              value={metaConfigForm.phoneNumberId}
+              onChange={(e) =>
+                setMetaConfigForm({ ...metaConfigForm, phoneNumberId: e.target.value })
+              }
               placeholder="e.g. 102938475610293"
-              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md font-mono text-sm"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Business Account ID (Optional)</label>
-            <InputText 
-              value={metaConfigForm.businessId} 
-              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, businessId: e.target.value })} 
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Business Account ID
+            </label>
+            <Input
+              value={metaConfigForm.businessId}
+              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, businessId: e.target.value })}
               placeholder="e.g. 102938475610294"
-              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md font-mono text-sm"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">WABA ID (Optional)</label>
-            <InputText 
-              value={metaConfigForm.wabaId} 
-              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, wabaId: e.target.value })} 
-              placeholder="WhatsApp Business Account ID"
-              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md font-mono text-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-semibold text-xs text-gray-500 dark:text-gray-400">Permanent Access Token</label>
-            <InputTextarea 
-              value={metaConfigForm.accessToken} 
-              onChange={(e) => setMetaConfigForm({ ...metaConfigForm, accessToken: e.target.value })} 
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Permanent Access Token
+            </label>
+            <textarea
+              value={metaConfigForm.accessToken}
+              onChange={(e) =>
+                setMetaConfigForm({ ...metaConfigForm, accessToken: e.target.value })
+              }
               placeholder="EAAGm0..."
               rows={3}
-              className="p-2 border border-gray-250 dark:border-zinc-700 dark:bg-zinc-900 rounded-md font-mono text-xs"
+              className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400"
             />
-            <small className="text-[10px] text-zinc-400 mt-1">Generate a permanent token from Meta Developer Portal &gt; System Users.</small>
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowMetaConfigDialog(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleUpdateConfig(metaConfigForm)}
+            isLoading={updateConfigMutation.isPending}
+          >
+            Save Credentials
+          </Button>
         </div>
       </Dialog>
     </DashboardLayout>

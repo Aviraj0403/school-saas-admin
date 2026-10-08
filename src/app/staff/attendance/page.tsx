@@ -3,35 +3,34 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { Dropdown } from 'primereact/dropdown';
-import { Toast } from 'primereact/toast';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffAttendanceService, StaffAttendanceStatus } from '@/services/staffAttendance.service';
 import { staffService } from '@/services/staff.service';
+import { Check, UserCheck, Calendar } from 'lucide-react';
 
 const STATUSES: StaffAttendanceStatus[] = ['PRESENT', 'ABSENT', 'LATE', 'HALF_DAY', 'ON_LEAVE'];
 
-const STATUS_STYLES: Record<string, string> = {
-  PRESENT: 'bg-emerald-500/10 text-emerald-600',
-  ABSENT: 'bg-rose-500/10 text-rose-600',
-  LATE: 'bg-amber-500/10 text-amber-600',
-  HALF_DAY: 'bg-blue-500/10 text-blue-600',
-  ON_LEAVE: 'bg-zinc-500/10 text-zinc-500',
+const STATUS_BADGE_VARIANTS: Record<
+  string,
+  'success' | 'danger' | 'warning' | 'info' | 'secondary'
+> = {
+  PRESENT: 'success',
+  ABSENT: 'danger',
+  LATE: 'warning',
+  HALF_DAY: 'info',
+  ON_LEAVE: 'secondary',
 };
 
-/**
- * Staff attendance register.
- *
- * The employee register has been a separate permission key from the classroom
- * one since the RBAC rework (staff_attendance:*, admin-only) and was fully
- * implemented server-side — but no client ever called it, so a school could
- * mark pupils and not its own staff.
- */
+const STATUS_OPTIONS = STATUSES.map((v) => ({
+  label: v.replace('_', ' '),
+  value: v,
+}));
+
 export default function StaffAttendancePage() {
-  const toast = React.useRef<Toast>(null);
   const queryClient = useQueryClient();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -50,8 +49,6 @@ export default function StaffAttendancePage() {
 
   const staffList = staffData?.items ?? [];
 
-  // Existing marks win over the draft, so re-opening a marked day shows what
-  // was actually recorded rather than a blank register.
   const markedBy = useMemo(() => {
     const m: Record<string, string> = {};
     for (const r of marked as any[]) m[r.staffId ?? r.userId] = r.status;
@@ -67,15 +64,14 @@ export default function StaffAttendancePage() {
     mutationFn: () =>
       staffAttendanceService.markBulk(
         date,
-        Object.entries(draft).map(([staffId, status]) => ({ staffId, status })),
+        Object.entries(draft).map(([staffId, status]) => ({ staffId, status }))
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-attendance', date] });
       setDraft({});
-      toast.current?.show({ severity: 'success', summary: 'Saved', detail: 'Staff attendance recorded.', life: 3000 });
+      toast.success('Staff attendance recorded successfully.');
     },
-    onError: () =>
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Could not save attendance.', life: 3000 }),
+    onError: () => toast.error('Failed to save staff attendance.'),
   });
 
   const markAll = (status: StaffAttendanceStatus) => {
@@ -96,77 +92,128 @@ export default function StaffAttendancePage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Staff Attendance" subtitle="Staff" />
-      <Toast ref={toast} />
 
-      <div className="flex flex-col gap-4 pb-10 animate-fade-in">
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-4 flex flex-wrap items-end gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Date</label>
-            <input
-              type="date"
-              value={date}
-              max={today}
-              onChange={(e) => setDate(e.target.value)}
-              className="p-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 rounded-md text-sm"
-            />
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
+        {/* Header Control Bar */}
+        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
+                <Calendar className="w-3 h-3" /> Select Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                max={today}
+                onChange={(e) => setDate(e.target.value)}
+                className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-4">
+              <Button variant="outline" onClick={() => markAll('PRESENT')}>
+                <UserCheck className="w-3.5 h-3.5 mr-1.5 text-emerald-500" /> Mark All Present
+              </Button>
+              <Button variant="outline" onClick={() => setDraft({})}>
+                Clear Draft
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button label="All Present" onClick={() => markAll('PRESENT')} className="p-2 px-3 text-xs rounded-md border border-emerald-200 text-emerald-600" />
-            <Button label="Clear" onClick={() => setDraft({})} className="p-2 px-3 text-xs rounded-md border border-zinc-200 text-zinc-500" />
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
+              {STATUSES.map((s) => (
+                <Badge key={s} variant={STATUS_BADGE_VARIANTS[s] || 'secondary'}>
+                  {s.replace('_', ' ')}: {summary[s] ?? 0}
+                </Badge>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => saveMutation.mutate()}
+              isLoading={saveMutation.isPending}
+              disabled={Object.keys(draft).length === 0}
+            >
+              <Check className="w-4 h-4 mr-1.5" />
+              Save Attendance{' '}
+              {Object.keys(draft).length > 0 ? `(${Object.keys(draft).length})` : ''}
+            </Button>
           </div>
-          <div className="flex gap-3 ml-auto text-xs">
-            {STATUSES.map((s) => (
-              <span key={s} className={`px-2 py-1 rounded font-bold ${STATUS_STYLES[s]}`}>
-                {s.replace('_', ' ')}: {summary[s] ?? 0}
-              </span>
-            ))}
-          </div>
-          <Button
-            label={`Save ${Object.keys(draft).length || ''}`.trim()}
-            icon="pi pi-check"
-            loading={saveMutation.isPending}
-            disabled={Object.keys(draft).length === 0}
-            onClick={() => saveMutation.mutate()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 px-5 rounded-md border-0"
-          />
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm">
-          <DataTable
-            value={staffList}
-            loading={loadingStaff || loadingMarked}
-            emptyMessage="No staff found."
-            dataKey="id"
-            paginator
-            rows={20}
-          >
-            <Column header="Employee" body={(s: any) => (
-              <div className="flex flex-col">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-100">{s.name}</span>
-                <span className="text-[10px] text-zinc-400">{s.email}</span>
-              </div>
-            )} />
-            <Column header="Designation" body={(s: any) => (
-              <span className="text-xs text-zinc-500">{s.designation?.name ?? s.designationName ?? '—'}</span>
-            )} />
-            <Column header="Status" body={(s: any) => {
-              const current = statusFor(s.id);
-              return (
-                <Dropdown
-                  value={current ?? null}
-                  options={STATUSES.map((v) => ({ label: v.replace('_', ' '), value: v }))}
-                  onChange={(e) => setDraft((p) => ({ ...p, [s.id]: e.value }))}
-                  placeholder="Not marked"
-                  className="w-40 text-xs"
-                />
-              );
-            }} />
-            <Column header="Recorded" body={(s: any) => (
-              markedBy[s.id]
-                ? <span className={`text-[10px] font-bold px-2 py-1 rounded ${STATUS_STYLES[markedBy[s.id]]}`}>{markedBy[s.id].replace('_', ' ')}</span>
-                : <span className="text-[10px] text-zinc-400">—</span>
-            )} />
-          </DataTable>
+        {/* Staff Table */}
+        <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <tr>
+                <th className="px-4 py-3.5">Employee</th>
+                <th className="px-4 py-3.5">Designation</th>
+                <th className="px-4 py-3.5">Attendance Mark</th>
+                <th className="px-4 py-3.5">Saved Record</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+              {loadingStaff || loadingMarked ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-zinc-500">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
+                    <p className="text-xs">Loading staff register...</p>
+                  </td>
+                </tr>
+              ) : staffList.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                    No staff records found.
+                  </td>
+                </tr>
+              ) : (
+                staffList.map((s: any) => {
+                  const current = statusFor(s.id);
+                  return (
+                    <tr key={s.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                            {s.name}
+                          </span>
+                          <span className="text-[10px] text-zinc-400 font-mono">{s.email}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                        {s.designation?.name ?? s.designationName ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Select
+                          value={current ?? ''}
+                          options={[{ label: 'Select status...', value: '' }, ...STATUS_OPTIONS]}
+                          onChange={(e) =>
+                            setDraft((p) => {
+                              if (!e.target.value) {
+                                const copy = { ...p };
+                                delete copy[s.id];
+                                return copy;
+                              }
+                              return { ...p, [s.id]: e.target.value as StaffAttendanceStatus };
+                            })
+                          }
+                          className="w-44 text-xs"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        {markedBy[s.id] ? (
+                          <Badge variant={STATUS_BADGE_VARIANTS[markedBy[s.id]] || 'secondary'}>
+                            {markedBy[s.id].replace('_', ' ')}
+                          </Badge>
+                        ) : (
+                          <span className="text-[10px] text-zinc-400 font-mono">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </DashboardLayout>

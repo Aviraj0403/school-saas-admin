@@ -2,16 +2,15 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import { Dialog } from 'primereact/dialog';
-import { MultiSelect } from 'primereact/multiselect';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog } from '@/components/ui/dialog';
+import { Select } from '@/components/ui/select';
 import { api } from '@/services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
-
+import { toast } from 'sonner';
+import { Sliders, Check, Edit } from 'lucide-react';
 
 const ALL_MODULES = [
   { label: 'Students', value: 'students' },
@@ -35,32 +34,46 @@ const DEFAULT_PLANS = [
   {
     name: 'BASIC',
     price: '₹999/mo',
-    color: 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900',
-    gradient: 'from-zinc-400 to-zinc-500',
     modules: ['students', 'staff', 'academics', 'attendance', 'fee'],
     description: 'Core school management for small institutions.',
   },
   {
     name: 'STANDARD',
     price: '₹2,499/mo',
-    color: 'border-blue-100 dark:border-blue-950 bg-blue-50/10 dark:bg-blue-950/10',
-    gradient: 'from-blue-500 to-blue-650',
-    modules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication'],
+    modules: [
+      'students',
+      'staff',
+      'academics',
+      'attendance',
+      'fee',
+      'exams',
+      'library',
+      'communication',
+    ],
     description: 'Full academic suite with exams and library.',
   },
   {
     name: 'PREMIUM',
     price: '₹4,999/mo',
-    color: 'border-amber-100 dark:border-amber-950 bg-amber-50/10 dark:bg-amber-950/10',
-    gradient: 'from-amber-500 to-orange-600',
-    modules: ['students', 'staff', 'academics', 'attendance', 'fee', 'exams', 'library', 'communication', 'analytics', 'whatsapp', 'hostel', 'leave'],
+    modules: [
+      'students',
+      'staff',
+      'academics',
+      'attendance',
+      'fee',
+      'exams',
+      'library',
+      'communication',
+      'analytics',
+      'whatsapp',
+      'hostel',
+      'leave',
+    ],
     description: 'Everything in Standard + WhatsApp, Hostel, Leave & Analytics.',
   },
   {
     name: 'ENTERPRISE',
     price: 'Custom',
-    color: 'border-purple-100 dark:border-purple-950 bg-purple-50/10 dark:bg-purple-950/10',
-    gradient: 'from-purple-500 to-fuchsia-700',
     modules: ALL_MODULES.map((m) => m.value),
     description: 'All modules including Transport, Homework, and Website CMS.',
   },
@@ -69,7 +82,11 @@ const DEFAULT_PLANS = [
 export default function PlansPage() {
   const queryClient = useQueryClient();
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [assignForm, setAssignForm] = useState({ tenantId: '', modules: [] as string[], plan: 'BASIC' });
+  const [assignForm, setAssignForm] = useState({
+    tenantId: '',
+    modules: [] as string[],
+    plan: 'BASIC',
+  });
 
   const { data: tenants } = useQuery({
     queryKey: ['superadmin', 'tenants', { page: 1, limit: 100 }],
@@ -88,10 +105,16 @@ export default function PlansPage() {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
       setShowAssignDialog(false);
       setAssignForm({ tenantId: '', modules: [], plan: 'BASIC' });
+      toast.success('Tenant modules updated successfully.');
     },
+    onError: () => toast.error('Failed to update tenant plan & modules.'),
   });
 
-  const tenantOptions = tenants?.data?.items?.map((t: any) => ({ label: `${t.name} (${t.slug})`, value: t.id })) || [];
+  const tenantOptions = [
+    { label: 'Select School Domain...', value: '' },
+    ...(tenants?.data?.items?.map((t: any) => ({ label: `${t.name} (${t.slug})`, value: t.id })) ||
+      []),
+  ];
 
   const handlePlanSelect = (planName: string) => {
     const plan = DEFAULT_PLANS.find((p) => p.name === planName);
@@ -100,165 +123,213 @@ export default function PlansPage() {
     }
   };
 
+  const toggleModule = (modValue: string) => {
+    setAssignForm((prev) => ({
+      ...prev,
+      modules: prev.modules.includes(modValue)
+        ? prev.modules.filter((m) => m !== modValue)
+        : [...prev.modules, modValue],
+    }));
+  };
+
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="Plans" subtitle="Superadmin" />
-<div className="flex flex-col gap-4 pb-10">
-        
-        {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">SaaS Plans & Module Control</h1>
-            <p className="text-blue-100 mt-1 text-sm md:text-base">
-              Manage subscription plans, configure active modules, and provision tenant school workspaces.
-            </p>
-          </div> */}
+      <PageBreadcrumb title="Plans & Module Matrix" subtitle="Superadmin" />
 
-          <button 
-            onClick={() => setShowAssignDialog(true)}
-            className="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-md shadow-md transition-all active:scale-95 text-xs md:text-sm flex items-center gap-2 border-none cursor-pointer"
-          >
-            <i className="pi pi-cog"></i>
-            Assign Modules
-          </button>
+      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Sliders className="w-6 h-6 text-brand" /> SaaS Subscription Matrix
+            </h1>
+            <p className="text-xs text-zinc-500 mt-1">
+              Configure active modules and provision plan tiers across tenant school domains.
+            </p>
+          </div>
+
+          <Button onClick={() => setShowAssignDialog(true)}>
+            <Sliders className="w-4 h-4 mr-2" /> Assign Custom Modules
+          </Button>
         </div>
 
         {/* Plan Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           {DEFAULT_PLANS.map((plan) => (
-            <div key={plan.name} className={`rounded-md border-2 ${plan.color} p-6 flex flex-col justify-between gap-6 shadow-sm hover:shadow-md hover:translate-y-[-2px] transition-all duration-200`}>
-              <div className="flex flex-col gap-4">
+            <div
+              key={plan.name}
+              className="rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 p-5 bg-white dark:bg-zinc-900/60 backdrop-blur-xl flex flex-col justify-between gap-4 shadow-sm"
+            >
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm`}>{plan.name}</span>
-                  <span className="font-extrabold text-lg text-zinc-800 dark:text-white">{plan.price}</span>
+                  <Badge variant="info">{plan.name}</Badge>
+                  <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100">
+                    {plan.price}
+                  </span>
                 </div>
-                <p className="text-xs text-zinc-450 leading-relaxed font-medium">{plan.description}</p>
-                <div className="flex flex-col gap-2">
-                  <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Included Modules</span>
+                <p className="text-xs text-zinc-500 leading-relaxed">{plan.description}</p>
+
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    Modules ({plan.modules.length})
+                  </span>
                   <div className="flex flex-wrap gap-1">
                     {plan.modules.map((m) => (
-                      <span key={m} className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-350 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                      <Badge key={m} variant="secondary">
                         {m}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className={`h-1.5 rounded-full w-full bg-gradient-to-r ${plan.gradient}`} />
             </div>
           ))}
         </div>
 
-        {/* Tenant plan overview */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-850 rounded-md overflow-hidden shadow-sm p-4">
-          <h3 className="font-bold text-zinc-800 dark:text-white text-lg p-2">Tenant Subscription Directory</h3>
-          <DataTable
-            value={tenants?.data?.items || []}
-            className="p-datatable-sm mt-3"
-            emptyMessage="No tenants found."
-            stripedRows
-          >
-            <Column field="name" header="School Name" className="font-bold" />
-            <Column field="slug" header="Slug" className="font-mono text-xs" />
-            <Column field="plan" header="Plan" body={(d) => <Tag value={d.plan} severity={d.plan === 'ENTERPRISE' ? 'success' : d.plan === 'PREMIUM' ? 'warning' : 'info'} />} align="center" />
-            <Column
-              field="activeModules"
-              header="Active Modules"
-              body={(d) => (
-                <div className="flex flex-wrap gap-1">
-                  {(d.activeModules || []).slice(0, 5).map((m: string) => (
-                    <span key={m} className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-blue-100/30 dark:border-blue-900/20">{m}</span>
-                  ))}
-                  {(d.activeModules || []).length > 5 && (
-                    <span className="text-xs text-zinc-400 font-semibold self-center ml-1">+{d.activeModules.length - 5} more</span>
-                  )}
-                </div>
-              )}
-            />
-            <Column
-              header="Actions"
-              body={(d) => (
-                <Button
-                  label="Customize"
-                  icon="pi pi-pencil"
-                  size="small"
-                  className="p-button-text p-button-rounded text-blue-600"
-                  onClick={() => {
-                    setAssignForm({ tenantId: d.id, modules: d.activeModules || [], plan: d.plan || 'BASIC' });
-                    setShowAssignDialog(true);
-                  }}
-                />
-              )}
-              align="center"
-            />
-          </DataTable>
+        {/* Tenant Directory Overview */}
+        <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-6 shadow-sm flex flex-col gap-4">
+          <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+            Tenant Module Directory
+          </h3>
+
+          <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <tr>
+                  <th className="px-4 py-3">School Name</th>
+                  <th className="px-4 py-3">Subdomain Slug</th>
+                  <th className="px-4 py-3">Plan</th>
+                  <th className="px-4 py-3">Active Modules</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                {(tenants?.data?.items || []).length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-zinc-400">
+                      No tenants onboarded.
+                    </td>
+                  </tr>
+                ) : (
+                  (tenants?.data?.items || []).map((d: any) => (
+                    <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                      <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                        {d.name}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-brand">{d.slug}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="info">{d.plan || 'BASIC'}</Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {(d.activeModules || []).slice(0, 5).map((m: string) => (
+                            <Badge key={m} variant="secondary">
+                              {m}
+                            </Badge>
+                          ))}
+                          {(d.activeModules || []).length > 5 && (
+                            <span className="text-[10px] text-zinc-400 font-mono flex items-center">
+                              +{d.activeModules.length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setAssignForm({
+                              tenantId: d.id,
+                              modules: d.activeModules || [],
+                              plan: d.plan || 'BASIC',
+                            });
+                            setShowAssignDialog(true);
+                          }}
+                        >
+                          <Edit className="w-3.5 h-3.5 mr-1" /> Customize
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Dialog: Assign Modules */}
-      <Dialog 
-        header="Assign Plan & Modules to School" 
-        visible={showAssignDialog} 
-        style={{ width: '480px' }} 
-        modal 
-        onHide={() => setShowAssignDialog(false)}
-        className="dialog-custom rounded-md"
-        footer={
-          <div className="flex justify-end gap-2 p-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Button label="Cancel" className="p-button-text p-2" onClick={() => setShowAssignDialog(false)} />
-            <Button
-              label="Save Custom Settings"
-              icon="pi pi-check"
-              loading={assignMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 px-4 rounded-md border-none cursor-pointer"
-              onClick={() => assignMutation.mutate(assignForm)}
-              disabled={!assignForm.tenantId}
-            />
-          </div>
-        }
+      <Dialog
+        isOpen={showAssignDialog}
+        onClose={() => setShowAssignDialog(false)}
+        title="Assign Subscription Plan & Modules"
       >
-        <div className="flex flex-col gap-5 mt-3">
+        <div className="flex flex-col gap-4 py-2">
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Select School *</label>
-            <select
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Select School *
+            </label>
+            <Select
               value={assignForm.tenantId}
+              options={tenantOptions}
               onChange={(e) => setAssignForm({ ...assignForm, tenantId: e.target.value })}
-              className="p-3 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md bg-white dark:text-white outline-none focus:ring-1 focus:ring-blue-500 font-bold"
-            >
-              <option value="">-- Choose School --</option>
-              {tenantOptions.map((t: any) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Quick Plan Preset</label>
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Quick Plan Preset
+            </label>
             <div className="flex gap-2 flex-wrap">
               {DEFAULT_PLANS.map((p) => (
                 <Button
                   key={p.name}
-                  label={p.name}
-                  size="small"
-                  outlined={assignForm.plan !== p.name}
-                  className={`p-2 px-3 rounded-md border text-xs font-black transition-all ${assignForm.plan === p.name ? 'bg-blue-600 text-white border-blue-650' : 'text-zinc-500 border-zinc-200'}`}
+                  variant={assignForm.plan === p.name ? 'primary' : 'outline'}
                   onClick={() => handlePlanSelect(p.name)}
-                />
+                  className="text-xs"
+                >
+                  {p.name}
+                </Button>
               ))}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Active Modules (customize)</label>
-            <MultiSelect
-              value={assignForm.modules}
-              options={ALL_MODULES}
-              onChange={(e) => setAssignForm({ ...assignForm, modules: e.value })}
-              placeholder="Select modules to enable"
-              display="chip"
-              className="border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 rounded-md"
-            />
+            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+              Active Module Matrix
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-zinc-200/80 dark:border-zinc-800/80 rounded-lg p-3 bg-zinc-50/50 dark:bg-zinc-900/30">
+              {ALL_MODULES.map((m) => {
+                const active = assignForm.modules.includes(m.value);
+                return (
+                  <label
+                    key={m.value}
+                    className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={active}
+                      onChange={() => toggleModule(m.value)}
+                      className="rounded border-zinc-300 text-brand focus:ring-brand"
+                    />
+                    <span>{m.label}</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => assignMutation.mutate(assignForm)}
+            isLoading={assignMutation.isPending}
+            disabled={!assignForm.tenantId}
+          >
+            <Check className="w-4 h-4 mr-1.5" /> Save Plan Settings
+          </Button>
         </div>
       </Dialog>
     </DashboardLayout>

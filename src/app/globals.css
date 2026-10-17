@@ -43,14 +43,30 @@
   --shadow-pop: 0 30px 80px -24px rgba(20, 15, 45, 0.35), 0 8px 20px -8px rgba(20, 15, 45, 0.12);
   --shadow-glow: 0 10px 30px -10px color-mix(in oklab, var(--brand) 70%, transparent);
 
-  --sidebar: #140f2d;
-  --sidebar-foreground: #f4f2fa;
-  --sidebar-muted: #9a94b8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #140f2d;
+  --sidebar-muted: #736d8c;
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.07);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-accent: rgba(20, 15, 45, 0.05);
+  --sidebar-accent-foreground: #140f2d;
+  --sidebar-border: rgba(20, 15, 45, 0.08);
+  --sidebar-shadow: 0 4px 30px -6px rgba(20, 15, 45, 0.12);
+  --sidebar-school-card-bg: rgba(20, 15, 45, 0.04);
+  --sidebar-school-card-border: rgba(20, 15, 45, 0.08);
+  --sidebar-school-card-initials-bg: var(--brand);
+  --sidebar-school-card-initials-text: #ffffff;
+  --sidebar-school-card-name: #140f2d;
+  --sidebar-glow-1-color: var(--brand);
+  --sidebar-glow-1-opacity: 0.08;
+  --sidebar-glow-2-color: var(--brand-2);
+  --sidebar-glow-2-opacity: 0.05;
+  --sidebar-help-gradient: var(--brand-gradient);
+  --sidebar-section-divider: rgba(20, 15, 45, 0.06);
+  --sidebar-nav-active-text: var(--brand);
+  --sidebar-nav-icon-muted: #9a94b8;
+  --sidebar-child-border: rgba(20, 15, 45, 0.08);
+  --sidebar-child-dot: rgba(20, 15, 45, 0.25);
 }
 
 .dark {
@@ -73,6 +89,27 @@
   --shadow-pop: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
 
   --sidebar: #0f0b22;
+  --sidebar-foreground: #f4f2fa;
+  --sidebar-muted: #9a94b8;
+  --sidebar-accent: rgba(255, 255, 255, 0.07);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-shadow: 0 30px 60px -20px rgba(20, 15, 45, 0.55);
+  --sidebar-school-card-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-school-card-border: rgba(255, 255, 255, 0.1);
+  --sidebar-school-card-initials-bg: #ffffff;
+  --sidebar-school-card-initials-text: #140f2d;
+  --sidebar-school-card-name: #ffffff;
+  --sidebar-glow-1-color: var(--brand);
+  --sidebar-glow-1-opacity: 0.35;
+  --sidebar-glow-2-color: var(--brand-2);
+  --sidebar-glow-2-opacity: 0.2;
+  --sidebar-help-gradient: var(--brand-gradient);
+  --sidebar-section-divider: rgba(255, 255, 255, 0.1);
+  --sidebar-nav-active-text: #ffffff;
+  --sidebar-nav-icon-muted: #9a94b8;
+  --sidebar-child-border: rgba(255, 255, 255, 0.1);
+  --sidebar-child-dot: rgba(255, 255, 255, 0.5);
 }
 
 html {
@@ -241,6 +278,16 @@ textarea:-webkit-autofill {
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-school-card-bg: var(--sidebar-school-card-bg);
+  --color-sidebar-school-card-border: var(--sidebar-school-card-border);
+  --color-sidebar-school-card-initials-bg: var(--sidebar-school-card-initials-bg);
+  --color-sidebar-school-card-initials-text: var(--sidebar-school-card-initials-text);
+  --color-sidebar-school-card-name: var(--sidebar-school-card-name);
+  --color-sidebar-nav-active-text: var(--sidebar-nav-active-text);
+  --color-sidebar-nav-icon-muted: var(--sidebar-nav-icon-muted);
+  --color-sidebar-child-border: var(--sidebar-child-border);
+  --color-sidebar-child-dot: var(--sidebar-child-dot);
+  --color-sidebar-section-divider: var(--sidebar-section-divider);
 
   --color-brand: var(--brand);
   --color-brand-2: var(--brand-2);

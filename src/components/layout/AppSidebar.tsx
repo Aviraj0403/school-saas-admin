@@ -153,7 +153,7 @@ export default function AppSidebar({
         return index > 0 ? (
           <li
             key={item.label + index}
-            className="mx-auto my-3 hidden h-px w-6 bg-white/10 lg:block"
+            className="mx-auto my-3 hidden h-px w-6 bg-sidebar-section-divider lg:block"
           />
         ) : null;
       }
@@ -179,8 +179,8 @@ export default function AppSidebar({
       exact
         ? 'bg-brand-gradient font-semibold text-white shadow-glow'
         : active
-          ? 'font-semibold text-white'
-          : 'font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-white'
+          ? 'font-semibold text-sidebar-nav-active-text'
+          : 'font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground'
     );
 
     const icon = !isChild && (
@@ -188,7 +188,11 @@ export default function AppSidebar({
         name={item.icon}
         className={clsx(
           'size-[18px] shrink-0 transition-colors',
-          exact ? 'text-white' : active ? 'text-white' : 'text-sidebar-muted group-hover:text-white'
+          exact
+            ? 'text-white'
+            : active
+              ? 'text-sidebar-nav-active-text'
+              : 'text-sidebar-nav-icon-muted group-hover:text-sidebar-foreground'
         )}
       />
     );
@@ -227,7 +231,7 @@ export default function AppSidebar({
               <span
                 className={clsx(
                   'size-1.5 shrink-0 rounded-full',
-                  exact ? 'bg-white' : 'bg-sidebar-muted/50 group-hover:bg-white'
+                  exact ? 'bg-white' : 'bg-sidebar-child-dot group-hover:bg-sidebar-foreground'
                 )}
               />
             )}
@@ -239,7 +243,7 @@ export default function AppSidebar({
         {hasChildren && expanded && (
           <ul
             className={clsx(
-              'ml-[22px] mt-0.5 border-l border-white/10 pl-2',
+              'ml-[22px] mt-0.5 border-l border-sidebar-child-border pl-2',
               isCollapsed && 'lg:hidden'
             )}
           >
@@ -253,14 +257,29 @@ export default function AppSidebar({
   return (
     <aside
       className={clsx(
-        'fixed bottom-3 left-3 top-3 z-50 flex flex-col overflow-hidden rounded-[28px] bg-sidebar text-sidebar-foreground shadow-[0_30px_60px_-20px_rgba(20,15,45,0.55)] transition-all duration-300 ease-out',
+        'fixed bottom-3 left-3 top-3 z-50 flex flex-col overflow-hidden rounded-[28px] bg-sidebar text-sidebar-foreground transition-all duration-300 ease-out',
         isCollapsed ? 'w-[268px] lg:w-[84px]' : 'w-[268px]',
         isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+24px)]'
       )}
+      style={{
+        boxShadow: 'var(--sidebar-shadow)',
+      }}
     >
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-brand/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-20 size-72 rounded-full bg-brand-2/20 blur-3xl" />
+      {/* Ambient glow — uses CSS variable opacity so light mode has subtle glow, dark has strong */}
+      <div
+        className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full blur-3xl"
+        style={{
+          background: `var(--sidebar-glow-1-color)`,
+          opacity: `var(--sidebar-glow-1-opacity)`,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-32 -right-20 size-72 rounded-full blur-3xl"
+        style={{
+          background: `var(--sidebar-glow-2-color)`,
+          opacity: `var(--sidebar-glow-2-opacity)`,
+        }}
+      />
 
       {/* Logo */}
       <div
@@ -274,7 +293,7 @@ export default function AppSidebar({
         </span>
         <span
           className={clsx(
-            'font-display text-[20px] font-semibold tracking-tight',
+            'font-display text-[20px] font-semibold tracking-tight text-sidebar-foreground',
             isCollapsed && 'lg:hidden'
           )}
         >
@@ -285,7 +304,7 @@ export default function AppSidebar({
             onClick={onToggleSize}
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className={clsx(
-              'ml-auto hidden size-8 items-center justify-center rounded-lg text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-white lg:flex',
+              'ml-auto hidden size-8 items-center justify-center rounded-lg text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground lg:flex',
               isCollapsed && 'lg:hidden'
             )}
           >
@@ -298,15 +317,28 @@ export default function AppSidebar({
       <div className={clsx('relative px-3 pb-2', isCollapsed && 'lg:px-2')}>
         <div
           className={clsx(
-            'flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-2.5',
+            'flex items-center gap-3 rounded-2xl border p-2.5',
             isCollapsed && 'lg:justify-center lg:p-1.5'
           )}
+          style={{
+            background: 'var(--sidebar-school-card-bg)',
+            borderColor: 'var(--sidebar-school-card-border)',
+          }}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-[13px] font-bold text-ink">
+          <span
+            className="flex size-9 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold"
+            style={{
+              background: 'var(--sidebar-school-card-initials-bg)',
+              color: 'var(--sidebar-school-card-initials-text)',
+            }}
+          >
             {initials(activeTenant.name)}
           </span>
           <span className={clsx('min-w-0 flex-1', isCollapsed && 'lg:hidden')}>
-            <span className="block truncate text-[13px] font-semibold leading-tight text-white">
+            <span
+              className="block truncate text-[13px] font-semibold leading-tight"
+              style={{ color: 'var(--sidebar-school-card-name)' }}
+            >
               {activeTenant.name}
             </span>
             <span className="mt-0.5 block truncate text-xs leading-tight text-sidebar-muted">
@@ -328,7 +360,7 @@ export default function AppSidebar({
             <button
               onClick={onToggleSize}
               aria-label="Expand sidebar"
-              className="flex size-10 items-center justify-center rounded-xl text-sidebar-muted hover:bg-sidebar-accent hover:text-white"
+              className="flex size-10 items-center justify-center rounded-xl text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"
             >
               <PanelLeftOpen className="size-[18px]" />
             </button>

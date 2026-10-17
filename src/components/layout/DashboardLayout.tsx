@@ -12,7 +12,12 @@ import { toast } from 'sonner';
 let globalMounted = false;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Lazy initializer: synchronously detect mobile so the first render is correct
+  // — no flash, and hamburger toggle works from the very first frame.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') return window.innerWidth >= 1024;
+    return true; // SSR fallback: desktop
+  });
   const [sidebarSize, setSidebarSize] = useState<'default' | 'collapsed'>('default');
   const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(globalMounted);
@@ -30,10 +35,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setMounted(true);
 
     if (typeof window !== 'undefined') {
-      if (window.innerWidth < 1024) {
-        setSidebarOpen(false);
-      }
-
       const handleShowToast = (e: Event) => {
         const customEvent = e as CustomEvent;
         if (customEvent.detail) {

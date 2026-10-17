@@ -1,5 +1,6 @@
 'use client';
 
+import { localDateISO } from '@/lib/format';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -31,7 +32,7 @@ const LEVEL_BADGE_VARIANTS: Record<string, 'danger' | 'warning' | 'info' | 'seco
 };
 
 export default function ObservabilityPage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateISO();
   const [date, setDate] = useState(today);
   const [level, setLevel] = useState('');
   const [search, setSearch] = useState('');

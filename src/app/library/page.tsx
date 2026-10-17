@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -169,7 +170,7 @@ export default function LibraryPage() {
     return <Badge variant={isAvail ? 'success' : 'warning'}>{status}</Badge>;
   };
 
-  const activeBooks = books?.data?.items || [];
+  const activeBooks = asList(books);
   const totalBooks = books?.data?.meta?.total || 0;
   const activeLoans = activeIssues || [];
 

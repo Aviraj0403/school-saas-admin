@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tenantService } from '../services/tenant.service';
 import { CreateTenantDto } from '@/types/api.types';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function useTenantsList(page: number, limit: number, search?: string) {
+  const isSuperAdmin = useAuthStore((s) => !!s.user?.isSuperAdmin);
   return useQuery({
     queryKey: ['superadmin', 'tenants', { page, limit, search }],
     queryFn: () => tenantService.getTenants(page, limit, search),
+    enabled: isSuperAdmin,
     placeholderData: (prev) => prev,
   });
 }
@@ -54,8 +57,7 @@ export function useSetTenantModules() {
 export function useSetTenantPlan() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, plan }: { id: string; plan: string }) =>
-      tenantService.setPlan(id, plan),
+    mutationFn: ({ id, plan }: { id: string; plan: string }) => tenantService.setPlan(id, plan),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
     },
@@ -65,8 +67,13 @@ export function useSetTenantPlan() {
 export function useUpdateTenant() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { theme?: Record<string, any>; name?: string } }) =>
-      tenantService.updateTenant(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { theme?: Record<string, any>; name?: string };
+    }) => tenantService.updateTenant(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'tenants'] });
     },

@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -81,7 +82,7 @@ export default function CommunicationPage() {
     });
   };
 
-  const activeAnnouncements = announcements?.data?.items || [];
+  const activeAnnouncements = asList(announcements);
   const activeEvents = (events as any)?.data || events || [];
 
   return (

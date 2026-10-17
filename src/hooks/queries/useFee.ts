@@ -30,6 +30,9 @@ export function useCollectFee() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fee-collections'] });
       queryClient.invalidateQueries({ queryKey: ['fee-revenue-summary'] });
+      // The paying student's balance changed too
+      queryClient.invalidateQueries({ queryKey: ['student-dues'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-full-dashboard'] });
     },
   });
 }
@@ -37,7 +40,7 @@ export function useCollectFee() {
 export function useFeeCollections(
   page: number,
   limit: number,
-  filters?: { studentId?: string; status?: string },
+  filters?: { studentId?: string; status?: string }
 ) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
@@ -68,4 +71,3 @@ export function useStudentDues(studentId: string) {
     retry: false,
   });
 }
-

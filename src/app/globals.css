@@ -3,141 +3,150 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ───────────────────────────────────────────────────────────────
+   EduNexus "Aurora" design system
+   - Brand follows the school's theme colour (--primary-color, set by
+     ThemeProvider); --brand-2 is a warm partner hue used for gradients.
+   - Neutrals are a violet-tinted "mauve" scale; zinc/slate/gray all map to it
+     so every module reads as one product.
+   ─────────────────────────────────────────────────────────────── */
+
 :root {
-  /* Brand Tokens - Electric Indigo */
-  --brand: #5d5fef;
-  --brand-hover: #4b4ded;
-  --brand-muted: rgba(93, 95, 239, 0.1);
+  --brand: var(--primary-color, #6d4aff);
+  --brand-2: color-mix(in oklab, var(--brand) 35%, #ff4f9a);
+  --brand-hover: color-mix(in oklab, var(--brand) 85%, black);
+  --brand-muted: color-mix(in oklab, var(--brand) 11%, transparent);
+  --brand-soft: color-mix(in oklab, var(--brand) 7%, white);
+  --brand-gradient: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
 
-  /* Surfaces */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --ink: #140f2d;
+
+  --background: #f4f2fa;
+  --foreground: #140f2d;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #140f2d;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --destructive: #f43f5e;
+  --popover-foreground: #140f2d;
+  --muted: #f1eff8;
+  --muted-foreground: #736d8c;
+  --accent: #f1eff8;
+  --accent-foreground: #140f2d;
+  --destructive: #f0435c;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #5d5fef;
-  --radius: 0.75rem;
+  --border: rgba(20, 15, 45, 0.07);
+  --input: #e4e1ef;
+  --ring: var(--brand);
+  --radius: 1rem;
 
-  /* Mesh Background */
-  --mesh-bg:
-    radial-gradient(at 10% 10%, rgba(93, 95, 239, 0.05) 0px, transparent 50%),
-    radial-gradient(at 90% 90%, rgba(34, 211, 238, 0.04) 0px, transparent 50%);
+  --shadow-card: 0 1px 2px rgba(20, 15, 45, 0.04), 0 12px 32px -18px rgba(20, 15, 45, 0.18);
+  --shadow-card-hover: 0 2px 4px rgba(20, 15, 45, 0.04), 0 24px 48px -20px rgba(20, 15, 45, 0.28);
+  --shadow-pop: 0 30px 80px -24px rgba(20, 15, 45, 0.35), 0 8px 20px -8px rgba(20, 15, 45, 0.12);
+  --shadow-glow: 0 10px 30px -10px color-mix(in oklab, var(--brand) 70%, transparent);
 
-  /* Sidebar */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #5d5fef;
+  --sidebar: #140f2d;
+  --sidebar-foreground: #f4f2fa;
+  --sidebar-muted: #9a94b8;
+  --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(93, 95, 239, 0.08);
-  --sidebar-accent-foreground: #5d5fef;
-  --sidebar-border: #e2e8f0;
+  --sidebar-accent: rgba(255, 255, 255, 0.07);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
 }
 
 .dark {
-  /* Sokudo Ultra-Luxury Midnight Palette (Dark Mode) */
-  --background: #090e1a;
-  --foreground: #f8fafc;
-  --card: #0f1629;
-  --card-foreground: #f8fafc;
-  --popover: #0f1629;
-  --popover-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
+  --brand-soft: color-mix(in oklab, var(--brand) 14%, #120e26);
+  --background: #0b0819;
+  --foreground: #f1eff8;
+  --card: #141029;
+  --card-foreground: #f1eff8;
+  --popover: #1a1533;
+  --popover-foreground: #f1eff8;
+  --muted: #1f1a3a;
+  --muted-foreground: #9d97b5;
+  --accent: #1f1a3a;
+  --accent-foreground: #f1eff8;
+  --border: rgba(255, 255, 255, 0.07);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #5d5fef;
 
-  /* Dark Mesh Background */
-  --mesh-bg:
-    radial-gradient(at 15% 15%, rgba(93, 95, 239, 0.12) 0px, transparent 45%),
-    radial-gradient(at 85% 85%, rgba(34, 211, 238, 0.08) 0px, transparent 45%),
-    radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.04) 0px, transparent 50%);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 20px 40px -20px rgba(0, 0, 0, 0.7);
+  --shadow-pop: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
 
-  /* Sidebar Dark */
-  --sidebar: #060a12;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #5d5fef;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(93, 95, 239, 0.15);
-  --sidebar-accent-foreground: #818cf8;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar: #0f0b22;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--background);
-  background-image: var(--mesh-bg);
-  background-attachment: fixed;
   color: var(--foreground);
   font-family:
     var(--font-sans),
     system-ui,
     -apple-system,
     sans-serif;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
+  font-feature-settings: 'cv11', 'ss01';
+  line-height: 1.55;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d6d2e4;
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #2e2850;
+  background-clip: content-box;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
-/* Custom Input Autofill overrides */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus {
+textarea:-webkit-autofill {
   -webkit-text-fill-color: var(--foreground) !important;
   -webkit-box-shadow: 0 0 0px 1000px var(--card) inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Keyframes & Animations */
+::selection {
+  background: color-mix(in oklab, var(--brand) 25%, transparent);
+}
+
+/* Animations */
 @keyframes slide-up-fade {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
-
 .animate-slide-up {
-  animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slide-up-fade 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes fadeIn {
@@ -148,13 +157,66 @@ textarea:-webkit-autofill:focus {
     opacity: 1;
   }
 }
-
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.35s ease-out both;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -3%, 0) scale(1.08);
+  }
+}
+.animate-aurora {
+  animation: aurora 16s ease-in-out infinite;
+}
+
+/* Page content entrance — children of <main> fade up in sequence */
+.page-enter > * {
+  animation: slide-up-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.page-enter > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.page-enter > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.page-enter > *:nth-child(n + 4) {
+  animation-delay: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @theme inline {
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-outfit);
+  --font-display: var(--font-outfit);
+  --font-mono: var(--font-geist-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -166,20 +228,112 @@ textarea:-webkit-autofill:focus {
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-ink: var(--ink);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-soft: var(--brand-soft);
+  --color-primary: var(--brand);
+  --color-primary-foreground: #ffffff;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  --shadow-xs: 0 1px 2px rgba(20, 15, 45, 0.05);
+  --shadow-sm: var(--shadow-card);
+  --shadow-md: 0 4px 12px -2px rgba(20, 15, 45, 0.08), 0 2px 4px -2px rgba(20, 15, 45, 0.04);
+  --shadow-lg: var(--shadow-card-hover);
+  --shadow-xl: var(--shadow-pop);
+  --shadow-2xl: var(--shadow-pop);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-glow: var(--shadow-glow);
+
+  /* Blue & indigo follow the school's brand so its colour applies app-wide */
+  --color-blue-50: color-mix(in oklab, var(--brand) 6%, white);
+  --color-blue-100: color-mix(in oklab, var(--brand) 12%, white);
+  --color-blue-200: color-mix(in oklab, var(--brand) 24%, white);
+  --color-blue-300: color-mix(in oklab, var(--brand) 42%, white);
+  --color-blue-400: color-mix(in oklab, var(--brand) 66%, white);
+  --color-blue-500: color-mix(in oklab, var(--brand) 88%, white);
+  --color-blue-600: var(--brand);
+  --color-blue-700: color-mix(in oklab, var(--brand) 85%, black);
+  --color-blue-800: color-mix(in oklab, var(--brand) 70%, black);
+  --color-blue-900: color-mix(in oklab, var(--brand) 55%, black);
+  --color-blue-950: color-mix(in oklab, var(--brand) 38%, black);
+  --color-indigo-50: var(--color-blue-50);
+  --color-indigo-100: var(--color-blue-100);
+  --color-indigo-200: var(--color-blue-200);
+  --color-indigo-300: var(--color-blue-300);
+  --color-indigo-400: var(--color-blue-400);
+  --color-indigo-500: var(--color-blue-500);
+  --color-indigo-600: var(--color-blue-600);
+  --color-indigo-700: var(--color-blue-700);
+  --color-indigo-800: var(--color-blue-800);
+  --color-indigo-900: var(--color-blue-900);
+  --color-indigo-950: var(--color-blue-950);
+
+  /* Mauve neutrals — zinc, slate and gray all resolve here */
+  --color-zinc-50: #f8f7fc;
+  --color-zinc-100: #f1eff8;
+  --color-zinc-200: #e4e1ef;
+  --color-zinc-300: #cdc8de;
+  --color-zinc-400: #9d97b5;
+  --color-zinc-500: #736d8c;
+  --color-zinc-600: #565070;
+  --color-zinc-700: #3e3956;
+  --color-zinc-800: #26213f;
+  --color-zinc-900: #171330;
+  --color-zinc-950: #0d0a1f;
+  --color-slate-50: var(--color-zinc-50);
+  --color-slate-100: var(--color-zinc-100);
+  --color-slate-200: var(--color-zinc-200);
+  --color-slate-300: var(--color-zinc-300);
+  --color-slate-400: var(--color-zinc-400);
+  --color-slate-500: var(--color-zinc-500);
+  --color-slate-600: var(--color-zinc-600);
+  --color-slate-700: var(--color-zinc-700);
+  --color-slate-800: var(--color-zinc-800);
+  --color-slate-900: var(--color-zinc-900);
+  --color-slate-950: var(--color-zinc-950);
+  --color-gray-50: var(--color-zinc-50);
+  --color-gray-100: var(--color-zinc-100);
+  --color-gray-200: var(--color-zinc-200);
+  --color-gray-300: var(--color-zinc-300);
+  --color-gray-400: var(--color-zinc-400);
+  --color-gray-500: var(--color-zinc-500);
+  --color-gray-600: var(--color-zinc-600);
+  --color-gray-700: var(--color-zinc-700);
+  --color-gray-800: var(--color-zinc-800);
+  --color-gray-900: var(--color-zinc-900);
+  --color-gray-950: var(--color-zinc-950);
+
+  /* Livelier semantic accents */
+  --color-emerald-500: #10c38e;
+  --color-emerald-600: #07a679;
+  --color-rose-500: #f0435c;
+  --color-rose-600: #dc2f4a;
+  --color-amber-500: #ffa31a;
+  --color-amber-600: #e88a00;
 }
 
 @layer base {
@@ -188,5 +342,45 @@ textarea:-webkit-autofill:focus {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-outfit), var(--font-inter), sans-serif;
+    letter-spacing: -0.02em;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-brand-gradient {
+    background-image: var(--brand-gradient);
+  }
+  .font-display {
+    font-family: var(--font-outfit), var(--font-inter), sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Soft dotted texture for hero surfaces */
+  .bg-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px);
   }
 }

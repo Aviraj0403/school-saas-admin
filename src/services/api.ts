@@ -25,9 +25,12 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
 
-      // Inject tenant ID if we have it in state
+      // Tenant scoping. Only a super admin may act on another school (the workspace
+      // switcher); everyone else is pinned to the tenant on their own account, so a
+      // stale or tampered client-side tenant can never widen what they reach.
+      const { user } = useAuthStore.getState();
       const activeTenant = useAuthStore.getState().activeTenant || useTenantStore.getState().tenant;
-      const tenantId = activeTenant?.id;
+      const tenantId = user && !user.isSuperAdmin ? user.tenantId : activeTenant?.id;
       if (tenantId && tenantId !== 'superadmin') {
         config.headers['X-Tenant-Id'] = tenantId;
       }
@@ -110,16 +113,18 @@ api.interceptors.response.use(
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
 
       const refreshToken =
         typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
       if (!refreshToken) {
+        processQueue(error, null);
         useAuthStore.getState().logout();
         if (typeof window !== 'undefined') window.location.href = '/';
         return Promise.reject(error);
       }
+
+      isRefreshing = true;
 
       try {
         const { data } = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
@@ -127,10 +132,17 @@ api.interceptors.response.use(
         });
 
         const newAccessToken = data.data?.accessToken || data.accessToken;
+        // Keep the rotated refresh token if the server issues one; reusing the old
+        // one would fail the next refresh.
+        const newRefreshToken = data.data?.refreshToken || data.refreshToken;
 
         if (newAccessToken && typeof window !== 'undefined') {
           localStorage.setItem('auth_token', newAccessToken);
-          useAuthStore.setState({ token: newAccessToken });
+          if (newRefreshToken) localStorage.setItem('refresh_token', newRefreshToken);
+          useAuthStore.setState({
+            token: newAccessToken,
+            ...(newRefreshToken ? { refreshToken: newRefreshToken } : {}),
+          });
           api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           processQueue(null, newAccessToken);

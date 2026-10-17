@@ -288,9 +288,13 @@ export default function AssignmentsPage() {
             {/* Assignments list */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredAssignments.map((assignment) => {
-                const submissionPercent = Math.round(
-                  (assignment.submissions / assignment.totalStudents) * 100
-                );
+                // Counts may be missing or arrive as arrays/strings; never divide into NaN
+                const submitted = Array.isArray(assignment.submissions)
+                  ? assignment.submissions.length
+                  : Number(assignment.submissions) || 0;
+                const totalStudents = Number(assignment.totalStudents) || 0;
+                const submissionPercent =
+                  totalStudents > 0 ? Math.round((submitted / totalStudents) * 100) : 0;
                 return (
                   <div
                     key={assignment.id}
@@ -298,7 +302,9 @@ export default function AssignmentsPage() {
                   >
                     <div>
                       <div className="flex justify-between items-start">
-                        <Badge variant="secondary">{assignment.subject}</Badge>
+                        <Badge variant="secondary">
+                          {(assignment.subject as any)?.name ?? assignment.subject}
+                        </Badge>
                         <Badge
                           variant={
                             assignment.status === 'ACTIVE'
@@ -331,7 +337,7 @@ export default function AssignmentsPage() {
                           Submissions Logged
                         </span>
                         <span className="font-bold text-zinc-900 dark:text-zinc-100">
-                          {assignment.submissions} / {assignment.totalStudents} ({submissionPercent}
+                          {submitted} / {totalStudents} ({submissionPercent}
                           %)
                         </span>
                       </div>
@@ -377,7 +383,7 @@ export default function AssignmentsPage() {
                   >
                     <div>
                       <div className="flex justify-between items-start">
-                        <Badge variant="secondary">{hw.subject}</Badge>
+                        <Badge variant="secondary">{(hw.subject as any)?.name ?? hw.subject}</Badge>
                         <Badge
                           variant={
                             hw.status === 'GRADED'

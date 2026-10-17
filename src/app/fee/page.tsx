@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -104,14 +105,14 @@ export default function FeePage() {
   const { data: staffData } = useStaffList(1, 100);
 
   const { data: classesData } = useClasses(1, 100);
-  const classesList = classesData?.data?.items || classesData?.items || [];
+  const classesList = asList(classesData);
   const classOptions = [
     { label: 'Select Class...', value: '' },
     ...classesList.map((c: any) => ({ label: `${c.name} - ${c.section}`, value: c.id })),
   ];
 
   const { data: studentsData } = useStudentsList(1, 100, undefined, selectedClassId || undefined);
-  const studentsList = studentsData?.data?.items || studentsData?.items || [];
+  const studentsList = asList(studentsData);
   const studentOptions = [
     { label: 'Select Student...', value: '' },
     ...studentsList.map((s: any) => ({
@@ -171,6 +172,11 @@ export default function FeePage() {
       toast.error('Student selection and valid amount are required.');
       return;
     }
+    const due = Number(duesData?.totalDue ?? NaN);
+    if (Number.isFinite(due) && collectFee.amount > due) {
+      toast.error(`Amount is more than the ₹${due.toLocaleString('en-IN')} this student owes.`);
+      return;
+    }
     collectFeeMutation.mutate(collectFee, {
       onSuccess: () => {
         toast.success('Fee receipt recorded successfully.');
@@ -205,7 +211,7 @@ export default function FeePage() {
     );
   };
 
-  const staffList = staffData?.items || [];
+  const staffList = asList(staffData);
 
   const getStaffName = (userId: string) => {
     const staff = staffList.find((s: any) => s.id === userId || s.userId === userId);
@@ -227,15 +233,16 @@ export default function FeePage() {
     { label: 'December', value: 12 },
   ];
 
-  const yearsList = [
-    { label: '2025', value: 2025 },
-    { label: '2026', value: 2026 },
-    { label: '2027', value: 2027 },
-  ];
+  const thisYear = new Date().getFullYear();
+  const yearsList = [thisYear - 2, thisYear - 1, thisYear, thisYear + 1].map((y) => ({
+    label: String(y),
+    value: y,
+  }));
 
   const totalRevenue = Number(revenueSummary?.totalRevenue ?? revenueSummary?.totalCollected ?? 0);
   const totalSalaries = (payslips || []).reduce(
-    (acc: number, p: any) => acc + (p.status === 'PAID' ? p.netSalary : 0),
+    // Amounts arrive as decimal strings; adding them unconverted concatenated text
+    (acc: number, p: any) => acc + (p.status === 'PAID' ? Number(p.netSalary) || 0 : 0),
     0
   );
   const netFinProfit = totalRevenue - totalSalaries;
@@ -380,7 +387,7 @@ export default function FeePage() {
                           Amount Slab
                         </span>
                         <span className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">
-                          ₹{struct.amount.toLocaleString('en-IN')}
+                          ₹{Number(struct.amount).toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
@@ -533,7 +540,7 @@ export default function FeePage() {
                                     </Badge>
                                   </td>
                                   <td className="px-4 py-3 font-mono font-bold text-right text-zinc-900 dark:text-zinc-100">
-                                    ₹{Number(tx.amount).toLocaleString()}
+                                    ₹{Number(tx.amount).toLocaleString('en-IN')}
                                   </td>
                                 </tr>
                               ))}
@@ -625,7 +632,7 @@ export default function FeePage() {
                             ₹{d.deductions?.toLocaleString()}
                           </td>
                           <td className="px-4 py-3 font-mono font-bold text-brand">
-                            ₹{d.netSalary?.toLocaleString()}
+                            ₹{Number(d.netSalary ?? 0).toLocaleString('en-IN')}
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={d.status === 'PAID' ? 'success' : 'danger'}>

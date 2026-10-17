@@ -1,5 +1,7 @@
 'use client';
 
+import { isStudentActive } from '@/lib/format';
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -71,7 +73,7 @@ export default function UsersRegistryPage() {
     : 'https://demo.jdinfotechsolutions.in/login';
 
   const { data: studentsData, isPending: loadingStudents } = useStudentsList(1, 100);
-  const rawStudents = studentsData?.items || studentsData?.data?.items || [];
+  const rawStudents = asList(studentsData);
 
   const mappedStudents: SystemUser[] = rawStudents.map((s: any) => ({
     id: s.id,
@@ -81,7 +83,7 @@ export default function UsersRegistryPage() {
       `student.${(s.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '-')}@${activeTenant?.subdomain || 'school'}.com`,
     phone: s.phone || 'N/A',
     role: 'Student',
-    isActive: s.status === 'ACTIVE',
+    isActive: isStudentActive(s),
     empIdOrAdmNo: s.admissionNo,
     parentLinked: s.parentName || 'N/A',
   }));
@@ -89,10 +91,15 @@ export default function UsersRegistryPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const [staffRes, parentRes] = await Promise.all([api.get('/staff'), api.get('/parents')]);
+      const [staffRes, parentRes] = await Promise.all([
+        api.get('/staff?page=1&limit=100'),
+        api.get('/parents'),
+      ]);
 
       if (staffRes.data?.success) {
-        const mappedStaff = staffRes.data.data.map((s: any) => ({
+        // /staff is paginated ({ items, meta }); calling .map on that object used to throw
+        // and silently empty the list.
+        const mappedStaff = asList(staffRes.data.data).map((s: any) => ({
           id: s.id,
           name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
           email: s.email,
@@ -107,7 +114,7 @@ export default function UsersRegistryPage() {
       }
 
       if (parentRes.data?.success) {
-        const mappedParents = parentRes.data.data.map((p: any) => ({
+        const mappedParents = asList(parentRes.data.data).map((p: any) => ({
           id: p.id,
           name: p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim(),
           email: p.email,
@@ -135,23 +142,32 @@ export default function UsersRegistryPage() {
     fetchUsers();
   }, [activeTenant]);
 
+  // Default first-login password the backend assigns per role (compared case-insensitively —
+  // roles arrive as display names or slugs depending on the list).
+  const defaultPasswordFor = (role: string) => {
+    const r = role.toLowerCase();
+    if (r === 'student') return 'Student@123';
+    if (r === 'parent') return 'Parent@123';
+    return 'School@123';
+  };
+
   const handleCopyCredentials = (userObj: SystemUser) => {
-    const credInfo = `Login URL: ${schoolLoginUrl}\nUsername/Email: ${userObj.email}\nDefault Password: ${userObj.role === 'Student' ? 'Student@123' : userObj.role === 'Parent' ? 'Parent@123' : 'School@123'}`;
+    const credInfo = `Login URL: ${schoolLoginUrl}\nUsername/Email: ${userObj.email}\nTemporary password: ${defaultPasswordFor(userObj.role)}\nPlease change it after your first sign-in.`;
     navigator.clipboard.writeText(credInfo);
     toast.success(`Credentials copied to clipboard for ${userObj.name}.`);
   };
 
   const handleShareWhatsApp = (userObj: SystemUser) => {
-    const defaultPass =
-      userObj.role === 'Student'
-        ? 'Student@123'
-        : userObj.role === 'Parent'
-          ? 'Parent@123'
-          : 'School@123';
-    const message = `Hello ${userObj.name},\n\nWelcome to ${activeTenant?.name || 'our school'}.\nYour portal access is ready.\n\n🌐 Login: ${schoolLoginUrl}\n📧 Email: ${userObj.email}\n🔑 Temp Password: ${defaultPass}`;
-    const encodedMsg = encodeURIComponent(message);
     const cleanPhone = (userObj.phone || '').replace(/[^0-9]/g, '');
-    window.open(`https://wa.me/${cleanPhone || '919876543210'}?text=${encodedMsg}`, '_blank');
+    // Never fall back to a placeholder number — that would send login details to a stranger.
+    if (cleanPhone.length < 10) {
+      toast.error(
+        `${userObj.name} has no phone number on file. Add one before sharing on WhatsApp.`
+      );
+      return;
+    }
+    const message = `Hello ${userObj.name},\n\nWelcome to ${activeTenant?.name || 'our school'}.\nYour portal access is ready.\n\n🌐 Login: ${schoolLoginUrl}\n📧 Email: ${userObj.email}\n🔑 Temporary password: ${defaultPasswordFor(userObj.role)}\n\nPlease change your password after signing in.`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const filterList = (list: SystemUser[]) => {

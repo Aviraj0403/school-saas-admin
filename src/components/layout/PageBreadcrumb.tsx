@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ChevronRight, Home } from 'lucide-react';
 
 interface PageBreadcrumbProps {
   title: string;
@@ -7,30 +8,33 @@ interface PageBreadcrumbProps {
   homeUrl?: string;
 }
 
-const PageBreadcrumb: React.FC<PageBreadcrumbProps> = ({ 
-  title, 
-  subtitle, 
-  homeUrl = '/dashboard' 
+const PageBreadcrumb: React.FC<PageBreadcrumbProps> = ({
+  title,
+  subtitle,
+  homeUrl = '/dashboard',
 }) => {
   return (
-    <div className="flex flex-col gap-1.5 mb-2 print:hidden">
-      {/* Breadcrumb Trail */}
-      <div className="flex items-center gap-2 text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest">
-        <Link href={homeUrl} className="hover:text-blue-600 transition-colors flex items-center gap-1">
-          <i className="pi pi-home" />
-        </Link>
-        <i className="pi pi-angle-right text-[10px] opacity-70" />
+    <nav aria-label="Breadcrumb" className="mb-3 print:hidden">
+      <ol className="flex items-center gap-1.5 text-[13px] text-slate-500 dark:text-slate-400">
+        <li>
+          <Link
+            href={homeUrl}
+            className="flex items-center rounded-md p-1 -m-1 hover:text-slate-900 dark:hover:text-white transition-colors"
+            aria-label="Home"
+          >
+            <Home className="size-3.5" />
+          </Link>
+        </li>
         {subtitle && (
           <>
-            <span className="cursor-default">{subtitle}</span>
-            <i className="pi pi-angle-right text-[10px] opacity-70" />
+            <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
+            <li className="cursor-default">{subtitle}</li>
           </>
         )}
-        <span className="text-blue-600 dark:text-blue-400 cursor-default">
-          {title}
-        </span>
-      </div>
-    </div>
+        <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
+        <li className="font-medium text-slate-900 dark:text-slate-100 cursor-default">{title}</li>
+      </ol>
+    </nav>
   );
 };
 

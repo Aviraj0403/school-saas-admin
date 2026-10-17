@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -203,14 +204,14 @@ export default function PlansPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                {(tenants?.data?.items || []).length === 0 ? (
+                {asList(tenants).length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-zinc-400">
                       No tenants onboarded.
                     </td>
                   </tr>
                 ) : (
-                  (tenants?.data?.items || []).map((d: any) => (
+                  asList(tenants).map((d: any) => (
                     <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                       <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                         {d.name}

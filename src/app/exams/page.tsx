@@ -1,5 +1,7 @@
 'use client';
 
+import { asList } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -114,7 +116,7 @@ export default function ExamsPage() {
   const classOptions =
     classes?.data?.items?.map((c: any) => ({ label: `${c.name} - ${c.section}`, value: c.id })) ||
     [];
-  const activeExams = exams?.data || [];
+  const activeExams = asList(exams);
   const studentsList = studentsResponse?.items ?? [];
 
   const studentOptions = studentsList.map((s: any) => ({
@@ -262,13 +264,13 @@ export default function ExamsPage() {
                         <div className="flex justify-between">
                           <span>Term Start:</span>
                           <span className="text-zinc-900 dark:text-zinc-300 font-mono">
-                            {exam.startDate}
+                            {formatDate(exam.startDate)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Term End:</span>
                           <span className="text-zinc-900 dark:text-zinc-300 font-mono">
-                            {exam.endDate}
+                            {formatDate(exam.endDate)}
                           </span>
                         </div>
                       </div>
@@ -300,10 +302,10 @@ export default function ExamsPage() {
                             {exam.className || 'All Classes'}
                           </td>
                           <td className="px-6 py-4 font-mono text-xs text-zinc-500 dark:text-zinc-400">
-                            {exam.startDate}
+                            {formatDate(exam.startDate)}
                           </td>
                           <td className="px-6 py-4 font-mono text-xs text-zinc-500 dark:text-zinc-400">
-                            {exam.endDate}
+                            {formatDate(exam.endDate)}
                           </td>
                           <td className="px-6 py-4">{getStatusBadge(exam.status)}</td>
                         </tr>

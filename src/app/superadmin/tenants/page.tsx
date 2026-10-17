@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -81,7 +82,7 @@ export default function TenantsPage() {
   const suspendMutation = useSuspendTenant();
   const activateMutation = useActivateTenant();
 
-  const tenants: Tenant[] = data?.data?.items || [];
+  const tenants: Tenant[] = asList(data);
   const totalRecords = data?.data?.meta?.total || 0;
   const totalPages = Math.ceil(totalRecords / rows) || 1;
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { academicsService } from '@/services/academics.service';
@@ -42,7 +43,7 @@ export default function SubjectsPage() {
     queryKey: ['staff'],
     queryFn: () => staffService.getStaffList(1, 100),
   });
-  const staff = staffData?.items || [];
+  const staff = asList(staffData);
 
   const createMutation = useMutation({
     mutationFn: (data: any) => academicsService.createSubject(data),

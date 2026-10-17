@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -14,6 +15,8 @@ import {
   useApproveLeave,
   useRejectLeave,
 } from '@/hooks/queries/useLeave';
+import { useStaffList } from '@/hooks/queries/useStaff';
+import { useStudentsList } from '@/hooks/queries/useStudents';
 import { toast } from 'sonner';
 import { Calendar, Plus, LayoutGrid, List, CheckCircle, XCircle, Clock } from 'lucide-react';
 
@@ -117,7 +120,23 @@ export default function LeavePage() {
     }
   };
 
-  const activeLeaves = leavesData?.items || leavesData?.data?.items || [];
+  // Leave records only carry applicantId; resolve a display name from staff/students
+  // (matching either the record id or the linked user id).
+  const { data: staffData } = useStaffList(1, 100);
+  const { data: studentsData } = useStudentsList(1, 100);
+  const people = [...asList(staffData), ...asList(studentsData)];
+  const nameFor = (leave: any): string => {
+    if (leave.applicantName) return leave.applicantName;
+    const match = people.find(
+      (p: any) => p.id === leave.applicantId || p.userId === leave.applicantId
+    );
+    return (
+      match?.name ||
+      (String(leave.applicantType).toUpperCase() === 'STUDENT' ? 'Student' : 'Staff member')
+    );
+  };
+
+  const activeLeaves = asList(leavesData).map((l: any) => ({ ...l, applicantName: nameFor(l) }));
   const totalRecords = leavesData?.meta?.total || leavesData?.data?.meta?.total || 0;
 
   return (
@@ -225,13 +244,13 @@ export default function LeavePage() {
                     <div className="flex justify-between">
                       <span>Start Date:</span>
                       <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.startDate)}
+                        {dateTemplate(leave.startDate ?? (leave as any).fromDate)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>End Date:</span>
                       <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.endDate)}
+                        {dateTemplate(leave.endDate ?? (leave as any).toDate)}
                       </span>
                     </div>
                   </div>
@@ -289,10 +308,10 @@ export default function LeavePage() {
                         <Badge variant="secondary">{d.applicantType}</Badge>
                       </td>
                       <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
-                        {dateTemplate(d.startDate)}
+                        {dateTemplate(d.startDate ?? d.fromDate)}
                       </td>
                       <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
-                        {dateTemplate(d.endDate)}
+                        {dateTemplate(d.endDate ?? d.toDate)}
                       </td>
                       <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{d.reason}</td>
                       <td className="px-4 py-3">{statusBadge(d.status)}</td>

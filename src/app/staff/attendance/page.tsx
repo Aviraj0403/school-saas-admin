@@ -1,5 +1,6 @@
 'use client';
 
+import { localDateISO } from '@/lib/format';
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -33,7 +34,7 @@ const STATUS_OPTIONS = STATUSES.map((v) => ({
 export default function StaffAttendancePage() {
   const queryClient = useQueryClient();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateISO();
   const [date, setDate] = useState(today);
   const [draft, setDraft] = useState<Record<string, StaffAttendanceStatus>>({});
 

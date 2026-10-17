@@ -10,6 +10,42 @@ import {
 } from '@/hooks/queries/useAnalytics';
 import { useCurrentAcademicYear, useClasses } from '@/hooks/queries/useAcademics';
 import { isModuleActive } from '@/lib/moduleAccess';
+import {
+  HeroCard,
+  HeroButton,
+  Panel,
+  PanelLink,
+  EmptyState,
+  QuickActions,
+  GlanceRow,
+  greeting,
+  todayLabel,
+  inr,
+  lastMonthsSeries,
+  type QuickAction,
+} from './kit';
+import { AreaTrend, BarTrend, Donut, RadialGauge } from './charts';
+import {
+  BarChart3,
+  BedDouble,
+  BookOpen,
+  Bus,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ClipboardCheck,
+  GraduationCap,
+  IdCard,
+  IndianRupee,
+  Inbox,
+  Megaphone,
+  MessageCircle,
+  Rocket,
+  School,
+  Sparkles,
+  UserPlus,
+  Wallet,
+} from 'lucide-react';
 
 export function AdminDashboard() {
   const { activeUser, activeTenant } = useAuthStore();
@@ -60,420 +96,421 @@ export function AdminDashboard() {
   ].filter(Boolean).length;
   const progressPct = Math.round((completedSteps / totalSteps) * 100);
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
+  const setupSteps = [
+    {
+      title: 'Academic year',
+      desc: 'Define the active session and its dates.',
+      link: '/academics/terms',
+      completed: !!currentAY?.id,
+      icon: CalendarDays,
+    },
+    {
+      title: 'Add staff',
+      desc: 'Invite teachers, accountants and office staff.',
+      link: '/staff/directory',
+      completed: coreStats.staff?.total > 0,
+      icon: IdCard,
+    },
+    {
+      title: 'Classes & sections',
+      desc: 'Create classes and assign class teachers.',
+      link: '/academics/classes',
+      completed: classesData?.items?.length > 0,
+      icon: School,
+    },
+    {
+      title: 'Admit students',
+      desc: 'Enrol students and link their parents.',
+      link: '/students',
+      completed: coreStats.students?.total > 0,
+      icon: UserPlus,
+    },
+    {
+      title: 'Fee structure',
+      desc: 'Set up tuition and other fee heads.',
+      link: '/fee/slabs',
+      completed: !!coreStats.fees,
+      icon: Wallet,
+    },
+    {
+      title: 'WhatsApp alerts',
+      desc: 'Connect WhatsApp to message parents.',
+      link: '/settings/integrations',
+      completed: !!dashboard?.whatsapp?.isConfigured,
+      icon: MessageCircle,
+    },
+  ];
+
+  const modules = activeTenant?.activeModules;
+  const quickActions: QuickAction[] = (
+    [
+      {
+        label: 'New admission',
+        icon: UserPlus,
+        href: '/students/admissions',
+        module: 'student',
+        gradient: 'from-violet-500 to-indigo-500',
+      },
+      {
+        label: 'Mark attendance',
+        icon: ClipboardCheck,
+        href: '/attendance',
+        module: 'attendance',
+        gradient: 'from-emerald-400 to-teal-500',
+      },
+      {
+        label: 'Collect fee',
+        icon: IndianRupee,
+        href: '/fee',
+        module: 'fee',
+        gradient: 'from-amber-400 to-orange-500',
+      },
+      {
+        label: 'Post a notice',
+        icon: Megaphone,
+        href: '/communication',
+        module: 'communication',
+        gradient: 'from-pink-500 to-rose-500',
+      },
+      {
+        label: 'Issue a book',
+        icon: BookOpen,
+        href: '/library',
+        module: 'library',
+        gradient: 'from-sky-400 to-cyan-500',
+      },
+      {
+        label: 'Reports',
+        icon: BarChart3,
+        href: '/analytics',
+        module: 'analytics',
+        gradient: 'from-fuchsia-500 to-purple-600',
+      },
+    ] as Array<QuickAction & { module: string }>
+  ).filter((a) => isModuleActive(modules, a.module));
+
+  const glance = [
+    isModuleActive(modules, 'fee') && {
+      label: 'Outstanding fees',
+      value: inr(coreStats.fees?.outstandingDues),
+      href: '/fee/ledgers',
+      icon: Wallet,
+      tone: 'bg-amber-500/10 text-amber-600',
+    },
+    isModuleActive(modules, 'website') && {
+      label: 'New admission enquiries',
+      value: dashboard?.website?.inquiries?.new ?? 0,
+      href: '/website/inquiries',
+      icon: Inbox,
+      tone: 'bg-violet-500/10 text-violet-600',
+    },
+    isModuleActive(modules, 'library') && {
+      label: 'Overdue library books',
+      value: coreStats.library?.overdueBooks ?? 0,
+      href: '/library/issues',
+      icon: BookOpen,
+      tone: 'bg-sky-500/10 text-sky-600',
+    },
+    isModuleActive(modules, 'transport') && {
+      label: 'Students on transport',
+      value: dashboard?.transport?.stats?.studentsUsingTransport ?? 0,
+      href: '/transport',
+      icon: Bus,
+      tone: 'bg-emerald-500/10 text-emerald-600',
+    },
+    isModuleActive(modules, 'leave') && {
+      label: 'Pending leave requests',
+      value: leaveStats.pending ?? 0,
+      href: '/leave',
+      icon: CalendarDays,
+      tone: 'bg-rose-500/10 text-rose-600',
+    },
+    isModuleActive(modules, 'hostel') && {
+      label: 'Hostel occupancy',
+      value:
+        hostelStats.occupancyPct != null ? `${Number(hostelStats.occupancyPct).toFixed(0)}%` : '—',
+      href: '/hostel',
+      icon: BedDouble,
+      tone: 'bg-fuchsia-500/10 text-fuchsia-600',
+    },
+  ].filter(Boolean) as Array<{
+    label: string;
+    value: string | number;
+    href: string;
+    icon: React.ElementType;
+    tone: string;
+  }>;
+
+  const feeSeries = lastMonthsSeries(feeTrendData);
+
+  const attendanceSeries = (attendanceTrendData || []).slice(-7).map((d: any) => {
+    const total = d.PRESENT + d.ABSENT + d.LATE + d.LEAVE;
+    return {
+      day: new Date(d.date).toLocaleString('en-IN', { weekday: 'short' }),
+      rate: total > 0 ? Math.round(((d.PRESENT + d.LATE) / total) * 100) : 0,
+    };
+  });
+
+  const todayPresent = Number(coreStats.attendance?.today?.present ?? 0);
+  const todayAbsent = Number(coreStats.attendance?.today?.absent ?? 0);
+  const todayRate = Number(coreStats.attendance?.percentage ?? 0);
+  const collected = Number(coreStats.fees?.monthlyRevenue ?? 0);
+  const outstanding = Number(coreStats.fees?.outstandingDues ?? 0);
+  const collectedPct =
+    collected + outstanding > 0 ? Math.round((collected / (collected + outstanding)) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 pb-8 md:pb-12 mt-1">
-      {/* Dynamic Executive Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-xl border border-indigo-500/20">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-20 -translate-y-20"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-3">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              {greeting()}, {activeUser?.name?.split(' ')[0] || 'Admin'} 👋
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-              Institutional Operations Command Center
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm mt-2 max-w-xl font-medium">
-              Real-time administrative overview of student performance, fee collection inflows,
-              staff attendance, and operations.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 text-xs font-bold text-slate-200">
-              <span className="text-slate-400 font-semibold block text-[10px] uppercase">
-                Active Term
-              </span>
-              {currentAY?.name || 'Not Configured ⚠️'}
-            </div>
-            <a
-              href="/analytics"
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 no-underline active:scale-95"
-            >
-              <i className="pi pi-chart-line text-sm"></i>
-              <span>View Deep Insights</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Onboarding Setup Progress Banner */}
-      <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl overflow-hidden shadow-sm transition-all duration-300">
-        <div
-          className="flex justify-between items-center p-5 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200/60 dark:border-slate-800/60 cursor-pointer select-none"
-          onClick={toggleChecklist}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
-              <i className="pi pi-compass text-base animate-pulse"></i>
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">
-                School Setup & Onboarding Checkpoint
-              </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                Complete setup modules to unlock full automated ERP workflows
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="/setup"
-              onClick={(e) => e.stopPropagation()}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all no-underline"
-            >
-              <i className="pi pi-sparkles text-xs"></i>
-              <span>Launch Wizard</span>
-            </a>
-
-            <div className="hidden sm:flex items-center gap-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-full text-xs font-black tracking-wide">
-              <span>{progressPct}% Completed</span>
-              <div className="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                <div
-                  className="bg-indigo-600 dark:bg-indigo-400 h-full transition-all duration-500"
-                  style={{ width: `${progressPct}%` }}
-                ></div>
+    <div className="flex flex-col gap-6 pb-6">
+      {/* Hero + today's attendance */}
+      <HeroCard
+        eyebrow={
+          <>
+            <Sparkles className="size-3.5" /> {todayLabel()}
+            {currentAY?.name && <span className="opacity-75">· Session {currentAY.name}</span>}
+          </>
+        }
+        title={
+          <>
+            {greeting()}, {activeUser?.name?.split(' ')[0] || 'there'} 👋
+          </>
+        }
+        subtitle={`Here’s how ${activeTenant?.name || 'your school'} is doing today.`}
+        actions={
+          <>
+            <HeroButton href="/students/admissions">
+              <UserPlus className="size-4" /> New admission
+            </HeroButton>
+            {isModuleActive(modules, 'fee') && (
+              <HeroButton href="/fee" variant="glass">
+                <IndianRupee className="size-4" /> Collect fee
+              </HeroButton>
+            )}
+          </>
+        }
+        aside={
+          isModuleActive(modules, 'attendance') && (
+            <div className="glass flex items-center gap-5 rounded-3xl p-4 pr-6">
+              <RadialGauge value={todayRate} light size={124} sublabel="present" />
+              <div className="space-y-2 text-sm">
+                <p className="font-display text-base font-semibold">Today’s attendance</p>
+                <p className="flex items-center gap-2 text-white/85">
+                  <span className="size-2 rounded-full bg-emerald-300" /> {todayPresent} present
+                </p>
+                <p className="flex items-center gap-2 text-white/85">
+                  <span className="size-2 rounded-full bg-rose-300" /> {todayAbsent} absent
+                </p>
               </div>
             </div>
+          )
+        }
+      />
 
-            <div className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1">
-              <i
-                className={`pi pi-chevron-${isChecklistCollapsed ? 'down' : 'up'} text-xs font-bold`}
-              ></i>
-            </div>
-          </div>
-        </div>
-
-        {!isChecklistCollapsed && (
-          <div className="p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              {
-                title: '1. Academic Year Setup',
-                desc: 'Define active terms and session boundaries.',
-                link: '/academics/terms',
-                completed: !!currentAY?.id,
-                icon: 'pi pi-calendar',
-              },
-              {
-                title: '2. Register School Staff',
-                desc: 'Onboard administrators, teachers, and operators.',
-                link: '/staff/directory',
-                completed: coreStats.staff?.total > 0,
-                icon: 'pi pi-id-card',
-              },
-              {
-                title: '3. Create Classes & Sections',
-                desc: 'Configure grade slabs and assign class teachers.',
-                link: '/academics/classes',
-                completed: classesData?.items?.length > 0,
-                icon: 'pi pi-sitemap',
-              },
-              {
-                title: '4. Admit Students',
-                desc: 'Enroll pupils and link parent profiles.',
-                link: '/students',
-                completed: coreStats.students?.total > 0,
-                icon: 'pi pi-user-plus',
-              },
-              {
-                title: '5. Define Fee Slabs',
-                desc: 'Set up tuition and custom term collections.',
-                link: '/fee/slabs',
-                completed: !!coreStats.fees,
-                icon: 'pi pi-wallet',
-              },
-              {
-                title: '6. WhatsApp & API Config',
-                desc: 'Configure automated WhatsApp notification bot.',
-                link: '/settings/integrations',
-                completed: dashboard?.whatsapp?.isConfigured,
-                icon: 'pi pi-cog',
-              },
-            ].map((step, idx) => (
-              <a
-                key={idx}
-                href={step.link}
-                className={`flex items-start gap-3.5 p-4 rounded-xl border transition-all no-underline ${
-                  step.completed
-                    ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10'
-                    : 'bg-slate-50/50 dark:bg-slate-950/20 border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-400/40'
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    step.completed
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
-                  }`}
-                >
-                  <i
-                    className={
-                      step.completed ? 'pi pi-check text-xs font-black' : `${step.icon} text-xs`
-                    }
-                  ></i>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={`text-xs font-bold leading-tight flex items-center gap-1.5 ${
+      {/* Setup checklist — only until the school is fully configured */}
+      {!adminPending && completedSteps < totalSteps && (
+        <Panel className="overflow-hidden p-0 sm:p-0">
+          <button
+            type="button"
+            onClick={toggleChecklist}
+            className="flex w-full items-center gap-4 p-5 text-left sm:p-6"
+          >
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-orange-500/25">
+              <Rocket className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-lg font-semibold text-zinc-900 dark:text-white">
+                Finish setting up your school
+              </span>
+              <span className="block text-[13px] text-zinc-500">
+                {completedSteps} of {totalSteps} steps done — complete the rest to unlock every
+                feature.
+              </span>
+            </span>
+            <span className="hidden items-center gap-3 sm:flex">
+              <span className="h-2.5 w-40 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
+                <span
+                  className="block h-full rounded-full bg-brand-gradient transition-all duration-700"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </span>
+              <span className="font-display w-10 text-sm font-semibold">{progressPct}%</span>
+            </span>
+            <ChevronDown
+              className={`size-4 text-zinc-400 transition-transform ${isChecklistCollapsed ? '' : 'rotate-180'}`}
+            />
+          </button>
+          {!isChecklistCollapsed && (
+            <div className="grid grid-cols-1 gap-3 border-t border-border p-5 sm:p-6 md:grid-cols-2 lg:grid-cols-3">
+              {setupSteps.map((step, idx) => {
+                const Icon = step.icon;
+                return (
+                  <a
+                    key={step.title}
+                    href={step.link}
+                    className={`group flex items-start gap-3 rounded-2xl border p-4 no-underline transition-all ${
                       step.completed
-                        ? 'text-emerald-700 dark:text-emerald-400'
-                        : 'text-slate-800 dark:text-slate-200'
+                        ? 'border-emerald-500/20 bg-emerald-500/[0.06]'
+                        : 'border-border hover:-translate-y-0.5 hover:shadow-card-hover'
                     }`}
                   >
-                    {step.title}
-                    {step.completed && (
-                      <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold">
-                        Done
+                    <span
+                      className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${step.completed ? 'bg-emerald-500 text-white' : 'bg-zinc-100 text-zinc-500 dark:bg-white/5'}`}
+                    >
+                      {step.completed ? <Check className="size-4" /> : <Icon className="size-4" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[13px] font-semibold text-zinc-900 dark:text-white">
+                        <span className="text-zinc-400">{idx + 1}.</span> {step.title}
                       </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-relaxed font-medium truncate">
-                    {step.desc}
-                  </p>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
+                      <span className="mt-0.5 block text-xs text-zinc-500">
+                        {step.completed ? 'Done' : step.desc}
+                      </span>
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      )}
 
-      {/* Primary Key Performance Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {isModuleActive(activeTenant?.activeModules, 'student') && (
+      {/* Key metrics */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {isModuleActive(modules, 'student') && (
           <StatCard
-            label="Total Students"
+            label="Total students"
             value={coreStats.students?.total ?? '—'}
-            icon="pi pi-users"
-            trendPercentage="+8.4%"
-            trendUp={true}
-            gradientClass="from-indigo-500 to-blue-600"
-            iconBgClass="bg-indigo-500/10"
-            iconColorClass="text-indigo-600 dark:text-indigo-400"
-            footerText={`Active Enrolled: ${coreStats.students?.active ?? '0'}`}
+            icon={GraduationCap}
+            gradientClass="from-violet-500 to-indigo-500"
+            footerText={`${coreStats.students?.active ?? 0} currently active`}
             loading={adminPending}
           />
         )}
-        {isModuleActive(activeTenant?.activeModules, 'staff') && (
+        {isModuleActive(modules, 'staff') && (
           <StatCard
-            label="Active Staff"
+            label="Staff members"
             value={coreStats.staff?.total ?? '—'}
-            icon="pi pi-id-card"
-            trendPercentage="+2"
-            trendUp={true}
-            gradientClass="from-teal-500 to-emerald-600"
-            iconBgClass="bg-teal-500/10"
-            iconColorClass="text-teal-600 dark:text-teal-400"
-            footerText="Enrolled instructors & staff"
+            icon={IdCard}
+            gradientClass="from-sky-400 to-cyan-500"
+            footerText="Teachers and office staff"
             loading={adminPending}
           />
         )}
-        {isModuleActive(activeTenant?.activeModules, 'fee') && (
+        {isModuleActive(modules, 'fee') && (
           <StatCard
-            label="Fee Revenue (Month)"
-            value={
-              coreStats.fees?.monthlyRevenue
-                ? `₹${Number(coreStats.fees.monthlyRevenue).toLocaleString('en-IN')}`
-                : '₹0'
-            }
-            icon="pi pi-wallet"
-            trendPercentage="+14.2%"
-            trendUp={true}
-            gradientClass="from-emerald-500 to-teal-600"
-            iconBgClass="bg-emerald-500/10"
-            iconColorClass="text-emerald-600 dark:text-emerald-400"
-            footerText={`Outstanding: ₹${Number(coreStats.fees?.outstandingDues ?? 0).toLocaleString('en-IN')}`}
+            label="Collected this month"
+            value={inr(collected)}
+            icon={IndianRupee}
+            gradientClass="from-amber-400 to-orange-500"
+            footerText={`${inr(outstanding)} still outstanding`}
             loading={adminPending}
           />
         )}
-        {isModuleActive(activeTenant?.activeModules, 'attendance') && (
+        {isModuleActive(modules, 'library') ? (
           <StatCard
-            label="Daily Attendance Rate"
-            value={
-              coreStats.attendance?.percentage ? `${coreStats.attendance.percentage}%` : '96.2%'
-            }
-            icon="pi pi-check-square"
-            trendPercentage="+1.5%"
-            trendUp={true}
-            gradientClass="from-purple-500 to-indigo-600"
-            iconBgClass="bg-purple-500/10"
-            iconColorClass="text-purple-600 dark:text-purple-400"
-            footerText={`Present Today: ${coreStats.attendance?.today?.present ?? '5'}`}
+            label="Library books"
+            value={coreStats.library?.totalBooks ?? '—'}
+            icon={BookOpen}
+            gradientClass="from-pink-500 to-rose-500"
+            footerText={`${coreStats.library?.overdueBooks ?? 0} overdue right now`}
+            loading={adminPending}
+          />
+        ) : (
+          <StatCard
+            label="Attendance today"
+            value={`${todayRate.toFixed(0)}%`}
+            icon={ClipboardCheck}
+            gradientClass="from-emerald-400 to-teal-500"
+            footerText={`${todayPresent} present · ${todayAbsent} absent`}
             loading={adminPending}
           />
         )}
       </div>
 
-      {/* Analytics Charts & Graphs Visualizer */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg">
-                Monthly Revenue Inflow (₹)
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Fee collection index & trends</p>
+      {/* Trends */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Panel
+          className="xl:col-span-2"
+          title="Fee collection"
+          subtitle="Amount collected each month"
+          action={<PanelLink href="/analytics">Full report</PanelLink>}
+        >
+          {feeSeries.some((d) => d.amount > 0) ? (
+            <AreaTrend data={feeSeries} xKey="month" yKey="amount" format={inr} />
+          ) : (
+            <EmptyState
+              icon={BarChart3}
+              text="No fee collections recorded yet. Collected fees will chart here month by month."
+              className="h-[260px]"
+            />
+          )}
+        </Panel>
+
+        <Panel title="Fee status" subtitle="This month’s collections vs. dues">
+          <Donut
+            data={[
+              { name: 'Collected', value: collected, color: 'var(--brand)' },
+              { name: 'Outstanding', value: outstanding, color: '#ffb547' },
+            ]}
+            center={`${collectedPct}%`}
+            caption="collected"
+          />
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-brand-soft p-3 dark:bg-white/5">
+              <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <span className="size-2 rounded-full bg-brand" /> Collected
+              </p>
+              <p className="font-display tabular mt-1 text-lg font-semibold">{inr(collected)}</p>
             </div>
-            <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase">
-              Live Feed
-            </span>
-          </div>
-
-          <div className="flex items-end justify-between h-48 px-2 gap-2">
-            {feeTrendData && feeTrendData.length > 0 ? (
-              feeTrendData.map((item: any) => {
-                const monthName = new Date(item.month + '-01').toLocaleString('default', {
-                  month: 'short',
-                });
-                const maxVal = Math.max(...feeTrendData.map((d: any) => d.amount), 10000);
-                const pct = (item.amount / maxVal) * 100;
-                return (
-                  <div key={item.month} className="flex flex-col items-center gap-2 flex-1 group">
-                    <span className="text-[10px] text-slate-400 font-bold group-hover:text-indigo-600 transition-colors">
-                      {item.amount >= 1000 ? `${(item.amount / 1000).toFixed(0)}k` : item.amount}
-                    </span>
-                    <div className="w-full flex items-end justify-center h-36">
-                      <div
-                        className="w-full max-w-[32px] bg-gradient-to-t from-indigo-600 to-teal-400 rounded-t-xl transition-all duration-300 group-hover:brightness-110 shadow-sm"
-                        style={{ height: `${pct}%`, minHeight: '6px' }}
-                        title={`₹${item.amount.toLocaleString('en-IN')}`}
-                      />
-                    </div>
-                    <span className="text-xs font-bold text-slate-500">{monthName}</span>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                No fee collection data recorded.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg">
-                Daily Attendance Trend
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Student participation analytics (%)</p>
+            <div className="rounded-2xl bg-amber-500/[0.08] p-3">
+              <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <span className="size-2 rounded-full bg-[#ffb547]" /> Outstanding
+              </p>
+              <p className="font-display tabular mt-1 text-lg font-semibold">{inr(outstanding)}</p>
             </div>
-            <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-extrabold uppercase">
-              Weekly
-            </span>
           </div>
-
-          <div className="flex flex-col gap-4 mt-2">
-            {attendanceTrendData && attendanceTrendData.length > 0 ? (
-              attendanceTrendData.slice(-5).map((item: any) => {
-                const dayName = new Date(item.date).toLocaleString('default', {
-                  weekday: 'short',
-                });
-                const total = item.PRESENT + item.ABSENT + item.LATE + item.LEAVE;
-                const rate = total > 0 ? Math.round(((item.PRESENT + item.LATE) / total) * 100) : 0;
-                return (
-                  <div key={item.date} className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-slate-500 w-8">{dayName}</span>
-                    <div className="flex-1 bg-slate-100 dark:bg-slate-950 h-4 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-800">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          rate >= 95
-                            ? 'bg-gradient-to-r from-teal-400 to-emerald-500'
-                            : rate >= 90
-                              ? 'bg-gradient-to-r from-amber-400 to-orange-500'
-                              : 'bg-gradient-to-r from-rose-400 to-red-500'
-                        }`}
-                        style={{ width: `${rate}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 w-10 text-right">
-                      {rate}%
-                    </span>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400 text-xs w-full py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                No attendance data logged yet.
-              </div>
-            )}
-          </div>
-        </div>
+        </Panel>
       </div>
 
-      {/* Executive Quick Operations Command Bar */}
-      <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 shadow-sm">
-        <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg mb-4">
-          Operations Quick Access
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
-          {[
-            {
-              label: 'Add Student',
-              icon: 'pi pi-user-plus',
-              href: '/students',
-              color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-              module: 'student',
-            },
-            {
-              label: 'Mark Attendance',
-              icon: 'pi pi-check-square',
-              href: '/attendance',
-              color:
-                'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-              module: 'attendance',
-            },
-            {
-              label: 'Collect Fee',
-              icon: 'pi pi-money-bill',
-              href: '/fee',
-              color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-              module: 'fee',
-            },
-            {
-              label: 'Post Notice',
-              icon: 'pi pi-megaphone',
-              href: '/communication',
-              color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-              module: 'communication',
-            },
-            {
-              label: 'Issue Book',
-              icon: 'pi pi-bookmark',
-              href: '/library',
-              color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
-              module: 'library',
-            },
-            {
-              label: 'View Analytics',
-              icon: 'pi pi-chart-bar',
-              href: '/analytics',
-              color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-              module: 'analytics',
-            },
-          ]
-            .filter((act) => isModuleActive(activeTenant?.activeModules, act.module))
-            .map((action) => (
-              <a
-                key={action.label}
-                href={action.href}
-                className={`flex flex-col items-center gap-2.5 p-4 rounded-xl ${action.color} border hover:scale-[1.03] hover:shadow-md transition-all duration-200 cursor-pointer no-underline`}
-              >
-                <i className={`${action.icon} text-xl sm:text-2xl`}></i>
-                <span className="text-xs font-bold text-center leading-tight">{action.label}</span>
-              </a>
+      {/* Actions, attendance, glance */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Panel title="Quick actions" subtitle="Jump straight into the daily tasks">
+          <QuickActions actions={quickActions} columns={2} />
+        </Panel>
+
+        <Panel title="Attendance this week" subtitle="Share of students present each day">
+          {attendanceSeries.length > 0 ? (
+            <BarTrend
+              data={attendanceSeries}
+              xKey="day"
+              yKey="rate"
+              domainMax={100}
+              format={(v) => `${v}% present`}
+              colorFor={(v) => (v >= 90 ? '#10c38e' : v >= 75 ? '#ffb547' : '#f0435c')}
+              height={250}
+            />
+          ) : (
+            <EmptyState
+              icon={ClipboardCheck}
+              text="No attendance marked yet this week."
+              className="h-[250px]"
+            />
+          )}
+        </Panel>
+
+        <Panel title="At a glance" subtitle="Things that may need your attention">
+          <div className="divide-y divide-border">
+            {glance.map((g) => (
+              <GlanceRow
+                key={g.label}
+                icon={g.icon}
+                label={g.label}
+                value={adminPending ? '…' : g.value}
+                href={g.href}
+                tone={g.tone}
+              />
             ))}
-        </div>
+          </div>
+        </Panel>
       </div>
     </div>
   );

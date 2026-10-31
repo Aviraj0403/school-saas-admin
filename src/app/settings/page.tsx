@@ -305,9 +305,9 @@ export default function SettingsPage() {
           </button>
           <a
             href="/settings/roles"
-            className="px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs text-brand hover:text-brand-dark hover:bg-brand/10 transition-all border border-brand/20 ml-2"
+            className="px-4 py-2 rounded-lg flex items-center gap-2 font-bold text-xs bg-brand text-white hover:bg-brand-dark shadow-sm transition-all ml-auto cursor-pointer"
           >
-            <ShieldCheck className="w-3.5 h-3.5" /> Open Permission Matrix &rarr;
+            <ShieldCheck className="w-4 h-4 text-white" /> Roles &amp; Permission Matrix &rarr;
           </a>
         </div>
 

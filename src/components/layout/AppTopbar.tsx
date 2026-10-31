@@ -22,6 +22,7 @@ import {
   Palette,
   Settings,
   Sun,
+  Key,
 } from 'lucide-react';
 
 interface SwitchableSchool {
@@ -417,6 +418,10 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
                 <a href="/settings" className={menuItem}>
                   <Settings className="size-4 text-zinc-400" />
                   Settings
+                </a>
+                <a href="/settings/roles" className={menuItem}>
+                  <Key className="size-4 text-zinc-400" />
+                  Roles &amp; Permissions
                 </a>
                 <a href="/academics/guide" className={menuItem}>
                   <LifeBuoy className="size-4 text-zinc-400" />

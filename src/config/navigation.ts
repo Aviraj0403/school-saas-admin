@@ -457,7 +457,7 @@ export function filterNavForUser(
       if (!canAccessNav(item.roles, role)) return null;
     }
 
-    if (item.module) {
+    if (item.module && item.module !== 'core' && item.module !== 'settings') {
       const plural = item.module.endsWith('s') ? item.module : `${item.module}s`;
       const singular = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
       const hasAccess =

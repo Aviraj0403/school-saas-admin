@@ -86,7 +86,13 @@ function PermToggle({
 export default function RolesPermissionsPage() {
   const queryClient = useQueryClient();
   const activeUser = useAuthStore((s) => s.activeUser);
-  const isSuperAdmin = Boolean(activeUser?.isSuperAdmin || activeUser?.role === 'SuperAdmin');
+  const normRole = (activeUser?.role || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const isSuperAdmin = Boolean(
+    activeUser?.isSuperAdmin || normRole === 'superadmin' || activeUser?.role === 'SuperAdmin'
+  );
+  const isSchoolAdmin = Boolean(
+    normRole === 'school_admin' || normRole === 'principal' || isSuperAdmin
+  );
 
   const [activeTab, setActiveTab] = useState<TabType>('matrix');
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
@@ -333,7 +339,7 @@ export default function RolesPermissionsPage() {
             <Button onClick={() => setShowRoleModal(true)}>
               <Plus className="w-4 h-4 mr-1.5" /> Add Role
             </Button>
-            {isSuperAdmin && (
+            {isSchoolAdmin && (
               <Button variant="outline" onClick={() => setShowModuleModal(true)}>
                 <Blocks className="w-4 h-4 mr-1.5 text-brand" /> Add System Module
               </Button>
@@ -758,7 +764,7 @@ export default function RolesPermissionsPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {isSuperAdmin && (
+                        {isSchoolAdmin && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -808,7 +814,7 @@ export default function RolesPermissionsPage() {
                             </span>
                           </div>
 
-                          {isSuperAdmin && (
+                          {isSchoolAdmin && (
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"

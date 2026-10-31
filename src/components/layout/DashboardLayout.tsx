@@ -7,11 +7,36 @@ import AppFooter from './AppFooter';
 import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginScreen from './LoginScreen';
+import { usePermission } from '@/hooks/usePermission';
+import { usePathname, useRouter } from 'next/navigation';
+import { ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 let globalMounted = false;
 
+// Module slug mapping for URL path prefixes
+const ROUTE_MODULE_MAP: Record<string, string> = {
+  '/students': 'students',
+  '/staff': 'staff',
+  '/academics': 'academics',
+  '/attendance': 'attendance',
+  '/exams': 'exams',
+  '/fee': 'fee',
+  '/library': 'library',
+  '/transport': 'transport',
+  '/hostel': 'hostel',
+  '/communication': 'communication',
+  '/whatsapp': 'communication',
+  '/website': 'communication',
+  '/settings/roles': 'settings',
+  '/settings': 'settings',
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { hasPermission, isSuperAdmin, isSchoolAdmin } = usePermission();
+
   // Lazy initializer: synchronously detect mobile so the first render is correct
   // — no flash, and hamburger toggle works from the very first frame.
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -29,6 +54,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setSidebarOpen(!sidebarOpen);
     }
   };
+
+  // Determine if current route is allowed
+  const hasRouteAccess = React.useMemo(() => {
+    if (!isAuthenticated || isSuperAdmin || isSchoolAdmin) return true;
+    if (pathname === '/dashboard' || pathname === '/') return true;
+
+    // Check against route module map
+    for (const [routePrefix, moduleSlug] of Object.entries(ROUTE_MODULE_MAP)) {
+      if (pathname.startsWith(routePrefix)) {
+        return hasPermission(moduleSlug, 'read');
+      }
+    }
+    return true;
+  }, [pathname, isAuthenticated, isSuperAdmin, isSchoolAdmin, hasPermission]);
 
   useEffect(() => {
     globalMounted = true;
@@ -93,7 +132,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <AppTopbar onToggleMenu={handleToggleMenu} />
         <main className="page-enter mx-auto w-full max-w-[1480px] flex-1 overflow-x-hidden px-4 pb-8 pt-2 sm:px-6 lg:pr-8 lg:pl-0">
-          {children}
+          {!hasRouteAccess ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-lg mx-auto bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm mt-8">
+              <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
+                <ShieldAlert className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                Access Restricted
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                Your assigned role does not have authorization to view this module. Contact your
+                school administrator to adjust your permissions matrix.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push('/dashboard')}
+                className="mt-6 px-4 py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold hover:opacity-90 transition-all cursor-pointer"
+              >
+                Return to Dashboard
+              </button>
+            </div>
+          ) : (
+            children
+          )}
         </main>
         <AppFooter />
       </div>

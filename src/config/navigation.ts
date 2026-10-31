@@ -439,10 +439,24 @@ export const navigationConfig: NavItem[] = [
   },
 ];
 
-/** The navigation tree a user may see: role-filtered and limited to the tenant's active modules. */
-export function filterNavForUser(role: string, activeModules: string[]): NavItem[] {
+/** The navigation tree a user may see: role-filtered, module-gated, and granular permission checked. */
+export function filterNavForUser(
+  role: string,
+  activeModules: string[],
+  hasPermissionFn?: (slug: string, action?: 'read' | 'write' | 'update' | 'delete') => boolean
+): NavItem[] {
+  const normRole = normalizeRole(role);
+  const isSuperOrAdmin = normRole === 'superadmin' || normRole === 'school_admin';
+
   const filterItem = (item: NavItem): NavItem | null => {
-    if (!canAccessNav(item.roles, role)) return null;
+    // If granular permission checker is provided and item has a module key
+    if (hasPermissionFn && item.module && !isSuperOrAdmin) {
+      const allowed = hasPermissionFn(item.module, 'read');
+      if (!allowed && !canAccessNav(item.roles, role)) return null;
+    } else {
+      if (!canAccessNav(item.roles, role)) return null;
+    }
+
     if (item.module) {
       const plural = item.module.endsWith('s') ? item.module : `${item.module}s`;
       const singular = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
@@ -452,6 +466,7 @@ export function filterNavForUser(role: string, activeModules: string[]): NavItem
         activeModules.includes(singular);
       if (!hasAccess) return null;
     }
+
     if (item.children) {
       const children = item.children
         .map(filterItem)
@@ -461,5 +476,6 @@ export function filterNavForUser(role: string, activeModules: string[]): NavItem
     }
     return item;
   };
+
   return navigationConfig.map(filterItem).filter((item): item is NavItem => item !== null);
 }

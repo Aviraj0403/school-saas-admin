@@ -19,6 +19,7 @@ import {
 } from '@/hooks/queries/useLibrary';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { libraryService } from '@/services/library.service';
+import { usePermission } from '@/hooks/usePermission';
 import { toast } from 'sonner';
 import {
   BookOpen,
@@ -34,6 +35,12 @@ import {
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState(0);
+  const { hasPermission, isSchoolAdmin, isSuperAdmin } = usePermission();
+  const canWriteLibrary =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('library', 'write') ||
+    hasPermission('library_books', 'write');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -191,9 +198,11 @@ export default function LibraryPage() {
             </p>
           </div>
 
-          <Button onClick={() => setShowAddBookDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Add New Book
-          </Button>
+          {canWriteLibrary && (
+            <Button onClick={() => setShowAddBookDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Add New Book
+            </Button>
+          )}
         </div>
 
         {/* Search & Layout Control Bar */}

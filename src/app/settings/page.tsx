@@ -303,6 +303,12 @@ export default function SettingsPage() {
           >
             <ShieldCheck className="w-3.5 h-3.5" /> Login Credentials
           </button>
+          <a
+            href="/settings/roles"
+            className="px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs text-brand hover:text-brand-dark hover:bg-brand/10 transition-all border border-brand/20 ml-2"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> Open Permission Matrix &rarr;
+          </a>
         </div>
 
         {/* Tab 1: Profile & Pricing */}

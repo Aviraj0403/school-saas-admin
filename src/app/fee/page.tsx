@@ -32,6 +32,7 @@ import {
   usePayPayslip,
   useFinanceSummary,
 } from '@/hooks/queries/usePayroll';
+import { usePermission } from '@/hooks/usePermission';
 import {
   Wallet,
   CreditCard,
@@ -45,6 +46,22 @@ import {
 
 export default function FeePage() {
   const [activeTab, setActiveTab] = useState(0);
+  const { hasPermission, isSchoolAdmin, isSuperAdmin } = usePermission();
+  const canWriteFee =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('fee', 'write') ||
+    hasPermission('fee_structures', 'write');
+  const canCollectFee =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('fee', 'write') ||
+    hasPermission('fee_collection', 'write');
+  const canManagePayroll =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('staff', 'write') ||
+    hasPermission('staff_payroll', 'write');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -264,17 +281,17 @@ export default function FeePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {activeTab === 0 && (
+            {activeTab === 0 && canWriteFee && (
               <Button onClick={() => setShowAddStructureDialog(true)}>
                 <Plus className="w-4 h-4 mr-2" /> Add Structure Slab
               </Button>
             )}
-            {activeTab === 1 && (
+            {activeTab === 1 && canCollectFee && (
               <Button onClick={() => setShowCollectFeeDialog(true)}>
                 <DollarSign className="w-4 h-4 mr-2" /> Record Fee Receipt
               </Button>
             )}
-            {activeTab === 2 && (
+            {activeTab === 2 && canManagePayroll && (
               <Button
                 onClick={handleGeneratePayslips}
                 isLoading={generatePayslipsMutation.isPending}

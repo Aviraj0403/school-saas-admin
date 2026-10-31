@@ -109,6 +109,8 @@ function RenderIcon({ name, className }: { name?: string; className?: string }) 
   return <IconComp className={className} />;
 }
 
+import { usePermission } from '@/hooks/usePermission';
+
 interface AppSidebarProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -124,12 +126,13 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { activeUser, activeTenant } = useAuthStore();
+  const { hasPermission } = usePermission();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const isCollapsed = size === 'collapsed';
 
   if (!activeUser || !activeTenant) return null;
 
-  const filteredNav = filterNavForUser(activeUser.role, activeTenant.activeModules);
+  const filteredNav = filterNavForUser(activeUser.role, activeTenant.activeModules, hasPermission);
 
   const toggleExpand = (path: string) => {
     setExpandedItems((prev) =>

@@ -15,6 +15,7 @@ import { analyticsService } from '@/services/analytics.service';
 import { resolveMediaUrl, compressImageForProfile } from '@/lib/media';
 import { canManageProfilePhotos } from '@/lib/permissions';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePermission } from '@/hooks/usePermission';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -31,7 +32,17 @@ export default function StudentDetailsPage() {
   const queryClient = useQueryClient();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const activeUser = useAuthStore((s) => s.activeUser);
-  const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
+  const { hasPermission, isSchoolAdmin, isSuperAdmin } = usePermission();
+  const canEditPhoto = canManageProfilePhotos(
+    activeUser?.role,
+    activeUser?.isSuperAdmin ?? false,
+    hasPermission
+  );
+  const canDeleteStudent =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('students', 'delete') ||
+    hasPermission('student_directory', 'delete');
 
   // Only fetched once the tab is open — the endpoint is school_admin-gated, so
   // firing it on every student page view would 403 for everyone else.
@@ -203,15 +214,17 @@ export default function StudentDetailsPage() {
             <Badge variant={isStudentActive(student) ? 'success' : 'warning'}>
               {isStudentActive(student) ? 'Active' : 'Inactive'}
             </Badge>
-            <Button
-              variant="danger"
-              size="icon-sm"
-              title="Remove Student"
-              onClick={handleDelete}
-              isLoading={deleteMutation.isPending}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            {canDeleteStudent && (
+              <Button
+                variant="danger"
+                size="icon-sm"
+                title="Remove Student"
+                onClick={handleDelete}
+                isLoading={deleteMutation.isPending}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
           </div>
         </div>
 

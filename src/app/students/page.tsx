@@ -29,12 +29,25 @@ import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { StatCard } from '@/components/ui/StatCard';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { usePermission } from '@/hooks/usePermission';
 import { toast } from 'sonner';
 
 export default function StudentsPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  const { hasPermission, isSchoolAdmin, isSuperAdmin } = usePermission();
+  const canWriteStudent =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('students', 'write') ||
+    hasPermission('student_admission', 'write');
+  const canDeleteStudent =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('students', 'delete') ||
+    hasPermission('student_directory', 'delete');
 
   const { data, isPending, isError, error } = useStudentsList(
     pagination.pageIndex + 1,
@@ -69,18 +82,20 @@ export default function StudentsPage() {
           <Eye className="w-4 h-4" />
         </button>
       </Link>
-      <button
-        onClick={() => handleDelete(rowData.id)}
-        disabled={deleteMutation.isPending}
-        className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
-        title="Remove"
-      >
-        {deleteMutation.isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Trash2 className="w-4 h-4" />
-        )}
-      </button>
+      {canDeleteStudent && (
+        <button
+          onClick={() => handleDelete(rowData.id)}
+          disabled={deleteMutation.isPending}
+          className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
+          title="Remove"
+        >
+          {deleteMutation.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Trash2 className="w-4 h-4" />
+          )}
+        </button>
+      )}
     </div>
   );
 
@@ -160,12 +175,14 @@ export default function StudentsPage() {
           title="Students"
           description="Every enrolled student, their class and status in one directory."
           actions={
-            <Link href="/students/admissions">
-              <Button>
-                <Plus className="w-4 h-4" />
-                New admission
-              </Button>
-            </Link>
+            canWriteStudent ? (
+              <Link href="/students/admissions">
+                <Button>
+                  <Plus className="w-4 h-4" />
+                  New admission
+                </Button>
+              </Link>
+            ) : undefined
           }
         />
 
@@ -315,13 +332,15 @@ export default function StudentsPage() {
                             View Profile
                           </button>
                         </Link>
-                        <button
-                          onClick={() => handleDelete(student.id)}
-                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex items-center justify-center"
-                          title="Delete Student"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {canDeleteStudent && (
+                          <button
+                            onClick={() => handleDelete(student.id)}
+                            className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex items-center justify-center"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -61,7 +62,7 @@ export default function TimetablePage() {
     }
   };
 
-  const classOptions = (classes?.items || classes?.data?.items || []).map((c: any) => ({
+  const classOptions = asList(classes).map((c: any) => ({
     label: `${c.name} — ${c.section}`,
     value: c.id,
   }));
@@ -70,7 +71,7 @@ export default function TimetablePage() {
     ? subjects.map((s: any) => ({ label: `${s.name} (${s.code})`, value: s.id }))
     : [];
 
-  const teacherOptions = (staffData?.items || []).map((t: any) => ({
+  const teacherOptions = asList(staffData).map((t: any) => ({
     label: `${t.name || t.fullName} — ${t.designation || t.role || 'Teacher'}`,
     value: t.id,
   }));

@@ -1,5 +1,8 @@
 'use client';
 
+import { isStudentActive } from '@/lib/format';
+import { localDateISO } from '@/lib/format';
+import { asList } from '@/lib/utils';
 import React, { useState, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Input } from '@/components/ui/input';
@@ -38,6 +41,7 @@ import { compressImageForProfile } from '@/lib/media';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 
 // ── Step configuration ──────────────────────────────────────────────
 const ALL_STEPS = [
@@ -299,7 +303,7 @@ export default function AdmissionsPage() {
   const upd = (key: string, val: any) => setForm((f) => ({ ...f, [key]: val }));
   const stepId = enabledSteps[currentStep]?.id;
 
-  const classOptions = (classes?.items || classes?.data?.items || []).map((c: any) => ({
+  const classOptions = asList(classes).map((c: any) => ({
     label: `${c.name} — ${c.section}`,
     value: c.id,
   }));
@@ -320,7 +324,7 @@ export default function AdmissionsPage() {
     ? routesRaw.map((r: any) => ({ label: r.name, value: r.id }))
     : [];
 
-  const studentsList = studentsData?.items || studentsData?.data?.items || [];
+  const studentsList = asList(studentsData);
   const totalStudents = studentsData?.meta?.total || studentsData?.data?.meta?.total || 0;
 
   const canProceed = useCallback((): boolean => {
@@ -337,7 +341,7 @@ export default function AdmissionsPage() {
         name: `${form.firstName} ${form.lastName}`.trim(),
         academicYearId: yearId,
         classId: form.classId || undefined,
-        dob: form.dob ? form.dob.toISOString().split('T')[0] : undefined,
+        dob: form.dob ? localDateISO(form.dob) : undefined,
         gender: form.gender || undefined,
         bloodGroup: form.bloodGroup || undefined,
         rollNo: form.rollNo || undefined,
@@ -517,17 +521,21 @@ export default function AdmissionsPage() {
       <DashboardLayout>
         <PageBreadcrumb title="Admissions" subtitle="Students" />
         <div className="flex flex-col gap-4 pb-10">
+          <PageHeader
+            title="Admissions"
+            description="Admit new students one by one, or bring existing students in from a spreadsheet."
+          />
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center gap-3">
               <Button onClick={() => setView('wizard')} className="shadow-md">
-                <i className="pi pi-user-plus mr-2"></i> Single Student Admission
+                <i className="pi pi-user-plus"></i> New admission
               </Button>
               <Button
                 onClick={() => setShowBulkModal(true)}
                 variant="outline"
                 className="shadow-sm border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
               >
-                <i className="pi pi-file-excel mr-2"></i> Onboard Old Students (Bulk CSV)
+                <i className="pi pi-file-excel"></i> Import from CSV
               </Button>
             </div>
             <span className="text-xs font-semibold text-zinc-500">
@@ -674,12 +682,12 @@ export default function AdmissionsPage() {
               { label: 'Total Enrolled', val: totalStudents, color: 'indigo' },
               {
                 label: 'Active Students',
-                val: studentsList.filter((s: any) => s.status === 'ACTIVE').length,
+                val: studentsList.filter((s: any) => isStudentActive(s)).length,
                 color: 'emerald',
               },
               {
                 label: 'Inactive',
-                val: studentsList.filter((s: any) => s.status !== 'ACTIVE').length,
+                val: studentsList.filter((s: any) => !isStudentActive(s)).length,
                 color: 'amber',
               },
               { label: 'Academic Year', val: currentYear?.name || '—', color: 'violet' },
@@ -740,15 +748,8 @@ export default function AdmissionsPage() {
                       </TableCell>
                       <TableCell className="text-xs">{d.academicYear?.name || '—'}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={d.status === 'ACTIVE' ? 'default' : 'secondary'}
-                          className={
-                            d.status === 'ACTIVE'
-                              ? 'bg-emerald-50 text-emerald-600'
-                              : 'bg-amber-50 text-amber-600'
-                          }
-                        >
-                          {d.status}
+                        <Badge variant={isStudentActive(d) ? 'success' : 'warning'}>
+                          {isStudentActive(d) ? 'Active' : 'Inactive'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

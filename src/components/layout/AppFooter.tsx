@@ -4,14 +4,15 @@ export default function AppFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto flex items-center py-5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
-      <div className="lg:px-8 px-6 w-full flex md:justify-between justify-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
-        <div className="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase text-center sm:text-left">
-          Copyright© EDUMANAGE SYSTEMS {currentYear} All Rights Reserved.
-        </div>
-        <div className="md:flex hidden gap-2 items-center md:justify-end">
-          Design &amp; Develop by School SaaS
-        </div>
+    <footer className="mt-auto border-t border-border">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-slate-500 dark:text-slate-400 sm:flex-row sm:px-6 lg:px-8">
+        <p>© {currentYear} EduNexus. All rights reserved.</p>
+        <a
+          href="/academics/guide"
+          className="hover:text-slate-900 dark:hover:text-white transition-colors"
+        >
+          Help &amp; user guide
+        </a>
       </div>
     </footer>
   );

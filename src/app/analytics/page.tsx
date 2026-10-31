@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
@@ -31,7 +32,7 @@ export default function AnalyticsPage() {
     return 'success';
   };
 
-  const logItems = logs?.items || [];
+  const logItems = asList(logs);
   const totalRecords = logs?.meta?.total || 0;
   const totalPages = Math.ceil(totalRecords / limit) || 1;
 

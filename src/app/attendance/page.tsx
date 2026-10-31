@@ -1,5 +1,7 @@
 'use client';
 
+import { localDateISO } from '@/lib/format';
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useClasses } from '@/hooks/queries/useAcademics';
@@ -23,11 +25,11 @@ export default function AttendancePage() {
   const [isModified, setIsModified] = useState(false);
 
   // Format date to YYYY-MM-DD
-  const formattedDate = date ? date.toISOString().split('T')[0] : '';
+  const formattedDate = date ? localDateISO(date) : '';
 
   // Queries
   const { data: classesData, isPending: loadingClasses } = useClasses(1, 100);
-  const classes = classesData?.items || [];
+  const classes = asList(classesData);
 
   // Set default class if available
   useEffect(() => {
@@ -39,18 +41,18 @@ export default function AttendancePage() {
   // Fetch students for selected class
   const { data: studentsData, isPending: loadingStudents } = useStudentsList(
     1,
-    200,
+    100, // API maximum page size; larger values are rejected
     undefined,
     selectedClassId || undefined
   );
-  const students = studentsData?.items || [];
+  const students = asList(studentsData);
 
   // Fetch already marked attendance
   const { data: attendanceData, isPending: loadingAttendance } = useAttendance(
     formattedDate,
     selectedClassId || undefined
   );
-  const markedAttendance = attendanceData?.items || [];
+  const markedAttendance = asList(attendanceData);
 
   const studentsKey = studentsData?.items?.map((s: any) => s.id).join(',') || '';
   const attendanceKey =
@@ -63,7 +65,7 @@ export default function AttendancePage() {
     const initialRecords: Record<string, LocalRecord> = {};
 
     // Default all students to PRESENT
-    const activeStudents = studentsData?.items || [];
+    const activeStudents = asList(studentsData);
     activeStudents.forEach((student: any) => {
       initialRecords[student.id] = {
         status: 'PRESENT',
@@ -72,7 +74,7 @@ export default function AttendancePage() {
     });
 
     // Overwrite with already saved attendance from backend if present
-    const marked = attendanceData?.items || [];
+    const marked = asList(attendanceData);
     marked.forEach((record: any) => {
       if (record.studentId) {
         initialRecords[record.studentId] = {
@@ -214,8 +216,8 @@ export default function AttendancePage() {
               </span>
               <Input
                 type="date"
-                value={date.toISOString().split('T')[0]}
-                onChange={(e) => setDate(new Date(e.target.value))}
+                value={formattedDate}
+                onChange={(e) => e.target.value && setDate(new Date(`${e.target.value}T00:00:00`))}
                 className="bg-transparent text-zinc-800 dark:text-zinc-200 border-none py-0 w-36 text-sm"
               />
             </div>

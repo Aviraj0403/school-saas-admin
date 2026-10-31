@@ -1,5 +1,6 @@
 'use client';
 
+import { isStudentActive } from '@/lib/format';
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -199,8 +200,8 @@ export default function StudentDetailsPage() {
           </div>
 
           <div className="flex items-center gap-3 relative z-10 self-stretch md:self-auto justify-end border-t md:border-t-0 border-zinc-100 dark:border-zinc-800 pt-4 md:pt-0">
-            <Badge variant={student.status === 'ACTIVE' || !student.status ? 'success' : 'warning'}>
-              {student.status || 'ACTIVE'}
+            <Badge variant={isStudentActive(student) ? 'success' : 'warning'}>
+              {isStudentActive(student) ? 'Active' : 'Inactive'}
             </Badge>
             <Button
               variant="danger"
@@ -578,7 +579,7 @@ export default function StudentDetailsPage() {
                         <p className="text-zinc-900 dark:text-zinc-200">{log.action}</p>
                         <div className="flex gap-2 items-center text-[10px] text-zinc-500 mt-1">
                           <span className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 px-1.5 py-0.5 rounded-sm font-bold uppercase">
-                            {log.subject}
+                            {typeof log.subject === 'object' ? log.subject?.name : log.subject}
                           </span>
                           {log.user?.name && <span>· by {log.user.name}</span>}
                         </div>

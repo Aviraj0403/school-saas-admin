@@ -1,9 +1,28 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useRef, useState } from 'react';
 import { useTenantsList } from '@/modules/superadmin/hooks/useTenants';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/useAuthStore';
+import { formatRole, initials } from '@/lib/format';
+import NavSearch from './NavSearch';
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  LifeBuoy,
+  LogOut,
+  Menu,
+  Moon,
+  Palette,
+  Settings,
+  Sun,
+} from 'lucide-react';
 
 interface SwitchableSchool {
   id: string;
@@ -141,72 +160,11 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
   };
 
   // Fetch the list of schools dynamically from the database!
-  const isSuper = activeUser?.role === 'SuperAdmin' || activeUser?.isSuperAdmin;
+  // Based on the real signed-in account, not the previewed/mirrored one
+  const isSuper = !!useAuthStore((st) => st.user?.isSuperAdmin);
   const { data: dbTenantsData } = useTenantsList(1, 50);
 
-  // Parse server schools or fall back to preset offline demo schools
-  const offlineSchools: SwitchableSchool[] = [
-    {
-      id: '00101',
-      name: 'Delhi Public School',
-      plan: 'PREMIUM',
-      activeModules: [
-        'students',
-        'staff',
-        'academics',
-        'attendance',
-        'fee',
-        'exams',
-        'library',
-        'communication',
-        'whatsapp',
-        'hostel',
-        'leave',
-        'transport',
-        'homework',
-        'settings',
-      ],
-      theme: { primaryColor: '#1a73e8', secondaryColor: '#e8f0fe' },
-    },
-    {
-      id: '00102',
-      name: 'Oakridge International',
-      plan: 'ENTERPRISE',
-      activeModules: [
-        'students',
-        'staff',
-        'academics',
-        'attendance',
-        'fee',
-        'exams',
-        'library',
-        'communication',
-        'hostel',
-        'transport',
-        'homework',
-        'settings',
-      ],
-      theme: { primaryColor: '#f59e0b', secondaryColor: '#fef3c7' },
-    },
-    {
-      id: '00103',
-      name: 'St. Xavier Academy',
-      plan: 'STANDARD',
-      activeModules: [
-        'students',
-        'staff',
-        'academics',
-        'attendance',
-        'exams',
-        'library',
-        'homework',
-        'settings',
-      ],
-      theme: { primaryColor: '#8b5cf6', secondaryColor: '#f3e8ff' },
-    },
-  ];
-
-  const dbTenants = dbTenantsData?.data?.items || [];
+  const dbTenants = asList(dbTenantsData);
   const schools: SwitchableSchool[] =
     dbTenants.length > 0
       ? dbTenants.map((t: any) => ({
@@ -234,7 +192,7 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           subdomain: t.subdomain,
           prefix: t.prefix,
         }))
-      : offlineSchools;
+      : [];
 
   const handleTenantSwitch = (school: SwitchableSchool) => {
     switchTenant({
@@ -271,187 +229,82 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
     }, 400);
   };
 
-  const handleMirror = (role: string, name: string) => {
-    mirrorUser({ role, name });
-    window.dispatchEvent(
-      new CustomEvent('show-toast', {
-        detail: {
-          severity: 'warn',
-          summary: 'Mirror Mode Activated',
-          detail: `Now mirroring ${name} (${role}) view!`,
-          life: 3500,
-        },
-      })
-    );
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 300);
-  };
-
-  const userMenuItems = [
-    {
-      label: activeUser?.name || 'User',
-      items: [
-        {
-          label: isDemoMode ? 'Exit Demo Mode' : 'Enter Demo Mode',
-          icon: isDemoMode ? 'pi pi-eye-slash' : 'pi pi-eye',
-          command: toggleDemoMode,
-        },
-        ...(isMirroring
-          ? [
-              {
-                label: 'Exit Mirror Mode',
-                icon: 'pi pi-times-circle',
-                command: () => {
-                  exitMirroring();
-                  window.location.href = '/dashboard';
-                },
-              },
-            ]
-          : []),
-        {
-          label: 'Settings',
-          icon: 'pi pi-cog',
-          command: () => {
-            window.location.href = '/settings';
-          },
-        },
-      ],
-    },
-    {
-      label: 'Mirror Persona View 👁️',
-      items: [
-        {
-          label: 'Mirror Teacher',
-          icon: 'pi pi-user',
-          command: () => handleMirror('Teacher', 'Faculty Member'),
-        },
-        {
-          label: 'Mirror Accountant',
-          icon: 'pi pi-wallet',
-          command: () => handleMirror('Accountant', 'Finance Officer'),
-        },
-        {
-          label: 'Mirror Librarian',
-          icon: 'pi pi-book',
-          command: () => handleMirror('Librarian', 'Library Admin'),
-        },
-        {
-          label: 'Mirror Student',
-          icon: 'pi pi-graduation-cap',
-          command: () => handleMirror('Student', 'Student Pupil'),
-        },
-        {
-          label: 'Mirror Parent',
-          icon: 'pi pi-users',
-          command: () => handleMirror('Parent', 'Guardian Profile'),
-        },
-        {
-          label: 'Mirror School Admin',
-          icon: 'pi pi-shield',
-          command: () => handleMirror('school_admin', 'School Administrator'),
-        },
-      ],
-    },
-    {
-      label: 'Account',
-      items: [
-        {
-          label: 'Sign Out',
-          icon: 'pi pi-sign-out',
-          command: logout,
-        },
-      ],
-    },
-  ];
+  const iconBtn =
+    'relative flex size-10 items-center justify-center rounded-full border border-border bg-card text-zinc-500 shadow-xs transition-all hover:-translate-y-px hover:text-zinc-900 hover:shadow-md dark:text-zinc-400 dark:hover:text-white';
+  const menuPanel =
+    'absolute top-full mt-3 rounded-2xl bg-popover border border-border shadow-pop z-50 p-2 animate-slide-up';
+  const menuItem =
+    'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-[13px] font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors no-underline';
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-[70px] bg-white/90 dark:bg-[#070a13]/85 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 transition-colors duration-300 shadow-sm">
-      {/* Left: hamburger + brand + switcher */}
-      <div className="flex items-center gap-4">
-        <button
-          aria-label="Toggle Menu"
-          onClick={onToggleMenu}
-          className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
-        >
-          <i className="pi pi-bars text-lg"></i>
-        </button>
+    <header className="sticky top-0 z-30 flex h-[76px] items-center gap-3 bg-background/70 px-4 backdrop-blur-xl sm:px-6 lg:pl-0 lg:pr-8">
+      {/* Mobile: menu + logo */}
+      <button aria-label="Open menu" onClick={onToggleMenu} className={`${iconBtn} lg:hidden`}>
+        <Menu className="size-[18px]" />
+      </button>
+      <a href="/dashboard" className="flex items-center gap-2 no-underline lg:hidden">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
+          <GraduationCap className="size-[18px] text-white" />
+        </span>
+        <span className="hidden font-display text-lg font-semibold text-zinc-900 dark:text-white sm:block">
+          EduNexus
+        </span>
+      </a>
 
-        <div className="flex items-center gap-3">
-          <div className="relative group">
-            <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 opacity-70 blur-md group-hover:opacity-100 transition duration-300"></div>
-            <div
-              className="relative w-9 h-9 rounded-xl flex items-center justify-center shadow-lg border border-white/20"
-              style={{ backgroundColor: 'var(--primary-color)' }}
-            >
-              <i className="pi pi-graduation-cap text-white text-[15px] drop-shadow-md"></i>
-            </div>
-          </div>
-          <span className="font-extrabold tracking-tight text-slate-900 dark:text-slate-100 hidden sm:block bg-clip-text text-base">
-            School SaaS
-          </span>
-        </div>
+      {/* Search */}
+      <div className="flex flex-1 items-center gap-3">
+        <NavSearch />
 
-        {/* Premium Workspace Selector Dropdown */}
-        {activeUser && (
-          <div className="relative ml-2">
+        {activeUser && isSuper && (
+          <div className="relative hidden md:block">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/90 transition-all shadow-sm"
+              className="flex h-11 items-center gap-2.5 rounded-2xl border border-border bg-card pl-1.5 pr-3 text-[13px] font-semibold text-zinc-800 shadow-xs transition-all hover:shadow-md dark:text-zinc-100"
             >
-              <i
-                className="pi pi-briefcase text-[11px]"
-                style={{ color: 'var(--primary-color)' }}
-              ></i>
-              <span className="max-w-[140px] truncate">
-                {activeTenant?.name || 'Select School'}
+              <span className="flex size-8 items-center justify-center rounded-xl bg-brand-gradient text-[11px] font-bold text-white">
+                {initials(activeTenant?.name)}
               </span>
-              <i className="pi pi-chevron-down text-[9px] text-slate-400"></i>
+              <span className="max-w-[160px] truncate">
+                {activeTenant?.name || 'Select school'}
+              </span>
+              <ChevronsUpDown className="size-3.5 text-zinc-400" />
             </button>
 
             {dropdownOpen && (
               <>
-                <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
-                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in shadow-blue-500/10">
-                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                      Switch Workspace
-                    </p>
-                  </div>
-                  <div className="mt-1.5 flex flex-col gap-1">
+                <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                <div className={`${menuPanel} left-0 w-80`}>
+                  <p className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                    Switch school
+                  </p>
+                  <div className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">
+                    {schools.length === 0 && (
+                      <p className="px-3 py-6 text-center text-[13px] text-zinc-500">
+                        No schools yet.
+                      </p>
+                    )}
                     {schools.map((school) => {
                       const isActive = activeTenant?.id === school.id;
                       return (
                         <button
                           key={school.id}
                           onClick={() => handleTenantSwitch(school)}
-                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
-                            isActive
-                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20'
-                              : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300'
-                          }`}
-                          style={
-                            isActive
-                              ? {
-                                  backgroundColor:
-                                    'color-mix(in srgb, var(--primary-color), transparent 90%)',
-                                  color: 'var(--primary-color)',
-                                }
-                              : {}
-                          }
+                          className={`${menuItem} justify-between ${isActive ? 'bg-brand-muted' : ''}`}
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-semibold">{school.name}</span>
-                            <span className="text-[9px] opacity-70 uppercase tracking-wider font-extrabold">
-                              {school.plan} Plan
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-[11px] font-bold text-zinc-600 dark:bg-white/10 dark:text-zinc-200">
+                              {initials(school.name)}
                             </span>
-                          </div>
-                          {isActive && (
-                            <i
-                              className="pi pi-check text-xs"
-                              style={{ color: 'var(--primary-color)' }}
-                            ></i>
-                          )}
+                            <span className="min-w-0">
+                              <span className="block truncate">{school.name}</span>
+                              {school.plan && (
+                                <span className="block text-[11px] font-normal capitalize text-zinc-500">
+                                  {String(school.plan).toLowerCase()} plan
+                                </span>
+                              )}
+                            </span>
+                          </span>
+                          {isActive && <Check className="size-4 shrink-0 text-brand" />}
                         </button>
                       );
                     })}
@@ -463,43 +316,40 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
         )}
       </div>
 
-      {/* Right: actions + user */}
-      <div className="flex items-center gap-2">
+      {/* Right: preferences + account */}
+      <div className="flex shrink-0 items-center gap-2">
         {isDemoMode && (
-          <span className="text-[9px] px-2.5 py-1 font-extrabold uppercase tracking-wider rounded-lg shadow-sm bg-rose-500/10 text-rose-500 border border-rose-500/20">
-            DEMO MODE
+          <span className="hidden rounded-full bg-amber-400/15 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-500/30 dark:text-amber-300 sm:inline-flex">
+            Demo mode
           </span>
         )}
 
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <button
-            aria-label="Theme Customizer"
+            aria-label="Brand colour"
+            title="Brand colour"
             onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-            className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+            className={iconBtn}
           >
-            <i className="pi pi-palette text-[16px]"></i>
+            <Palette className="size-[18px]" />
           </button>
           {themeDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-30" onClick={() => setThemeDropdownOpen(false)} />
-              <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in shadow-blue-500/10">
-                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                    Brand Color Theme
-                  </p>
-                </div>
-                <div className="mt-1.5 flex flex-col gap-1">
+              <div className="fixed inset-0 z-40" onClick={() => setThemeDropdownOpen(false)} />
+              <div className={`${menuPanel} right-0 w-60`}>
+                <p className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                  Brand colour
+                </p>
+                <div className="grid grid-cols-4 gap-2 px-2 pb-2">
                   {THEME_PRESETS.map((t) => (
                     <button
                       key={t.name}
+                      title={t.name}
+                      aria-label={t.name}
                       onClick={() => handleThemeSwitch(t)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all text-xs font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      <span
-                        className={`w-4 h-4 rounded-full ${t.previewClass} border border-white/20 shadow-sm`}
-                      />
-                      {t.name}
-                    </button>
+                      className="aspect-square rounded-xl shadow-sm ring-2 ring-transparent transition-transform hover:scale-110 hover:ring-zinc-300 dark:hover:ring-white/30"
+                      style={{ backgroundColor: t.primaryColor }}
+                    />
                   ))}
                 </div>
               </div>
@@ -507,82 +357,111 @@ export default function AppTopbar({ onToggleMenu }: { onToggleMenu: () => void }
           )}
         </div>
 
-        {/* Theme Mode Toggle (Sun/Moon) */}
         <button
-          aria-label="Toggle Theme Mode"
+          aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={themeMode === 'dark' ? 'Light mode' : 'Dark mode'}
           onClick={toggleThemeMode}
-          className="text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+          className={iconBtn}
         >
-          <i
-            className={
-              themeMode === 'dark'
-                ? 'pi pi-sun text-[16px] text-amber-400'
-                : 'pi pi-moon text-[16px] text-indigo-400'
-            }
-          ></i>
+          {themeMode === 'dark' ? (
+            <Sun className="size-[18px]" />
+          ) : (
+            <Moon className="size-[18px]" />
+          )}
         </button>
 
         <button
           aria-label="Notifications"
-          className="relative text-slate-600 dark:text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+          title="Notifications"
+          className={`${iconBtn} hidden sm:flex`}
         >
-          <i className="pi pi-bell text-[16px]"></i>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+          <Bell className="size-[18px]" />
         </button>
 
-        <div className="relative flex items-center gap-2.5 pl-3 border-l border-slate-200/80 dark:border-slate-800/80 ml-1">
-          <div className="hidden sm:flex flex-col text-right">
-            <span className="text-[13px] font-bold text-slate-900 dark:text-slate-100 leading-tight">
-              {activeUser?.name || 'Guest'}
-            </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight capitalize mt-0.5 font-bold uppercase tracking-wider">
-              {activeUser?.role || 'No Role'}
-            </span>
-          </div>
+        <div className="relative">
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer ml-1 overflow-hidden shadow-md border border-white/20 transition-transform hover:scale-105 bg-brand text-white"
+            className="flex items-center gap-2.5 rounded-full border border-border bg-card p-1 shadow-xs transition-all hover:shadow-md lg:pr-3"
           >
-            <i className="pi pi-user text-white text-sm"></i>
+            <span className="flex size-8 items-center justify-center rounded-full bg-brand-gradient text-xs font-bold text-white">
+              {initials(activeUser?.name)}
+            </span>
+            <span className="hidden flex-col text-left leading-tight lg:flex">
+              <span className="max-w-[130px] truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                {activeUser?.name || 'Guest'}
+              </span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                {formatRole(activeUser?.role)}
+              </span>
+            </span>
+            <ChevronDown className="hidden size-3.5 text-zinc-400 lg:block" />
           </button>
 
           {userMenuOpen && (
             <>
-              <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
-              <div className="absolute right-0 top-12 w-56 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/90 shadow-2xl z-40 p-2 animate-fade-in">
-                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                    {activeUser?.name}
-                  </p>
-                  <p className="text-[10px] text-slate-400 truncate">{activeUser?.role}</p>
+              <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+              <div className={`${menuPanel} right-0 w-72`}>
+                <div className="mb-1 flex items-center gap-3 rounded-xl bg-brand-soft p-3 dark:bg-white/5">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-sm font-bold text-white">
+                    {initials(activeUser?.name)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-zinc-900 dark:text-white">
+                      {activeUser?.name}
+                    </span>
+                    <span className="block truncate text-xs text-zinc-500">
+                      {activeUser?.email || formatRole(activeUser?.role)}
+                    </span>
+                  </span>
                 </div>
-                <div className="mt-1 flex flex-col gap-1">
+                <a href="/settings" className={menuItem}>
+                  <Settings className="size-4 text-zinc-400" />
+                  Settings
+                </a>
+                <a href="/academics/guide" className={menuItem}>
+                  <LifeBuoy className="size-4 text-zinc-400" />
+                  Help &amp; user guide
+                </a>
+                {isSuper && (
                   <button
                     onClick={() => {
                       toggleDemoMode();
                       setUserMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all text-slate-700 dark:text-slate-200"
+                    className={menuItem}
                   >
-                    <i className={isDemoMode ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'}></i>
-                    <span>{isDemoMode ? 'Exit Demo Mode' : 'Enter Demo Mode'}</span>
+                    <Eye className="size-4 text-zinc-400" />
+                    {isDemoMode ? 'Exit demo mode' : 'Enter demo mode'}
                   </button>
+                )}
+                {isMirroring && (
                   <button
                     onClick={() => {
-                      logout();
-                      setUserMenuOpen(false);
+                      exitMirroring();
+                      window.location.href = '/dashboard';
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold hover:bg-rose-500/10 text-rose-500 transition-all"
+                    className={menuItem}
                   >
-                    <i className="pi pi-sign-out text-xs"></i>
-                    <span>Sign Out</span>
+                    <EyeOff className="size-4 text-zinc-400" />
+                    Exit preview
                   </button>
-                </div>
+                )}
+                <div className="my-1.5 border-t border-border" />
+                <button
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    logout();
+                  }}
+                  className={`${menuItem} text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10`}
+                >
+                  <LogOut className="size-4" />
+                  Sign out
+                </button>
               </div>
             </>
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 }

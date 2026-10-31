@@ -438,3 +438,28 @@ export const navigationConfig: NavItem[] = [
     roles: ['SuperAdmin', 'Principal', 'school_admin'],
   },
 ];
+
+/** The navigation tree a user may see: role-filtered and limited to the tenant's active modules. */
+export function filterNavForUser(role: string, activeModules: string[]): NavItem[] {
+  const filterItem = (item: NavItem): NavItem | null => {
+    if (!canAccessNav(item.roles, role)) return null;
+    if (item.module) {
+      const plural = item.module.endsWith('s') ? item.module : `${item.module}s`;
+      const singular = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
+      const hasAccess =
+        activeModules.includes(item.module) ||
+        activeModules.includes(plural) ||
+        activeModules.includes(singular);
+      if (!hasAccess) return null;
+    }
+    if (item.children) {
+      const children = item.children
+        .map(filterItem)
+        .filter((child): child is NavItem => child !== null);
+      if (children.length === 0 && !item.path) return null;
+      return { ...item, children };
+    }
+    return item;
+  };
+  return navigationConfig.map(filterItem).filter((item): item is NavItem => item !== null);
+}

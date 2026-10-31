@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsService } from '@/services/settings.service';
 import { useStaffList, useResetStaffPassword } from '@/hooks/queries/useStaff';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import {
@@ -156,7 +158,7 @@ export default function SettingsPage() {
   const { data: staffData, isPending: loadingStaff } = useStaffList(1, 40);
   const resetPasswordMutation = useResetStaffPassword();
 
-  const staffItems = staffData?.items || [];
+  const staffItems = asList(staffData);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -262,6 +264,10 @@ export default function SettingsPage() {
       <PageBreadcrumb title="Settings" />
 
       <div className="flex flex-col gap-6 pb-10 w-full animate-fade-in">
+        <PageHeader
+          title="Settings"
+          description="Your school profile, enabled modules and sign-in options."
+        />
         {/* Navigation Tabs */}
         <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max overflow-x-auto max-w-full">
           <button

@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -29,7 +30,7 @@ export default function QuizzesPage() {
 
   const quizzes = quizzesData || [];
 
-  const classOptions = (classesData?.items || classesData?.data?.items || []).map((c: any) => ({
+  const classOptions = asList(classesData).map((c: any) => ({
     label: `${c.name} — ${c.section}`,
     value: c.id,
   }));

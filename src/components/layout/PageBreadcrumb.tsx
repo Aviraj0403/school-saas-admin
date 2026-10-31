@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ChevronRight, Home } from 'lucide-react';
 
 interface PageBreadcrumbProps {
   title: string;
@@ -7,30 +8,41 @@ interface PageBreadcrumbProps {
   homeUrl?: string;
 }
 
-const PageBreadcrumb: React.FC<PageBreadcrumbProps> = ({ 
-  title, 
-  subtitle, 
-  homeUrl = '/dashboard' 
+const PageBreadcrumb: React.FC<PageBreadcrumbProps> = ({
+  title,
+  subtitle,
+  homeUrl = '/dashboard',
 }) => {
   return (
-    <div className="flex flex-col gap-1.5 mb-2 print:hidden">
-      {/* Breadcrumb Trail */}
-      <div className="flex items-center gap-2 text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest">
-        <Link href={homeUrl} className="hover:text-blue-600 transition-colors flex items-center gap-1">
-          <i className="pi pi-home" />
-        </Link>
-        <i className="pi pi-angle-right text-[10px] opacity-70" />
+    <nav aria-label="Breadcrumb" className="mb-3.5 print:hidden">
+      <ol className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-[13px] text-zinc-500 dark:text-zinc-400 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+        <li className="shrink-0">
+          <Link
+            href={homeUrl}
+            className="flex items-center justify-center size-6 sm:size-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-all shadow-2xs"
+            aria-label="Home"
+          >
+            <Home className="size-3 sm:size-3.5" />
+          </Link>
+        </li>
         {subtitle && (
           <>
-            <span className="cursor-default">{subtitle}</span>
-            <i className="pi pi-angle-right text-[10px] opacity-70" />
+            <li className="shrink-0 flex items-center text-zinc-300 dark:text-zinc-600">
+              <ChevronRight className="size-3 sm:size-3.5" />
+            </li>
+            <li className="shrink-0 max-w-[110px] sm:max-w-[160px] truncate text-zinc-500 dark:text-zinc-400 font-medium">
+              {subtitle}
+            </li>
           </>
         )}
-        <span className="text-blue-600 dark:text-blue-400 cursor-default">
+        <li className="shrink-0 flex items-center text-zinc-300 dark:text-zinc-600">
+          <ChevronRight className="size-3 sm:size-3.5" />
+        </li>
+        <li className="min-w-0 max-w-[150px] sm:max-w-[280px] md:max-w-none truncate font-semibold text-zinc-900 dark:text-zinc-100">
           {title}
-        </span>
-      </div>
-    </div>
+        </li>
+      </ol>
+    </nav>
   );
 };
 

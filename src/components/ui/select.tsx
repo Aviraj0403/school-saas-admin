@@ -28,7 +28,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         value={value}
         onChange={handleChange}
         className={cn(
-          'w-full rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-xs font-medium px-3.5 py-2.5 transition-all duration-200 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer',
+          'h-11 w-full rounded-xl bg-white dark:bg-white/[0.04] border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-sm px-3.5 shadow-xs transition-all duration-200 outline-none hover:border-zinc-300 dark:hover:border-white/20 focus:border-brand focus:ring-4 focus:ring-brand/12 disabled:cursor-not-allowed disabled:opacity-50 pr-9 appearance-none cursor-pointer bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 fill=%27none%27 stroke=%27%2394a3b8%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27m4 6 4 4 4-4%27/%3E%3C/svg%3E")] bg-[length:16px] bg-[right_0.65rem_center] bg-no-repeat',
           className
         )}
         ref={ref}

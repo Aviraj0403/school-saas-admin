@@ -1,7 +1,10 @@
 'use client';
 
+import { isStudentActive } from '@/lib/format';
+import { asList } from '@/lib/utils';
 import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -50,8 +53,10 @@ export default function StudentsPage() {
   };
 
   const statusTemplate = (rowData: any) => {
-    const isActive = rowData.status === 'ACTIVE';
-    return <Badge variant={isActive ? 'success' : 'warning'}>{rowData.status}</Badge>;
+    const isActive = isStudentActive(rowData);
+    return (
+      <Badge variant={isActive ? 'success' : 'warning'}>{isActive ? 'Active' : 'Inactive'}</Badge>
+    );
   };
 
   const actionsTemplate = (rowData: any) => (
@@ -79,7 +84,7 @@ export default function StudentsPage() {
     </div>
   );
 
-  const studentsList = data?.items || data?.data?.items || [];
+  const studentsList = asList(data);
   const totalRecords = data?.meta?.total || data?.data?.meta?.total || 0;
   const pageCount =
     data?.meta?.totalPages ||
@@ -151,14 +156,18 @@ export default function StudentsPage() {
       <PageBreadcrumb title="Students" />
       <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full">
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          <Link href="/students/admissions" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto font-bold rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm px-5 py-3">
-              <Plus className="w-4 h-4" />
-              New Admission
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="Students"
+          description="Every enrolled student, their class and status in one directory."
+          actions={
+            <Link href="/students/admissions">
+              <Button>
+                <Plus className="w-4 h-4" />
+                New admission
+              </Button>
+            </Link>
+          }
+        />
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -173,9 +182,7 @@ export default function StudentsPage() {
           />
           <StatCard
             label="Active"
-            value={
-              isPending ? '...' : studentsList.filter((s: any) => s.status === 'ACTIVE').length
-            }
+            value={isPending ? '...' : studentsList.filter((s: any) => isStudentActive(s)).length}
             icon={CheckCircle}
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
@@ -184,9 +191,7 @@ export default function StudentsPage() {
           />
           <StatCard
             label="Suspended"
-            value={
-              isPending ? '...' : studentsList.filter((s: any) => s.status !== 'ACTIVE').length
-            }
+            value={isPending ? '...' : studentsList.filter((s: any) => !isStudentActive(s)).length}
             icon={AlertTriangle}
             gradientClass="from-amber-500 to-orange-500"
             iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
@@ -269,8 +274,9 @@ export default function StudentsPage() {
             ) : (
               studentsList.map((student: any) => {
                 const fullName =
+                  student.name ||
                   `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
-                  'Unnamed Student';
+                  'Unnamed student';
                 return (
                   <div
                     key={student.id}
@@ -296,7 +302,10 @@ export default function StudentsPage() {
                       <div className="flex items-center justify-between text-sm py-2 border-b border-zinc-100 dark:border-zinc-800">
                         <span className="text-zinc-500">Class</span>
                         <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                          {student.className || 'Not Assigned'}
+                          {student.className ||
+                            (student.class
+                              ? `${student.class.name} ${student.class.section ?? ''}`.trim()
+                              : 'Not assigned')}
                         </span>
                       </div>
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { localDateISO } from '@/lib/format';
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -31,7 +33,7 @@ export default function LessonPlansPage() {
 
   const plans = plansData || [];
 
-  const classOptions = (classesData?.items || classesData?.data?.items || []).map((c: any) => ({
+  const classOptions = asList(classesData).map((c: any) => ({
     label: `${c.name} — ${c.section}`,
     value: c.id,
   }));
@@ -40,7 +42,7 @@ export default function LessonPlansPage() {
     ? subjectsData.map((s: any) => ({ label: `${s.name} (${s.code})`, value: s.id }))
     : [];
 
-  const teacherOptions = (staffData?.items || []).map((t: any) => ({
+  const teacherOptions = asList(staffData).map((t: any) => ({
     label: `${t.name} — ${t.designation || 'Teacher'}`,
     value: t.id,
   }));
@@ -52,7 +54,7 @@ export default function LessonPlansPage() {
   );
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: localDateISO(),
     classId: '',
     subjectId: '',
     teacherId: '',
@@ -83,7 +85,7 @@ export default function LessonPlansPage() {
         onSuccess: () => {
           setShowDialog(false);
           setFormData({
-            date: new Date().toISOString().split('T')[0],
+            date: localDateISO(),
             classId: '',
             subjectId: '',
             teacherId: '',

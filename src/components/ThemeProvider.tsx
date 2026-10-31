@@ -31,6 +31,25 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     }
   }, [fetchTenant]);
 
+  // School users can't read /tenants/:id, so login may have stored a placeholder tenant.
+  // Once the public subdomain record for the same school arrives, adopt its real name,
+  // modules and theme.
+  useEffect(() => {
+    if (!tenant || !activeTenant || tenant.id !== activeTenant.id) return;
+    if (activeTenant.name !== 'Your School' && activeTenant.name !== 'School Admin') return;
+    useAuthStore.getState().setTenant({
+      id: tenant.id,
+      name: tenant.name,
+      activeModules: tenant.activeModules?.length
+        ? tenant.activeModules
+        : activeTenant.activeModules,
+      projectCode: tenant.projectCode,
+      subdomain: tenant.subdomain,
+      prefix: (tenant as any).prefix,
+      theme: tenant.theme ?? undefined,
+    });
+  }, [tenant, activeTenant]);
+
   // Apply theme dynamically from both subdomain resolver AND live active workspace switches!
   useEffect(() => {
     const applyTheme = () => {
@@ -61,14 +80,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         };
       }
 
-      // Get theme mode (dark is default now)
-      let themeMode = 'dark';
+      // Light is the default; users can opt into dark from the top bar
+      let themeMode = 'light';
       try {
         const savedMode = localStorage.getItem('theme-mode');
         if (savedMode === 'light' || savedMode === 'dark') {
           themeMode = savedMode;
         } else {
-          localStorage.setItem('theme-mode', 'dark');
+          localStorage.setItem('theme-mode', 'light');
         }
       } catch (e) {
         // Safe fallback
@@ -89,15 +108,6 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         if (theme.secondaryColor) {
           root.style.setProperty('--secondary-color', theme.secondaryColor);
         }
-      }
-
-      // Keep backgrounds pure and ultra-clean for Modern Glassmorphism
-      if (themeMode === 'dark') {
-        root.style.setProperty('--background', '#090d16'); // Rich Dark Backdrop
-        root.style.setProperty('--foreground', '#f8fafc');
-      } else {
-        root.style.setProperty('--background', '#f8fafc'); // Premium Light CRM Background
-        root.style.setProperty('--foreground', '#0f172a'); // Rich Slate Text
       }
     };
 

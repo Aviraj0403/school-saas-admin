@@ -118,8 +118,26 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         if (typeof window !== 'undefined') {
+          const refreshToken = localStorage.getItem('refresh_token');
+          // Revoke the session server-side (best effort — the user is signed out locally
+          // regardless). Plain fetch avoids importing the axios client into the store.
+          if (refreshToken) {
+            const base =
+              process.env.NEXT_PUBLIC_API_URL || 'https://apischool.jdinfotechsolutions.in/api/v1';
+            fetch(`${base}/auth/logout`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('auth_token') ?? ''}`,
+              },
+              body: JSON.stringify({ refreshToken }),
+              keepalive: true,
+            }).catch(() => {});
+          }
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
+          // QueryProvider listens for this and drops every cached response.
+          window.dispatchEvent(new Event('auth:logout'));
         }
         set({
           user: null,
@@ -137,6 +155,8 @@ export const useAuthStore = create<AuthState>()(
 
       toggleDemoMode: () => {
         const { isDemoMode, user, tenant } = get();
+        // Demo mode impersonates a super admin in the UI; only real super admins may use it.
+        if (!isDemoMode && !user?.isSuperAdmin) return;
         if (isDemoMode) {
           set({ isDemoMode: false, activeUser: user, activeTenant: tenant, isMirroring: false });
         } else {

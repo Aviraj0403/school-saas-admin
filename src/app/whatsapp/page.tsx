@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -158,8 +159,8 @@ export default function WhatsAppPage() {
   };
 
   const activeTemplates = (templates as any)?.data || templates || [];
-  const activeSessions = sessions?.data?.items || [];
-  const activeBroadcasts = broadcasts?.data?.items || [];
+  const activeSessions = asList(sessions);
+  const activeBroadcasts = asList(broadcasts);
 
   return (
     <DashboardLayout>

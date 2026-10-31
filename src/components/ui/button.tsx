@@ -6,36 +6,35 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 outline-none select-none disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "relative inline-flex items-center justify-center rounded-xl text-[13px] font-semibold tracking-[-0.005em] transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand/20 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] cursor-pointer gap-2 whitespace-nowrap [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          'bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/30 border border-brand/50',
+          'bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-px before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
         primary:
-          'bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/30 border border-brand/50',
-        secondary:
-          'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700/80',
+          'bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-px before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
+        secondary: 'bg-brand-muted text-brand hover:bg-brand/15 dark:text-blue-300',
         outline:
-          'border border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200',
+          'border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-zinc-50 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-100 shadow-xs',
         ghost:
-          'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300',
+          'bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300',
         danger:
-          'bg-rose-500 text-white shadow-md shadow-rose-500/20 hover:bg-rose-600 hover:shadow-lg border border-rose-500/50',
+          'bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-[0_10px_30px_-10px_rgba(240,67,92,0.7)] hover:brightness-110',
         gradient:
-          'bg-gradient-to-r from-brand to-indigo-600 text-white shadow-md shadow-brand/20 hover:from-brand-hover hover:to-indigo-700 border border-brand/40',
-        link: 'text-brand underline-offset-4 hover:underline p-0 h-auto font-normal',
+          'bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-px',
+        link: 'text-brand underline-offset-4 hover:underline p-0 h-auto font-semibold',
       },
       size: {
-        xs: 'h-7 px-2.5 text-[11px] rounded-lg',
+        xs: 'h-7 px-2.5 text-xs rounded-lg',
         sm: 'h-8 px-3 text-xs rounded-lg',
-        md: 'h-9 px-4 text-xs rounded-xl',
-        default: 'h-9 px-4 text-xs rounded-xl',
-        lg: 'h-11 px-6 text-sm rounded-xl',
-        xl: 'h-12 px-7 text-sm rounded-xl font-bold tracking-wider uppercase',
-        icon: 'size-9 p-0 rounded-xl',
+        md: 'h-10 px-4',
+        default: 'h-10 px-4',
+        lg: 'h-12 px-6 text-sm',
+        xl: 'h-13 px-7 text-[15px]',
+        icon: 'size-10 p-0',
         'icon-sm': 'size-8 p-0 rounded-lg',
-        'icon-xs': 'size-7 p-0 rounded-md',
+        'icon-xs': 'size-7 p-0 rounded-lg',
       },
     },
     defaultVariants: {

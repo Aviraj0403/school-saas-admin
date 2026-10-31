@@ -189,25 +189,37 @@ export default function TransportPage() {
           </div>
         </div>
 
-        {/* Live Status Tracker Alert */}
-        <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        {/* Live tracking status — reflects how many buses are actually reporting */}
+        {(() => {
+          const live = activeLocations.length > 0;
+          return (
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${
+                live ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-border bg-card'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="relative flex size-3">
+                  {live && (
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  )}
+                  <span
+                    className={`relative inline-flex size-3 rounded-full ${live ? 'bg-emerald-500' : 'bg-zinc-300'}`}
+                  ></span>
+                </span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {live ? 'Live bus tracking' : 'No buses reporting location'}
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {live
+                    ? `${activeLocations.length} bus${activeLocations.length === 1 ? '' : 'es'} sharing GPS right now`
+                    : 'Locations appear here once a bus’s GPS device starts sending.'}
+                </span>
+              </div>
+              <Badge variant={live ? 'success' : 'secondary'}>{live ? 'Live' : 'Offline'}</Badge>
             </div>
-            <div>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
-                Real-Time GPS Fleet Feed Active
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">
-                · {activeLocations.length} buses transmitting geo-coordinates (Uber H3 Indexing
-                enabled)
-              </span>
-            </div>
-          </div>
-          <Badge variant="success">ACTIVE FEED</Badge>
-        </div>
+          );
+        })()}
 
         {/* Control & Tab Bar */}
         <div className="flex justify-between items-center flex-wrap gap-4 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
@@ -497,7 +509,8 @@ export default function TransportPage() {
                     <Radio className="w-12 h-12 mx-auto mb-3 text-emerald-500 animate-pulse" />
                     <p className="text-sm font-bold text-zinc-200">Live GPS Vector Radar Display</p>
                     <p className="text-xs text-zinc-500 mt-1">
-                      {activeLocations.length} Active Telemetry Signals Transmitting
+                      {activeLocations.length} bus{activeLocations.length === 1 ? '' : 'es'}{' '}
+                      reporting location
                     </p>
                   </div>
                 </div>

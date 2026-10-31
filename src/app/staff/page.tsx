@@ -1,7 +1,9 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageHeader from '@/components/layout/PageHeader';
 import { TanstackTable } from '@/components/TanstackTable';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { StatCard } from '@/components/ui/StatCard';
@@ -256,7 +258,7 @@ export default function StaffPage() {
     );
   };
 
-  const staffList = data?.items || (data as any)?.data?.items || [];
+  const staffList = asList(data);
   const totalRecords = data?.meta?.total || (data as any)?.data?.meta?.total || 0;
   const pageCount =
     data?.meta?.totalPages ||
@@ -331,15 +333,16 @@ export default function StaffPage() {
       <PageBreadcrumb title="Staff" />
       <div className="flex flex-col gap-6 lg:gap-8 pb-10 w-full">
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          <Button
-            onClick={() => setShowAddDialog(true)}
-            className="w-full sm:w-auto font-bold rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm px-5 py-3"
-          >
-            <Plus className="w-4 h-4" />
-            Add Staff Member
-          </Button>
-        </div>
+        <PageHeader
+          title="Staff"
+          description="Teachers, office staff and their roles, salaries and profiles."
+          actions={
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="w-4 h-4" />
+              Add staff member
+            </Button>
+          }
+        />
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

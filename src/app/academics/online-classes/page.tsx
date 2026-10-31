@@ -1,5 +1,6 @@
 'use client';
 
+import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -60,7 +61,7 @@ export default function OnlineClassesPage() {
   });
 
   const { data: schoolClasses } = useClasses(1, 100);
-  const classOptions = (schoolClasses?.items || schoolClasses?.data?.items || []).map((c: any) => ({
+  const classOptions = asList(schoolClasses).map((c: any) => ({
     label: `${c.name} — ${c.section}`,
     value: c.id,
   }));

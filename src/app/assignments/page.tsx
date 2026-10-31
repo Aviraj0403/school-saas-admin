@@ -15,6 +15,10 @@ import {
   useSubmitAssignment,
   useGradeSubmission,
 } from '@/hooks/queries/useHomework';
+import { useClasses } from '@/hooks/queries/useAcademics';
+import { academicsService } from '@/services/academics.service';
+import { useQuery } from '@tanstack/react-query';
+import { asList } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import {
@@ -90,24 +94,23 @@ export default function AssignmentsPage() {
     dueDate: '',
   });
 
-  const subjects = [
-    { label: 'Mathematics', value: 'Mathematics' },
-    { label: 'Physics', value: 'Physics' },
-    { label: 'Chemistry', value: 'Chemistry' },
-    { label: 'Biology', value: 'Biology' },
-    { label: 'English Literature', value: 'English Literature' },
-    { label: 'Social Studies', value: 'Social Studies' },
-  ];
+  const { data: classesRaw } = useClasses(1, 100);
+  const { data: subjectsRaw } = useQuery({
+    queryKey: ['academics-subjects'],
+    queryFn: () => academicsService.getSubjects(),
+  });
 
-  const classes = [
-    { label: 'Grade 9-A', value: 'Grade 9-A' },
-    { label: 'Grade 9-B', value: 'Grade 9-B' },
-    { label: 'Grade 9-C', value: 'Grade 9-C' },
-    { label: 'Grade 10-A', value: 'Grade 10-A' },
-    { label: 'Grade 10-B', value: 'Grade 10-B' },
-    { label: 'Grade 11-A', value: 'Grade 11-A' },
-    { label: 'Grade 11-B', value: 'Grade 11-B' },
-  ];
+  const classesList = asList(classesRaw);
+  const classes = classesList.map((c: any) => ({
+    label: `${c.name} — ${c.section}`,
+    value: c.id,
+  }));
+
+  const subjectsList = Array.isArray(subjectsRaw) ? subjectsRaw : [];
+  const subjects = subjectsList.map((s: any) => ({
+    label: `${s.name} (${s.code})`,
+    value: s.id,
+  }));
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

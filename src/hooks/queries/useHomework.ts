@@ -1,11 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 
-export const useAssignments = () => {
+export const useAssignments = (filters?: { classId?: string; subjectId?: string }) => {
   return useQuery({
-    queryKey: ['assignments'],
+    queryKey: ['assignments', 'list', filters?.classId ?? '', filters?.subjectId ?? ''],
     queryFn: async () => {
-      const res = await api.get('/homework');
+      const res = await api.get('/homework', {
+        params: {
+          limit: 100,
+          ...(filters?.classId ? { classId: filters.classId } : {}),
+          ...(filters?.subjectId ? { subjectId: filters.subjectId } : {}),
+        },
+      });
       return res.data?.data?.items || res.data?.items || [];
     },
   });
@@ -53,6 +59,45 @@ export const useSubmitAssignment = () => {
   return useMutation({
     mutationFn: async ({ assignmentId, payload }: { assignmentId: string; payload: any }) => {
       const res = await api.post(`/homework/${assignmentId}/submit`, payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    },
+  });
+};
+
+/** Assignment with its submissions (GET /homework/:id). */
+export const useAssignmentDetail = (id?: string) => {
+  return useQuery({
+    queryKey: ['assignments', 'detail', id],
+    queryFn: async () => {
+      const res = await api.get(`/homework/${id}`);
+      return res.data?.data ?? res.data;
+    },
+    enabled: !!id,
+    retry: false,
+  });
+};
+
+export const useUpdateAssignment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: any }) => {
+      const res = await api.patch(`/homework/${id}`, payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    },
+  });
+};
+
+export const useDeleteAssignment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.delete(`/homework/${id}`);
       return res.data;
     },
     onSuccess: () => {

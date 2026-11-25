@@ -8,27 +8,59 @@ import { Dialog } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 
-import { useDepartmentsList, useCreateDepartment } from '@/hooks/queries/useAcademics';
+import {
+  useDepartmentsList,
+  useCreateDepartment,
+  useUpdateDepartment,
+  useDeleteDepartment,
+} from '@/hooks/queries/useAcademics';
+import { usePermissions } from '@/hooks/usePermissions';
+import { errorMessage } from '@/lib/errorMessage';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function DepartmentsPage() {
   const [showDeptDialog, setShowDeptDialog] = useState(false);
   const [deptForm, setDeptForm] = useState({ name: '' });
+  const [editing, setEditing] = useState<any>(null);
+  const { isAdmin } = usePermissions();
 
   // Queries
   const { data: departments, isPending: loadingDepts } = useDepartmentsList();
 
   // Mutations
   const createDeptMutation = useCreateDepartment();
+  const updateDeptMutation = useUpdateDepartment();
+  const deleteDeptMutation = useDeleteDepartment();
 
   const deptList = departments || [];
 
   const handleCreateDept = () => {
-    if (!deptForm.name) return;
-    createDeptMutation.mutate(deptForm, {
-      onSuccess: () => {
-        setShowDeptDialog(false);
-        setDeptForm({ name: '' });
-      },
+    if (!deptForm.name.trim()) return;
+    const done = (msg: string) => () => {
+      setShowDeptDialog(false);
+      setEditing(null);
+      setDeptForm({ name: '' });
+      toast.success(msg);
+    };
+    const fail = (err: unknown) => toast.error(errorMessage(err, 'Could not save department'));
+    if (editing) {
+      updateDeptMutation.mutate(
+        { id: editing.id, data: { name: deptForm.name.trim() } },
+        { onSuccess: done('Department updated'), onError: fail }
+      );
+    } else {
+      createDeptMutation.mutate(
+        { name: deptForm.name.trim() },
+        { onSuccess: done('Department created'), onError: fail }
+      );
+    }
+  };
+
+  const handleDelete = (dept: any) => {
+    if (!confirm(`Delete department "${dept.name}"?`)) return;
+    deleteDeptMutation.mutate(dept.id, {
+      onSuccess: () => toast.success('Department deleted'),
+      onError: (err) => toast.error(errorMessage(err, 'Could not delete department')),
     });
   };
 
@@ -46,7 +78,11 @@ export default function DepartmentsPage() {
           </div> */}
 
           <button
-            onClick={() => setShowDeptDialog(true)}
+            onClick={() => {
+              setEditing(null);
+              setDeptForm({ name: '' });
+              setShowDeptDialog(true);
+            }}
             className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <i className="pi pi-plus text-xs"></i>
@@ -69,18 +105,19 @@ export default function DepartmentsPage() {
                 <tr>
                   <th className="p-3">Department Name</th>
                   <th className="p-3">Status</th>
+                  {isAdmin && <th className="p-3 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loadingDepts ? (
                   <tr>
-                    <td colSpan={2} className="p-6 text-center text-slate-400">
+                    <td colSpan={3} className="p-6 text-center text-slate-400">
                       Loading departments...
                     </td>
                   </tr>
                 ) : deptList.length === 0 ? (
                   <tr>
-                    <td colSpan={2} className="p-6 text-center text-slate-400">
+                    <td colSpan={3} className="p-6 text-center text-slate-400">
                       No departments configured yet.
                     </td>
                   </tr>
@@ -98,6 +135,33 @@ export default function DepartmentsPage() {
                           Active
                         </span>
                       </td>
+                      {isAdmin && (
+                        <td className="p-3">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon-sm"
+                              title="Edit"
+                              onClick={() => {
+                                setEditing(dept);
+                                setDeptForm({ name: dept.name });
+                                setShowDeptDialog(true);
+                              }}
+                            >
+                              <Pencil className="size-3.5" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon-sm"
+                              title="Delete"
+                              onClick={() => handleDelete(dept)}
+                              disabled={deleteDeptMutation.isPending}
+                            >
+                              <Trash2 className="size-3.5 text-rose-600" />
+                            </Button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -110,8 +174,11 @@ export default function DepartmentsPage() {
       {/* Dialog: Add Department */}
       <Dialog
         isOpen={showDeptDialog}
-        onClose={() => setShowDeptDialog(false)}
-        title="Add New Academic Department"
+        onClose={() => {
+          setShowDeptDialog(false);
+          setEditing(null);
+        }}
+        title={editing ? 'Edit Department' : 'Add New Academic Department'}
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -128,8 +195,11 @@ export default function DepartmentsPage() {
             <Button variant="outline" onClick={() => setShowDeptDialog(false)}>
               Cancel
             </Button>
-            <Button isLoading={createDeptMutation.isPending} onClick={handleCreateDept}>
-              Create Department
+            <Button
+              isLoading={createDeptMutation.isPending || updateDeptMutation.isPending}
+              onClick={handleCreateDept}
+            >
+              {editing ? 'Save Department' : 'Create Department'}
             </Button>
           </div>
         </div>

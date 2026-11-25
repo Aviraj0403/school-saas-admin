@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
   Activity,
@@ -18,12 +18,10 @@ import {
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useTenantsList } from '@/modules/superadmin/hooks/useTenants';
+import { useSuperDashboard } from '@/modules/superadmin/hooks/useSubscriptions';
+import type { SchoolRow } from '@/modules/superadmin/services/subscription.service';
 import { observabilityService } from '@/services/platform.service';
-import { rbacService } from '@/services/rbac.service';
-import { asList } from '@/lib/utils';
 import { formatDate, initials } from '@/lib/format';
-import type { Tenant } from '@/types/api.types';
 import { Donut } from './charts';
 import {
   HeroCard,
@@ -58,47 +56,48 @@ function fmtBytes(b?: number) {
 
 export function SuperAdminDashboard() {
   const router = useRouter();
-  const { activeUser, mirrorUser } = useAuthStore();
-  const { data: tenantsData, isPending: tenantsPending } = useTenantsList(1, 100);
+  const { activeUser, mirrorUser, switchTenant } = useAuthStore();
+  const qc = useQueryClient();
+  const { data: dash, isPending: tenantsPending } = useSuperDashboard();
   const { data: metrics } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: observabilityService.metrics,
     retry: false,
   });
-  const { data: roles } = useQuery({
-    queryKey: ['rbac-roles'],
-    queryFn: rbacService.getRoles,
-    retry: false,
-  });
 
-  const tenants = asList<Tenant>(tenantsData);
-  const total = Number((tenantsData as any)?.meta?.total ?? tenants.length);
-  const suspended = tenants.filter((t) => t.isSuspended).length;
-  const active = tenants.filter((t) => t.isActive && !t.isSuspended).length;
+  const totals = dash?.totals;
+  const total = totals?.totalTenants ?? 0;
+  const suspended = totals?.suspendedTenants ?? 0;
+  const active = totals?.activeTenants ?? 0;
+  const trial = totals?.trialTenants ?? 0;
 
-  const planCounts = tenants.reduce<Record<string, number>>((acc, t) => {
-    acc[t.plan || 'BASIC'] = (acc[t.plan || 'BASIC'] ?? 0) + 1;
-    return acc;
-  }, {});
-  const planData = Object.entries(planCounts).map(([name, value]) => ({
-    name,
-    value,
-    color: PLAN_COLORS[name] ?? '#a78bfa',
+  const planData = (dash?.planBreakdown ?? []).map((p) => ({
+    name: p.plan,
+    value: p.count,
+    color: PLAN_COLORS[p.plan.toUpperCase()] ?? '#a78bfa',
   }));
 
-  const recent = [...tenants]
-    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
-    .slice(0, 6);
+  const recent = (dash?.recentSignups ?? []).slice(0, 6);
 
   const m: any = metrics ?? {};
 
-  const preview = (t: Tenant) => {
+  // Preview must also point API calls (X-Tenant-Id) at the school, not only swap the UI role.
+  const preview = (t: SchoolRow) => {
+    switchTenant({
+      id: t.id,
+      name: t.name,
+      activeModules: t.activeModules ?? [],
+      projectCode: t.projectCode,
+      subdomain: t.subdomain,
+      theme: t.theme,
+    });
     mirrorUser({
       id: `admin-${t.id}`,
       email: t.adminEmail,
       name: `${t.name} admin`,
       role: 'school_admin',
     });
+    qc.clear();
     router.push('/dashboard');
   };
 
@@ -170,11 +169,12 @@ export function SuperAdminDashboard() {
           loading={tenantsPending}
         />
         <StatCard
-          label="Roles defined"
-          value={Array.isArray(roles) ? roles.length : '—'}
+          label="On trial"
+          value={trial}
           icon={ShieldCheck}
           gradientClass="from-amber-400 to-orange-500"
-          footerText="Across the permission system"
+          footerText={`${dash?.pendingInvoices ?? 0} pending invoices`}
+          loading={tenantsPending}
         />
       </div>
 
@@ -201,20 +201,22 @@ export function SuperAdminDashboard() {
                     </p>
                   </div>
                   <span className="hidden rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold capitalize text-zinc-600 dark:bg-white/5 dark:text-zinc-300 sm:inline">
-                    {String(t.plan || 'basic').toLowerCase()}
+                    {String(t.subscription?.plan?.name ?? t.plan ?? 'basic').toLowerCase()}
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                      t.isSuspended
+                      t.isSuspended || t.subscription?.status === 'SUSPENDED'
                         ? 'bg-rose-500/10 text-rose-600'
-                        : 'bg-emerald-500/10 text-emerald-600'
+                        : t.subscription?.status === 'TRIAL'
+                          ? 'bg-sky-500/10 text-sky-600'
+                          : 'bg-emerald-500/10 text-emerald-600'
                     }`}
                   >
-                    {t.isSuspended ? 'Suspended' : 'Active'}
+                    {t.subscription?.status ?? (t.isSuspended ? 'SUSPENDED' : 'ACTIVE')}
                   </span>
                   <button
                     onClick={() => preview(t)}
-                    title="Preview this school’s admin layout"
+                    title="Open this school as its admin"
                     className="flex size-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-white/5"
                   >
                     <Eye className="size-4" />

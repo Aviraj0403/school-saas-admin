@@ -17,8 +17,11 @@ import {
   useWhatsAppBroadcasts,
   useCreateBroadcast,
   useSendBroadcast,
+  useDeleteWhatsAppTemplate,
 } from '@/hooks/queries/useWhatsApp';
 import { whatsappService } from '@/services/whatsapp.service';
+import { TemplateDialog, DeliveriesDialog } from './WhatsAppDialogs';
+import { errorMessage } from '@/lib/errorMessage';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import {
   MessageSquare,
@@ -39,6 +42,12 @@ interface ChatMessage {
 export default function WhatsAppPage() {
   const [activeTab, setTab] = useState<'templates' | 'conversations' | 'broadcasts'>('templates');
   const [showBroadcastDialog, setShowBroadcastDialog] = useState(false);
+  const [templateDialog, setTemplateDialog] = useState<{ open: boolean; template: any | null }>({
+    open: false,
+    template: null,
+  });
+  const [deliveriesFor, setDeliveriesFor] = useState<any>(null);
+  const deleteTemplateMutation = useDeleteWhatsAppTemplate();
   const [showMetaConfigDialog, setShowMetaConfigDialog] = useState(false);
 
   const [testQuery, setTestQuery] = useState({ phone: '+91 99999 88888', question: '' });
@@ -95,9 +104,13 @@ export default function WhatsAppPage() {
 
   const handleSeedTemplates = async () => {
     if (confirm('Sync Meta system templates now?')) {
-      await whatsappService.seedTemplates();
-      reloadTemplates();
-      toast.success('Synced WhatsApp message templates.');
+      try {
+        await whatsappService.seedTemplates();
+        reloadTemplates();
+        toast.success('Synced WhatsApp message templates.');
+      } catch (err) {
+        toast.error(errorMessage(err, 'Could not sync templates'));
+      }
     }
   };
 
@@ -147,6 +160,7 @@ export default function WhatsAppPage() {
         setNewBroadcast({ name: '', templateId: 'fee_reminder' });
         toast.success('Broadcast campaign created.');
       },
+      onError: (err) => toast.error(errorMessage(err, 'Could not create broadcast')),
     });
   };
 
@@ -154,6 +168,7 @@ export default function WhatsAppPage() {
     if (confirm('Send this campaign to target audiences now?')) {
       sendBroadcastMutation.mutate(id, {
         onSuccess: () => toast.success('Broadcast campaign sent!'),
+        onError: (err) => toast.error(errorMessage(err, 'Could not send broadcast')),
       });
     }
   };
@@ -180,6 +195,12 @@ export default function WhatsAppPage() {
           </div>
 
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setTemplateDialog({ open: true, template: null })}
+            >
+              New Template
+            </Button>
             <Button variant="outline" onClick={handleSeedTemplates}>
               <RefreshCw className="w-4 h-4 mr-2" /> Sync Templates
             </Button>
@@ -347,12 +368,13 @@ export default function WhatsAppPage() {
                     <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">Language</th>
                     <th className="px-4 py-3">Approval Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                   {activeTemplates.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-4 py-12 text-center text-zinc-400">
+                      <td colSpan={5} className="px-4 py-12 text-center text-zinc-400">
                         No templates found. Click 'Sync Templates' to pull defaults.
                       </td>
                     </tr>
@@ -368,6 +390,33 @@ export default function WhatsAppPage() {
                           <Badge variant={t.status === 'APPROVED' ? 'success' : 'warning'}>
                             {t.status || 'APPROVED'}
                           </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="xs"
+                              onClick={() => setTemplateDialog({ open: true, template: t })}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="xs"
+                              className="text-rose-600"
+                              disabled={deleteTemplateMutation.isPending}
+                              onClick={() => {
+                                if (!confirm(`Deactivate template "${t.name}"?`)) return;
+                                deleteTemplateMutation.mutate(t.name, {
+                                  onSuccess: () => toast.success('Template deactivated.'),
+                                  onError: (err) =>
+                                    toast.error(errorMessage(err, 'Could not delete template')),
+                                });
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -440,7 +489,9 @@ export default function WhatsAppPage() {
                         <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                           {b.name}
                         </td>
-                        <td className="px-4 py-3 font-mono text-zinc-500">{b.templateName}</td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">
+                          {b.templateName || b.templateId || '-'}
+                        </td>
                         <td className="px-4 py-3">
                           <Badge variant={b.status === 'SENT' ? 'success' : 'warning'}>
                             {b.status}
@@ -452,7 +503,9 @@ export default function WhatsAppPage() {
                               <Send className="w-3.5 h-3.5 mr-1" /> Send Now
                             </Button>
                           ) : (
-                            <span className="text-[10px] font-mono text-zinc-400">DISPATCHED</span>
+                            <Button variant="outline" size="xs" onClick={() => setDeliveriesFor(b)}>
+                              Deliveries
+                            </Button>
                           )}
                         </td>
                       </tr>
@@ -464,6 +517,13 @@ export default function WhatsAppPage() {
           )}
         </div>
       </div>
+
+      <TemplateDialog
+        isOpen={templateDialog.open}
+        template={templateDialog.template}
+        onClose={() => setTemplateDialog({ open: false, template: null })}
+      />
+      <DeliveriesDialog broadcast={deliveriesFor} onClose={() => setDeliveriesFor(null)} />
 
       {/* Broadcast Dialog */}
       <Dialog

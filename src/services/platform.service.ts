@@ -53,10 +53,28 @@ export const webhookService = {
 export const observabilityService = {
   metrics: async () => unwrap(await api.get('/admin/metrics')),
 
-  logs: async (params: { date?: string; level?: string; search?: string; lines?: number; page?: number } = {}) => {
+  logs: async (
+    params: { date?: string; level?: string; search?: string; lines?: number; page?: number } = {}
+  ) => {
     const q = new URLSearchParams();
     Object.entries(params).forEach(([k, v]) => v != null && v !== '' && q.append(k, String(v)));
     return unwrap(await api.get(`/admin/logs?${q}`));
+  },
+
+  /** Authenticated blob fetch -> browser download (a bare <a href> carries no bearer token). */
+  downloadLog: async (date?: string) => {
+    const res = await api.get('/admin/logs/download', {
+      params: date ? { date } : {},
+      responseType: 'blob',
+    });
+    const url = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `app-${date || 'latest'}.log`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   },
 
   logFiles: async () => asList(unwrap(await api.get('/admin/logs/files'))),

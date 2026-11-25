@@ -2,6 +2,7 @@
 
 import { asList } from '@/lib/utils';
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { Button } from '@/components/ui/button';
@@ -9,80 +10,134 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Dialog } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import {
   useLeavesList,
   useApplyLeave,
   useApproveLeave,
   useRejectLeave,
+  useCancelLeave,
+  useLeaveBalance,
 } from '@/hooks/queries/useLeave';
-import { useStaffList } from '@/hooks/queries/useStaff';
-import { useStudentsList } from '@/hooks/queries/useStudents';
+import { useStaffDirectory } from '@/hooks/queries/useStaffDirectory';
+import { studentsService } from '@/services/students.service';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useAuthStore } from '@/store/useAuthStore';
+import { apiMessage } from '@/lib/apiMessage';
 import { toast } from 'sonner';
-import { Calendar, Plus, LayoutGrid, List, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Calendar, Plus, LayoutGrid, List, CheckCircle, XCircle, Clock, Ban } from 'lucide-react';
+
+const LEAVE_TYPES = [
+  { label: 'Sick Leave', value: 'sick' },
+  { label: 'Casual Leave', value: 'casual' },
+  { label: 'Earned Leave', value: 'earned' },
+  { label: 'Maternity Leave', value: 'maternity' },
+  { label: 'Other', value: 'other' },
+];
+
+const emptyForm = {
+  applicantId: '',
+  applicantType: 'STAFF' as 'STAFF' | 'STUDENT',
+  leaveType: 'sick',
+  startDate: '',
+  endDate: '',
+  reason: '',
+};
 
 export default function LeavePage() {
+  const { isAdmin } = usePermissions();
+  const activeUser = useAuthStore((s) => s.activeUser);
+  const myId = activeUser?.id ?? '';
+
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const { data: leavesData, isLoading } = useLeavesList(
-    page,
-    limit,
-    statusFilter ? { status: statusFilter } : undefined
-  );
+  const {
+    data: leavesData,
+    isLoading,
+    isError,
+    error,
+  } = useLeavesList(page, limit, statusFilter ? { status: statusFilter } : undefined);
   const applyMutation = useApplyLeave();
   const approveMutation = useApproveLeave();
   const rejectMutation = useRejectLeave();
+  const cancelMutation = useCancelLeave();
+  const { data: balance } = useLeaveBalance(myId);
 
   const [showApplyDialog, setShowApplyDialog] = useState(false);
-  const [applyForm, setApplyForm] = useState<any>({
-    applicantId: '',
-    applicantType: 'STUDENT',
-    leaveType: 'sick',
-    startDate: '',
-    endDate: '',
-    reason: '',
-  });
-
-  const applicantTypes = [
-    { label: 'Student', value: 'STUDENT' },
-    { label: 'Staff Member', value: 'STAFF' },
-  ];
+  const [applyForm, setApplyForm] = useState({ ...emptyForm });
+  const [rejectTarget, setRejectTarget] = useState<any | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [cancelTarget, setCancelTarget] = useState<any | null>(null);
 
   const statusOptions = [
     { label: 'All Statuses', value: '' },
     { label: 'Pending Approval', value: 'PENDING' },
     { label: 'Approved', value: 'APPROVED' },
     { label: 'Rejected', value: 'REJECTED' },
+    { label: 'Cancelled', value: 'CANCELLED' },
   ];
+
+  // Name lookups: staff directory is readable by every staff role; the student
+  // list is admin-only (students.read) so it is only fetched for admins.
+  const { data: staffDir = [] } = useStaffDirectory();
+  const { data: studentsData } = useQuery({
+    queryKey: ['students', { page: 1, limit: 100, forLeave: true }],
+    queryFn: () => studentsService.getStudents(1, 100),
+    enabled: isAdmin,
+    retry: false,
+  });
+  const students = asList<any>(studentsData);
+
+  const nameFor = (leave: any): string => {
+    if (leave.applicantName) return leave.applicantName;
+    if (leave.applicantId === myId) return activeUser?.name || 'Me';
+    const isStudent = String(leave.applicantType).toUpperCase() === 'STUDENT';
+    const match = isStudent
+      ? students.find((p: any) => p.id === leave.applicantId || p.userId === leave.applicantId)
+      : staffDir.find((p) => p.id === leave.applicantId);
+    return match?.name || (isStudent ? 'Student' : 'Staff member');
+  };
+
+  const openApply = () => {
+    setApplyForm({
+      ...emptyForm,
+      applicantType: 'STAFF',
+      applicantId: myId,
+    });
+    setShowApplyDialog(true);
+  };
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!applyForm.startDate || !applyForm.endDate || !applyForm.applicantId) {
+    const applicantId =
+      applyForm.applicantType === 'STAFF' && !isAdmin ? myId : applyForm.applicantId;
+    if (!applyForm.startDate || !applyForm.endDate || !applicantId || !applyForm.reason.trim()) {
       toast.error('All required fields must be filled.');
+      return;
+    }
+    if (applyForm.endDate < applyForm.startDate) {
+      toast.error('End date cannot be before the start date.');
       return;
     }
     applyMutation.mutate(
       {
-        ...applyForm,
+        applicantId,
+        applicantType: applyForm.applicantType,
+        leaveType: applyForm.leaveType,
+        reason: applyForm.reason.trim(),
         startDate: new Date(applyForm.startDate).toISOString(),
         endDate: new Date(applyForm.endDate).toISOString(),
       },
       {
         onSuccess: () => {
           setShowApplyDialog(false);
-          setApplyForm({
-            applicantId: '',
-            applicantType: 'STUDENT',
-            leaveType: 'sick',
-            startDate: '',
-            endDate: '',
-            reason: '',
-          });
+          setApplyForm({ ...emptyForm });
           toast.success('Leave application submitted successfully.');
         },
-        onError: () => toast.error('Failed to submit leave application.'),
+        onError: (err) => toast.error(apiMessage(err, 'Failed to submit leave application.')),
       }
     );
   };
@@ -90,25 +145,46 @@ export default function LeavePage() {
   const handleApprove = (id: string) => {
     approveMutation.mutate(id, {
       onSuccess: () => toast.success('Leave application approved.'),
-      onError: () => toast.error('Failed to approve leave.'),
+      onError: (err) => toast.error(apiMessage(err, 'Failed to approve leave.')),
     });
   };
 
-  const handleReject = (id: string) => {
+  const confirmReject = () => {
+    if (!rejectTarget) return;
+    if (!rejectReason.trim()) {
+      toast.error('Please give a reason for rejecting.');
+      return;
+    }
     rejectMutation.mutate(
-      { id, reason: 'Rejected by administrator' },
+      { id: rejectTarget.id, reason: rejectReason.trim() },
       {
-        onSuccess: () => toast.success('Leave application rejected.'),
-        onError: () => toast.error('Failed to reject leave.'),
+        onSuccess: () => {
+          toast.success('Leave application rejected.');
+          setRejectTarget(null);
+          setRejectReason('');
+        },
+        onError: (err) => toast.error(apiMessage(err, 'Failed to reject leave.')),
       }
     );
   };
 
+  const confirmCancel = () => {
+    if (!cancelTarget) return;
+    cancelMutation.mutate(cancelTarget.id, {
+      onSuccess: () => {
+        toast.success('Leave application cancelled.');
+        setCancelTarget(null);
+      },
+      onError: (err) => toast.error(apiMessage(err, 'Failed to cancel leave.')),
+    });
+  };
+
   const statusBadge = (status: string) => {
     const s = status || 'PENDING';
-    let variant: 'warning' | 'success' | 'danger' = 'warning';
+    let variant: 'warning' | 'success' | 'danger' | 'secondary' = 'warning';
     if (s === 'APPROVED') variant = 'success';
     if (s === 'REJECTED') variant = 'danger';
+    if (s === 'CANCELLED') variant = 'secondary';
     return <Badge variant={variant}>{s}</Badge>;
   };
 
@@ -120,31 +196,58 @@ export default function LeavePage() {
     }
   };
 
-  // Leave records only carry applicantId; resolve a display name from staff/students
-  // (matching either the record id or the linked user id).
-  const { data: staffData } = useStaffList(1, 100);
-  const { data: studentsData } = useStudentsList(1, 100);
-  const people = [...asList(staffData), ...asList(studentsData)];
-  const nameFor = (leave: any): string => {
-    if (leave.applicantName) return leave.applicantName;
-    const match = people.find(
-      (p: any) => p.id === leave.applicantId || p.userId === leave.applicantId
-    );
-    return (
-      match?.name ||
-      (String(leave.applicantType).toUpperCase() === 'STUDENT' ? 'Student' : 'Staff member')
-    );
-  };
+  const canCancel = (l: any) =>
+    l.status === 'PENDING' &&
+    (isAdmin || (l.applicantId === myId && String(l.applicantType).toUpperCase() === 'STAFF'));
 
   const activeLeaves = asList(leavesData).map((l: any) => ({ ...l, applicantName: nameFor(l) }));
-  const totalRecords = leavesData?.meta?.total || leavesData?.data?.meta?.total || 0;
+  const totalRecords = leavesData?.meta?.total ?? 0;
+  const totalPages = leavesData?.meta?.totalPages ?? 1;
+
+  const rowActions = (leave: any, compact: boolean) => {
+    if (leave.status !== 'PENDING') return null;
+    return (
+      <div className={`flex ${compact ? 'justify-center' : 'justify-end'} gap-2 flex-wrap`}>
+        {canCancel(leave) && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs"
+            onClick={() => setCancelTarget(leave)}
+          >
+            <Ban className="w-3.5 h-3.5 mr-1" /> Cancel
+          </Button>
+        )}
+        <PermissionGate roles={['school_admin']}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs text-rose-600 hover:text-rose-700 border-rose-200"
+            onClick={() => {
+              setRejectTarget(leave);
+              setRejectReason('');
+            }}
+          >
+            <XCircle className="w-3.5 h-3.5 mr-1" /> Reject
+          </Button>
+          <Button
+            size="sm"
+            className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => handleApprove(leave.id)}
+            disabled={approveMutation.isPending}
+          >
+            <CheckCircle className="w-3.5 h-3.5 mr-1" /> Approve
+          </Button>
+        </PermissionGate>
+      </div>
+    );
+  };
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Leave Management" />
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        {/* Header Block */}
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -152,16 +255,34 @@ export default function LeavePage() {
               Leave Requests & Applications
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Process student and faculty leave applications and review absence records
+              {isAdmin
+                ? 'Process student and staff leave applications and review absence records'
+                : 'Apply for leave and track the status of your applications'}
             </p>
           </div>
 
-          <Button onClick={() => setShowApplyDialog(true)}>
+          <Button onClick={openApply}>
             <Plus className="w-4 h-4 mr-2" /> Apply Leave
           </Button>
         </div>
 
-        {/* Filter and Control Bar */}
+        {balance && (
+          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm">
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              My leave taken in {balance.year}
+            </p>
+            <div className="flex flex-wrap gap-3 items-center text-sm">
+              <Badge variant="primary">{balance.totalDaysTaken ?? 0} days total</Badge>
+              <Badge variant="secondary">{balance.applications ?? 0} approved applications</Badge>
+              {Object.entries(balance.byType ?? {}).map(([type, days]) => (
+                <Badge key={type} variant="info">
+                  {type}: {String(days)}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center flex-wrap gap-4 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
           <div className="flex items-center gap-3 w-64">
             <label className="text-xs font-semibold text-zinc-500">Status:</label>
@@ -178,33 +299,30 @@ export default function LeavePage() {
           <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm'
-                  : 'text-zinc-400'
-              }`}
+              aria-label="Grid view"
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm' : 'text-zinc-400'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === 'table'
-                  ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm'
-                  : 'text-zinc-400'
-              }`}
+              aria-label="Table view"
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white dark:bg-zinc-900 text-brand shadow-sm' : 'text-zinc-400'}`}
             >
               <List className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Dynamic Display Section */}
         <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm">
           {isLoading ? (
             <div className="p-12 text-center text-zinc-500">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
               <p className="text-xs">Loading leave requests...</p>
+            </div>
+          ) : isError ? (
+            <div className="p-12 text-center text-rose-600 text-sm">
+              {apiMessage(error, 'Could not load leave applications.')}
             </div>
           ) : activeLeaves.length === 0 ? (
             <div className="p-12 text-center text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
@@ -233,7 +351,7 @@ export default function LeavePage() {
                           {leave.applicantName}
                         </h3>
                         <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
-                          {leave.applicantType}
+                          {leave.applicantType} · {leave.leaveType}
                         </p>
                       </div>
                     </div>
@@ -244,13 +362,13 @@ export default function LeavePage() {
                     <div className="flex justify-between">
                       <span>Start Date:</span>
                       <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.startDate ?? (leave as any).fromDate)}
+                        {dateTemplate(leave.startDate ?? leave.fromDate)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>End Date:</span>
                       <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.endDate ?? (leave as any).toDate)}
+                        {dateTemplate(leave.endDate ?? leave.toDate)}
                       </span>
                     </div>
                   </div>
@@ -263,22 +381,8 @@ export default function LeavePage() {
                   </div>
 
                   {leave.status === 'PENDING' && (
-                    <div className="flex justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs text-rose-600 hover:text-rose-700 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-                        onClick={() => handleReject(leave.id)}
-                      >
-                        <XCircle className="w-3.5 h-3.5 mr-1" /> Reject
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={() => handleApprove(leave.id)}
-                      >
-                        <CheckCircle className="w-3.5 h-3.5 mr-1" /> Approve
-                      </Button>
+                    <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
+                      {rowActions(leave, false)}
                     </div>
                   )}
                 </div>
@@ -315,79 +419,113 @@ export default function LeavePage() {
                       </td>
                       <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{d.reason}</td>
                       <td className="px-4 py-3">{statusBadge(d.status)}</td>
-                      <td className="px-4 py-3 text-center">
-                        {d.status === 'PENDING' && (
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs text-rose-600"
-                              onClick={() => handleReject(d.id)}
-                            >
-                              Reject
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-emerald-600 text-white"
-                              onClick={() => handleApprove(d.id)}
-                            >
-                              Approve
-                            </Button>
-                          </div>
-                        )}
-                      </td>
+                      <td className="px-4 py-3 text-center">{rowActions(d, true)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+
+          {totalRecords > limit && (
+            <div className="flex items-center justify-between mt-4 text-xs text-zinc-500">
+              <span>
+                Page {page} of {totalPages} · {totalRecords} applications
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Dialog: Apply Leave */}
+      {/* Apply Leave */}
       <Dialog
         isOpen={showApplyDialog}
         onClose={() => setShowApplyDialog(false)}
         title="Apply for Leave"
       >
         <form onSubmit={handleApply} className="flex flex-col gap-4 py-2">
+          {isAdmin && (
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Applicant Type *
+              </label>
+              <Select
+                value={applyForm.applicantType}
+                options={[
+                  { label: 'Staff Member', value: 'STAFF' },
+                  { label: 'Student', value: 'STUDENT' },
+                ]}
+                onChange={(e) =>
+                  setApplyForm({
+                    ...applyForm,
+                    applicantType: e.target.value as 'STAFF' | 'STUDENT',
+                    applicantId: e.target.value === 'STAFF' ? myId : '',
+                  })
+                }
+              />
+            </div>
+          )}
+
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-              Applicant Type *
+              {applyForm.applicantType === 'STUDENT' ? 'Student *' : 'Staff Member *'}
             </label>
-            <Select
-              value={applyForm.applicantType}
-              options={applicantTypes}
-              onChange={(e) => setApplyForm({ ...applyForm, applicantType: e.target.value })}
-            />
+            {!isAdmin ? (
+              <Input value={activeUser?.name ?? ''} disabled readOnly />
+            ) : applyForm.applicantType === 'STUDENT' ? (
+              <Select
+                value={applyForm.applicantId}
+                placeholder="Select student"
+                options={[
+                  { label: 'Select student', value: '' },
+                  ...students.map((s: any) => ({
+                    label: `${s.name}${s.admissionNo ? ` (${s.admissionNo})` : ''}`,
+                    value: s.id,
+                  })),
+                ]}
+                onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })}
+              />
+            ) : (
+              <Select
+                value={applyForm.applicantId}
+                options={[
+                  { label: 'Select staff member', value: '' },
+                  ...staffDir.map((s) => ({ label: s.name, value: s.id })),
+                ]}
+                onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })}
+              />
+            )}
           </div>
+
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
               Leave Category *
             </label>
             <Select
               value={applyForm.leaveType}
-              options={[
-                { label: 'Sick Leave', value: 'sick' },
-                { label: 'Casual Leave', value: 'casual' },
-                { label: 'Earned Leave', value: 'earned' },
-                { label: 'Maternity Leave', value: 'maternity' },
-                { label: 'Other', value: 'other' },
-              ]}
+              options={LEAVE_TYPES}
               onChange={(e) => setApplyForm({ ...applyForm, leaveType: e.target.value })}
             />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-              Student / Staff ID *
-            </label>
-            <Input
-              value={applyForm.applicantId}
-              onChange={(e) => setApplyForm({ ...applyForm, applicantId: e.target.value })}
-              placeholder="Enter UUID or Admission No..."
-            />
-          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
@@ -410,6 +548,7 @@ export default function LeavePage() {
               />
             </div>
           </div>
+
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
               Reason *
@@ -422,7 +561,8 @@ export default function LeavePage() {
               placeholder="Describe reason for leave..."
             />
           </div>
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+
+          <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
             <Button variant="outline" type="button" onClick={() => setShowApplyDialog(false)}>
               Cancel
             </Button>
@@ -431,6 +571,56 @@ export default function LeavePage() {
             </Button>
           </div>
         </form>
+      </Dialog>
+
+      {/* Reject with reason */}
+      <Dialog
+        isOpen={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        title="Reject Leave Application"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-zinc-500">
+            Rejecting the application of <b>{rejectTarget?.applicantName}</b>. The applicant will
+            see this reason.
+          </p>
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+            placeholder="Reason for rejection..."
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>
+              Back
+            </Button>
+            <Button variant="danger" onClick={confirmReject} isLoading={rejectMutation.isPending}>
+              Reject
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Cancel confirm */}
+      <Dialog
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        title="Cancel Leave Application"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            Cancel this pending leave application? This cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setCancelTarget(null)}>
+              Keep it
+            </Button>
+            <Button variant="danger" onClick={confirmCancel} isLoading={cancelMutation.isPending}>
+              Cancel application
+            </Button>
+          </div>
+        </div>
       </Dialog>
     </DashboardLayout>
   );

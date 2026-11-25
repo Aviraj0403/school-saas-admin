@@ -6,7 +6,10 @@ import { useParams, useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil, KeyRound } from 'lucide-react';
+import StudentEditDialog from '../StudentEditDialog';
+import { usePermissions } from '@/hooks/usePermissions';
+import { errorMessage } from '@/lib/errorMessage';
 import { useStudentDetails, useDeleteStudent } from '@/hooks/queries/useStudents';
 import { useStudentDues } from '@/hooks/queries/useFee';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -30,6 +33,10 @@ export default function StudentDetailsPage() {
   const deleteMutation = useDeleteStudent();
   const queryClient = useQueryClient();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const { can, isAdmin } = usePermissions();
+  const canEdit = can('student:update');
+  const canDeleteStudent = can('student:delete');
   const activeUser = useAuthStore((s) => s.activeUser);
   const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
 
@@ -72,10 +79,38 @@ export default function StudentDetailsPage() {
     if (confirm('Soft-delete this student? Their records will be archived.')) {
       deleteMutation.mutate(id, {
         onSuccess: () => {
+          toast.success('Student archived.');
           router.push('/students');
         },
+        onError: (err) => toast.error(errorMessage(err, 'Could not delete student')),
       });
     }
+  };
+
+  const resetPassword = async (kind: 'student' | 'guardian') => {
+    const label =
+      kind === 'student' ? "this student's portal password" : "the guardian's portal password";
+    if (!confirm(`Reset ${label} to the default temporary password?`)) return;
+    try {
+      const res = await studentsService.resetPassword(id, kind);
+      toast.success(res?.message || 'Password reset.');
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not reset password'));
+    }
+  };
+
+  const printReceipt = (row: any) => {
+    const w = window.open('', '_blank', 'width=600,height=700');
+    if (!w) return toast.error('Allow pop-ups to print the receipt.');
+    const esc = (v: unknown) =>
+      String(v ?? '').replace(
+        /[&<>"]/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string
+      );
+    w.document.write(
+      `<html><head><title>Fee receipt</title><style>body{font-family:sans-serif;padding:32px}td{padding:6px 12px 6px 0}h2{margin-bottom:4px}</style></head><body><h2>Fee Receipt</h2><p>${esc(fullName)} (Adm. ${esc(student.admissionNo)})</p><table><tr><td>Particulars</td><td><b>${esc(row.term)}</b></td></tr><tr><td>Reference</td><td>${esc(String(row.id).replace('paid-', '').slice(0, 8).toUpperCase())}</td></tr><tr><td>Date</td><td>${esc(new Date(row.date).toLocaleDateString())}</td></tr><tr><td>Method</td><td>${esc(row.method)}</td></tr><tr><td>Amount</td><td><b>Rs ${esc(Number(row.invoiced).toLocaleString('en-IN'))}</b></td></tr></table><script>window.onload=function(){window.print()}</script></body></html>`
+    );
+    w.document.close();
   };
 
   if (isPending) {
@@ -203,17 +238,46 @@ export default function StudentDetailsPage() {
             <Badge variant={isStudentActive(student) ? 'success' : 'warning'}>
               {isStudentActive(student) ? 'Active' : 'Inactive'}
             </Badge>
-            <Button
-              variant="danger"
-              size="icon-sm"
-              title="Remove Student"
-              onClick={handleDelete}
-              isLoading={deleteMutation.isPending}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil className="size-3.5" /> Edit
+              </Button>
+            )}
+            {isAdmin && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => resetPassword('student')}
+                  title="Reset student portal password"
+                >
+                  <KeyRound className="size-3.5" /> Student password
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => resetPassword('guardian')}
+                  title="Reset parent portal password"
+                >
+                  <KeyRound className="size-3.5" /> Parent password
+                </Button>
+              </>
+            )}
+            {canDeleteStudent && (
+              <Button
+                variant="danger"
+                size="icon-sm"
+                title="Remove Student"
+                onClick={handleDelete}
+                isLoading={deleteMutation.isPending}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
           </div>
         </div>
+
+        <StudentEditDialog student={student} isOpen={editOpen} onClose={() => setEditOpen(false)} />
 
         {/* Tab switch navigation */}
         <div className="flex border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto max-w-full">
@@ -446,11 +510,7 @@ export default function StudentDetailsPage() {
                             </td>
                             <td className="p-3 text-center">
                               {d.status === 'PAID' && (
-                                <Button
-                                  variant="ghost"
-                                  size="xs"
-                                  onClick={() => toast.success('Tax receipt generated.')}
-                                >
+                                <Button variant="ghost" size="xs" onClick={() => printReceipt(d)}>
                                   Print
                                 </Button>
                               )}

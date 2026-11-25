@@ -7,7 +7,9 @@ export const studentsService = {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
     if (classId) params.append('classId', classId);
-    const response = await api.get<{ success: boolean; data: Student[]; meta: any }>(`/students?${params}`);
+    const response = await api.get<{ success: boolean; data: Student[]; meta: any }>(
+      `/students?${params}`
+    );
     const items = (response.data.data as any)?.items ?? [];
     const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
@@ -32,17 +34,27 @@ export const studentsService = {
   uploadPhoto: async (id: string, file: Blob, fileName = 'photo.jpg') => {
     const form = new FormData();
     form.append('photo', file, fileName);
-    const response = await api.post<{ success: boolean; data: Student }>(`/students/${id}/photo`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await api.post<{ success: boolean; data: Student }>(
+      `/students/${id}/photo`,
+      form,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
     return response.data?.data;
+  },
+
+  /** Resets the student's or the guardian's portal password to the backend default. */
+  resetPassword: async (id: string, kind: 'student' | 'guardian') => {
+    const path = kind === 'student' ? 'reset-password' : 'guardian/reset-password';
+    const response = await api.patch(`/students/${id}/${path}`);
+    return (response.data as any)?.data ?? response.data;
   },
 
   deleteStudent: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/students/${id}`);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
   },
 };
-
-
-

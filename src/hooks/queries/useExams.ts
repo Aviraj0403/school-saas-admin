@@ -50,6 +50,7 @@ export function useAutoAssignSeating() {
       examsService.autoAssignSeating(examId, classIds),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['seating-chart', variables.examId] });
+      queryClient.invalidateQueries({ queryKey: ['exam-halls', variables.examId] });
     },
   });
 }
@@ -61,5 +62,114 @@ export function useSeatingChart(examId: string) {
     queryFn: () => examsService.getSeatingChart(examId),
     enabled: isAuthenticated && !!examId,
     retry: false,
+  });
+}
+
+export function useExamDetails(examId?: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['exam-details', examId],
+    queryFn: () => examsService.getExamDetails(examId as string),
+    enabled: isAuthenticated && !!examId,
+    retry: false,
+  });
+}
+
+export function useUpdateExam() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { name?: string; type?: string; startDate?: string; endDate?: string };
+    }) => examsService.updateExam(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
+      queryClient.invalidateQueries({ queryKey: ['exam-details'] });
+    },
+  });
+}
+
+export function useDeleteExam() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => examsService.deleteExam(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
+    },
+  });
+}
+
+export function usePublishExam() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => examsService.publishExamResults(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
+      queryClient.invalidateQueries({ queryKey: ['exam-details'] });
+    },
+  });
+}
+
+export function useAddExamSubject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      examId,
+      data,
+    }: {
+      examId: string;
+      data: Parameters<typeof examsService.addExamSubject>[1];
+    }) => examsService.addExamSubject(examId, data),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['exam-details', vars.examId] });
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
+    },
+  });
+}
+
+export function useEnterExamResults() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      examId,
+      results,
+    }: {
+      examId: string;
+      results: Parameters<typeof examsService.enterResults>[1];
+    }) => examsService.enterResults(examId, results),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['exam-results'] });
+      queryClient.invalidateQueries({ queryKey: ['student-exam-results'] });
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
+      void vars;
+    },
+  });
+}
+
+export function useExamHalls(examId?: string) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: ['exam-halls', examId],
+    queryFn: () => examsService.getHallList(examId as string),
+    enabled: isAuthenticated && !!examId,
+    retry: false,
+  });
+}
+
+export function useCreateHall() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      examId: string;
+      hallName: string;
+      capacity: number;
+      invigilatorId?: string;
+    }) => examsService.createHall(data),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['exam-halls', vars.examId] });
+    },
   });
 }

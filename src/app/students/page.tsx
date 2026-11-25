@@ -47,7 +47,8 @@ export default function StudentsPage() {
     if (confirm('Soft-delete this student? Their data will be retained.')) {
       deleteMutation.mutate(id, {
         onSuccess: () => toast.success('Student deleted'),
-        onError: (err: any) => toast.error(err?.message || 'Failed to delete student'),
+        onError: (err: any) =>
+          toast.error(err?.response?.data?.message || err?.message || 'Failed to delete student'),
       });
     }
   };

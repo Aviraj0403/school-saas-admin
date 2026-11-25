@@ -10,6 +10,8 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { observabilityService } from '@/services/platform.service';
+import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import { Activity, RefreshCw, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const LEVELS = [
@@ -37,6 +39,7 @@ export default function ObservabilityPage() {
   const [level, setLevel] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [downloading, setDownloading] = useState(false);
 
   const {
     data: metrics,
@@ -159,11 +162,22 @@ export default function ObservabilityPage() {
             </div>
           </div>
 
-          <a href={`/api/v1/admin/logs/download?date=${date}`} target="_blank" rel="noreferrer">
-            <Button variant="outline">
-              <Download className="w-4 h-4 mr-2" /> Download Log File
-            </Button>
-          </a>
+          <Button
+            variant="outline"
+            isLoading={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              try {
+                await observabilityService.downloadLog(date);
+              } catch (err) {
+                toast.error(errorMessage(err, 'Could not download log file'));
+              } finally {
+                setDownloading(false);
+              }
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" /> Download Log File
+          </Button>
         </div>
 
         {/* Log Table */}

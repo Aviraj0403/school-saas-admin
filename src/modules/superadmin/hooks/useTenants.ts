@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { tenantService } from '../services/tenant.service';
-import { CreateTenantDto } from '@/types/api.types';
+import { tenantService, type CreateTenantDto } from '../services/tenant.service';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export function useTenantsList(page: number, limit: number, search?: string) {

@@ -93,6 +93,32 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const code = error.response?.data?.code;
+
+    // The school was suspended / its subscription lapsed: no refresh can fix that.
+    if (
+      code === 'TENANT_SUSPENDED' &&
+      typeof window !== 'undefined' &&
+      !originalRequest?.skipAuthRedirect
+    ) {
+      if (!window.location.pathname.startsWith('/account-suspended')) {
+        window.location.href = '/account-suspended?reason=tenant_suspended';
+      }
+      return Promise.reject(error);
+    }
+
+    // Plan limit hit (e.g. student seats): tell the user instead of failing silently.
+    if (code === 'PLAN_LIMIT_REACHED' && typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('show-toast', {
+          detail: {
+            severity: 'warn',
+            summary: 'Plan limit reached',
+            detail: error.response?.data?.message,
+          },
+        })
+      );
+    }
 
     if (
       error.response?.status === 401 &&

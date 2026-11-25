@@ -10,8 +10,9 @@ import { Dialog } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import {
-  useClasses,
   useCreateClass,
+  useUpdateClass,
+  useDeleteClass,
   useSubjects,
   useAllSubjects,
   useCreateSubject,
@@ -20,10 +21,11 @@ import {
   useDepartmentsList,
   useAssignSubjectsToClass,
 } from '@/hooks/queries/useAcademics';
-import { useStaffList } from '@/hooks/queries/useStaff';
-import { academicsService } from '@/services/academics.service';
-import { useQueryClient } from '@tanstack/react-query';
-import { Plus, BookOpen, Trash2, Link as LinkIcon } from 'lucide-react';
+import { useStaffDirectory } from '@/hooks/queries/useStaffDirectory';
+import { useScopedClasses } from '@/hooks/queries/useScopedClasses';
+import { usePermissions } from '@/hooks/usePermissions';
+import { apiMessage } from '@/lib/apiMessage';
+import { Plus, BookOpen, Trash2, Link as LinkIcon, Pencil } from 'lucide-react';
 
 const SUBJECT_TYPES = [
   { label: 'Theory', value: 'theory' },
@@ -31,8 +33,10 @@ const SUBJECT_TYPES = [
 ];
 
 export default function ClassesPage() {
-  const queryClient = useQueryClient();
+  const { isAdmin } = usePermissions();
   const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [editingClass, setEditingClass] = useState<any | null>(null);
+  const [deleteClassTarget, setDeleteClassTarget] = useState<any | null>(null);
 
   const [showClassDialog, setShowClassDialog] = useState(false);
   const [showSubjectDialog, setShowSubjectDialog] = useState(false);
@@ -55,21 +59,22 @@ export default function ClassesPage() {
   });
 
   const [assignSubjectIds, setAssignSubjectIds] = useState<string[]>([]);
-  const [savingTeacher, setSavingTeacher] = useState(false);
 
   const { data: currentYear } = useCurrentAcademicYear();
-  const { data: classesData, isPending } = useClasses();
+  const { classes: scopedClasses, isLoading: isPending } = useScopedClasses();
   const { data: subjectsData, isPending: loadingSubjects } = useSubjects(selectedClass?.id);
   const { data: allSubjectsData } = useAllSubjects();
   const { data: departmentsData } = useDepartmentsList();
-  const { data: staffData } = useStaffList(1, 100);
+  const { data: staffData = [] } = useStaffDirectory();
 
   const createClassMutation = useCreateClass();
+  const updateClassMutation = useUpdateClass();
+  const deleteClassMutation = useDeleteClass();
   const createSubjectMutation = useCreateSubject();
   const deleteSubjectMutation = useDeleteSubject();
   const assignSubjectsMutation = useAssignSubjectsToClass();
 
-  const classList = Array.isArray(classesData) ? classesData : (classesData?.items ?? []);
+  const classList = scopedClasses;
   const subjectList = Array.isArray(subjectsData) ? subjectsData : (subjectsData?.items ?? []);
   const allSubjects = Array.isArray(allSubjectsData)
     ? allSubjectsData
@@ -77,7 +82,7 @@ export default function ClassesPage() {
   const departments = Array.isArray(departmentsData)
     ? departmentsData
     : (departmentsData?.items ?? []);
-  const teachers = staffData?.items ?? [];
+  const teachers = staffData;
 
   useEffect(() => {
     if (classList.length > 0 && !selectedClass) {
@@ -86,7 +91,7 @@ export default function ClassesPage() {
   }, [classList, selectedClass]);
 
   const teacherOptions = teachers.map((t: any) => ({
-    label: `${t.name} (${t.designation || 'Teacher'})`,
+    label: t.designation ? `${t.name} (${t.designation})` : t.name,
     value: t.id,
   }));
 
@@ -105,6 +110,33 @@ export default function ClassesPage() {
       toast.error('No active academic year session found.');
       return;
     }
+    if (editingClass) {
+      updateClassMutation.mutate(
+        {
+          id: editingClass.id,
+          data: {
+            name: classForm.name,
+            section: classForm.section,
+            roomNo: classForm.roomNo || undefined,
+            maxStrength: classForm.maxStrength,
+          },
+        },
+        {
+          onSuccess: (updated) => {
+            setShowClassDialog(false);
+            setEditingClass(null);
+            setSelectedClass((prev: any) =>
+              prev && prev.id === editingClass.id
+                ? { ...prev, ...(updated || {}), ...classForm }
+                : prev
+            );
+            toast.success('Classroom updated.');
+          },
+          onError: (err) => toast.error(apiMessage(err, 'Failed to update classroom.')),
+        }
+      );
+      return;
+    }
     createClassMutation.mutate(
       { ...classForm, academicYearId: currentYear.id },
       {
@@ -114,7 +146,7 @@ export default function ClassesPage() {
           setSelectedClass(newCls);
           toast.success('New classroom created successfully.');
         },
-        onError: () => toast.error('Failed to create classroom.'),
+        onError: (err) => toast.error(apiMessage(err, 'Failed to create classroom.')),
       }
     );
   };
@@ -162,26 +194,50 @@ export default function ClassesPage() {
     );
   };
 
-  const handleAssignClassTeacher = async (teacherId: string) => {
+  const handleAssignClassTeacher = (teacherId: string) => {
     if (!selectedClass?.id) return;
-    setSavingTeacher(true);
-    try {
-      await academicsService.updateClass(selectedClass.id, { classTeacherId: teacherId });
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      setSelectedClass((prev: any) => (prev ? { ...prev, classTeacherId: teacherId } : null));
-      toast.success('Class teacher assigned.');
-    } catch {
-      toast.error('Could not assign class teacher.');
-    } finally {
-      setSavingTeacher(false);
-    }
+    updateClassMutation.mutate(
+      { id: selectedClass.id, data: { classTeacherId: teacherId || null } },
+      {
+        onSuccess: () => {
+          setSelectedClass((prev: any) =>
+            prev ? { ...prev, classTeacherId: teacherId || null } : null
+          );
+          toast.success('Class teacher updated.');
+        },
+        onError: (err) => toast.error(apiMessage(err, 'Could not update class teacher.')),
+      }
+    );
+  };
+
+  const openEditClass = (c: any) => {
+    setEditingClass(c);
+    setClassForm({
+      name: c.name,
+      section: c.section,
+      roomNo: c.roomNo ?? '',
+      maxStrength: c.maxStrength ?? 40,
+    });
+    setShowClassDialog(true);
+  };
+
+  const confirmDeleteClass = () => {
+    if (!deleteClassTarget) return;
+    deleteClassMutation.mutate(deleteClassTarget.id, {
+      onSuccess: () => {
+        toast.success('Classroom deleted.');
+        if (selectedClass?.id === deleteClassTarget.id) setSelectedClass(null);
+        setDeleteClassTarget(null);
+      },
+      onError: (err) => toast.error(apiMessage(err, 'Could not delete classroom.')),
+    });
   };
 
   const handleDeleteSubject = (id: string, name: string) => {
     if (confirm(`Remove "${name}" from this class catalog?`)) {
       deleteSubjectMutation.mutate(id, {
         onSuccess: () => toast.success(`Removed ${name}`),
-        onError: () => toast.error('Could not remove subject.'),
+        onError: (err) => toast.error(apiMessage(err, 'Could not remove subject.')),
       });
     }
   };
@@ -204,12 +260,22 @@ export default function ClassesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setShowSubjectDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Add Subject
-            </Button>
-            <Button onClick={() => setShowClassDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Create Class
-            </Button>
+            {isAdmin && (
+              <>
+                <Button variant="outline" onClick={() => setShowSubjectDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Subject
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingClass(null);
+                    setClassForm({ name: '', section: '', roomNo: '', maxStrength: 40 });
+                    setShowClassDialog(true);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Create Class
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -235,18 +301,19 @@ export default function ClassesPage() {
                     <th className="px-3 py-2.5">Room</th>
                     <th className="px-3 py-2.5">Capacity</th>
                     <th className="px-3 py-2.5">Students</th>
+                    {isAdmin && <th className="px-3 py-2.5 text-right">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                   {isPending ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-8 text-center text-zinc-400">
+                      <td colSpan={isAdmin ? 6 : 5} className="px-3 py-8 text-center text-zinc-400">
                         Loading classrooms...
                       </td>
                     </tr>
                   ) : classList.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-8 text-center text-zinc-400">
+                      <td colSpan={isAdmin ? 6 : 5} className="px-3 py-8 text-center text-zinc-400">
                         No classes configured yet.
                       </td>
                     </tr>
@@ -274,6 +341,32 @@ export default function ClassesPage() {
                           <td className="px-3 py-2.5 font-mono text-brand font-bold">
                             {c._count?.students ?? 0}
                           </td>
+                          {isAdmin && (
+                            <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                aria-label="Edit class"
+                                className="p-1.5 text-zinc-500 hover:text-brand"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditClass(c);
+                                }}
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label="Delete class"
+                                className="p-1.5 text-zinc-500 hover:text-rose-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteClassTarget(c);
+                                }}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       );
                     })
@@ -298,13 +391,13 @@ export default function ClassesPage() {
                     : 'Select a class to view its subjects.'}
                 </p>
               </div>
-              {selectedClass && (
+              {selectedClass && isAdmin && (
                 <div className="flex items-center gap-2 flex-wrap">
                   <Select
                     value={selectedClass.classTeacherId ?? selectedClass.classTeacher?.id ?? ''}
                     options={[{ label: 'Assign Class Teacher...', value: '' }, ...teacherOptions]}
                     onChange={(e) => handleAssignClassTeacher(e.target.value)}
-                    disabled={savingTeacher}
+                    disabled={updateClassMutation.isPending}
                     className="w-44 text-xs"
                   />
                   <Button
@@ -327,9 +420,11 @@ export default function ClassesPage() {
                   <p className="text-xs font-semibold text-center text-zinc-600 dark:text-zinc-300">
                     No subjects linked yet.
                   </p>
-                  <Button variant="outline" onClick={() => setShowSubjectDialog(true)}>
-                    Create Subject
-                  </Button>
+                  {isAdmin && (
+                    <Button variant="outline" onClick={() => setShowSubjectDialog(true)}>
+                      Create Subject
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
@@ -340,7 +435,7 @@ export default function ClassesPage() {
                         <th className="px-3 py-2.5">Code</th>
                         <th className="px-3 py-2.5">Type</th>
                         <th className="px-3 py-2.5">Marks</th>
-                        <th className="px-3 py-2.5 text-right">Action</th>
+                        {isAdmin && <th className="px-3 py-2.5 text-right">Action</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
@@ -358,15 +453,17 @@ export default function ClassesPage() {
                           <td className="px-3 py-2.5 font-mono text-zinc-500">
                             {s.maxMarks}/{s.passMarks}
                           </td>
-                          <td className="px-3 py-2.5 text-right">
-                            <Button
-                              variant="outline"
-                              onClick={() => handleDeleteSubject(s.id, s.name)}
-                              className="text-rose-600 border-rose-200/80 p-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </td>
+                          {isAdmin && (
+                            <td className="px-3 py-2.5 text-right">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleDeleteSubject(s.id, s.name)}
+                                className="text-rose-600 border-rose-200/80 p-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -387,7 +484,7 @@ export default function ClassesPage() {
       <Dialog
         isOpen={showClassDialog}
         onClose={() => setShowClassDialog(false)}
-        title="Create New Classroom"
+        title={editingClass ? 'Edit Classroom' : 'Create New Classroom'}
       >
         <form onSubmit={handleCreateClass} className="flex flex-col gap-4 py-2">
           <div className="grid grid-cols-2 gap-3">
@@ -444,8 +541,11 @@ export default function ClassesPage() {
             <Button variant="outline" type="button" onClick={() => setShowClassDialog(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={createClassMutation.isPending}>
-              Create Class
+            <Button
+              type="submit"
+              isLoading={createClassMutation.isPending || updateClassMutation.isPending}
+            >
+              {editingClass ? 'Save Changes' : 'Create Class'}
             </Button>
           </div>
         </form>
@@ -597,6 +697,35 @@ export default function ClassesPage() {
           >
             Assign Subjects
           </Button>
+        </div>
+      </Dialog>
+
+      {/* Dialog: Delete class */}
+      <Dialog
+        isOpen={!!deleteClassTarget}
+        onClose={() => setDeleteClassTarget(null)}
+        title="Delete Classroom"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            Delete{' '}
+            <b>
+              {deleteClassTarget?.name} {deleteClassTarget?.section}
+            </b>
+            ? A class that still has students, timetable slots or exams cannot be removed.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteClassTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteClass}
+              isLoading={deleteClassMutation.isPending}
+            >
+              Delete
+            </Button>
+          </div>
         </div>
       </Dialog>
     </DashboardLayout>

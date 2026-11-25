@@ -1,4 +1,5 @@
 import { Role } from '@/store/useAuthStore';
+import { isModuleActive } from '@/lib/moduleAccess';
 
 export interface NavItem {
   label: string;
@@ -48,44 +49,49 @@ export function canAccessNav(itemRoles: Role[] | undefined, userRole: string): b
   return itemRoles.some((r) => normalizeRole(r) === mine);
 }
 
+const ADMIN: Role[] = ['SuperAdmin', 'Principal', 'school_admin'];
+/** Every staff login (not parents/students). */
+const STAFF: Role[] = [
+  ...ADMIN,
+  'Teacher',
+  'Accountant',
+  'Librarian',
+  'clerk',
+  'lab_assistant',
+  'support_staff',
+];
+const FAMILY: Role[] = ['Parent', 'Student'];
+
 export const navigationConfig: NavItem[] = [
-  {
-    label: 'Overview',
-    isSection: true,
-  },
-  {
-    label: 'Dashboard',
-    icon: 'Home',
-    path: '/dashboard',
-  },
-  {
-    label: 'System Admin Registry',
-    isSection: true,
-    roles: ['SuperAdmin'],
-  },
+  { label: 'Overview', isSection: true },
+  { label: 'Dashboard', icon: 'Home', path: '/dashboard' },
+
+  // ── Platform owner ──────────────────────────────────────────
+  { label: 'System Admin Registry', isSection: true, roles: ['SuperAdmin'] },
   {
     label: 'SaaS Control Plane',
     icon: 'Shield',
     path: '/superadmin',
     roles: ['SuperAdmin'],
     children: [
-      { label: 'Global Users', icon: 'Users', path: '/users', roles: ['SuperAdmin'] },
       {
         label: 'Tenant Schools',
         icon: 'Building',
         path: '/superadmin/tenants',
         roles: ['SuperAdmin'],
       },
+      { label: 'SaaS Plans', icon: 'Star', path: '/superadmin/plans', roles: ['SuperAdmin'] },
+      {
+        label: 'Billing & Invoices',
+        icon: 'CreditCard',
+        path: '/superadmin/billing',
+        roles: ['SuperAdmin'],
+      },
+      { label: 'Global Users', icon: 'Users', path: '/users', roles: ['SuperAdmin'] },
       {
         label: 'Tenant Roadmap',
         icon: 'Compass',
         path: '/superadmin/roadmap',
-        roles: ['SuperAdmin'],
-      },
-      {
-        label: 'SaaS Plans',
-        icon: 'Star',
-        path: '/superadmin/plans',
         roles: ['SuperAdmin'],
       },
       {
@@ -96,221 +102,283 @@ export const navigationConfig: NavItem[] = [
       },
     ],
   },
-  {
-    label: 'School Setup (Steps 1-6)',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
-  },
+
+  // ── School setup (admin) ────────────────────────────────────
+  { label: 'School Setup (Steps 1-6)', isSection: true, roles: ADMIN },
   {
     label: '1. Academic Years',
     icon: 'Calendar',
     path: '/academics/terms',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: '2. Staff & Teachers',
     icon: 'Users',
     path: '/staff/directory',
     module: 'staff',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: '3. Classes & Sections',
     icon: 'Home',
     path: '/academics/classes',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: '4. Student Admission',
     icon: 'UserPlus',
     path: '/students/admissions',
     module: 'student',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: '5. Fee Slabs & Invoices',
     icon: 'Ticket',
     path: '/fee/slabs',
     module: 'fee',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
+    roles: [...ADMIN, 'Accountant'],
   },
   {
     label: '6. Setup & Integrations',
     icon: 'Link',
     path: '/settings/integrations',
     module: 'core',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
+
+  // ── Directories ─────────────────────────────────────────────
   {
     label: 'School Directories',
     isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    roles: [...ADMIN, 'Teacher', 'Accountant', 'Librarian', 'clerk', 'lab_assistant'],
   },
   {
     label: 'Student Directory',
     icon: 'IdCard',
     path: '/students',
     module: 'student',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    roles: [...ADMIN, 'Teacher', 'Accountant', 'Librarian', 'clerk', 'lab_assistant'],
   },
   {
     label: 'Student Documents',
     icon: 'Folder',
     path: '/students/documents',
     module: 'student',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    roles: [...ADMIN, 'Teacher'],
+  },
+  {
+    label: 'Departments',
+    icon: 'Building',
+    path: '/academics/departments',
+    module: 'academics',
+    roles: ADMIN,
+  },
+  {
+    label: 'Subjects',
+    icon: 'BookOpen',
+    path: '/academics/subjects',
+    module: 'academics',
+    roles: ADMIN,
   },
   {
     label: 'Staff Attendance',
     icon: 'CheckCircle',
     path: '/staff/attendance',
     module: 'staff',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: 'Biometric Devices',
     icon: 'Server',
     path: '/attendance/devices',
     module: 'attendance',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
-  {
-    label: 'Academics & Learning',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
-  },
+
+  // ── Teaching & learning (staff) ─────────────────────────────
+  { label: 'Academics & Learning', isSection: true, roles: [...ADMIN, 'Teacher'] },
   {
     label: 'Attendance Tracker',
     icon: 'CheckSquare',
     path: '/attendance',
     module: 'attendance',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Class Timetable',
     icon: 'Clock',
     path: '/academics/timetable',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Lesson Planning',
     icon: 'FileEdit',
     path: '/academics/lesson-plans',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Assignments & Homework',
     icon: 'Upload',
     path: '/assignments',
     module: 'homework',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Exams & Results',
     icon: 'Pencil',
     path: '/exams',
     module: 'exam',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Exam Reports',
     icon: 'BarChart3',
     path: '/exams/reports',
     module: 'exam',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'Online Classes',
     icon: 'Video',
     path: '/academics/online-classes',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'],
+    roles: [...ADMIN, 'Teacher'],
   },
   {
     label: 'LMS Quizzes',
     icon: 'HelpCircle',
     path: '/academics/quizzes',
     module: 'academics',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student'],
+    roles: [...ADMIN, 'Teacher'],
+  },
+
+  // ── Student & parent portal (family API) ────────────────────
+  { label: 'My Child / My School', isSection: true, roles: FAMILY },
+  {
+    label: 'Attendance',
+    icon: 'CheckSquare',
+    path: '/portal/attendance',
+    module: 'attendance',
+    roles: FAMILY,
   },
   {
-    label: 'Finance & HR',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin', 'Parent', 'Student'],
+    label: 'Timetable',
+    icon: 'Clock',
+    path: '/portal/timetable',
+    module: 'academics',
+    roles: FAMILY,
   },
   {
-    label: 'Fee Payments',
-    icon: 'Ticket',
-    path: '/fee/slabs',
+    label: 'Homework',
+    icon: 'Upload',
+    path: '/portal/homework',
+    module: 'homework',
+    roles: FAMILY,
+  },
+  { label: 'Exam Results', icon: 'Pencil', path: '/portal/results', module: 'exam', roles: FAMILY },
+  {
+    label: 'Fees & Payments',
+    icon: 'CreditCard',
+    path: '/portal/fees',
     module: 'fee',
-    roles: ['Parent', 'Student'],
+    roles: FAMILY,
   },
+  {
+    label: 'School Bus',
+    icon: 'Bus',
+    path: '/portal/transport',
+    module: 'transport',
+    roles: ['Parent'],
+  },
+  { label: 'Library', icon: 'BookOpen', path: '/portal/library', module: 'library', roles: FAMILY },
+  {
+    label: 'Online Classes',
+    icon: 'Video',
+    path: '/portal/online-classes',
+    module: 'academics',
+    roles: ['Student'],
+  },
+  {
+    label: 'Quizzes',
+    icon: 'HelpCircle',
+    path: '/portal/quizzes',
+    module: 'academics',
+    roles: ['Student'],
+  },
+
+  // ── Finance & HR ────────────────────────────────────────────
+  { label: 'Finance & HR', isSection: true, roles: [...ADMIN, 'Accountant', 'clerk'] },
   {
     label: 'Online Collections',
     icon: 'CreditCard',
     path: '/fee/ledgers',
     module: 'fee',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
+    roles: [...ADMIN, 'Accountant', 'clerk'],
   },
   {
-    label: 'Leave Applications',
-    icon: 'CalendarMinus',
-    path: '/leave',
-    module: 'leave',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher'],
+    label: 'Fee Dues & Defaulters',
+    icon: 'AlertCircle',
+    path: '/fee/dues',
+    module: 'fee',
+    roles: [...ADMIN, 'Accountant', 'clerk'],
+  },
+  {
+    label: 'Expenses',
+    icon: 'DollarSign',
+    path: '/fee/expenses',
+    module: 'hr_payroll',
+    roles: [...ADMIN, 'Accountant'],
   },
   {
     label: 'Payroll & Salary',
     icon: 'DollarSign',
     path: '/fee/payroll',
     module: 'hr_payroll',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
+    roles: [...ADMIN, 'Accountant'],
   },
+
+  // ── Everyone on staff: my own HR ────────────────────────────
+  { label: 'My Work', isSection: true, roles: STAFF },
+  { label: 'Leave', icon: 'CalendarMinus', path: '/leave', module: 'leave', roles: STAFF },
+  { label: 'My Payslips', icon: 'DollarSign', path: '/my-pay', module: 'hr_payroll', roles: STAFF },
+
+  // ── Operations ──────────────────────────────────────────────
   {
     label: 'Operations & Outreach',
     isSection: true,
-    roles: [
-      'SuperAdmin',
-      'Principal',
-      'school_admin',
-      'Teacher',
-      'Student',
-      'Parent',
-      'Warden',
-      'Librarian',
-    ],
+    roles: [...ADMIN, 'Teacher', 'Librarian', 'lab_assistant', 'Warden'],
   },
   {
     label: 'Library Management',
     icon: 'BookOpen',
     path: '/library',
     module: 'library',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'],
+    roles: [...ADMIN, 'Librarian', 'Teacher', 'clerk'],
     children: [
       {
         label: 'All Books',
         icon: 'Bookmark',
         path: '/library/books',
         module: 'library',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Teacher', 'Student'],
+        roles: [...ADMIN, 'Librarian', 'Teacher', 'clerk'],
       },
       {
         label: 'Book Issue',
         icon: 'RotateCcw',
         path: '/library/issues',
         module: 'library',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian'],
+        roles: [...ADMIN, 'Librarian'],
       },
       {
         label: 'Fine Collections',
         icon: 'DollarSign',
         path: '/library/fines',
         module: 'library',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Librarian', 'Accountant'],
+        roles: [...ADMIN, 'Librarian', 'Accountant'],
       },
     ],
   },
@@ -319,21 +387,21 @@ export const navigationConfig: NavItem[] = [
     icon: 'Bus',
     path: '/transport',
     module: 'transport',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+    roles: [...ADMIN, 'Teacher'],
     children: [
       {
         label: 'Vehicle Directory',
         icon: 'Bus',
         path: '/transport/vehicles',
         module: 'transport',
-        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+        roles: ADMIN,
       },
       {
         label: 'Routes & Stops',
         icon: 'MapPin',
         path: '/transport/routes',
         module: 'transport',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+        roles: [...ADMIN, 'Teacher'],
       },
     ],
   },
@@ -342,116 +410,107 @@ export const navigationConfig: NavItem[] = [
     icon: 'Building2',
     path: '/hostel',
     module: 'hostel',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden', 'Student'],
+    roles: [...ADMIN, 'Warden'],
     children: [
       {
         label: 'Hostel Rooms',
         icon: 'Home',
         path: '/hostel/rooms',
         module: 'hostel',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden'],
+        roles: [...ADMIN, 'Warden'],
       },
       {
         label: 'Room Allocations',
         icon: 'Key',
         path: '/hostel/allocations',
         module: 'hostel',
-        roles: ['SuperAdmin', 'Principal', 'school_admin', 'Warden', 'Student'],
+        roles: [...ADMIN, 'Warden'],
       },
     ],
+  },
+  {
+    label: 'Inventory & Assets',
+    icon: 'Package',
+    path: '/inventory',
+    module: 'inventory',
+    roles: [...ADMIN, 'lab_assistant'],
   },
   {
     label: 'Announcements',
     icon: 'Bell',
     path: '/communication',
     module: 'communication',
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Teacher', 'Student', 'Parent'],
+    roles: [...STAFF, ...FAMILY],
   },
   {
     label: 'WhatsApp Business',
     icon: 'MessageSquare',
     path: '/whatsapp',
     module: 'whatsapp',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
   {
     label: 'Website CMS',
     icon: 'Globe',
     path: '/website',
     module: 'website',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
     children: [
       {
         label: 'Homepage Banners',
         icon: 'Image',
         path: '/website/banners',
         module: 'website',
-        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+        roles: ADMIN,
       },
       {
         label: 'Download Center',
         icon: 'Download',
         path: '/website/downloads',
         module: 'website',
-        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+        roles: ADMIN,
       },
       {
         label: 'Admission Inquiries',
         icon: 'Mail',
         path: '/website/inquiries',
         module: 'website',
-        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+        roles: ADMIN,
       },
       {
         label: 'Pages & Gallery',
         icon: 'Pencil',
         path: '/website/content',
         module: 'website',
-        roles: ['SuperAdmin', 'Principal', 'school_admin'],
+        roles: ADMIN,
       },
     ],
   },
-  {
-    label: 'Settings & Analytics',
-    isSection: true,
-    roles: ['SuperAdmin', 'Principal', 'school_admin', 'Accountant'],
-  },
+
+  // ── Settings & analytics ────────────────────────────────────
+  { label: 'Settings & Analytics', isSection: true, roles: [...ADMIN, 'Accountant'] },
   {
     label: 'System Analytics',
     icon: 'BarChart3',
     path: '/analytics',
     module: 'analytics',
-    roles: ['SuperAdmin', 'Principal', 'Accountant', 'school_admin'],
+    roles: [...ADMIN, 'Accountant'],
   },
   {
     label: 'Roles & Permissions',
     icon: 'Key',
     path: '/settings/roles',
     module: 'core',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
+    roles: ADMIN,
   },
-  {
-    label: 'Platform Settings',
-    icon: 'Settings',
-    path: '/settings',
-    module: 'core',
-    roles: ['SuperAdmin', 'Principal', 'school_admin'],
-  },
+  { label: 'Platform Settings', icon: 'Settings', path: '/settings', module: 'core', roles: ADMIN },
 ];
 
 /** The navigation tree a user may see: role-filtered and limited to the tenant's active modules. */
 export function filterNavForUser(role: string, activeModules: string[]): NavItem[] {
   const filterItem = (item: NavItem): NavItem | null => {
     if (!canAccessNav(item.roles, role)) return null;
-    if (item.module) {
-      const plural = item.module.endsWith('s') ? item.module : `${item.module}s`;
-      const singular = item.module.endsWith('s') ? item.module.slice(0, -1) : item.module;
-      const hasAccess =
-        activeModules.includes(item.module) ||
-        activeModules.includes(plural) ||
-        activeModules.includes(singular);
-      if (!hasAccess) return null;
-    }
+    if (item.module && !isModuleActive(activeModules, item.module)) return null;
     if (item.children) {
       const children = item.children
         .map(filterItem)

@@ -40,6 +40,8 @@ import { studentsService } from '@/services/students.service';
 import { compressImageForProfile } from '@/lib/media';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import PageHeader from '@/components/layout/PageHeader';
 
@@ -206,6 +208,39 @@ function ModuleBadge({ icon, label, active }: { icon: string; label: string; act
 }
 
 // ── Main Component ────────────────────────────────────────────────────
+/** Minimal RFC-4180 parser: quoted fields, escaped quotes (""), commas and newlines inside quotes, CRLF. */
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+  const src = text.replace(/^\uFEFF/, '');
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else inQuotes = false;
+      } else field += ch;
+    } else if (ch === '"') inQuotes = true;
+    else if (ch === ',') {
+      row.push(field.trim());
+      field = '';
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && src[i + 1] === '\n') i++;
+      row.push(field.trim());
+      field = '';
+      if (row.some((c) => c !== '')) rows.push(row);
+      row = [];
+    } else field += ch;
+  }
+  row.push(field.trim());
+  if (row.some((c) => c !== '')) rows.push(row);
+  return rows;
+}
+
 export default function AdmissionsPage() {
   const { activeTenant } = useAuthStore();
   const activeModules = activeTenant?.activeModules || [];
@@ -265,14 +300,13 @@ export default function AdmissionsPage() {
     const reader = new FileReader();
     reader.onload = (evt) => {
       const text = evt.target?.result as string;
-      const lines = text
-        .split('\n')
-        .map((l) => l.trim())
-        .filter(Boolean);
-      if (lines.length <= 1) return;
-      const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-      const parsed = lines.slice(1).map((line) => {
-        const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+      const table = parseCsv(text);
+      if (table.length <= 1) {
+        toast.error('The CSV has no data rows.');
+        return;
+      }
+      const headers = table[0];
+      const parsed = table.slice(1).map((values) => {
         const obj: any = {};
         headers.forEach((h, i) => {
           obj[h] = values[i] || '';
@@ -363,14 +397,18 @@ export default function AdmissionsPage() {
       {
         onSuccess: async (student: any) => {
           const enrollments: string[] = [];
+          const failedSteps: string[] = [];
 
           // Profile photo — compressed to the server's 100 KB cap
           try {
             if (photoFile && student?.id) {
               const blob = await compressImageForProfile(photoFile);
               if (blob) await studentsService.uploadPhoto(student.id, blob);
+              else failedSteps.push('Photo (could not compress under 100 KB)');
             }
-          } catch {}
+          } catch (e) {
+            failedSteps.push(`Photo (${errorMessage(e)})`);
+          }
 
           try {
             if (form.hostelEnabled && form.hostelRoomId && student?.id) {
@@ -381,7 +419,9 @@ export default function AdmissionsPage() {
               });
               enrollments.push('Hostel');
             }
-          } catch {}
+          } catch (e) {
+            failedSteps.push(`Hostel (${errorMessage(e)})`);
+          }
 
           try {
             if (form.transportEnabled && form.routeId && student?.id) {
@@ -393,7 +433,16 @@ export default function AdmissionsPage() {
               });
               enrollments.push('Transport');
             }
-          } catch {}
+          } catch (e) {
+            failedSteps.push(`Transport (${errorMessage(e)})`);
+          }
+
+          if (failedSteps.length > 0) {
+            toast.warning(
+              `Student admitted, but these optional steps failed: ${failedSteps.join('; ')}. Add them from the student profile.`,
+              { duration: 10000 }
+            );
+          }
 
           setSubmitted({ student, enrollments });
           window.dispatchEvent(
@@ -479,9 +528,10 @@ export default function AdmissionsPage() {
     if (bulkRows.length === 0) return;
     setIsImportingBulk(true);
     let successCount = 0;
+    const failures: string[] = [];
     const yearId = currentYear?.id || '';
 
-    for (const row of bulkRows) {
+    for (const [idx, row] of bulkRows.entries()) {
       try {
         await createMutation.mutateAsync({
           name: `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Student',
@@ -497,23 +547,25 @@ export default function AdmissionsPage() {
         });
         successCount++;
       } catch (err) {
-        console.error('Bulk row import failed:', row, err);
+        failures.push(
+          `Row ${idx + 2} (${row.firstName || ''} ${row.lastName || ''}): ${errorMessage(err)}`.replace(
+            '  ',
+            ' '
+          )
+        );
       }
     }
 
     setIsImportingBulk(false);
     setShowBulkModal(false);
     setBulkRows([]);
-    window.dispatchEvent(
-      new CustomEvent('show-toast', {
-        detail: {
-          severity: 'success',
-          summary: 'Bulk Onboarding Complete 🎉',
-          detail: `Successfully imported & onboarded ${successCount} old students!`,
-          life: 5000,
-        },
-      })
-    );
+    if (successCount > 0) toast.success(`Imported ${successCount} of ${bulkRows.length} students.`);
+    if (failures.length > 0) {
+      toast.error(
+        `${failures.length} row(s) failed. ${failures.slice(0, 3).join(' | ')}${failures.length > 3 ? ' ...' : ''}`,
+        { duration: 15000 }
+      );
+    }
   };
 
   if (view === 'list') {

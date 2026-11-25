@@ -32,6 +32,12 @@ export const authService = {
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
+  /** PATCH /auth/change-password */
+  changePassword: async (body: { currentPassword: string; newPassword: string }) => {
+    const response = await api.patch('/auth/change-password', body);
+    return response.data;
+  },
+
   logout: async (refreshToken: string) => {
     await api.post('/auth/logout', { refreshToken });
   },

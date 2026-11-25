@@ -8,23 +8,53 @@ export const whatsappService = {
   },
 
   updateConfig: async (data: Partial<WhatsAppConfig>) => {
-    const response = await api.patch<{ success: boolean; data: WhatsAppConfig }>('/whatsapp/config', data);
+    const response = await api.patch<{ success: boolean; data: WhatsAppConfig }>(
+      '/whatsapp/config',
+      data
+    );
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   getTemplates: async () => {
-    const response = await api.get<{ success: boolean; data: WhatsAppTemplate[] }>('/whatsapp/templates');
+    const response = await api.get<{ success: boolean; data: WhatsAppTemplate[] }>(
+      '/whatsapp/templates'
+    );
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
+  },
+
+  createTemplate: async (data: Record<string, any>) => {
+    const response = await api.post('/whatsapp/templates', data);
+    return (response.data as any)?.data ?? response.data;
+  },
+
+  updateTemplate: async (name: string, data: Record<string, any>) => {
+    const response = await api.patch(`/whatsapp/templates/${encodeURIComponent(name)}`, data);
+    return (response.data as any)?.data ?? response.data;
+  },
+
+  deleteTemplate: async (name: string) => {
+    const response = await api.delete(`/whatsapp/templates/${encodeURIComponent(name)}`);
+    return (response.data as any)?.data ?? response.data;
+  },
+
+  getDeliveries: async (broadcastId: string) => {
+    const response = await api.get(`/whatsapp/broadcasts/${broadcastId}/deliveries`);
+    const d = (response.data as any)?.data ?? [];
+    return Array.isArray(d) ? d : (d?.items ?? []);
   },
 
   seedTemplates: async () => {
     const response = await api.post<{ success: boolean }>('/whatsapp/templates/seed');
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
   },
 
   getSessions: async (page = 1, limit = 20) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    const response = await api.get<{ success: boolean; data: WhatsAppSession[]; meta: any }>(`/whatsapp/sessions?${params}`);
+    const response = await api.get<{ success: boolean; data: WhatsAppSession[]; meta: any }>(
+      `/whatsapp/sessions?${params}`
+    );
     const items = (response.data.data as any)?.items ?? [];
     const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
@@ -32,34 +62,49 @@ export const whatsappService = {
 
   getMessages: async (phone: string, page = 1, limit = 50) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    const response = await api.get<{ success: boolean; data: any[] }>(`/whatsapp/sessions/${phone}/messages?${params}`);
+    const response = await api.get<{ success: boolean; data: any[] }>(
+      `/whatsapp/sessions/${phone}/messages?${params}`
+    );
     return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
   },
 
   getBroadcasts: async (page = 1, limit = 20) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    const response = await api.get<{ success: boolean; data: any[]; meta: any }>(`/whatsapp/broadcasts?${params}`);
+    const response = await api.get<{ success: boolean; data: any[]; meta: any }>(
+      `/whatsapp/broadcasts?${params}`
+    );
     const items = (response.data.data as any)?.items ?? [];
     const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
   },
 
-  createBroadcast: async (data: { name: string; templateId?: string; message?: string; targetType?: string; targetIds?: string[]; variables?: Record<string, string>; scheduledAt?: string; }) => {
+  createBroadcast: async (data: {
+    name: string;
+    templateId?: string;
+    message?: string;
+    targetType?: string;
+    targetIds?: string[];
+    variables?: Record<string, string>;
+    scheduledAt?: string;
+  }) => {
     const response = await api.post<{ success: boolean; data: any }>('/whatsapp/broadcasts', data);
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 
   sendBroadcast: async (id: string) => {
     const response = await api.post<{ success: boolean }>(`/whatsapp/broadcasts/${id}/send`);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
   },
 
   testRagChatbot: async (phone: string, question: string) => {
-    const response = await api.post<{ success: boolean; message: string }>('/whatsapp/test/rag', { phone, question });
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    const response = await api.post<{ success: boolean; message: string }>('/whatsapp/test/rag', {
+      phone,
+      question,
+    });
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
   },
 };
-
-
-
-

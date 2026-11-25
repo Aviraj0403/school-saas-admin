@@ -1,7 +1,7 @@
 'use client';
 
 import { asList } from '@/lib/utils';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { Button } from '@/components/ui/button';
@@ -9,100 +9,146 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Dialog } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useClasses, useOnlineClasses, useCreateOnlineClass } from '@/hooks/queries/useAcademics';
+import {
+  useOnlineClasses,
+  useCreateOnlineClass,
+  useStartOnlineClass,
+  useEndOnlineClass,
+  useOnlineClassDetail,
+  useMarkOnlineClassAttendance,
+  useSubjects,
+} from '@/hooks/queries/useAcademics';
+import { useScopedClasses } from '@/hooks/queries/useScopedClasses';
+import { useStudentsList } from '@/hooks/queries/useStudents';
+import { PermissionGate } from '@/components/ui/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useAuthStore } from '@/store/useAuthStore';
+import { apiMessage } from '@/lib/apiMessage';
 import { toast } from 'sonner';
-import { Video, Plus, Search, ExternalLink, Power, CheckCircle } from 'lucide-react';
+import {
+  Video,
+  Plus,
+  Search,
+  ExternalLink,
+  Power,
+  CheckCircle,
+  Play,
+  Square,
+  ClipboardCheck,
+} from 'lucide-react';
 
-interface OnlineClass {
-  id: string;
-  title: string;
-  description?: string;
-  jitsiRoomName: string;
-  jitsiPassword?: string;
-  scheduledAt: string;
-  duration: number;
-  status: 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED';
-  teacherId: string;
-  teacherName?: string;
-  className?: string;
-  subjectName?: string;
-  joinUrl?: string;
-  teacherUrl?: string;
-  embedUrl?: string;
+type Status = 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED';
+
+const blankForm = () => ({
+  classId: '',
+  subjectId: '',
+  title: '',
+  description: '',
+  scheduledAt: '',
+  duration: 60,
+});
+
+/** Adds the display name to a Jitsi URL that may already carry a #config fragment. */
+function withDisplayName(url: string, name: string) {
+  const info = `userInfo.displayName=${encodeURIComponent(JSON.stringify(name))}`;
+  return url.includes('#') ? `${url}&${info}` : `${url}#${info}`;
 }
 
 export default function OnlineClassesPage() {
-  const { user } = useAuthStore();
+  const activeUser = useAuthStore((s) => s.activeUser);
+  const myId = activeUser?.id ?? '';
+  const { isAdmin } = usePermissions();
 
-  const { data: classesData, isPending: loading } = useOnlineClasses();
-  const classesList = classesData || [];
+  const { data: classesData, isPending: loading, isError, error } = useOnlineClasses();
+  const { classes, isTeacher } = useScopedClasses();
+  const allowedClassIds = useMemo(() => new Set(classes.map((c) => c.id)), [classes]);
+  const classesList = useMemo(
+    () => asList<any>(classesData).filter((c) => !isTeacher || allowedClassIds.has(c.classId)),
+    [classesData, isTeacher, allowedClassIds]
+  );
+
   const createMutation = useCreateOnlineClass();
+  const startMutation = useStartOnlineClass();
+  const endMutation = useEndOnlineClass();
+  const attendanceMutation = useMarkOnlineClassAttendance();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [activeJitsiRoom, setActiveJitsiRoom] = useState<OnlineClass | null>(null);
+  const [activeRoom, setActiveRoom] = useState<any | null>(null);
   const [search, setSearch] = useState('');
+  const [form, setForm] = useState(blankForm());
+  const { data: classSubjects = [], isLoading: loadingSubjects } = useSubjects(form.classId);
+  const [endTarget, setEndTarget] = useState<any | null>(null);
+
+  const classOptions = classes.map((c) => ({ label: c.label, value: c.id }));
 
   const filteredClasses = classesList.filter(
     (c: any) =>
       c.title?.toLowerCase().includes(search.toLowerCase()) ||
-      c.className?.toLowerCase().includes(search.toLowerCase()) ||
-      c.subjectName?.toLowerCase().includes(search.toLowerCase())
+      c.class?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.subject?.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Form state
-  const [form, setForm] = useState({
-    classId: '',
-    subjectId: '',
-    title: '',
-    description: '',
-    scheduledAt: '',
-    duration: 60,
-  });
-
-  const { data: schoolClasses } = useClasses(1, 100);
-  const classOptions = asList(schoolClasses).map((c: any) => ({
-    label: `${c.name} — ${c.section}`,
-    value: c.id,
-  }));
-
-  const handleCreateClass = async (e: React.FormEvent) => {
+  const handleCreateClass = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.classId || !form.title || !form.scheduledAt) {
+    if (!form.classId || !form.title.trim() || !form.scheduledAt) {
       toast.error('Class, Title and Schedule date are required.');
       return;
     }
-
     createMutation.mutate(
       {
         classId: form.classId,
         subjectId: form.subjectId || undefined,
-        title: form.title,
+        title: form.title.trim(),
         description: form.description || undefined,
         scheduledAt: new Date(form.scheduledAt).toISOString(),
         duration: Number(form.duration),
       },
       {
         onSuccess: () => {
-          toast.success(`Online class room "${form.title}" created successfully!`);
+          toast.success(`Online class "${form.title}" scheduled.`);
           setShowCreateDialog(false);
-          setForm({
-            classId: '',
-            subjectId: '',
-            title: '',
-            description: '',
-            scheduledAt: '',
-            duration: 60,
-          });
+          setForm(blankForm());
         },
-        onError: (err: any) => {
-          toast.error(err?.response?.data?.message || 'Failed to schedule class.');
-        },
+        onError: (err) => toast.error(apiMessage(err, 'Failed to schedule class.')),
       }
     );
   };
 
-  const getStatusBadge = (status: OnlineClass['status']) => {
+  const handleStart = (c: any) => {
+    startMutation.mutate(c.id, {
+      onSuccess: () => toast.success('Class is now live.'),
+      onError: (err) => toast.error(apiMessage(err, 'Could not start the class.')),
+    });
+  };
+
+  const confirmEnd = () => {
+    if (!endTarget) return;
+    endMutation.mutate(endTarget.id, {
+      onSuccess: () => {
+        toast.success('Class ended and attendance synced.');
+        if (activeRoom?.id === endTarget.id) setActiveRoom(null);
+        setEndTarget(null);
+      },
+      onError: (err) => toast.error(apiMessage(err, 'Could not end the class.')),
+    });
+  };
+
+  const roomUrl = (c: any) => {
+    const host = c.teacherId === myId;
+    return (host && c.teacherUrl) || c.joinUrl || '';
+  };
+
+  const launch = (c: any) => {
+    const url = roomUrl(c);
+    if (!url) {
+      toast.error('The server did not return a room link for this class.');
+      return;
+    }
+    setActiveRoom(c);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getStatusBadge = (status: Status) => {
     const map = {
       LIVE: { label: 'LIVE', variant: 'success' as const },
       SCHEDULED: { label: 'SCHEDULED', variant: 'info' as const },
@@ -113,11 +159,63 @@ export default function OnlineClassesPage() {
     return <Badge variant={s.variant}>{s.label}</Badge>;
   };
 
+  // ── Attendance dialog ──────────────────────────────────────
+  const [attendanceFor, setAttendanceFor] = useState<any | null>(null);
+  const { data: attendanceDetail } = useOnlineClassDetail(attendanceFor?.id);
+  const { data: rosterRaw, isPending: loadingRoster } = useStudentsList(
+    1,
+    100,
+    undefined,
+    attendanceFor?.classId
+  );
+  const roster = asList<any>(rosterRaw);
+  const [attDraft, setAttDraft] = useState<Record<string, { present: boolean; minutes: string }>>(
+    {}
+  );
+
+  useEffect(() => {
+    if (!attendanceFor) return;
+    const d: Record<string, { present: boolean; minutes: string }> = {};
+    for (const s of roster)
+      d[s.id] = { present: false, minutes: String(attendanceFor.duration ?? 60) };
+    for (const a of (attendanceDetail as any)?.attendance ?? []) {
+      if (d[a.studentId])
+        d[a.studentId] = {
+          present: !!a.isPresent,
+          minutes: String(Math.round((a.duration ?? 0) / 60)),
+        };
+    }
+    setAttDraft(d);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    attendanceFor?.id,
+    roster.map((s) => s.id).join(','),
+    JSON.stringify((attendanceDetail as any)?.attendance ?? []),
+  ]);
+
+  const saveAttendance = () => {
+    if (!attendanceFor) return;
+    const records = roster.map((s) => {
+      const d = attDraft[s.id] ?? { present: false, minutes: '0' };
+      const minutes = d.present ? Math.max(Number(d.minutes) || 0, 10) : 0;
+      return { studentId: s.id, duration: minutes * 60 };
+    });
+    attendanceMutation.mutate(
+      { id: attendanceFor.id, records },
+      {
+        onSuccess: () => {
+          toast.success('Attendance saved and synced to the class register.');
+          setAttendanceFor(null);
+        },
+        onError: (err) => toast.error(apiMessage(err, 'Failed to save attendance.')),
+      }
+    );
+  };
+
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Online Classes" subtitle="Academics" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        {/* Header Area */}
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -125,61 +223,61 @@ export default function OnlineClassesPage() {
               Online Classrooms
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Schedule zero-latency video lectures with live attendance
+              Schedule video lectures and mark live attendance
             </p>
           </div>
 
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Schedule Online Class
-          </Button>
+          <PermissionGate roles={['school_admin', 'teacher']}>
+            <Button onClick={() => setShowCreateDialog(true)} disabled={classes.length === 0}>
+              <Plus className="w-4 h-4 mr-2" />
+              Schedule Online Class
+            </Button>
+          </PermissionGate>
         </div>
 
-        {/* Live Classroom Embedded Frame (Overlay/View Pane) */}
-        {activeJitsiRoom && (
+        {activeRoom && (
           <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col animate-fade-in relative z-20">
-            <div className="flex justify-between items-center px-4 py-3 text-white bg-zinc-900 border-b border-zinc-800">
+            <div className="flex justify-between items-center px-4 py-3 text-white bg-zinc-900 border-b border-zinc-800 gap-3 flex-wrap">
               <div>
                 <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Live Room
-                  Active
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Room{' '}
+                  {activeRoom.status === 'LIVE' ? 'live' : 'open'}
                 </span>
                 <h3 className="font-semibold text-sm mt-0.5">
-                  {activeJitsiRoom.title} ({activeJitsiRoom.className})
+                  {activeRoom.title} ({activeRoom.class?.name} {activeRoom.class?.section})
                 </h3>
               </div>
-              <Button variant="danger" size="sm" onClick={() => setActiveJitsiRoom(null)}>
-                <Power className="w-3.5 h-3.5 mr-1" /> Disconnect
-              </Button>
+              <div className="flex gap-2">
+                <a
+                  href={roomUrl(activeRoom)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-800"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open in new tab
+                </a>
+                <Button variant="danger" size="sm" onClick={() => setActiveRoom(null)}>
+                  <Power className="w-3.5 h-3.5 mr-1" /> Disconnect
+                </Button>
+              </div>
             </div>
-
-            {/* Jitsi Meet Secure Embedded Sandbox Iframe */}
             <div className="w-full aspect-video md:h-[500px] bg-black relative">
               <iframe
-                src={`${activeJitsiRoom.embedUrl || activeJitsiRoom.joinUrl || `https://${process.env.NEXT_PUBLIC_JITSI_DOMAIN || 'meet.jit.si'}/${activeJitsiRoom.jitsiRoomName}`}#userInfo.displayName="${user?.name || 'Educator'}"`}
+                title="Online class room"
+                src={withDisplayName(roomUrl(activeRoom), activeUser?.name || 'Educator')}
                 allow="camera; microphone; fullscreen; display-capture; autoplay"
                 className="w-full h-full border-0"
               />
             </div>
-
-            <div className="flex justify-between items-center px-4 py-2 text-xs text-zinc-400 font-medium bg-zinc-900 border-t border-zinc-800">
-              <span>Platform: {process.env.NEXT_PUBLIC_JITSI_DOMAIN || 'meet.jit.si'}</span>
-              <span className="flex items-center gap-1.5 text-emerald-500">
-                Connection secure & verified
-              </span>
-            </div>
           </div>
         )}
 
-        {/* Classes List section */}
         <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Active Room Rosters
-              </h2>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Classrooms</h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Launch rooms for live interactive video streams.
+                Hosts start and end their own classes; ending a class syncs attendance.
               </p>
             </div>
             <div className="relative w-full sm:w-64">
@@ -195,8 +293,12 @@ export default function OnlineClassesPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center py-20 text-zinc-500">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
+            <div className="flex justify-center items-center py-20 text-zinc-500 text-sm">
+              Loading classes...
+            </div>
+          ) : isError ? (
+            <div className="py-16 text-center text-sm text-rose-600">
+              {apiMessage(error, 'Could not load online classes.')}
             </div>
           ) : filteredClasses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
@@ -208,97 +310,119 @@ export default function OnlineClassesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClasses.map((c: any) => (
-                <div
-                  key={c.id}
-                  className="border border-zinc-200/80 dark:border-zinc-800/80 hover:border-brand/40 rounded-xl p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
-                >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <Badge variant="secondary">{c.subjectName || 'Study Room'}</Badge>
-                      {getStatusBadge(c.status)}
+              {filteredClasses.map((c: any) => {
+                const isHost = c.teacherId === myId;
+                return (
+                  <div
+                    key={c.id}
+                    className="border border-zinc-200/80 dark:border-zinc-800/80 hover:border-brand/40 rounded-xl p-5 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <Badge variant="secondary">{c.subject?.name || 'Study Room'}</Badge>
+                        {getStatusBadge(c.status)}
+                      </div>
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1 leading-snug">
+                        {c.title}
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5 leading-relaxed">
+                        {c.description || 'No class summary description provided.'}
+                      </p>
                     </div>
 
-                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1 leading-snug">
-                      {c.title}
-                    </h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5 leading-relaxed">
-                      {c.description || 'No class summary description provided.'}
-                    </p>
-                  </div>
+                    <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-1 flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                      <div className="flex justify-between items-center">
+                        <span>Class:</span>
+                        <span className="text-zinc-900 dark:text-zinc-300 font-semibold">
+                          {c.class ? `${c.class.name} ${c.class.section ?? ''}` : 'General'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Schedule:</span>
+                        <span className="text-zinc-900 dark:text-zinc-300">
+                          {new Date(c.scheduledAt).toLocaleString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}{' '}
+                          · {c.duration} min
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Present so far:</span>
+                        <span className="text-zinc-900 dark:text-zinc-300">
+                          {c._count?.attendance ?? 0}
+                        </span>
+                      </div>
+                    </div>
 
-                  <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-1 flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                    <div className="flex justify-between items-center">
-                      <span>Grade:</span>
-                      <span className="text-zinc-900 dark:text-zinc-300 font-semibold">
-                        {c.className || 'General'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Schedule:</span>
-                      <span className="text-zinc-900 dark:text-zinc-300">
-                        {new Date(c.scheduledAt).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}{' '}
-                        at{' '}
-                        {new Date(c.scheduledAt).toLocaleTimeString('en-IN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Host Teacher:</span>
-                      <span className="text-zinc-900 dark:text-zinc-300 truncate max-w-40">
-                        {c.teacher?.name || 'System Faculty'}
-                      </span>
+                    <div className="mt-2 flex flex-col gap-2">
+                      {c.status === 'SCHEDULED' && (
+                        <>
+                          {isHost && (
+                            <Button
+                              variant="gradient"
+                              className="w-full"
+                              onClick={() => handleStart(c)}
+                              isLoading={
+                                startMutation.isPending && startMutation.variables === c.id
+                              }
+                            >
+                              <Play className="w-4 h-4 mr-2" /> Start Class
+                            </Button>
+                          )}
+                          <Button variant="outline" className="w-full" onClick={() => launch(c)}>
+                            <ExternalLink className="w-4 h-4 mr-2" /> Launch Room
+                          </Button>
+                        </>
+                      )}
+                      {c.status === 'LIVE' && (
+                        <>
+                          <Button variant="gradient" className="w-full" onClick={() => launch(c)}>
+                            <Video className="w-4 h-4 mr-2" /> Join Classroom Now
+                          </Button>
+                          {isHost && (
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => setEndTarget(c)}
+                            >
+                              <Square className="w-4 h-4 mr-2" /> End Class
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      {(c.status === 'LIVE' || c.status === 'COMPLETED') && (isHost || isAdmin) && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setAttendanceFor(c)}
+                        >
+                          <ClipboardCheck className="w-4 h-4 mr-2" /> Attendance
+                        </Button>
+                      )}
+                      {c.status === 'COMPLETED' && (
+                        <Button disabled variant="ghost" className="w-full">
+                          <CheckCircle className="w-4 h-4 mr-2 text-zinc-400" /> Session Completed
+                        </Button>
+                      )}
                     </div>
                   </div>
-
-                  <div className="mt-2">
-                    {c.status === 'LIVE' ? (
-                      <Button
-                        variant="gradient"
-                        className="w-full"
-                        onClick={() => {
-                          setActiveJitsiRoom(c);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                      >
-                        <Video className="w-4 h-4 mr-2" /> Join Classroom Now
-                      </Button>
-                    ) : c.status === 'SCHEDULED' ? (
-                      <Button
-                        variant="primary"
-                        className="w-full"
-                        onClick={() => {
-                          setActiveJitsiRoom(c);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" /> Launch Room
-                      </Button>
-                    ) : (
-                      <Button disabled variant="ghost" className="w-full">
-                        <CheckCircle className="w-4 h-4 mr-2 text-zinc-400" /> Session Completed
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* Schedule Class Dialog */}
+      {/* Schedule */}
       <Dialog
         isOpen={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         title="Schedule Online Lecture"
       >
-        <div className="flex flex-col gap-4 py-2">
+        <form onSubmit={handleCreateClass} className="flex flex-col gap-4 py-2">
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
               Class Title / Topic *
@@ -318,12 +442,39 @@ export default function OnlineClassesPage() {
               <Select
                 value={form.classId}
                 options={[{ label: 'Select Class', value: '' }, ...classOptions]}
-                onChange={(e) => setForm({ ...form, classId: e.target.value })}
+                onChange={(e) => setForm({ ...form, classId: e.target.value, subjectId: '' })}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Duration (Mins)
+                Subject
+              </label>
+              <Select
+                value={form.subjectId}
+                disabled={!form.classId || loadingSubjects}
+                options={[
+                  { label: !form.classId ? 'Pick a class first' : 'Any / none', value: '' },
+                  ...(classSubjects as any[]).map((s) => ({ label: s.name, value: s.id })),
+                ]}
+                onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Schedule Date & Time *
+              </label>
+              <Input
+                type="datetime-local"
+                value={form.scheduledAt}
+                onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
+                Duration
               </label>
               <Select
                 value={form.duration.toString()}
@@ -340,36 +491,123 @@ export default function OnlineClassesPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-              Schedule Date & Time *
-            </label>
-            <Input
-              type="datetime-local"
-              value={form.scheduledAt}
-              onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
               Lecture Agenda / Details
             </label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none"
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand resize-none"
               rows={3}
               placeholder="e.g. Please bring textbook and solved assignments."
             />
           </div>
-        </div>
 
-        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-          <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleCreateClass} isLoading={createMutation.isPending}>
-            Schedule Room
-          </Button>
+          <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" type="button" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createMutation.isPending}>
+              Schedule Room
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+
+      {/* End confirm */}
+      <Dialog isOpen={!!endTarget} onClose={() => setEndTarget(null)} title="End Class">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            End <b>{endTarget?.title}</b>? Recorded attendance will be synced to the class register.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEndTarget(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmEnd} isLoading={endMutation.isPending}>
+              End Class
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Attendance */}
+      <Dialog
+        isOpen={!!attendanceFor}
+        onClose={() => setAttendanceFor(null)}
+        title={attendanceFor ? `Attendance - ${attendanceFor.title}` : 'Attendance'}
+        className="max-w-2xl"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-zinc-500">
+            Mark who attended and for how many minutes. Students present for 10 minutes or more
+            count as present in the class register.
+          </p>
+          {loadingRoster ? (
+            <p className="text-sm text-zinc-500">Loading students...</p>
+          ) : roster.length === 0 ? (
+            <p className="text-sm text-zinc-500">No students in this class.</p>
+          ) : (
+            <div className="max-h-80 overflow-y-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                  <tr>
+                    <th className="py-2 pr-3">Student</th>
+                    <th className="py-2 pr-3">Present</th>
+                    <th className="py-2">Minutes attended</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {roster.map((s: any) => {
+                    const d = attDraft[s.id] ?? { present: false, minutes: '0' };
+                    return (
+                      <tr key={s.id}>
+                        <td className="py-2 pr-3 font-semibold">{s.name}</td>
+                        <td className="py-2 pr-3">
+                          <input
+                            type="checkbox"
+                            checked={d.present}
+                            onChange={(e) =>
+                              setAttDraft((p) => ({
+                                ...p,
+                                [s.id]: { ...d, present: e.target.checked },
+                              }))
+                            }
+                          />
+                        </td>
+                        <td className="py-2">
+                          <Input
+                            type="number"
+                            min={0}
+                            disabled={!d.present}
+                            className="h-9 w-24"
+                            value={d.minutes}
+                            onChange={(e) =>
+                              setAttDraft((p) => ({
+                                ...p,
+                                [s.id]: { ...d, minutes: e.target.value },
+                              }))
+                            }
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button variant="outline" onClick={() => setAttendanceFor(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={saveAttendance}
+              isLoading={attendanceMutation.isPending}
+              disabled={roster.length === 0}
+            >
+              Save Attendance
+            </Button>
+          </div>
         </div>
       </Dialog>
     </DashboardLayout>

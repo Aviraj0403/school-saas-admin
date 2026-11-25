@@ -4,9 +4,19 @@ import { localDateISO } from '@/lib/format';
 import { asList } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useClasses } from '@/hooks/queries/useAcademics';
+import { useScopedClasses } from '@/hooks/queries/useScopedClasses';
+import { usePermissions } from '@/hooks/usePermissions';
+import { apiMessage } from '@/lib/apiMessage';
+import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useStudentsList } from '@/hooks/queries/useStudents';
-import { useAttendance, useMarkBulkAttendance } from '@/hooks/queries/useAttendance';
+import {
+  useAttendance,
+  useMarkBulkAttendance,
+  useTodayAttendance,
+  useClassAttendanceReport,
+  useStudentAttendanceSummary,
+} from '@/hooks/queries/useAttendance';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { StatCard } from '@/components/ui/StatCard';
@@ -18,7 +28,7 @@ interface LocalRecord {
 }
 
 export default function AttendancePage() {
-  const [activeTab, setActiveTab] = useState<'marking' | 'biometric'>('marking');
+  const [activeTab, setActiveTab] = useState<'marking' | 'report' | 'biometric'>('marking');
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [localAttendance, setLocalAttendance] = useState<Record<string, LocalRecord>>({});
@@ -28,8 +38,16 @@ export default function AttendancePage() {
   const formattedDate = date ? localDateISO(date) : '';
 
   // Queries
-  const { data: classesData, isPending: loadingClasses } = useClasses(1, 100);
-  const classes = asList(classesData);
+  const { isAdmin } = usePermissions();
+  const { classes, isLoading: loadingClasses, isTeacher } = useScopedClasses();
+  const [reportFrom, setReportFrom] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(1);
+    return localDateISO(d);
+  });
+  const [reportTo, setReportTo] = useState<string>(() => localDateISO(new Date()));
+  const [drillStudent, setDrillStudent] = useState<{ id: string; name: string } | null>(null);
+  const [drillMonth, setDrillMonth] = useState<string>(() => localDateISO(new Date()).slice(0, 7));
 
   // Set default class if available
   useEffect(() => {
@@ -52,7 +70,23 @@ export default function AttendancePage() {
     formattedDate,
     selectedClassId || undefined
   );
-  const markedAttendance = asList(attendanceData);
+  const { data: today } = useTodayAttendance(selectedClassId || undefined);
+  const {
+    data: report,
+    isLoading: loadingReport,
+    isError: reportError,
+    error: reportErr,
+  } = useClassAttendanceReport(
+    activeTab === 'report' ? selectedClassId || undefined : undefined,
+    reportFrom,
+    reportTo
+  );
+  const [drillYear, drillMonthNum] = drillMonth.split('-').map(Number);
+  const {
+    data: drill,
+    isLoading: loadingDrill,
+    isError: drillError,
+  } = useStudentAttendanceSummary(drillStudent?.id, drillMonthNum, drillYear);
 
   const studentsKey = studentsData?.items?.map((s: any) => s.id).join(',') || '';
   const attendanceKey =
@@ -152,7 +186,7 @@ export default function AttendancePage() {
           toast.success('Attendance saved successfully');
         },
         onError: (err: any) => {
-          toast.error(err.message || 'Failed to save attendance');
+          toast.error(apiMessage(err, 'Failed to save attendance'));
         },
       }
     );
@@ -234,15 +268,144 @@ export default function AttendancePage() {
             Attendance Marking Sheet
           </button>
           <button
-            onClick={() => setActiveTab('biometric')}
-            className={`p-2 px-4 rounded-md text-xs font-semibold transition-all ${activeTab === 'biometric' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-zinc-500'}`}
+            onClick={() => setActiveTab('report')}
+            className={`p-2 px-4 rounded-md text-xs font-semibold transition-all ${activeTab === 'report' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-zinc-500'}`}
           >
-            <i className="pi pi-print mr-2 text-[10px]"></i>
-            Biometric Sync & Telemetry
+            <i className="pi pi-chart-bar mr-2 text-[10px]"></i>
+            Class Report
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('biometric')}
+              className={`p-2 px-4 rounded-md text-xs font-semibold transition-all ${activeTab === 'biometric' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-zinc-500'}`}
+            >
+              <i className="pi pi-print mr-2 text-[10px]"></i>
+              Biometric Sync & Telemetry
+            </button>
+          )}
         </div>
 
-        {activeTab === 'biometric' ? (
+        {selectedClassId && today && (
+          <div
+            className={`rounded-md border px-4 py-2.5 text-xs font-medium flex flex-wrap items-center gap-2 ${
+              today.isMarked
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800/40 dark:text-emerald-300'
+                : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800/40 dark:text-amber-300'
+            }`}
+          >
+            <span>Today ({today.date}):</span>
+            <span>
+              {today.isMarked
+                ? `attendance marked for ${today.markedCount} of ${today.totalStudents} students`
+                : `attendance not marked yet (${today.totalStudents} students)`}
+            </span>
+          </div>
+        )}
+
+        {!loadingClasses && classes.length === 0 && (
+          <div className="rounded-md border border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-center text-sm text-zinc-500">
+            {isTeacher
+              ? 'No classes are assigned to you yet. Ask an administrator to assign you as a class teacher or add you to the timetable.'
+              : 'No classes found. Create a class under Academics first.'}
+          </div>
+        )}
+
+        {activeTab === 'report' ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex flex-wrap items-end gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">
+                  From
+                </span>
+                <Input
+                  type="date"
+                  value={reportFrom}
+                  onChange={(e) => setReportFrom(e.target.value)}
+                  className="w-40 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">
+                  To
+                </span>
+                <Input
+                  type="date"
+                  value={reportTo}
+                  onChange={(e) => setReportTo(e.target.value)}
+                  className="w-40 text-sm"
+                />
+              </div>
+              {report && (
+                <span className="text-xs text-zinc-500 ml-auto">
+                  {report.totalDays} attendance days in range
+                </span>
+              )}
+            </div>
+            {!selectedClassId ? (
+              <div className="p-10 text-center text-sm text-zinc-500">
+                Select a class to see its report.
+              </div>
+            ) : loadingReport ? (
+              <div className="p-10 text-center text-sm text-zinc-500">Loading report...</div>
+            ) : reportError ? (
+              <div className="p-10 text-center text-sm text-rose-600">
+                {apiMessage(reportErr, 'Could not load the class report.')}
+              </div>
+            ) : !report || report.summary.length === 0 ? (
+              <div className="p-10 text-center text-sm text-zinc-500">
+                No attendance recorded in this period.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                    <tr>
+                      <th className="px-4 py-3">Roll</th>
+                      <th className="px-4 py-3">Student</th>
+                      <th className="px-4 py-3 text-center">Present</th>
+                      <th className="px-4 py-3 text-center">Absent</th>
+                      <th className="px-4 py-3 text-center">Late</th>
+                      <th className="px-4 py-3 text-center">Leave</th>
+                      <th className="px-4 py-3 text-center">%</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {report.summary.map((r) => (
+                      <tr key={r.student.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                        <td className="px-4 py-3 font-mono text-zinc-500">
+                          {r.student.rollNo ?? '-'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            className="font-semibold text-blue-600 hover:underline"
+                            onClick={() =>
+                              setDrillStudent({ id: r.student.id, name: r.student.name })
+                            }
+                          >
+                            {r.student.name}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-center text-emerald-600 font-semibold">
+                          {r.present}
+                        </td>
+                        <td className="px-4 py-3 text-center text-rose-600 font-semibold">
+                          {r.absent}
+                        </td>
+                        <td className="px-4 py-3 text-center text-amber-600 font-semibold">
+                          {r.late}
+                        </td>
+                        <td className="px-4 py-3 text-center">{r.leave}</td>
+                        <td className="px-4 py-3 text-center font-semibold">
+                          {r.total ? Math.round(((r.present + r.late * 0.5) / r.total) * 100) : 0}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'biometric' && isAdmin ? (
           <div className="flex flex-col gap-6 animate-fade-in">
             {/* This tab used to render hardcoded terminals — BIO-01-MAIN,
                 192.168.1.120, a pulsing ONLINE dot and a "Real-Time Ingestion
@@ -410,9 +573,14 @@ export default function AttendancePage() {
                             {student.name ? student.name[0].toUpperCase() : '?'}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-zinc-900 dark:text-white leading-snug">
+                            <button
+                              type="button"
+                              onClick={() => setDrillStudent({ id: student.id, name: fullName })}
+                              className="font-semibold text-zinc-900 dark:text-white leading-snug hover:text-blue-600 hover:underline text-left"
+                              title="View monthly attendance summary"
+                            >
                               {fullName}
-                            </h3>
+                            </button>
                             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                               Adm No:{' '}
                               <span className="font-mono text-zinc-500 dark:text-zinc-400">
@@ -485,6 +653,47 @@ export default function AttendancePage() {
           </>
         )}
       </div>
+
+      <Dialog
+        isOpen={!!drillStudent}
+        onClose={() => setDrillStudent(null)}
+        title={drillStudent ? `${drillStudent.name} - attendance` : 'Attendance'}
+      >
+        <div className="flex flex-col gap-4">
+          <Input
+            type="month"
+            value={drillMonth}
+            onChange={(e) => e.target.value && setDrillMonth(e.target.value)}
+          />
+          {loadingDrill ? (
+            <p className="text-sm text-zinc-500">Loading...</p>
+          ) : drillError || !drill ? (
+            <p className="text-sm text-rose-600">Could not load the summary.</p>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="success">Present {drill.present}</Badge>
+                <Badge variant="danger">Absent {drill.absent}</Badge>
+                <Badge variant="warning">Late {drill.late}</Badge>
+                <Badge variant="info">Leave {drill.leave}</Badge>
+                <Badge variant="primary">{drill.percentage}%</Badge>
+              </div>
+              {drill.records.length === 0 ? (
+                <p className="text-sm text-zinc-500">No attendance recorded this month.</p>
+              ) : (
+                <ul className="max-h-64 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
+                  {drill.records.map((r) => (
+                    <li key={r.id} className="py-1.5 flex justify-between">
+                      <span className="font-mono">{String(r.date).slice(0, 10)}</span>
+                      <span className="font-semibold">{r.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      </Dialog>
     </DashboardLayout>
   );
 }

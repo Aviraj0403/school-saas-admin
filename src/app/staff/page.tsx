@@ -17,6 +17,9 @@ import {
   useCreateStaff,
   useDeleteStaff,
   useRoles,
+  useDeactivateStaff,
+  useUpdateStaff,
+  useResetStaffPassword,
   useDepartments,
   useDesignations,
 } from '@/hooks/queries/useStaff';
@@ -50,6 +53,12 @@ import {
 } from 'lucide-react';
 
 import { useSalaryStructure, useUpsertSalaryStructure } from '@/hooks/queries/usePayroll';
+
+const hasRole = (s: any, slug: string) =>
+  Array.isArray(s?.roles) && s.roles.some((r: any) => (r?.role?.slug ?? '').toLowerCase() === slug);
+
+import StaffEditDialog from './StaffEditDialog';
+import { errorMessage } from '@/lib/errorMessage';
 
 export default function StaffPage() {
   const [selectedUserForSalary, setSelectedUserForSalary] = useState<string>('');
@@ -168,6 +177,10 @@ export default function StaffPage() {
     categoryFilter || undefined
   );
   const createMutation = useCreateStaff();
+  const deactivateMutation = useDeactivateStaff();
+  const reactivateMutation = useUpdateStaff();
+  const resetPwMutation = useResetStaffPassword();
+  const [editStaff, setEditStaff] = useState<any>(null);
   const deleteMutation = useDeleteStaff();
 
   const handleAddStaff = () => {
@@ -197,7 +210,7 @@ export default function StaffPage() {
         toast.success('Staff member created successfully');
       },
       onError: (err: any) => {
-        toast.error(err?.message || 'Failed to add staff');
+        toast.error(errorMessage(err, 'Failed to add staff'));
       },
     });
   };
@@ -206,7 +219,7 @@ export default function StaffPage() {
     if (confirm('Are you sure you want to remove this staff member?')) {
       deleteMutation.mutate(id, {
         onSuccess: () => toast.success('Staff member deleted'),
-        onError: (err: any) => toast.error(err?.message || 'Failed to delete staff'),
+        onError: (err: any) => toast.error(errorMessage(err, 'Failed to delete staff')),
       });
     }
   };
@@ -357,11 +370,7 @@ export default function StaffPage() {
           />
           <StatCard
             label="Teachers"
-            value={
-              isPending
-                ? '...'
-                : staffList.filter((s: any) => s.role === 'Teacher' || s.role === 'TEACHER').length
-            }
+            value={isPending ? '...' : staffList.filter((s: any) => hasRole(s, 'teacher')).length}
             icon={Briefcase}
             gradientClass="from-emerald-500 to-teal-500"
             iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
@@ -370,11 +379,7 @@ export default function StaffPage() {
           />
           <StatCard
             label="Administration"
-            value={
-              isPending
-                ? '...'
-                : staffList.filter((s: any) => s.role !== 'Teacher' && s.role !== 'TEACHER').length
-            }
+            value={isPending ? '...' : staffList.filter((s: any) => !hasRole(s, 'teacher')).length}
             icon={IdCard}
             gradientClass="from-amber-500 to-orange-500"
             iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
@@ -386,7 +391,10 @@ export default function StaffPage() {
             value={
               isPending
                 ? '...'
-                : Math.max(1, new Set(staffList.map((s: any) => s.department).filter(Boolean)).size)
+                : Math.max(
+                    1,
+                    new Set(staffList.map((s: any) => s.departmentId).filter(Boolean)).size
+                  )
             }
             icon={Network}
             gradientClass="from-violet-500 to-purple-500"
@@ -868,6 +876,74 @@ export default function StaffPage() {
               </div>
             </div>
 
+            <div className="flex flex-wrap gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+              <Button variant="outline" size="sm" onClick={() => setEditStaff(selectedProfile)}>
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                isLoading={resetPwMutation.isPending}
+                onClick={() => {
+                  if (
+                    !confirm(
+                      `Reset password for ${selectedProfile.name} to the default temporary password?`
+                    )
+                  )
+                    return;
+                  resetPwMutation.mutate(selectedProfile.id, {
+                    onSuccess: (r: any) => toast.success(r?.message || 'Password reset.'),
+                    onError: (err) => toast.error(errorMessage(err, 'Could not reset password')),
+                  });
+                }}
+              >
+                Reset password
+              </Button>
+              {selectedProfile.isActive !== false ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  isLoading={deactivateMutation.isPending}
+                  onClick={() => {
+                    if (
+                      !confirm(
+                        `Deactivate ${selectedProfile.name}? They will no longer be able to sign in.`
+                      )
+                    )
+                      return;
+                    deactivateMutation.mutate(selectedProfile.id, {
+                      onSuccess: () => {
+                        toast.success('Staff member deactivated.');
+                        setSelectedProfile({ ...selectedProfile, isActive: false });
+                      },
+                      onError: (err) => toast.error(errorMessage(err, 'Could not deactivate')),
+                    });
+                  }}
+                >
+                  Deactivate
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  isLoading={reactivateMutation.isPending}
+                  onClick={() =>
+                    reactivateMutation.mutate(
+                      { id: selectedProfile.id, data: { isActive: true } },
+                      {
+                        onSuccess: () => {
+                          toast.success('Staff member reactivated.');
+                          setSelectedProfile({ ...selectedProfile, isActive: true });
+                        },
+                        onError: (err) => toast.error(errorMessage(err, 'Could not reactivate')),
+                      }
+                    )
+                  }
+                >
+                  Reactivate
+                </Button>
+              )}
+            </div>
+
             <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
                 Subjects Taught
@@ -907,6 +983,12 @@ export default function StaffPage() {
           </div>
         )}
       </Dialog>
+      <StaffEditDialog
+        staff={editStaff}
+        isOpen={!!editStaff}
+        onClose={() => setEditStaff(null)}
+        onSaved={(u) => setSelectedProfile((p: any) => (p && u ? { ...p, ...u } : p))}
+      />
     </DashboardLayout>
   );
 }

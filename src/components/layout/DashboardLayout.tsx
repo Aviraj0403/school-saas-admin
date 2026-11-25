@@ -8,6 +8,10 @@ import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginScreen from './LoginScreen';
 import { toast } from 'sonner';
+import { usePathname } from 'next/navigation';
+import { useGetMe } from '@/hooks/queries/useAuth';
+import { evaluateRoute } from '@/config/routeAccess';
+import { AccessState } from './AccessState';
 
 let globalMounted = false;
 
@@ -19,7 +23,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return true; // SSR fallback: desktop
   });
   const [sidebarSize, setSidebarSize] = useState<'default' | 'collapsed'>('default');
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, activeUser, activeTenant, isMirroring, setContext } = useAuthStore();
+  const pathname = usePathname();
+  // Refresh who-I-am (modules, permissions, scope) from the server on every load
+  const me = useGetMe();
+  useEffect(() => {
+    if (me.data) setContext(me.data);
+  }, [me.data, setContext]);
   const [mounted, setMounted] = useState(globalMounted);
 
   const handleToggleMenu = () => {
@@ -62,6 +72,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthenticated) return <LoginScreen />;
 
+  const routeStatus = activeUser
+    ? evaluateRoute(pathname ?? '/', {
+        role: activeUser.role,
+        isSuperAdmin: !!useAuthStore.getState().user?.isSuperAdmin,
+        isMirroring,
+        activeModules: activeTenant?.activeModules,
+      })
+    : 'ok';
+
   const desktopPad = sidebarSize === 'collapsed' ? 'lg:pl-[108px]' : 'lg:pl-[292px]';
 
   return (
@@ -93,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <AppTopbar onToggleMenu={handleToggleMenu} />
         <main className="page-enter mx-auto w-full max-w-[1480px] flex-1 overflow-x-hidden px-4 pb-8 pt-2 sm:px-6 lg:pr-8 lg:pl-0">
-          {children}
+          {routeStatus === 'ok' ? children : <AccessState status={routeStatus} />}
         </main>
         <AppFooter />
       </div>

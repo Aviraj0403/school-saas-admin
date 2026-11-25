@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { communicationService } from '@/services/communication.service';
+import { communicationService, type EventInput } from '@/services/communication.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CreateAnnouncementDto } from '@/types/api.types';
 
@@ -17,7 +17,8 @@ export function useAnnouncements(page: number, limit: number, targetRole?: strin
 export function useCreateAnnouncement() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateAnnouncementDto) => communicationService.createAnnouncement(data),
+    mutationFn: (data: CreateAnnouncementDto & { type?: string; targetRoles?: string[] }) =>
+      communicationService.createAnnouncement(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
     },
@@ -47,8 +48,7 @@ export function useEvents(month?: number, year?: number) {
 export function useCreateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { title: string; description?: string; startDate: string; endDate: string }) =>
-      communicationService.createEvent(data),
+    mutationFn: (data: EventInput) => communicationService.createEvent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-events'] });
     },
@@ -59,6 +59,33 @@ export function useDeleteEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => communicationService.deleteEvent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['school-events'] });
+    },
+  });
+}
+
+export function useUpdateAnnouncement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { title?: string; content?: string; type?: string; targetRoles?: string[] };
+    }) => communicationService.updateAnnouncement(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+    },
+  });
+}
+
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<EventInput> }) =>
+      communicationService.updateEvent(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-events'] });
     },

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StatCard } from '@/components/ui/StatCard';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
@@ -9,7 +9,10 @@ import {
   useAttendanceTrend,
 } from '@/hooks/queries/useAnalytics';
 import { useCurrentAcademicYear, useClasses } from '@/hooks/queries/useAcademics';
-import { isModuleActive } from '@/lib/moduleAccess';
+import { useQuery } from '@tanstack/react-query';
+import { usePermissions } from '@/hooks/usePermissions';
+import { feeService } from '@/services/fee.service';
+import { formatDate } from '@/lib/format';
 import {
   HeroCard,
   HeroButton,
@@ -41,6 +44,8 @@ import {
   Megaphone,
   MessageCircle,
   Rocket,
+  AlertTriangle,
+  CreditCard,
   School,
   Sparkles,
   UserPlus,
@@ -48,7 +53,16 @@ import {
 } from 'lucide-react';
 
 export function AdminDashboard() {
-  const { activeUser, activeTenant } = useAuthStore();
+  const { activeUser, activeTenant, subscription } = useAuthStore();
+  const { hasModule } = usePermissions();
+  const [now] = useState(() => Date.now());
+  const isModuleActive = (_mods: unknown, key: string) => hasModule(key);
+  const { data: feeStructures } = useQuery({
+    queryKey: ['fee-structures', 'dashboard-check'],
+    queryFn: () => feeService.getStructures(),
+    enabled: hasModule('fee'),
+    retry: false,
+  });
 
   const { data: dashboard, isPending: adminPending } = useFullDashboard();
   const { data: feeTrendData } = useFeeCollectionTrend();
@@ -85,31 +99,28 @@ export function AdminDashboard() {
     localStorage.setItem('school_onboarding_collapsed', String(nextState));
   };
 
-  const totalSteps = 6;
-  const completedSteps = [
-    !!currentAY?.id,
-    coreStats.staff?.total > 0,
-    classesData?.items?.length > 0,
-    coreStats.students?.total > 0,
-    !!coreStats.fees,
-    dashboard?.whatsapp?.isConfigured,
-  ].filter(Boolean).length;
-  const progressPct = Math.round((completedSteps / totalSteps) * 100);
+  const subStatus = subscription?.status;
+  const trialDaysLeft =
+    subStatus === 'TRIAL' && subscription?.trialEndsAt
+      ? Math.max(0, Math.ceil((+new Date(subscription.trialEndsAt) - now) / 86_400_000))
+      : null;
 
-  const setupSteps = [
+  const allSteps = [
     {
       title: 'Academic year',
       desc: 'Define the active session and its dates.',
       link: '/academics/terms',
       completed: !!currentAY?.id,
       icon: CalendarDays,
+      show: true,
     },
     {
       title: 'Add staff',
       desc: 'Invite teachers, accountants and office staff.',
-      link: '/staff/directory',
+      link: '/staff',
       completed: coreStats.staff?.total > 0,
       icon: IdCard,
+      show: hasModule('staff'),
     },
     {
       title: 'Classes & sections',
@@ -117,6 +128,7 @@ export function AdminDashboard() {
       link: '/academics/classes',
       completed: classesData?.items?.length > 0,
       icon: School,
+      show: true,
     },
     {
       title: 'Admit students',
@@ -124,13 +136,15 @@ export function AdminDashboard() {
       link: '/students',
       completed: coreStats.students?.total > 0,
       icon: UserPlus,
+      show: hasModule('student'),
     },
     {
       title: 'Fee structure',
       desc: 'Set up tuition and other fee heads.',
       link: '/fee/slabs',
-      completed: !!coreStats.fees,
+      completed: (feeStructures?.length ?? 0) > 0,
       icon: Wallet,
+      show: hasModule('fee'),
     },
     {
       title: 'WhatsApp alerts',
@@ -138,8 +152,24 @@ export function AdminDashboard() {
       link: '/settings/integrations',
       completed: !!dashboard?.whatsapp?.isConfigured,
       icon: MessageCircle,
+      show: hasModule('whatsapp'),
+    },
+    {
+      title: 'Plan status',
+      desc:
+        subStatus === 'TRIAL'
+          ? 'Your trial is running — contact support to activate your plan.'
+          : 'Keep your subscription in good standing.',
+      link: '/settings',
+      completed: subStatus === 'ACTIVE',
+      icon: CreditCard,
+      show: !!subStatus,
     },
   ];
+  const setupSteps = allSteps.filter((st) => st.show);
+  const totalSteps = setupSteps.length;
+  const completedSteps = setupSteps.filter((st) => st.completed).length;
+  const progressPct = totalSteps ? Math.round((completedSteps / totalSteps) * 100) : 100;
 
   const modules = activeTenant?.activeModules;
   const quickActions: QuickAction[] = (
@@ -304,6 +334,38 @@ export function AdminDashboard() {
           )
         }
       />
+
+      {(subStatus === 'TRIAL' || subStatus === 'PAST_DUE') && (
+        <div
+          className={`flex items-start gap-3 rounded-2xl border p-4 text-[13px] ${
+            subStatus === 'PAST_DUE'
+              ? 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+              : 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+          }`}
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div>
+            {subStatus === 'PAST_DUE' ? (
+              <p className="font-semibold">
+                Your {subscription?.planName ?? ''} subscription payment is overdue. Please clear
+                the dues to avoid suspension.
+              </p>
+            ) : (
+              <p className="font-semibold">
+                You are on a free trial of the {subscription?.planName ?? ''} plan
+                {trialDaysLeft !== null
+                  ? ` — ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left`
+                  : ''}
+                {subscription?.trialEndsAt ? ` (ends ${formatDate(subscription.trialEndsAt)})` : ''}
+                .
+              </p>
+            )}
+            <a href="/settings" className="text-xs underline">
+              View subscription
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Setup checklist — only until the school is fully configured */}
       {!adminPending && completedSteps < totalSteps && (

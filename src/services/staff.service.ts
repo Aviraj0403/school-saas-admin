@@ -6,7 +6,9 @@ export const staffService = {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (search) params.append('search', search);
     if (designationId) params.append('designationId', designationId);
-    const response = await api.get<{ success: boolean; data: Staff[]; meta: any }>(`/staff?${params}`);
+    const response = await api.get<{ success: boolean; data: Staff[]; meta: any }>(
+      `/staff?${params}`
+    );
     const items = (response.data.data as any)?.items ?? [];
     const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
     return { items, meta, data: { items, meta } };
@@ -19,7 +21,9 @@ export const staffService = {
   },
 
   createDesignation: async (name: string) => {
-    const response = await api.post<{ success: boolean; data: any }>('/staff/designations', { name });
+    const response = await api.post<{ success: boolean; data: any }>('/staff/designations', {
+      name,
+    });
     return response.data?.data;
   },
 
@@ -55,12 +59,21 @@ export const staffService = {
 
   deleteStaff: async (id: string) => {
     const response = await api.delete<{ success: boolean }>(`/staff/${id}`);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
+  },
+
+  deactivateStaff: async (id: string) => {
+    const response = await api.patch(`/staff/${id}/deactivate`);
+    return (response.data as any)?.data ?? response.data;
   },
 
   resetPassword: async (id: string) => {
     const response = await api.patch<{ success: boolean }>(`/staff/${id}/reset-password`);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
+    return (
+      ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data
+    );
   },
 
   getRoles: async () => {
@@ -73,6 +86,3 @@ export const staffService = {
     return ((response.data as any)?.data as any)?.items || response.data?.data;
   },
 };
-
-
-

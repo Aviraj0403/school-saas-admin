@@ -13,7 +13,40 @@ export type Role =
   | 'school_admin'
   | string;
 
+export interface AuthScope {
+  studentIds: string[];
+  classIds: string[];
+}
+
+/** What GET /auth/me returns beyond the user itself. */
+export interface MeContext {
+  tenant?: {
+    id: string;
+    name: string;
+    subdomain?: string;
+    projectCode?: string;
+    prefix?: string;
+    theme?: { logo?: string; primaryColor?: string; secondaryColor?: string } | null;
+    plan?: string;
+    isActive?: boolean;
+    isSuspended?: boolean;
+  } | null;
+  subscription?: {
+    status: string;
+    planName?: string;
+    planSlug?: string;
+    trialEndsAt?: string | null;
+    currentPeriodEnd?: string | null;
+  } | null;
+  modules?: Record<string, boolean>;
+  activeModules?: string[];
+  permissions?: string[];
+  scope?: AuthScope;
+  mustChangePassword?: boolean;
+}
+
 export interface UserProfile {
+  mustChangePassword?: boolean;
   id: string;
   name: string;
   email: string;
@@ -51,6 +84,14 @@ interface AuthState {
   isMirroring: boolean;
   originalUser: UserProfile | null;
 
+  /** Effective modules / permissions / "my data" scope — from GET /auth/me. */
+  modules: Record<string, boolean>;
+  permissions: string[];
+  scope: AuthScope;
+  subscription: MeContext['subscription'];
+  meLoaded: boolean;
+  setContext: (me: MeContext) => void;
+
   setAuthData: (data: LoginResponse, tenantData?: TenantConfig) => void;
   setTenant: (tenant: TenantConfig) => void;
   logout: () => void;
@@ -75,6 +116,45 @@ export const useAuthStore = create<AuthState>()(
 
       isMirroring: false,
       originalUser: null,
+
+      modules: {},
+      permissions: [],
+      scope: { studentIds: [], classIds: [] },
+      subscription: null,
+      meLoaded: false,
+
+      setContext: (me: MeContext) => {
+        const { user } = get();
+        const patch: Partial<AuthState> = {
+          modules: me.modules ?? {},
+          permissions: me.permissions ?? [],
+          scope: me.scope ?? { studentIds: [], classIds: [] },
+          subscription: me.subscription ?? null,
+          meLoaded: true,
+        };
+        if (
+          user &&
+          me.mustChangePassword !== undefined &&
+          user.mustChangePassword !== me.mustChangePassword
+        ) {
+          patch.user = { ...user, mustChangePassword: me.mustChangePassword };
+        }
+        const t = me.tenant;
+        if (t) {
+          const cfg: TenantConfig = {
+            id: t.id,
+            name: t.name,
+            activeModules: me.activeModules ?? [],
+            projectCode: t.projectCode,
+            subdomain: t.subdomain,
+            prefix: t.prefix,
+            theme: t.theme ?? undefined,
+          };
+          patch.activeTenant = cfg;
+          if (!user?.isSuperAdmin) patch.tenant = cfg;
+        }
+        set(patch);
+      },
 
       setAuthData: (data: LoginResponse, tenantData?: TenantConfig) => {
         const primaryRole: Role = data.user.isSuperAdmin
@@ -109,6 +189,11 @@ export const useAuthStore = create<AuthState>()(
           isDemoMode: false,
           isMirroring: false,
           originalUser: null,
+          modules: {},
+          permissions: [],
+          scope: { studentIds: [], classIds: [] },
+          subscription: null,
+          meLoaded: false,
         });
       },
 
@@ -150,6 +235,11 @@ export const useAuthStore = create<AuthState>()(
           isDemoMode: false,
           isMirroring: false,
           originalUser: null,
+          modules: {},
+          permissions: [],
+          scope: { studentIds: [], classIds: [] },
+          subscription: null,
+          meLoaded: false,
         });
       },
 

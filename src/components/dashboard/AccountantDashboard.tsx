@@ -6,6 +6,7 @@ import {
   BarChart3,
   CreditCard,
   FileSpreadsheet,
+  AlertCircle,
   IndianRupee,
   Layers,
   Receipt,
@@ -14,7 +15,8 @@ import {
 import { StatCard } from '@/components/ui/StatCard';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFullDashboard, useFeeCollectionTrend } from '@/hooks/queries/useAnalytics';
-import { useFeeCollections, useRevenueSummary } from '@/hooks/queries/useFee';
+import { useFeeCollections, usePendingSummary, useRevenueSummary } from '@/hooks/queries/useFee';
+import { usePermissions } from '@/hooks/usePermissions';
 import { asList } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
 import { AreaTrend, Donut } from './charts';
@@ -39,6 +41,22 @@ export function AccountantDashboard() {
   const { data: feeTrendData } = useFeeCollectionTrend();
   const { data: summary, isPending: summaryPending } = useRevenueSummary();
   const { data: collectionsData, isPending: collectionsPending } = useFeeCollections(1, 6);
+  const { hasModule } = usePermissions();
+  // Everything collected since midnight (PAID rows only count towards the total).
+  const [todayStart] = React.useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  });
+  const { data: todayData, isPending: todayPending } = useFeeCollections(1, 100, {
+    startDate: todayStart,
+  });
+  const { data: pendingByClass, isPending: pendingPending } = usePendingSummary();
+  const todayTotal = asList(todayData)
+    .filter((c: any) => c.status === 'PAID')
+    .reduce((a: number, c: any) => a + Number(c.totalAmount || 0), 0);
+  const pendingTotal = (pendingByClass ?? []).reduce((a, r) => a + Number(r.pendingAmount || 0), 0);
+  const defaulters = (pendingByClass ?? []).reduce((a, r) => a + Number(r.pendingCount || 0), 0);
 
   const fees = dashboard?.core?.fees || {};
   const collected = Number(fees.monthlyRevenue ?? 0);
@@ -70,11 +88,11 @@ export function AccountantDashboard() {
         subtitle="Collections, dues and receipts — your finance desk for the day."
         actions={
           <>
-            <HeroButton href="/fee">
+            <HeroButton href="/fee/ledgers">
               <IndianRupee className="size-4" /> Collect fee
             </HeroButton>
-            <HeroButton href="/fee/ledgers" variant="glass">
-              <FileSpreadsheet className="size-4" /> Student ledgers
+            <HeroButton href="/fee/dues" variant="glass">
+              <FileSpreadsheet className="size-4" /> Dues &amp; defaulters
             </HeroButton>
           </>
         }
@@ -91,6 +109,14 @@ export function AccountantDashboard() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
+          label="Collected today"
+          value={inr(todayTotal)}
+          icon={IndianRupee}
+          gradientClass="from-emerald-400 to-teal-500"
+          footerText="Receipts since midnight"
+          loading={todayPending}
+        />
+        <StatCard
           label="Collected this month"
           value={inr(collected)}
           icon={Wallet}
@@ -99,28 +125,20 @@ export function AccountantDashboard() {
           loading={isPending}
         />
         <StatCard
-          label="Outstanding dues"
-          value={inr(outstanding)}
+          label="Pending dues"
+          value={inr(pendingTotal || outstanding)}
           icon={Receipt}
           gradientClass="from-amber-400 to-orange-500"
           footerText="Yet to be collected"
-          loading={isPending}
+          loading={pendingPending}
         />
         <StatCard
-          label="Pending payments"
-          value={fees.pendingTransactions ?? 0}
-          icon={CreditCard}
+          label="Students with dues"
+          value={defaulters}
+          icon={AlertCircle}
           gradientClass="from-pink-500 to-rose-500"
-          footerText="Awaiting confirmation"
-          loading={isPending}
-        />
-        <StatCard
-          label="Receipts issued"
-          value={summary?.transactionCount ?? 0}
-          icon={BadgeIndianRupee}
-          gradientClass="from-emerald-400 to-teal-500"
-          footerText="Across all payment methods"
-          loading={summaryPending}
+          footerText={`${fees.pendingTransactions ?? 0} online payments awaiting confirmation`}
+          loading={pendingPending}
         />
       </div>
 
@@ -182,11 +200,33 @@ export function AccountantDashboard() {
                 gradient: 'from-sky-400 to-cyan-500',
               },
               {
-                label: 'Payroll',
-                href: '/fee/payroll',
-                icon: Wallet,
-                gradient: 'from-emerald-400 to-teal-500',
+                label: 'Dues & defaulters',
+                href: '/fee/dues',
+                icon: AlertCircle,
+                gradient: 'from-pink-500 to-rose-500',
               },
+              ...(hasModule('hr_payroll')
+                ? [
+                    {
+                      label: 'Expenses',
+                      href: '/fee/expenses',
+                      icon: CreditCard,
+                      gradient: 'from-fuchsia-500 to-purple-500',
+                    },
+                    {
+                      label: 'Payroll',
+                      href: '/fee/payroll',
+                      icon: Wallet,
+                      gradient: 'from-emerald-400 to-teal-500',
+                    },
+                    {
+                      label: 'My payslips',
+                      href: '/my-pay',
+                      icon: BadgeIndianRupee,
+                      gradient: 'from-indigo-500 to-blue-500',
+                    },
+                  ]
+                : []),
             ]}
           />
         </Panel>

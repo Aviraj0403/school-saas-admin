@@ -1,68 +1,58 @@
 import { api } from './api';
-import { Book, BookIssue } from '@/types/api.types';
+import { asList, unwrap } from '@/lib/utils';
+
+export interface BookInput {
+  title: string;
+  author: string;
+  isbn?: string;
+  publisher?: string;
+  category?: string;
+  totalCopies?: number;
+  shelfNo?: string;
+}
 
 export const libraryService = {
   getBooks: async (page = 1, limit = 10, search?: string) => {
-    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search) params.append('search', search);
-    const response = await api.get<{ success: boolean; data: Book[]; meta: any }>(`/library/books?${params}`);
-    const items = (response.data.data as any)?.items ?? [];
-    const meta = (response.data.data as any)?.meta ?? { total: 0, page, limit, totalPages: 0 };
+    const res = await api.get('/library/books', {
+      params: { page, limit, ...(search ? { search } : {}) },
+    });
+    const body = unwrap<any>(res);
+    const items = asList(body);
+    const meta = body?.meta ??
+      body?.data?.meta ?? { total: items.length, page, limit, totalPages: 1 };
     return { items, meta, data: { items, meta } };
   },
 
-  createBook: async (data: any) => {
-    const response = await api.post<{ success: boolean; data: Book }>('/library/books', data);
-    return ((response.data as any)?.data as any)?.items || response.data?.data;
-  },
+  createBook: async (data: BookInput) => unwrap(await api.post('/library/books', data)),
 
-  issueBook: async (data: { bookId: string; studentId: string; dueDate: string }) => {
-    const response = await api.post<{ success: boolean; data: BookIssue }>('/library/issues', data);
-    return ((response.data as any)?.data as any)?.items || response.data?.data;
-  },
+  updateBook: async (id: string, data: Partial<BookInput>) =>
+    unwrap(await api.patch(`/library/books/${id}`, data)),
 
-  returnBook: async (issueId: string, data?: { remarks?: string }) => {
-    const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/return`, data || {});
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-  },
+  deleteBook: async (id: string) => unwrap(await api.delete(`/library/books/${id}`)),
 
-  getActiveIssues: async () => {
-    const response = await api.get<{ success: boolean; data: BookIssue[] }>('/library/issues/active');
-    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
-  },
+  /** issuedTo is a student id or a staff (user) id. */
+  issueBook: async (data: { bookId: string; issuedTo: string; dueDate: string }) =>
+    unwrap(await api.post('/library/issues', data)),
 
-  getOverdueIssues: async () => {
-    const response = await api.get<{ success: boolean; data: BookIssue[] }>('/library/issues/overdue');
-    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
-  },
+  /** fineAmount (rupees) is entered by the librarian for a late return. */
+  returnBook: async (issueId: string, data: { fineAmount?: number } = {}) =>
+    unwrap(await api.patch(`/library/issues/${issueId}/return`, data)),
 
-  // ── Fines ──────────────────────────────────────────────────────
-  // These endpoints did not exist until v34: the fines tab tracked paid/waived
-  // in React state, so every settlement was lost on refresh.
+  // admin / librarian only on the backend
+  getActiveIssues: async () => asList<any>(unwrap(await api.get('/library/issues/active'))),
+  getOverdueIssues: async () => asList<any>(unwrap(await api.get('/library/issues/overdue'))),
 
   /** Outstanding fines — raised on return, neither paid nor waived. */
-  getFines: async () => {
-    const response = await api.get<{ success: boolean; data: any }>('/library/fines');
-    return (response.data as any)?.data ?? { total: 0, count: 0, issues: [] };
-  },
+  getFines: async (): Promise<{ total: number; count: number; issues: any[] }> =>
+    unwrap<any>(await api.get('/library/fines')) ?? { total: 0, count: 0, issues: [] },
 
-  payFine: async (issueId: string) => {
-    const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/fine/pay`);
-    return (response.data as any)?.data ?? response.data;
-  },
+  payFine: async (issueId: string) =>
+    unwrap(await api.patch(`/library/issues/${issueId}/fine/pay`)),
 
-  waiveFine: async (issueId: string, note?: string) => {
-    const response = await api.patch<{ success: boolean }>(`/library/issues/${issueId}/fine/waive`, { note });
-    return (response.data as any)?.data ?? response.data;
-  },
+  waiveFine: async (issueId: string, note?: string) =>
+    unwrap(await api.patch(`/library/issues/${issueId}/fine/waive`, { note })),
 
-  /** Borrowing history for one member (students see only their own). */
-  getMemberHistory: async (memberId: string) => {
-    const response = await api.get<{ success: boolean; data: BookIssue[] }>(`/library/issues/member/${memberId}`);
-    return ((response.data as any)?.data as any)?.items || (response.data?.data ?? []);
-  },
+  /** Borrowing history for one member (student id or staff id). */
+  getMemberHistory: async (memberId: string) =>
+    asList<any>(unwrap(await api.get(`/library/issues/member/${memberId}`))),
 };
-
-
-
-

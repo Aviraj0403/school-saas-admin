@@ -1,10 +1,26 @@
 'use client';
 
 import React from 'react';
-import { AlarmClock, BookCopy, BookOpen, BookPlus, Library, RotateCcw, Search } from 'lucide-react';
+import {
+  AlarmClock,
+  BookCopy,
+  BookOpen,
+  BookPlus,
+  IndianRupee,
+  Library,
+  RotateCcw,
+  Search,
+  UserSearch,
+} from 'lucide-react';
+
 import { StatCard } from '@/components/ui/StatCard';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useBooksList, useActiveIssues, useOverdueIssues } from '@/hooks/queries/useLibrary';
+import {
+  useBooksList,
+  useActiveIssues,
+  useOverdueIssues,
+  useLibraryFines,
+} from '@/hooks/queries/useLibrary';
 import { asList } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
 import {
@@ -25,6 +41,7 @@ export function LibrarianDashboard() {
   const { data: activeIssuesData, isPending: issuesPending } = useActiveIssues();
   const { data: overdueIssuesData, isPending: overduePending } = useOverdueIssues();
 
+  const { data: finesData, isPending: finesPending } = useLibraryFines();
   const totalBooks = Number((booksData as any)?.meta?.total ?? asList(booksData).length);
   const issued = asList(activeIssuesData);
   const overdue = asList(overdueIssuesData);
@@ -57,7 +74,7 @@ export function LibrarianDashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Books in catalogue"
           value={totalBooks}
@@ -81,6 +98,14 @@ export function LibrarianDashboard() {
           gradientClass="from-pink-500 to-rose-500"
           footerText="Past their due date"
           loading={overduePending}
+        />
+        <StatCard
+          label="Fines due"
+          value={`₹${Number(finesData?.total ?? 0).toLocaleString('en-IN')}`}
+          icon={IndianRupee}
+          gradientClass="from-amber-400 to-orange-500"
+          footerText={`${finesData?.count ?? 0} unpaid fine${(finesData?.count ?? 0) === 1 ? '' : 's'}`}
+          loading={finesPending}
         />
       </div>
 
@@ -158,6 +183,12 @@ export function LibrarianDashboard() {
               href: '/library/fines',
               icon: RotateCcw,
               gradient: 'from-amber-400 to-orange-500',
+            },
+            {
+              label: 'Member lookup',
+              href: '/library/books?tab=members',
+              icon: UserSearch,
+              gradient: 'from-fuchsia-500 to-purple-500',
             },
             {
               label: 'Search catalogue',

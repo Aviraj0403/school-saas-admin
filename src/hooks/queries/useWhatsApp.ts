@@ -46,7 +46,8 @@ export function useCreateBroadcast() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Parameters<typeof whatsappService.createBroadcast>[0]) => whatsappService.createBroadcast(data),
+    mutationFn: (data: Parameters<typeof whatsappService.createBroadcast>[0]) =>
+      whatsappService.createBroadcast(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['whatsapp-broadcasts'] });
     },
@@ -60,6 +61,27 @@ export function useSendBroadcast() {
     mutationFn: (id: string) => whatsappService.sendBroadcast(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['whatsapp-broadcasts'] });
+    },
+  });
+}
+
+export function useSaveWhatsAppTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ name, data }: { name?: string; data: Record<string, any> }) =>
+      name ? whatsappService.updateTemplate(name, data) : whatsappService.createTemplate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-templates'] });
+    },
+  });
+}
+
+export function useDeleteWhatsAppTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => whatsappService.deleteTemplate(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-templates'] });
     },
   });
 }

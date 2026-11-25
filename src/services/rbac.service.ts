@@ -26,6 +26,23 @@ export interface RbacPermission {
   subject?: string | null;
 }
 
+export interface SystemModuleDef {
+  id: string;
+  name: string;
+  slug: string;
+  submodules: Array<{ id: string; name: string; slug: string }>;
+}
+
+export interface ModulePermissionRow {
+  id?: string;
+  roleId: string;
+  submoduleId: string;
+  canRead: boolean;
+  canWrite: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+}
+
 const unwrap = (r: any) => r?.data?.data ?? r?.data ?? null;
 
 export const rbacService = {
@@ -75,6 +92,33 @@ export const rbacService = {
   revokeRoleFromUser: async (userId: string, roleId: string) => {
     const res = await api.delete(`/rbac/users/${userId}/roles/${roleId}`);
     return unwrap(res);
+  },
+
+  /** Module / submodule catalogue for the permission matrix. */
+  getModules: async (): Promise<SystemModuleDef[]> => {
+    const d = unwrap(await api.get('/rbac/modules'));
+    return d?.items ?? d ?? [];
+  },
+
+  /** Granular CRUD rows currently granted to a role. */
+  getRoleMatrix: async (roleId: string): Promise<ModulePermissionRow[]> => {
+    const d = unwrap(await api.get(`/rbac/permissions/role/${roleId}`));
+    return d?.items ?? d ?? [];
+  },
+
+  /** Upserts one (role, submodule) row. */
+  setMatrixRow: async (row: ModulePermissionRow) => {
+    const { roleId, submoduleId, canRead, canWrite, canUpdate, canDelete } = row;
+    return unwrap(
+      await api.post('/rbac/permissions', {
+        roleId,
+        submoduleId,
+        canRead,
+        canWrite,
+        canUpdate,
+        canDelete,
+      })
+    );
   },
 
   getUserRoles: async (userId: string): Promise<RbacRole[]> => {

@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leaveService } from '@/services/leave.service';
 
-export function useLeavesList(page: number, limit: number, filters?: { applicantId?: string; applicantType?: string; status?: string }) {
+export function useLeavesList(
+  page: number,
+  limit: number,
+  filters?: { applicantId?: string; applicantType?: string; status?: string }
+) {
   return useQuery({
     queryKey: ['leaves', { page, limit, ...filters }],
     queryFn: () => leaveService.getLeaves(page, limit, filters),
@@ -13,10 +17,17 @@ export function useApplyLeave() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { applicantId: string; applicantType: 'STUDENT' | 'STAFF'; startDate: string; endDate: string; reason: string; leaveType?: string }) => 
-      leaveService.apply(data),
+    mutationFn: (data: {
+      applicantId: string;
+      applicantType: 'STUDENT' | 'STAFF';
+      startDate: string;
+      endDate: string;
+      reason: string;
+      leaveType?: string;
+    }) => leaveService.apply(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leaves'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balance'] });
     },
   });
 }
@@ -48,5 +59,17 @@ export function useLeaveBalance(applicantId: string, year?: number) {
     queryKey: ['leave-balance', { applicantId, year }],
     queryFn: () => leaveService.getBalance(applicantId, year),
     enabled: !!applicantId,
+  });
+}
+
+export function useCancelLeave() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => leaveService.cancel(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaves'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balance'] });
+    },
   });
 }

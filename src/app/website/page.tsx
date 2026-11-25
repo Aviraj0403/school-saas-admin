@@ -9,11 +9,13 @@ import { Select } from '@/components/ui/select';
 import { Dialog } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 
 import {
   useBanners,
   useCreateBanner,
   useDeleteBanner,
+  useUpdateBanner,
   useDownloads,
   useCreateDownload,
   useDeleteDownload,
@@ -64,6 +66,8 @@ export default function WebsiteCMSPage() {
 
   const createBanner = useCreateBanner();
   const deleteBanner = useDeleteBanner();
+  const updateBanner = useUpdateBanner();
+  const [editingBanner, setEditingBanner] = useState<any>(null);
   const createDownload = useCreateDownload();
   const deleteDownload = useDeleteDownload();
   const updateInquiry = useUpdateInquiry();
@@ -80,24 +84,54 @@ export default function WebsiteCMSPage() {
     fileSize: '1.5 MB',
   });
 
+  const closeBannerDialog = () => {
+    setShowBannerDialog(false);
+    setEditingBanner(null);
+    setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
+  };
+
   const handleCreateBanner = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingBanner && !bannerForm.imageUrl.trim()) {
+      toast.error('Enter an image URL for the banner.');
+      return;
+    }
+    const fail = (err: unknown) => toast.error(errorMessage(err, 'Could not save banner'));
+    if (editingBanner) {
+      updateBanner.mutate(
+        {
+          id: editingBanner.id,
+          data: {
+            title: bannerForm.title,
+            subtitle: bannerForm.subtitle,
+            imageUrl: bannerForm.imageUrl || undefined,
+            linkUrl: bannerForm.linkUrl || undefined,
+          },
+        },
+        {
+          onSuccess: () => {
+            closeBannerDialog();
+            toast.success('Banner updated.');
+          },
+          onError: fail,
+        }
+      );
+      return;
+    }
     createBanner.mutate(
       {
         title: bannerForm.title,
         subtitle: bannerForm.subtitle,
-        imageUrl:
-          bannerForm.imageUrl ||
-          'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1200&q=80',
-        linkUrl: bannerForm.linkUrl || '/general',
+        imageUrl: bannerForm.imageUrl.trim(),
+        linkUrl: bannerForm.linkUrl || undefined,
         sortOrder: banners.length + 1,
       },
       {
         onSuccess: () => {
-          setShowBannerDialog(false);
-          setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
+          closeBannerDialog();
           toast.success('Published banner slide to home slider.');
         },
+        onError: fail,
       }
     );
   };
@@ -154,7 +188,13 @@ export default function WebsiteCMSPage() {
 
           <div>
             {activeTab === 'banners' ? (
-              <Button onClick={() => setShowBannerDialog(true)}>
+              <Button
+                onClick={() => {
+                  setEditingBanner(null);
+                  setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '' });
+                  setShowBannerDialog(true);
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" /> Add Banner Slide
               </Button>
             ) : activeTab === 'downloads' ? (
@@ -233,7 +273,29 @@ export default function WebsiteCMSPage() {
                       </span>
                       <Button
                         variant="outline"
-                        onClick={() => deleteBanner.mutate(banner.id)}
+                        onClick={() => {
+                          setEditingBanner(banner);
+                          setBannerForm({
+                            title: banner.title ?? '',
+                            subtitle: banner.subtitle ?? '',
+                            imageUrl: banner.imageUrl ?? '',
+                            linkUrl: banner.linkUrl ?? '',
+                          });
+                          setShowBannerDialog(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          if (!confirm('Delete this banner slide?')) return;
+                          deleteBanner.mutate(banner.id, {
+                            onSuccess: () => toast.success('Banner deleted.'),
+                            onError: (err) =>
+                              toast.error(errorMessage(err, 'Could not delete banner')),
+                          });
+                        }}
                         className="text-rose-600 border-rose-200/80 hover:bg-rose-50"
                       >
                         <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
@@ -383,8 +445,8 @@ export default function WebsiteCMSPage() {
         {/* Dialog: Add Banner */}
         <Dialog
           isOpen={showBannerDialog}
-          onClose={() => setShowBannerDialog(false)}
-          title="Add Banner Slide"
+          onClose={closeBannerDialog}
+          title={editingBanner ? 'Edit Banner Slide' : 'Add Banner Slide'}
         >
           <form onSubmit={handleCreateBanner} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-1.5">
@@ -431,11 +493,12 @@ export default function WebsiteCMSPage() {
             </div>
 
             <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <Button variant="outline" type="button" onClick={() => setShowBannerDialog(false)}>
+              <Button variant="outline" type="button" onClick={closeBannerDialog}>
                 Cancel
               </Button>
-              <Button type="submit" isLoading={createBanner.isPending}>
-                <Check className="w-4 h-4 mr-1.5" /> Publish Slide
+              <Button type="submit" isLoading={createBanner.isPending || updateBanner.isPending}>
+                <Check className="w-4 h-4 mr-1.5" />{' '}
+                {editingBanner ? 'Save Slide' : 'Publish Slide'}
               </Button>
             </div>
           </form>

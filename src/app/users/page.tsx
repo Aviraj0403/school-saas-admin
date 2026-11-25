@@ -12,6 +12,7 @@ import { useStudentsList } from '@/hooks/queries/useStudents';
 import { api } from '@/services/api';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import {
   ShieldCheck,
   Briefcase,
@@ -41,6 +42,8 @@ interface SystemUser {
   isActive: boolean;
   empIdOrAdmNo?: string;
   parentLinked?: string;
+  /** role slug used for the preview (mirror) action */
+  roleSlug?: string;
 }
 
 export default function UsersRegistryPage() {
@@ -55,10 +58,10 @@ export default function UsersRegistryPage() {
     mirrorUser({
       id: userObj.id,
       name: userObj.name,
-      role: userObj.role,
-      email: userObj.email,
+      role: userObj.roleSlug || userObj.role,
+      email: userObj.email || undefined,
     });
-    toast.warning(`Mirror Mode Active: Mirroring profile for ${userObj.name} (${userObj.role})`);
+    toast.warning(`Preview mode: viewing the app layout as ${userObj.name} (${userObj.role})`);
     setTimeout(() => {
       window.location.href = '/dashboard';
     }, 300);
@@ -78,11 +81,10 @@ export default function UsersRegistryPage() {
   const mappedStudents: SystemUser[] = rawStudents.map((s: any) => ({
     id: s.id,
     name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
-    email:
-      s.email ||
-      `student.${(s.admissionNo || '').toLowerCase().replace(/[^a-z0-9]/g, '-')}@${activeTenant?.subdomain || 'school'}.com`,
+    email: s.email || '',
     phone: s.phone || 'N/A',
     role: 'Student',
+    roleSlug: 'student',
     isActive: isStudentActive(s),
     empIdOrAdmNo: s.admissionNo,
     parentLinked: s.parentName || 'N/A',
@@ -102,9 +104,11 @@ export default function UsersRegistryPage() {
         const mappedStaff = asList(staffRes.data.data).map((s: any) => ({
           id: s.id,
           name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
-          email: s.email,
+          email: s.email || '',
           phone: s.phone || 'N/A',
-          role: s.role?.name || 'Staff',
+          // /staff returns roles as [{ role: { slug, name } }]
+          role: s.roles?.[0]?.role?.name || s.designation || 'Staff',
+          roleSlug: s.roles?.[0]?.role?.slug || 'staff',
           isActive: s.isActive ?? true,
           empIdOrAdmNo: s.employeeId || 'N/A',
         }));
@@ -117,9 +121,10 @@ export default function UsersRegistryPage() {
         const mappedParents = asList(parentRes.data.data).map((p: any) => ({
           id: p.id,
           name: p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim(),
-          email: p.email,
+          email: p.email || '',
           phone: p.phone || 'N/A',
           role: 'Parent',
+          roleSlug: 'parent',
           isActive: p.isActive ?? true,
           parentLinked:
             p.students?.map((stu: any) => `${stu.name} (Adm: ${stu.admissionNo})`).join(', ') ||
@@ -130,7 +135,7 @@ export default function UsersRegistryPage() {
         setParentsList([]);
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      toast.error(errorMessage(error, 'Could not load school users'));
       setStaffList([]);
       setParentsList([]);
     } finally {
@@ -152,12 +157,20 @@ export default function UsersRegistryPage() {
   };
 
   const handleCopyCredentials = (userObj: SystemUser) => {
+    if (!userObj.email) {
+      toast.error(`${userObj.name} has no login email on file.`);
+      return;
+    }
     const credInfo = `Login URL: ${schoolLoginUrl}\nUsername/Email: ${userObj.email}\nTemporary password: ${defaultPasswordFor(userObj.role)}\nPlease change it after your first sign-in.`;
     navigator.clipboard.writeText(credInfo);
     toast.success(`Credentials copied to clipboard for ${userObj.name}.`);
   };
 
   const handleShareWhatsApp = (userObj: SystemUser) => {
+    if (!userObj.email) {
+      toast.error(`${userObj.name} has no login email on file.`);
+      return;
+    }
     const cleanPhone = (userObj.phone || '').replace(/[^0-9]/g, '');
     // Never fall back to a placeholder number — that would send login details to a stranger.
     if (cleanPhone.length < 10) {
@@ -174,7 +187,7 @@ export default function UsersRegistryPage() {
     return list.filter(
       (u) =>
         u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (u.phone && u.phone.includes(searchQuery)) ||
         (u.empIdOrAdmNo && u.empIdOrAdmNo.toLowerCase().includes(searchQuery.toLowerCase()))
     );
@@ -186,7 +199,7 @@ export default function UsersRegistryPage() {
 
   return (
     <DashboardLayout>
-      <PageBreadcrumb title="User & Staff Management" />
+      <PageBreadcrumb title="School Users" />
       <div className="flex flex-col gap-6 pb-12 animate-fade-in">
         {/* Executive Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-indigo-950 border border-zinc-800 p-6 md:p-8 shadow-xl">
@@ -204,11 +217,12 @@ export default function UsersRegistryPage() {
                 </span>
               </div>
               <h1 className="mt-2 text-2xl md:text-3xl font-black text-white tracking-tight">
-                Global User Registry & Impersonation Hub
+                School Users & Preview Hub
               </h1>
               <p className="mt-1 text-xs md:text-sm text-zinc-300 max-w-2xl">
-                Audit system accounts across faculty, students, and parents. Trigger 1-click persona
-                mirroring or dispatch credentials via WhatsApp.
+                Accounts of faculty, students and parents in{' '}
+                {activeTenant?.name || 'the active school'} only. Preview the app as a user or share
+                login details via WhatsApp.
               </p>
             </div>
           </div>
@@ -264,15 +278,16 @@ export default function UsersRegistryPage() {
           <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold block uppercase tracking-wider text-[10px] mb-0.5">
-              Multi-Tenant Subdomain Isolation
+              Scoped to the active school
             </span>
-            Users authenticate through secure tenant subdomains (e.g.,{' '}
+            This list shows only the school you are currently working in. Users sign in through the
+            school address (e.g.,{' '}
             <code className="font-mono">
               https://{activeTenant?.subdomain || 'demo'}
               {baseDomain}
             </code>
-            ). Parent accounts with wards in multiple schools map safely with isolated landing
-            views.
+            ). The temporary password is the default issued at account creation and stops working
+            once the user changes it.
           </div>
         </div>
 
@@ -361,7 +376,7 @@ export default function UsersRegistryPage() {
                         <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                           {u.name}
                         </td>
-                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email}</td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email || '—'}</td>
                         <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{u.phone}</td>
                         <td className="px-4 py-3">
                           <Badge variant="info">{u.role}</Badge>
@@ -436,7 +451,7 @@ export default function UsersRegistryPage() {
                         <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                           {u.name}
                         </td>
-                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email}</td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email || '—'}</td>
                         <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                           {u.parentLinked}
                         </td>
@@ -511,7 +526,7 @@ export default function UsersRegistryPage() {
                         <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
                           {u.name}
                         </td>
-                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email}</td>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{u.email || '—'}</td>
                         <td className="px-4 py-3 font-mono text-emerald-500">{u.phone}</td>
                         <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                           {u.parentLinked}

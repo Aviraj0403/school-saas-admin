@@ -1,4 +1,5 @@
 import { api } from './api';
+import { unwrap, asList } from '@/lib/utils';
 
 export interface Banner {
   id: string;
@@ -47,12 +48,17 @@ export interface Inquiry {
 export const websiteService = {
   // Banners
   listBanners: async (): Promise<Banner[]> => {
-    const res = await api.get('/website/banners');
-    return res.data;
+    // Responses arrive in the { success, data } envelope — unwrap before returning.
+    return asList<Banner>(unwrap(await api.get('/website/banners')));
   },
   createBanner: async (data: CreateBannerDto): Promise<Banner> => {
-    const res = await api.post('/website/admin/banners', data);
-    return res.data;
+    return unwrap(await api.post('/website/admin/banners', data));
+  },
+  updateBanner: async (
+    id: string,
+    data: Partial<CreateBannerDto> & { isActive?: boolean }
+  ): Promise<Banner> => {
+    return unwrap(await api.patch(`/website/admin/banners/${id}`, data));
   },
   deleteBanner: async (id: string): Promise<void> => {
     await api.delete(`/website/admin/banners/${id}`);
@@ -60,25 +66,22 @@ export const websiteService = {
 
   // Downloads
   listDownloads: async (): Promise<Download[]> => {
-    const res = await api.get('/website/downloads');
-    return res.data;
+    return asList<Download>(unwrap(await api.get('/website/downloads')));
   },
   createDownload: async (data: CreateDownloadDto): Promise<Download> => {
-    const res = await api.post('/website/admin/downloads', data);
-    return res.data;
+    return unwrap(await api.post('/website/admin/downloads', data));
   },
   deleteDownload: async (id: string): Promise<void> => {
     await api.delete(`/website/admin/downloads/${id}`);
   },
 
   // Inquiries
-  listInquiries: async (): Promise<{ data: Inquiry[], meta: any }> => {
-    const res = await api.get('/website/admin/inquiries');
-    return res.data;
+  listInquiries: async (): Promise<{ data: Inquiry[]; meta: any }> => {
+    const d = unwrap(await api.get('/website/admin/inquiries'));
+    return { data: asList<Inquiry>(d), meta: d?.meta ?? null };
   },
   updateInquiryStatus: async (id: string, status: string): Promise<Inquiry> => {
-    const res = await api.patch(`/website/admin/inquiries/${id}`, { status });
-    return res.data;
+    return unwrap(await api.patch(`/website/admin/inquiries/${id}`, { status }));
   },
 
   // ── Pages & gallery ────────────────────────────────────────────
@@ -87,17 +90,20 @@ export const websiteService = {
   // edit a word of its own website copy or publish a single photo.
 
   listPages: async () => {
-    const r = await api.get("/website/admin/pages");
+    const r = await api.get('/website/admin/pages');
     return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
   },
 
-  upsertPage: async (slug: string, body: { title?: string; content?: string; isPublished?: boolean }) => {
+  upsertPage: async (
+    slug: string,
+    body: { title?: string; content?: string; isPublished?: boolean }
+  ) => {
     const r = await api.patch(`/website/admin/pages/${slug}`, body);
     return (r.data as any)?.data ?? r.data;
   },
 
   getGallery: async () => {
-    const r = await api.get("/website/gallery");
+    const r = await api.get('/website/gallery');
     return (r.data as any)?.data?.items ?? (r.data as any)?.data ?? [];
   },
 
@@ -107,7 +113,7 @@ export const websiteService = {
   },
 
   createGalleryCategory: async (body: { name: string; description?: string }) => {
-    const r = await api.post("/website/admin/gallery/categories", body);
+    const r = await api.post('/website/admin/gallery/categories', body);
     return (r.data as any)?.data ?? r.data;
   },
 

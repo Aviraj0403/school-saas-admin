@@ -54,9 +54,13 @@ import {
   LifeBuoy,
   PanelLeftClose,
   PanelLeftOpen,
+  AlertCircle,
+  Package,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, React.ElementType> = {
+  AlertCircle,
+  Package,
   Home,
   Shield,
   Users,

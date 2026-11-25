@@ -18,6 +18,22 @@ export const useCreateBanner = () => {
   });
 };
 
+export const useUpdateBanner = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CreateBannerDto> & { isActive?: boolean };
+    }) => websiteService.updateBanner(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['website-banners'] });
+    },
+  });
+};
+
 export const useDeleteBanner = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -65,7 +81,8 @@ export const useInquiries = () => {
 export const useUpdateInquiry = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => websiteService.updateInquiryStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      websiteService.updateInquiryStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['website-inquiries'] });
     },

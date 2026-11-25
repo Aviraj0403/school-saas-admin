@@ -5,6 +5,7 @@ import {
   BookOpenCheck,
   CalendarClock,
   CalendarMinus,
+  Users,
   ClipboardCheck,
   Clock,
   FileText,
@@ -14,12 +15,14 @@ import {
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useCurrentAcademicYear } from '@/hooks/queries/useAcademics';
+import { useCurrentAcademicYear, useTeacherTimetable } from '@/hooks/queries/useAcademics';
+import { useScopedClasses } from '@/hooks/queries/useScopedClasses';
 import { useAnnouncements } from '@/hooks/queries/useCommunication';
 import { useAssignments } from '@/hooks/queries/useHomework';
 import { useLeavesList } from '@/hooks/queries/useLeave';
 import { useExamsList } from '@/hooks/queries/useExams';
 import { asList } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 import { formatDate, isUpcoming } from '@/lib/format';
 import {
   HeroCard,
@@ -34,6 +37,7 @@ import {
 
 export function TeacherDashboard() {
   const { activeUser } = useAuthStore();
+  const router = useRouter();
   const { data: currentAY } = useCurrentAcademicYear();
   const { data: announcementsData, isPending: announcementsPending } = useAnnouncements(
     1,
@@ -47,7 +51,12 @@ export function TeacherDashboard() {
     applicantType: 'STAFF',
   });
 
-  const assignments = asList(assignmentsData);
+  const { classes: myClasses, isLoading: classesLoading } = useScopedClasses();
+  const { data: slots = [], isPending: slotsPending } = useTeacherTimetable(activeUser?.id);
+  const myClassIds = new Set(myClasses.map((c) => c.id));
+  const assignments = asList(assignmentsData).filter(
+    (a: any) => !a.classId || myClassIds.size === 0 || myClassIds.has(a.classId)
+  );
   const announcements = asList(announcementsData);
   const exams = asList(examsData);
   const leaves = asList(leavesData);
@@ -57,6 +66,13 @@ export function TeacherDashboard() {
     .filter((e: any) => isUpcoming(e.endDate ?? e.startDate))
     .sort((a: any, b: any) => +new Date(a.startDate) - +new Date(b.startDate));
   const pendingLeaves = leaves.filter((l: any) => l.status === 'PENDING').length;
+  const todayDow = new Date().getDay();
+  const todaySlots = (slots as any[])
+    .filter((s) => s.dayOfWeek === todayDow)
+    .sort((a, b) => String(a.startTime).localeCompare(String(b.startTime)));
+  const toGrade = assignments.filter(
+    (a: any) => a.teacherId === activeUser?.id && (a._count?.submissions ?? 0) > 0
+  );
 
   return (
     <div className="flex flex-col gap-6 pb-6">
@@ -118,6 +134,115 @@ export function TeacherDashboard() {
           footerText={`${pendingLeaves} awaiting approval`}
           loading={leavesPending}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Panel
+          title="My classes"
+          subtitle="Classes you teach"
+          action={<PanelLink href="/attendance">Attendance</PanelLink>}
+        >
+          {myClasses.length > 0 ? (
+            <ul className="space-y-2.5">
+              {myClasses.slice(0, 6).map((c) => (
+                <li
+                  key={c.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border p-3"
+                >
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
+                    <Users className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                      {c.label}
+                    </span>
+                    <span className="block text-xs text-zinc-500">
+                      {c.classTeacherId === activeUser?.id ? 'Class teacher' : 'Subject teacher'}
+                      {c.roomNo ? ` · Room ${c.roomNo}` : ''}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={Users}
+              text={classesLoading ? 'Loading classes…' : 'No classes are assigned to you yet.'}
+            />
+          )}
+        </Panel>
+
+        <Panel
+          title="My timetable today"
+          subtitle={todayLabel()}
+          action={<PanelLink href="/academics/timetable">Full timetable</PanelLink>}
+        >
+          {todaySlots.length > 0 ? (
+            <ul className="space-y-2.5">
+              {todaySlots.map((s: any) => (
+                <li
+                  key={s.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border p-3"
+                >
+                  <span className="shrink-0 rounded-xl bg-amber-500/10 px-2.5 py-2 text-xs font-semibold text-amber-600">
+                    {s.startTime}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                      {s.subject?.name}
+                    </span>
+                    <span className="block text-xs text-zinc-500">
+                      {s.class?.name} {s.class?.section} · until {s.endTime}
+                      {s.roomNo ? ` · ${s.roomNo}` : ''}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={Clock}
+              text={slotsPending ? 'Loading timetable…' : 'No periods scheduled for you today.'}
+            />
+          )}
+        </Panel>
+
+        <Panel
+          title="Homework to grade"
+          subtitle="Your assignments with submissions"
+          action={<PanelLink href="/assignments">Review</PanelLink>}
+        >
+          {toGrade.length > 0 ? (
+            <ul className="space-y-2.5">
+              {toGrade.slice(0, 5).map((a: any) => (
+                <li key={a.id}>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/assignments')}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-border p-3 text-left"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+                      <ClipboardCheck className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                        {a.title}
+                      </span>
+                      <span className="block text-xs text-zinc-500">
+                        {a._count?.submissions} submission(s) · {a.class?.name} {a.class?.section}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={ClipboardCheck}
+              text={assignmentsPending ? 'Loading…' : 'No submissions are waiting for you.'}
+            />
+          )}
+        </Panel>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">

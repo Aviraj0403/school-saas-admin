@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rbacService, RbacRole, RbacPermission } from '@/services/rbac.service';
-import { Plus, Key, Trash2, Shield } from 'lucide-react';
+import { Plus, Key, Trash2, Shield, Pencil, Grid3x3 } from 'lucide-react';
+import { errorMessage } from '@/lib/errorMessage';
+import RoleMatrixDialog from './RoleMatrixDialog';
 
 export default function RolesPermissionsPage() {
   const queryClient = useQueryClient();
@@ -18,6 +20,9 @@ export default function RolesPermissionsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: '', slug: '', description: '' });
   const [editingRole, setEditingRole] = useState<RbacRole | null>(null);
+  const [matrixRole, setMatrixRole] = useState<RbacRole | null>(null);
+  const [renaming, setRenaming] = useState<RbacRole | null>(null);
+  const [renameForm, setRenameForm] = useState({ name: '', description: '' });
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   const { data: roles = [], isPending: loadingRoles } = useQuery({
@@ -49,7 +54,7 @@ export default function RolesPermissionsPage() {
       setForm({ name: '', slug: '', description: '' });
       toast.success('Role created successfully.');
     },
-    onError: () => toast.error('Could not create the role.'),
+    onError: (e) => toast.error(errorMessage(e, 'Could not create the role.')),
   });
 
   const deleteMutation = useMutation({
@@ -58,7 +63,17 @@ export default function RolesPermissionsPage() {
       invalidate();
       toast.success('Role deleted.');
     },
-    onError: () => toast.error('Could not delete system role.'),
+    onError: (e) => toast.error(errorMessage(e, 'Could not delete the role.')),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: () => rbacService.updateRole(renaming!.id, renameForm),
+    onSuccess: () => {
+      invalidate();
+      setRenaming(null);
+      toast.success('Role updated.');
+    },
+    onError: (e) => toast.error(errorMessage(e, 'Could not update the role.')),
   });
 
   const savePermissionsMutation = useMutation({
@@ -68,7 +83,7 @@ export default function RolesPermissionsPage() {
       setEditingRole(null);
       toast.success('Permissions updated successfully.');
     },
-    onError: () => toast.error('Could not update permissions.'),
+    onError: (e) => toast.error(errorMessage(e, 'Could not update permissions.')),
   });
 
   const openPermissions = async (role: RbacRole) => {
@@ -161,9 +176,24 @@ export default function RolesPermissionsPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setMatrixRole(r)}>
+                          <Grid3x3 className="w-3.5 h-3.5 mr-1" /> Module access
+                        </Button>
                         <Button variant="outline" onClick={() => openPermissions(r)}>
                           <Key className="w-3.5 h-3.5 mr-1" /> Permissions
                         </Button>
+                        {!r.isSystem && (
+                          <Button
+                            variant="outline"
+                            title="Edit role"
+                            onClick={() => {
+                              setRenaming(r);
+                              setRenameForm({ name: r.name, description: r.description ?? '' });
+                            }}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                         {!r.isSystem && (
                           <Button
                             variant="outline"
@@ -241,6 +271,36 @@ export default function RolesPermissionsPage() {
           >
             Create Role
           </Button>
+        </div>
+      </Dialog>
+
+      <RoleMatrixDialog role={matrixRole} onClose={() => setMatrixRole(null)} />
+
+      {/* Edit role */}
+      <Dialog isOpen={!!renaming} onClose={() => setRenaming(null)} title="Edit Role">
+        <div className="flex flex-col gap-4 py-2 px-7">
+          <Input
+            value={renameForm.name}
+            onChange={(e) => setRenameForm({ ...renameForm, name: e.target.value })}
+            placeholder="Role name"
+          />
+          <Input
+            value={renameForm.description}
+            onChange={(e) => setRenameForm({ ...renameForm, description: e.target.value })}
+            placeholder="Description"
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setRenaming(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => updateMutation.mutate()}
+              isLoading={updateMutation.isPending}
+              disabled={!renameForm.name.trim()}
+            >
+              Save
+            </Button>
+          </div>
         </div>
       </Dialog>
 

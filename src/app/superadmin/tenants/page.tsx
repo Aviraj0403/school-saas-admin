@@ -1,609 +1,973 @@
 'use client';
 
-import { asList } from '@/lib/utils';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  useTenantsList,
-  useCreateTenant,
-  useSuspendTenant,
-  useActivateTenant,
-  useSetTenantPlan,
-  useSetTenantModules,
-  useUpdateTenant,
-  useTenantInvoices,
-  useTenantActivityLogs,
-} from '@/modules/superadmin/hooks/useTenants';
-import { CreateTenantDto, Tenant } from '@/types/api.types';
-import { useAuthStore } from '@/store/useAuthStore';
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/useAuthStore';
+import { errorMessage } from '@/lib/errorMessage';
+import { formatDate } from '@/lib/format';
+import { useCreateTenant } from '@/modules/superadmin/hooks/useTenants';
+import {
+  useSchools,
+  useSchoolDetail,
+  usePlans,
+  useModuleRegistry,
+  useSchoolSubscription,
+  useSchoolInvoices,
+  useSchoolActivity,
+  useAssignPlan,
+  useToggleSchoolModule,
+  useOverrideLimits,
+  useSuspendSchool,
+  useReactivateSchool,
+  useCancelSchool,
+  useCreateInvoice,
+  useMarkInvoicePaid,
+} from '@/modules/superadmin/hooks/useSubscriptions';
+import type { SchoolRow } from '@/modules/superadmin/services/subscription.service';
+import { statusVariant, money } from '@/modules/superadmin/statusUi';
 import {
   Plus,
   Eye,
   ArrowRightLeft,
-  Ban,
-  CheckCircle,
   Building,
-  Printer,
-  Video,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Copy,
 } from 'lucide-react';
 
-const PLANS = [
-  { label: 'Basic', value: 'BASIC' },
-  { label: 'Standard', value: 'STANDARD' },
-  { label: 'Premium', value: 'PREMIUM' },
-  { label: 'Enterprise', value: 'ENTERPRISE' },
-];
+interface Created {
+  schoolName: string;
+  adminEmail: string;
+  password: string;
+}
+
+type Tab = 'overview' | 'modules' | 'limits' | 'invoices' | 'activity';
 
 export default function TenantsPage() {
+  const qc = useQueryClient();
   const { switchTenant, activeTenant } = useAuthStore();
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'biometrics' | 'jitsi'>('grid');
   const [page, setPage] = useState(1);
-  const rows = 10;
-  const [showDialog, setShowDialog] = useState(false);
-  const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
-  const [formData, setFormData] = useState<CreateTenantDto>({
-    name: '',
-    subdomain: '',
-    adminEmail: '',
-    plan: 'BASIC',
-    adminPhone: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    prefix: '',
-    latitude: undefined,
-    longitude: undefined,
-  });
+  const [statusFilter, setStatusFilter] = useState('');
+  const limit = 12;
+  const { data, isPending, error } = useSchools({ page, limit, status: statusFilter || undefined });
+  const { data: plans = [] } = usePlans();
+  const createMutation = useCreateTenant();
 
+  const [baseDomain, setBaseDomain] = useState('.jdinfotechsolutions.in');
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      const parts = hostname.split('.');
-      if (parts.length >= 2 && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-        const suffix = parts.slice(1).join('.');
-        setBaseDomain(`.${suffix}`);
-      }
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    if (parts.length >= 2 && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      setBaseDomain(`.${parts.slice(1).join('.')}`);
     }
   }, []);
 
-  const { data, isPending } = useTenantsList(page, rows);
-  const createMutation = useCreateTenant();
-  const suspendMutation = useSuspendTenant();
-  const activateMutation = useActivateTenant();
+  const schools = data?.items ?? [];
+  const totalPages = data?.meta?.totalPages || 1;
 
-  const tenants: Tenant[] = asList(data);
-  const totalRecords = data?.data?.meta?.total || 0;
-  const totalPages = Math.ceil(totalRecords / rows) || 1;
+  // --- onboarding ---
+  const [showCreate, setShowCreate] = useState(false);
+  const [created, setCreated] = useState<Created | null>(null);
+  const blank = {
+    name: '',
+    subdomain: '',
+    adminEmail: '',
+    adminPhone: '',
+    planSlug: '',
+    trialDays: '14',
+    city: '',
+    state: '',
+  };
+  const [form, setForm] = useState(blank);
+
+  useEffect(() => {
+    if (!form.planSlug && plans.length > 0) {
+      const first = plans.find((p) => p.isActive) ?? plans[0];
+      setForm((f) => ({ ...f, planSlug: first.slug, trialDays: String(first.trialDays ?? 14) }));
+    }
+  }, [plans, form.planSlug]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(formData, {
-      onSuccess: () => {
-        setShowDialog(false);
-        setFormData({
-          name: '',
-          subdomain: '',
-          adminEmail: '',
-          plan: 'BASIC',
-          adminPhone: '',
-          address: '',
-          city: '',
-          state: '',
-          pincode: '',
-          prefix: '',
-          latitude: undefined,
-          longitude: undefined,
-        });
-        toast.success('New school onboarded successfully.');
-      },
-    });
-  };
-
-  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string>('BASIC');
-  const [tenantModules, setTenantModules] = useState<string[]>([]);
-  const [detailsTab, setDetailsTab] = useState<
-    'config' | 'subscriptions' | 'ledger' | 'audit_logs' | 'theme'
-  >('config');
-
-  const [primaryColor, setPrimaryColor] = useState('#6366f1');
-  const [secondaryColor, setSecondaryColor] = useState('#8b5cf6');
-
-  const planMutation = useSetTenantPlan();
-  const modulesMutation = useSetTenantModules();
-  const updateTenantMutation = useUpdateTenant();
-
-  const { data: invoicesData } = useTenantInvoices(selectedTenant?.id || '');
-  const { data: logsData } = useTenantActivityLogs(selectedTenant?.id || '');
-
-  const invoices: any[] = Array.isArray(invoicesData?.data)
-    ? invoicesData.data
-    : invoicesData?.data?.items ||
-      (invoicesData as any)?.data?.data ||
-      (invoicesData as any)?.items ||
-      [];
-
-  const activityLogs: any[] = Array.isArray(logsData?.data)
-    ? logsData.data
-    : logsData?.data?.items || (logsData as any)?.data?.data || (logsData as any)?.items || [];
-
-  const handleOpenDetails = (tenant: Tenant) => {
-    setSelectedTenant(tenant);
-    setSelectedPlan(tenant.plan);
-    setTenantModules(tenant.activeModules || []);
-
-    const theme = (tenant as any).theme || {};
-    setPrimaryColor(theme.primaryColor || '#6366f1');
-    setSecondaryColor(theme.secondaryColor || '#8b5cf6');
-
-    setDetailsTab('config');
-    setShowDetailDialog(true);
-  };
-
-  const handleSaveTheme = () => {
-    if (!selectedTenant) return;
-    updateTenantMutation.mutate(
+    createMutation.mutate(
       {
-        id: selectedTenant.id,
-        data: {
-          theme: {
-            primaryColor,
-            secondaryColor,
-          },
-        },
+        name: form.name.trim(),
+        subdomain: form.subdomain,
+        adminEmail: form.adminEmail.trim(),
+        adminPhone: form.adminPhone.trim() || undefined,
+        planSlug: form.planSlug || undefined,
+        trialDays: Number(form.trialDays) || 0,
+        city: form.city.trim() || undefined,
+        state: form.state.trim() || undefined,
       },
       {
         onSuccess: () => {
-          toast.success(`School theme primary color is now ${primaryColor}.`);
-          setSelectedTenant((prev) =>
-            prev ? { ...prev, theme: { primaryColor, secondaryColor } } : null
-          );
+          // The backend seeds the school admin with this password and flags mustChangePassword.
+          setCreated({
+            schoolName: form.name,
+            adminEmail: form.adminEmail,
+            password: 'School@123',
+          });
+          setShowCreate(false);
+          setForm({ ...blank, planSlug: form.planSlug, trialDays: form.trialDays });
+          qc.invalidateQueries({ queryKey: ['superadmin'] });
         },
+        onError: (err) => toast.error(errorMessage(err, 'Could not onboard school')),
       }
     );
   };
 
-  const handleUpdatePlan = (plan: string) => {
-    if (!selectedTenant) return;
-    planMutation.mutate(
-      { id: selectedTenant.id, plan },
-      {
-        onSuccess: () => {
-          setSelectedPlan(plan);
-          setSelectedTenant((prev) => (prev ? { ...prev, plan: plan as any } : null));
-          toast.success(`Updated plan to ${plan}`);
-        },
-      }
-    );
-  };
+  // --- drawer ---
+  const [selected, setSelected] = useState<SchoolRow | null>(null);
 
-  const handleToggleModule = (mod: string) => {
-    if (!selectedTenant) return;
-    const isEnabled = tenantModules.includes(mod);
-    const updated = isEnabled ? tenantModules.filter((m) => m !== mod) : [...tenantModules, mod];
-    setTenantModules(updated);
-    modulesMutation.mutate({ id: selectedTenant.id, modules: updated });
-  };
-
-  const handleSwitchTenant = (tenant: Tenant) => {
+  const switchInto = (t: SchoolRow) => {
     switchTenant({
-      id: tenant.id,
-      name: tenant.name,
-      activeModules: tenant.activeModules || [
-        'students',
-        'staff',
-        'academics',
-        'attendance',
-        'fee',
-        'exams',
-        'library',
-        'communication',
-        'whatsapp',
-        'hostel',
-        'leave',
-        'transport',
-        'homework',
-        'website',
-        'settings',
-      ],
-      projectCode: tenant.projectCode,
-      subdomain: tenant.subdomain,
-      theme: tenant.theme as any,
+      id: t.id,
+      name: t.name,
+      activeModules: t.activeModules ?? [],
+      projectCode: t.projectCode,
+      subdomain: t.subdomain,
+      theme: t.theme,
     });
-
-    toast.success(`Connecting workspace context to ${tenant.name}...`);
+    qc.clear();
+    toast.success(`Switching to ${t.name}...`);
     setTimeout(() => {
       window.location.href = '/dashboard';
-    }, 1200);
+    }, 500);
   };
+
+  const planLabel = (t: SchoolRow) => t.subscription?.plan?.name ?? t.plan ?? '-';
+  const status = (t: SchoolRow) =>
+    t.subscription?.status ?? (t.isSuspended ? 'SUSPENDED' : 'NO SUBSCRIPTION');
 
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Tenants Directory" subtitle="Superadmin" />
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        {/* Header Block */}
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Building className="w-6 h-6 text-brand" /> Tenant Schools Directory
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              <Building className="h-6 w-6 text-brand" /> Tenant Schools Directory
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
-              Onboard new institute domains, configure active modules, and route multi-tenant SaaS
-              environments.
+            <p className="mt-1 text-xs text-zinc-500">
+              Onboard schools, manage plans, modules, limits, billing and lifecycle.
             </p>
           </div>
-
-          <Button onClick={() => setShowDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Onboard New School
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              options={[
+                { label: 'All statuses', value: '' },
+                { label: 'Trial', value: 'TRIAL' },
+                { label: 'Active', value: 'ACTIVE' },
+                { label: 'Past due', value: 'PAST_DUE' },
+                { label: 'Suspended', value: 'SUSPENDED' },
+                { label: 'Cancelled', value: 'CANCELLED' },
+              ]}
+            />
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Onboard New School
+            </Button>
+          </div>
         </div>
 
-        {/* Global Multi-Tab Control Menu */}
-        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
-              viewMode === 'grid' || viewMode === 'table'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Building className="w-3.5 h-3.5" /> Schools Directory
-          </button>
-          <button
-            onClick={() => setViewMode('biometrics')}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
-              viewMode === 'biometrics'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Printer className="w-3.5 h-3.5" /> Biometric Terminals
-          </button>
-          <button
-            onClick={() => setViewMode('jitsi')}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
-              viewMode === 'jitsi'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Video className="w-3.5 h-3.5" /> Jitsi Telemetry
-          </button>
-        </div>
-
-        {viewMode === 'biometrics' && (
-          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-8 bg-white dark:bg-zinc-900/60 backdrop-blur-xl flex flex-col items-center text-center gap-3">
-            <Printer className="w-10 h-10 text-brand" />
-            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-              Biometric Hardware Terminals
-            </h3>
-            <p className="text-xs text-zinc-500 max-w-md">
-              Device provisioning and punch ingestion are per-school. Switch into a tenant from the
-              directory below, then open Attendance → Devices.
-            </p>
-            <a href="/attendance/devices">
-              <Button variant="outline">Open Device Manager</Button>
-            </a>
-          </div>
+        {isPending && <p className="text-sm text-zinc-500">Loading schools...</p>}
+        {error && (
+          <p className="text-sm text-rose-600">{errorMessage(error, 'Could not load schools')}</p>
+        )}
+        {!isPending && !error && schools.length === 0 && (
+          <p className="rounded-xl border border-dashed p-8 text-center text-sm text-zinc-500">
+            No schools match this filter.
+          </p>
         )}
 
-        {viewMode === 'jitsi' && (
-          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-8 bg-white dark:bg-zinc-900/60 backdrop-blur-xl flex flex-col items-center text-center gap-3">
-            <Video className="w-10 h-10 text-purple-500" />
-            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-              Online Class Rooms
-            </h3>
-            <p className="text-xs text-zinc-500 max-w-md">
-              Scheduled Jitsi rooms belong to a school's academics module. Switch into a tenant from
-              the directory below, then open Academics → Online Classes.
-            </p>
-            <a href="/academics/online-classes">
-              <Button variant="outline">Open Online Classes</Button>
-            </a>
-          </div>
-        )}
-
-        {/* Schools Directory Grid */}
-        {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tenants.map((tenant) => (
-              <div
-                key={tenant.id}
-                onClick={() => handleSwitchTenant(tenant)}
-                className={`bg-white dark:bg-zinc-900/60 border rounded-xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4 backdrop-blur-xl ${
-                  tenant.isSuspended
-                    ? 'border-rose-200 dark:border-rose-950/40'
-                    : 'border-zinc-200/80 dark:border-zinc-800/80'
-                }`}
-              >
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-zinc-400 block uppercase">
-                      {tenant.projectCode || 'NO CODE'}
-                    </span>
-                    <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
-                      {tenant.name}
-                    </h4>
-                    <p className="text-xs font-mono text-brand mt-1 flex items-center gap-1">
-                      {tenant.subdomain}
-                      {baseDomain} <ExternalLink className="w-3 h-3" />
-                    </p>
-                  </div>
-                  <Badge variant={tenant.isSuspended ? 'danger' : 'success'}>{tenant.plan}</Badge>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {schools.map((t) => (
+            <div
+              key={t.id}
+              className={`flex flex-col justify-between gap-4 rounded-xl border bg-card p-5 shadow-sm ${
+                t.isSuspended ? 'border-rose-200 dark:border-rose-950/40' : 'border-border'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="block font-mono text-[10px] font-bold uppercase text-zinc-400">
+                    {t.projectCode || 'NO CODE'}
+                  </span>
+                  <h4 className="mt-0.5 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    {t.name}
+                  </h4>
+                  <p className="mt-1 flex items-center gap-1 font-mono text-xs text-brand">
+                    {t.subdomain}
+                    {baseDomain} <ExternalLink className="h-3 w-3" />
+                  </p>
                 </div>
-
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 flex flex-col gap-1.5 text-xs text-zinc-500">
-                  <div>
-                    Admin:{' '}
-                    <span className="text-zinc-900 dark:text-zinc-100 font-mono">
-                      {tenant.adminEmail}
-                    </span>
-                  </div>
-                  <div>
-                    Modules:{' '}
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                      {tenant.activeModules?.length || 0} Enabled
-                    </span>
-                  </div>
+                <Badge variant={statusVariant(status(t))}>{status(t)}</Badge>
+              </div>
+              <div className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-zinc-500">
+                <div>
+                  Plan:{' '}
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                    {planLabel(t)}
+                  </span>
+                  {t.subscription?.status === 'TRIAL' && t.subscription.trialEndsAt && (
+                    <span> - trial ends {formatDate(t.subscription.trialEndsAt)}</span>
+                  )}
                 </div>
-
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 flex justify-between items-center">
-                  <Badge variant={tenant.isSuspended ? 'danger' : 'success'}>
-                    {tenant.isSuspended ? 'SUSPENDED' : 'ACTIVE'}
-                  </Badge>
-
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleOpenDetails(tenant)}
-                      title="View Details"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </Button>
-
-                    {activeTenant?.id !== tenant.id ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => handleSwitchTenant(tenant)}
-                        title="Switch Workspace"
-                      >
-                        <ArrowRightLeft className="w-3.5 h-3.5 text-brand" />
-                      </Button>
-                    ) : (
-                      <Badge variant="success">CURRENT</Badge>
-                    )}
-
-                    {!tenant.isSuspended ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          if (confirm(`Suspend ${tenant.name}?`)) suspendMutation.mutate(tenant.id);
-                        }}
-                        className="text-rose-600 border-rose-200/80 hover:bg-rose-50"
-                        title="Suspend"
-                      >
-                        <Ban className="w-3.5 h-3.5" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          if (confirm(`Reactivate ${tenant.name}?`))
-                            activateMutation.mutate(tenant.id);
-                        }}
-                        className="text-emerald-600 border-emerald-200/80 hover:bg-emerald-50"
-                        title="Reactivate"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </div>
+                <div>
+                  Admin:{' '}
+                  <span className="font-mono text-zinc-900 dark:text-zinc-100">{t.adminEmail}</span>
+                </div>
+                <div>
+                  {t._count?.students ?? 0} students - {t._count?.users ?? 0} users -{' '}
+                  {t.activeModules?.length ?? 0} modules
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              <div className="flex items-center justify-end gap-1 border-t border-border pt-3">
+                <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
+                  <Eye className="h-3.5 w-3.5" /> Manage
+                </Button>
+                {activeTenant?.id !== t.id ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => switchInto(t)}
+                    title="Switch workspace"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5 text-brand" /> Switch
+                  </Button>
+                ) : (
+                  <Badge variant="success">CURRENT</Badge>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-2 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
-            <span className="text-xs text-zinc-500 font-mono">
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <span className="font-mono text-xs text-zinc-500">
               Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
               <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                <ChevronLeft className="mr-1 h-4 w-4" /> Prev
               </Button>
               <Button
                 variant="outline"
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
               >
-                Next <ChevronRight className="w-4 h-4 ml-1" />
+                Next <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Onboard Dialog */}
-      <Dialog isOpen={showDialog} onClose={() => setShowDialog(false)} title="Onboard New School">
-        <form onSubmit={handleCreate} className="flex flex-col gap-4 py-2">
+      {/* Onboard */}
+      <Dialog isOpen={showCreate} onClose={() => setShowCreate(false)} title="Onboard New School">
+        <form onSubmit={handleCreate} className="flex flex-col gap-4 overflow-y-auto px-7 pb-6">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                School Name *
-              </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              School name *
               <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Oakridge International"
+                value={form.name}
                 required
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Subdomain *
-              </label>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              Subdomain *
               <Input
-                value={formData.subdomain}
+                value={form.subdomain}
+                required
+                minLength={2}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
+                  setForm({
+                    ...form,
                     subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
                   })
                 }
-                placeholder="e.g. oakridge"
-                required
+                placeholder="oakridge"
               />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Admin Email *
-              </label>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              Admin email *
               <Input
                 type="email"
-                value={formData.adminEmail}
-                onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                placeholder="admin@school.com"
+                value={form.adminEmail}
                 required
+                onChange={(e) => setForm({ ...form, adminEmail: e.target.value })}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Admin Phone *
-              </label>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              Admin phone
               <Input
-                value={formData.adminPhone || ''}
-                onChange={(e) => setFormData({ ...formData, adminPhone: e.target.value })}
-                placeholder="+91 98765 43210"
-                required
+                value={form.adminPhone}
+                onChange={(e) => setForm({ ...form, adminPhone: e.target.value })}
               />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Prefix Code
-              </label>
-              <Input
-                value={formData.prefix || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, prefix: e.target.value.toUpperCase().slice(0, 4) })
-                }
-                placeholder="OAKR"
-                maxLength={4}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">Plan</label>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              Plan *
               <Select
-                value={formData.plan}
-                options={PLANS}
-                onChange={(e) => setFormData({ ...formData, plan: e.target.value as any })}
+                value={form.planSlug}
+                required
+                options={plans
+                  .filter((p) => p.isActive)
+                  .map((p) => ({
+                    label: `${p.name} - ${money(p.price)}/${p.billingCycle}`,
+                    value: p.slug,
+                  }))}
+                placeholder="Select plan"
+                onChange={(e) => {
+                  const p = plans.find((x) => x.slug === e.target.value);
+                  setForm({
+                    ...form,
+                    planSlug: e.target.value,
+                    trialDays: String(p?.trialDays ?? form.trialDays),
+                  });
+                }}
               />
-            </div>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              Trial days (0 = start active)
+              <Input
+                type="number"
+                min={0}
+                value={form.trialDays}
+                onChange={(e) => setForm({ ...form, trialDays: e.target.value })}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              City
+              <Input
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold">
+              State
+              <Input
+                value={form.state}
+                onChange={(e) => setForm({ ...form, state: e.target.value })}
+              />
+            </label>
           </div>
-
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-            <Button variant="outline" type="button" onClick={() => setShowDialog(false)}>
+          {plans.length === 0 && (
+            <p className="text-xs text-amber-600">No plans exist yet. Create one in Plans first.</p>
+          )}
+          <div className="flex justify-end gap-2 border-t border-border pt-4">
+            <Button variant="outline" type="button" onClick={() => setShowCreate(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={createMutation.isPending}>
+            <Button type="submit" isLoading={createMutation.isPending} disabled={!form.planSlug}>
               Onboard School
             </Button>
           </div>
         </form>
       </Dialog>
 
-      {/* Details Dialog */}
-      <Dialog
-        isOpen={showDetailDialog}
-        onClose={() => setShowDetailDialog(false)}
-        title={`Workspace Config — ${selectedTenant?.name || ''}`}
-      >
-        {selectedTenant && (
-          <div className="flex flex-col gap-4 py-2">
-            <div className="flex justify-between items-center gap-2">
-              <span className="text-xs font-mono font-bold text-brand">
-                {selectedTenant.subdomain}
-                {baseDomain}
-              </span>
-              <Badge variant="info">{selectedPlan}</Badge>
+      {/* One-time credentials */}
+      <Dialog isOpen={!!created} onClose={() => setCreated(null)} title="School created">
+        {created && (
+          <div className="flex flex-col gap-4 px-7 pb-6">
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+              <b>{created.schoolName}</b> is ready. Share these temporary credentials with the
+              school admin now - they are shown only once. The admin must change the password on
+              first login.
+            </p>
+            <div className="rounded-xl border border-border bg-zinc-50 p-4 font-mono text-sm dark:bg-white/5">
+              <div>Email: {created.adminEmail}</div>
+              <div>Password: {created.password}</div>
             </div>
-
-            <div className="flex flex-col gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-3">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Change Plan
-              </label>
-              <Select
-                value={selectedPlan}
-                options={PLANS}
-                onChange={(e) => handleUpdatePlan(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-3">
-              <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-                Active Modules
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  'students',
-                  'staff',
-                  'academics',
-                  'attendance',
-                  'fee',
-                  'exams',
-                  'library',
-                  'communication',
-                  'whatsapp',
-                  'hostel',
-                  'leave',
-                  'transport',
-                ].map((mod) => {
-                  const active = tenantModules.includes(mod);
-                  return (
-                    <button
-                      type="button"
-                      key={mod}
-                      onClick={() => handleToggleModule(mod)}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium capitalize flex items-center justify-between ${
-                        active
-                          ? 'border-brand bg-brand/10 text-brand'
-                          : 'border-zinc-200 dark:border-zinc-800 text-zinc-400'
-                      }`}
-                    >
-                      {mod}
-                      <span
-                        className={`w-2 h-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-zinc-300'}`}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard
+                    ?.writeText(`Email: ${created.adminEmail}\nPassword: ${created.password}`)
+                    .then(() => toast.success('Copied'))
+                    .catch(() => toast.error('Copy failed - select and copy manually'));
+                }}
+              >
+                <Copy className="h-4 w-4" /> Copy
+              </Button>
+              <Button onClick={() => setCreated(null)}>Done</Button>
             </div>
           </div>
         )}
       </Dialog>
+
+      {selected && (
+        <SchoolDrawer
+          school={selected}
+          baseDomain={baseDomain}
+          onClose={() => setSelected(null)}
+          onSwitch={() => switchInto(selected)}
+        />
+      )}
     </DashboardLayout>
+  );
+}
+
+function SchoolDrawer({
+  school,
+  baseDomain,
+  onClose,
+  onSwitch,
+}: {
+  school: SchoolRow;
+  baseDomain: string;
+  onClose: () => void;
+  onSwitch: () => void;
+}) {
+  const [tab, setTab] = useState<Tab>('overview');
+  const { data: sub, isPending: subPending, error: subError } = useSchoolSubscription(school.id);
+  const { data: detail } = useSchoolDetail(school.id);
+  const live = detail ?? school;
+  const { data: plans = [] } = usePlans();
+  const { data: registry } = useModuleRegistry();
+
+  const assign = useAssignPlan();
+  const toggle = useToggleSchoolModule();
+  const overrideLimits = useOverrideLimits();
+  const suspend = useSuspendSchool();
+  const reactivate = useReactivateSchool();
+  const cancel = useCancelSchool();
+
+  const [planId, setPlanId] = useState('');
+  const [trialDays, setTrialDays] = useState('0');
+  const [notes, setNotes] = useState('');
+  const [reason, setReason] = useState('');
+  const [limitsJson, setLimitsJson] = useState('{}');
+
+  useEffect(() => {
+    if (sub) {
+      setPlanId(sub.planId);
+      setLimitsJson(JSON.stringify(sub.customLimits ?? {}, null, 2));
+    }
+  }, [sub]);
+
+  const effectiveModules = useMemo(() => new Set(live.activeModules ?? []), [live.activeModules]);
+  const planModules = new Set(sub?.plan?.modules ?? []);
+  const customModules = new Set(sub?.customModules ?? []);
+  const effectiveLimits = { ...(sub?.plan?.limits ?? {}), ...(sub?.customLimits ?? {}) };
+
+  const ok = (msg: string) => () => toast.success(msg);
+  const fail = (fallback: string) => (err: unknown) => toast.error(errorMessage(err, fallback));
+
+  const doAssign = () => {
+    if (!planId) return toast.error('Pick a plan');
+    assign.mutate(
+      {
+        id: school.id,
+        body: { planId, trialDays: Number(trialDays) || 0, notes: notes || undefined },
+      },
+      { onSuccess: ok('Plan assigned'), onError: fail('Could not assign plan') }
+    );
+  };
+
+  const saveLimits = () => {
+    let limits: Record<string, number>;
+    try {
+      limits = JSON.parse(limitsJson || '{}');
+      if (!limits || typeof limits !== 'object' || Array.isArray(limits)) throw new Error();
+    } catch {
+      return toast.error('Limits must be a JSON object like {"students": 500}');
+    }
+    overrideLimits.mutate(
+      { id: school.id, limits },
+      { onSuccess: ok('Limits updated'), onError: fail('Could not update limits') }
+    );
+  };
+
+  const tabs: Array<[Tab, string]> = [
+    ['overview', 'Subscription'],
+    ['modules', 'Modules'],
+    ['limits', 'Limits'],
+    ['invoices', 'Invoices'],
+    ['activity', 'Activity'],
+  ];
+
+  const isSuspended = sub?.status === 'SUSPENDED' || live.isSuspended;
+
+  const modulesByGroup = (registry?.modules ?? []).reduce<
+    Record<string, NonNullable<typeof registry>['modules']>
+  >((acc, m) => {
+    (acc[m.group] ??= []).push(m);
+    return acc;
+  }, {});
+
+  return (
+    <Dialog isOpen onClose={onClose} title={school.name} className="max-w-3xl">
+      <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="font-mono text-xs font-bold text-brand">
+            {school.subdomain}
+            {baseDomain}
+          </span>
+          <div className="flex items-center gap-2">
+            {sub && <Badge variant={statusVariant(sub.status)}>{sub.status}</Badge>}
+            <Button size="sm" variant="outline" onClick={onSwitch}>
+              <ArrowRightLeft className="h-3.5 w-3.5" /> Switch into school
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border p-1">
+          {tabs.map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                tab === k
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'text-zinc-500'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {subPending && <p className="text-sm text-zinc-500">Loading subscription...</p>}
+        {subError && <p className="text-sm text-rose-600">{errorMessage(subError)}</p>}
+
+        {tab === 'overview' && !subPending && (
+          <div className="flex flex-col gap-5">
+            {sub ? (
+              <div className="grid grid-cols-2 gap-3 rounded-xl border border-border p-4 text-xs sm:grid-cols-3">
+                <Info label="Plan" value={sub.plan?.name} />
+                <Info label="Status" value={sub.status} />
+                <Info label="Amount" value={`${money(sub.amount)} / ${sub.billingCycle}`} />
+                <Info
+                  label="Trial ends"
+                  value={sub.trialEndsAt ? formatDate(sub.trialEndsAt) : '-'}
+                />
+                <Info
+                  label="Period ends"
+                  value={sub.currentPeriodEnd ? formatDate(sub.currentPeriodEnd) : '-'}
+                />
+                <Info
+                  label="Next billing"
+                  value={sub.nextBillingAt ? formatDate(sub.nextBillingAt) : '-'}
+                />
+                {sub.cancelAtPeriodEnd && <Info label="Cancels" value="At period end" />}
+                {sub.notes && <Info label="Notes" value={sub.notes} />}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-dashed p-4 text-sm text-amber-600">
+                This school has no subscription yet. Assign a plan below.
+              </p>
+            )}
+
+            <div className="flex flex-col gap-3 rounded-xl border border-border p-4">
+              <p className="text-xs font-semibold">Assign / change plan</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Select
+                  value={planId}
+                  placeholder="Select plan"
+                  options={plans.map((p) => ({
+                    label: `${p.name} - ${money(p.price)}`,
+                    value: p.id,
+                  }))}
+                  onChange={(e) => setPlanId(e.target.value)}
+                />
+                <Input
+                  type="number"
+                  min={0}
+                  value={trialDays}
+                  onChange={(e) => setTrialDays(e.target.value)}
+                  placeholder="Trial days"
+                  title="Trial days (0 = active immediately)"
+                />
+                <Input
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Notes (optional)"
+                />
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Assigning resets custom module and limit overrides to the plan defaults.
+              </p>
+              <div>
+                <Button size="sm" onClick={doAssign} isLoading={assign.isPending}>
+                  Assign plan
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-xl border border-border p-4">
+              <p className="text-xs font-semibold">Lifecycle</p>
+              <Textarea
+                className="min-h-16"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Reason (required to suspend)"
+              />
+              <div className="flex flex-wrap gap-2">
+                {!isSuspended ? (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    isLoading={suspend.isPending}
+                    onClick={() => {
+                      if (!reason.trim()) return toast.error('Enter a reason');
+                      if (!confirm(`Suspend ${school.name}? Users will lose access.`)) return;
+                      suspend.mutate(
+                        { id: school.id, reason: reason.trim() },
+                        { onSuccess: ok('School suspended'), onError: fail('Could not suspend') }
+                      );
+                    }}
+                  >
+                    Suspend
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    isLoading={reactivate.isPending}
+                    onClick={() => {
+                      if (!confirm(`Reactivate ${school.name}?`)) return;
+                      reactivate.mutate(school.id, {
+                        onSuccess: ok('School reactivated'),
+                        onError: fail('Could not reactivate'),
+                      });
+                    }}
+                  >
+                    Reactivate
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isLoading={cancel.isPending}
+                  disabled={!sub || sub.status === 'CANCELLED'}
+                  onClick={() => {
+                    const now = confirm(
+                      'Cancel subscription IMMEDIATELY?\n\nOK = cancel now, Cancel = choose end-of-period instead.'
+                    );
+                    if (!now && !confirm('Cancel at the end of the current billing period?'))
+                      return;
+                    cancel.mutate(
+                      { id: school.id, immediately: now },
+                      {
+                        onSuccess: ok(now ? 'Subscription cancelled' : 'Will cancel at period end'),
+                        onError: fail('Could not cancel'),
+                      }
+                    );
+                  }}
+                >
+                  Cancel subscription
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'modules' && (
+          <div className="flex flex-col gap-4">
+            <p className="text-xs text-zinc-500">
+              Effective modules = plan modules, or the school&apos;s override. Toggle to enable or
+              disable a module for this school only.
+            </p>
+            {Object.entries(modulesByGroup).map(([group, mods]) => (
+              <div key={group}>
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                  {registry?.groups?.[group] ?? group}
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {mods.map((m) => {
+                    const on = effectiveModules.has(m.key);
+                    const inPlan = planModules.has(m.key);
+                    const overridden =
+                      customModules.size > 0 && customModules.has(m.key) !== inPlan;
+                    return (
+                      <button
+                        type="button"
+                        key={m.key}
+                        disabled={!!m.core || toggle.isPending}
+                        onClick={() =>
+                          toggle.mutate(
+                            { id: school.id, module: m.key, enabled: !on },
+                            {
+                              onSuccess: ok(`${m.label} ${on ? 'disabled' : 'enabled'}`),
+                              onError: fail('Could not toggle module'),
+                            }
+                          )
+                        }
+                        className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs ${
+                          on ? 'border-brand bg-brand/10 text-brand' : 'border-border text-zinc-500'
+                        }`}
+                      >
+                        <span className="min-w-0">
+                          <span className="block font-semibold">{m.label}</span>
+                          <span className="block truncate text-[10px] opacity-70">
+                            {inPlan ? 'in plan' : 'not in plan'}
+                            {overridden ? ' - overridden' : ''}
+                            {m.core ? ' - core' : ''}
+                          </span>
+                        </span>
+                        <span
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${on ? 'bg-emerald-500' : 'bg-zinc-300'}`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'limits' && (
+          <div className="flex flex-col gap-3">
+            <div className="rounded-xl border border-border p-4 text-xs">
+              <p className="mb-2 font-semibold">Effective limits (plan + override)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.entries(effectiveLimits).map(([k, v]) => (
+                  <Badge key={k} variant="secondary">
+                    {k}: {Number(v) < 0 ? 'unlimited' : String(v)}
+                  </Badge>
+                ))}
+                {Object.keys(effectiveLimits).length === 0 && (
+                  <span className="text-zinc-500">None</span>
+                )}
+              </div>
+              <p className="mt-2 text-zinc-500">
+                Usage: {live._count?.students ?? 0} students - {live._count?.users ?? 0} users
+              </p>
+            </div>
+            <p className="text-xs font-semibold">Per-school override (JSON, -1 = unlimited)</p>
+            <Textarea
+              className="font-mono text-xs"
+              value={limitsJson}
+              onChange={(e) => setLimitsJson(e.target.value)}
+            />
+            <div>
+              <Button size="sm" onClick={saveLimits} isLoading={overrideLimits.isPending}>
+                Save limits
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {tab === 'invoices' && <InvoicesTab schoolId={school.id} hasSubscription={!!sub} />}
+        {tab === 'activity' && <ActivityTab schoolId={school.id} />}
+      </div>
+    </Dialog>
+  );
+}
+
+function Info({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-zinc-400">{label}</p>
+      <p className="font-semibold text-zinc-900 dark:text-zinc-100">{value || '-'}</p>
+    </div>
+  );
+}
+
+function Pager({
+  page,
+  totalPages,
+  setPage,
+}: {
+  page: number;
+  totalPages: number;
+  setPage: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between text-xs">
+      <Button size="xs" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+        Prev
+      </Button>
+      <span>
+        Page {page} / {totalPages}
+      </span>
+      <Button
+        size="xs"
+        variant="outline"
+        disabled={page >= totalPages}
+        onClick={() => setPage(page + 1)}
+      >
+        Next
+      </Button>
+    </div>
+  );
+}
+
+function InvoicesTab({
+  schoolId,
+  hasSubscription,
+}: {
+  schoolId: string;
+  hasSubscription: boolean;
+}) {
+  const [page, setPage] = useState(1);
+  const { data, isPending, error } = useSchoolInvoices(schoolId, page);
+  const create = useCreateInvoice();
+  const markPaid = useMarkInvoicePaid();
+  const [show, setShow] = useState(false);
+  const [f, setF] = useState({ amount: '', dueDate: '', description: '' });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    create.mutate(
+      {
+        id: schoolId,
+        body: {
+          amount: Number(f.amount),
+          dueDate: f.dueDate,
+          description: f.description || undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Invoice created');
+          setShow(false);
+          setF({ amount: '', dueDate: '', description: '' });
+        },
+        onError: (err) => toast.error(errorMessage(err, 'Could not create invoice')),
+      }
+    );
+  };
+
+  const invoices = data?.items ?? [];
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          onClick={() => setShow(!show)}
+          disabled={!hasSubscription}
+          title={hasSubscription ? '' : 'Assign a plan first'}
+        >
+          <Plus className="h-3.5 w-3.5" /> New invoice
+        </Button>
+      </div>
+      {show && (
+        <form
+          onSubmit={submit}
+          className="grid grid-cols-1 gap-3 rounded-xl border border-border p-4 sm:grid-cols-3"
+        >
+          <Input
+            type="number"
+            min={0}
+            required
+            placeholder="Amount"
+            value={f.amount}
+            onChange={(e) => setF({ ...f, amount: e.target.value })}
+          />
+          <Input
+            type="date"
+            required
+            value={f.dueDate}
+            onChange={(e) => setF({ ...f, dueDate: e.target.value })}
+          />
+          <Input
+            placeholder="Description"
+            value={f.description}
+            onChange={(e) => setF({ ...f, description: e.target.value })}
+          />
+          <div className="sm:col-span-3">
+            <Button type="submit" size="sm" isLoading={create.isPending}>
+              Create invoice
+            </Button>
+          </div>
+        </form>
+      )}
+      {isPending && <p className="text-sm text-zinc-500">Loading invoices...</p>}
+      {error && <p className="text-sm text-rose-600">{errorMessage(error)}</p>}
+      {!isPending && invoices.length === 0 && (
+        <p className="text-sm text-zinc-500">No invoices yet.</p>
+      )}
+      <div className="divide-y divide-border rounded-xl border border-border">
+        {invoices.map((inv) => (
+          <div key={inv.id} className="flex flex-wrap items-center gap-3 p-3 text-xs">
+            <span className="font-mono font-semibold">{inv.invoiceNo}</span>
+            <span className="flex-1 text-zinc-500">{inv.description || '-'}</span>
+            <span className="font-semibold">{money(inv.amount)}</span>
+            <span className="text-zinc-500">due {formatDate(inv.dueDate)}</span>
+            <Badge
+              variant={
+                inv.status === 'PAID'
+                  ? 'success'
+                  : inv.status === 'PENDING'
+                    ? 'warning'
+                    : 'secondary'
+              }
+            >
+              {inv.status}
+            </Badge>
+            {inv.status !== 'PAID' && (
+              <Button
+                size="xs"
+                variant="outline"
+                isLoading={markPaid.isPending && markPaid.variables?.invoiceId === inv.id}
+                onClick={() => {
+                  if (!confirm(`Mark ${inv.invoiceNo} as paid?`)) return;
+                  markPaid.mutate(
+                    { invoiceId: inv.id },
+                    {
+                      onSuccess: () => toast.success('Invoice marked paid'),
+                      onError: (err) => toast.error(errorMessage(err, 'Could not mark paid')),
+                    }
+                  );
+                }}
+              >
+                Mark paid
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+      <Pager page={page} totalPages={data?.meta?.totalPages ?? 1} setPage={setPage} />
+    </div>
+  );
+}
+
+function ActivityTab({ schoolId }: { schoolId: string }) {
+  const [page, setPage] = useState(1);
+  const { data, isPending, error } = useSchoolActivity(schoolId, page);
+  const logs = data?.items ?? [];
+  return (
+    <div className="flex flex-col gap-3">
+      {isPending && <p className="text-sm text-zinc-500">Loading activity...</p>}
+      {error && <p className="text-sm text-rose-600">{errorMessage(error)}</p>}
+      {!isPending && logs.length === 0 && (
+        <p className="text-sm text-zinc-500">No activity recorded.</p>
+      )}
+      <div className="divide-y divide-border rounded-xl border border-border">
+        {logs.map((l: any) => (
+          <div key={l.id} className="p-3 text-xs">
+            <div className="flex justify-between gap-2">
+              <span className="font-semibold">{l.action}</span>
+              <span className="text-zinc-400">{formatDate(l.createdAt)}</span>
+            </div>
+            <p className="text-zinc-500">
+              {l.entity ?? l.module ?? ''} {l.user?.name ? `- ${l.user.name}` : ''}
+            </p>
+          </div>
+        ))}
+      </div>
+      <Pager page={page} totalPages={data?.meta?.totalPages ?? 1} setPage={setPage} />
+    </div>
   );
 }

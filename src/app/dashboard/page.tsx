@@ -11,6 +11,7 @@ import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
 import { AccountantDashboard } from '@/components/dashboard/AccountantDashboard';
 import { LibrarianDashboard } from '@/components/dashboard/LibrarianDashboard';
 import { StudentParentDashboard } from '@/components/dashboard/StudentParentDashboard';
+import { StaffDashboard } from '@/components/dashboard/StaffDashboard';
 
 export default function DashboardPage() {
   const { activeUser } = useAuthStore();
@@ -30,6 +31,10 @@ export default function DashboardPage() {
       case 'student':
       case 'parent':
         return <StudentParentDashboard />;
+      case 'clerk':
+      case 'lab_assistant':
+      case 'support_staff':
+        return <StaffDashboard />;
       case 'school_admin':
       default:
         return <AdminDashboard />;

@@ -1,51 +1,76 @@
 import { api } from './api';
-import { Hostel, HostelRoom, HostelBoarder } from '@/types/api.types';
+import { asList, unwrap } from '@/lib/utils';
+
+export type HostelType = 'boys' | 'girls' | 'mixed';
+export type RoomType = 'shared' | 'single' | 'double';
+
+export interface HostelInput {
+  name: string;
+  type?: HostelType;
+  capacity: number;
+  wardenPhone?: string;
+  address?: string;
+}
+
+export interface RoomInput {
+  roomNo: string;
+  floor?: number;
+  capacity?: number;
+  type?: RoomType;
+}
+
+const list = (res: any) => asList<any>(unwrap(res));
 
 export const hostelService = {
-  getDashboard: async () => {
-    const response = await api.get<{ success: boolean; data: any }>('/hostel/dashboard');
-    return ((response.data as any)?.data as any)?.items || response.data?.data;
-  },
+  getDashboard: async () => unwrap<any>(await api.get('/hostel/dashboard')),
 
-  getHostels: async () => {
-    const response = await api.get<{ success: boolean; data: any }>('/hostel');
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || [];
-  },
+  getHostels: async () => list(await api.get('/hostel', { params: { limit: 100 } })),
 
-  createHostel: async (data: { name: string; type: 'BOYS' | 'GIRLS' | 'COED'; capacity: number; address?: string }) => {
-    const response = await api.post<{ success: boolean; data: Hostel }>('/hostel', data);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-  },
+  createHostel: async (data: HostelInput) => unwrap(await api.post('/hostel', data)),
 
-  getRooms: async (hostelId: string) => {
-    const response = await api.get<{ success: boolean; data: any }>(`/hostel/${hostelId}/rooms`);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || [];
-  },
+  updateHostel: async (id: string, data: Partial<HostelInput>) =>
+    unwrap(await api.patch(`/hostel/${id}`, data)),
 
-  createRoom: async (hostelId: string, data: { roomNo: string; type: string; capacity: number }) => {
-    const response = await api.post<{ success: boolean; data: HostelRoom }>(`/hostel/${hostelId}/rooms`, data);
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-  },
+  deleteHostel: async (id: string) => unwrap(await api.delete(`/hostel/${id}`)),
 
-  admitBoarder: async (data: { studentId: string; hostelRoomId: string; academicYearId: string }) => {
-    const response = await api.post<{ success: boolean; data: HostelBoarder }>('/hostel/boarders/admit', {
-      studentId: data.studentId,
-      roomId: data.hostelRoomId,   // backend expects 'roomId', not 'hostelRoomId'
-      academicYearId: data.academicYearId,
-    });
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-  },
+  getWardens: async () => list(await api.get('/hostel/wardens')),
 
-  getStudentBoarder: async (studentId: string) => {
-    const response = await api.get<{ success: boolean; data: any }>(`/hostel/boarders/student/${studentId}`);
-    return response.data?.data ?? null;
-  },
+  /** wardenId null clears the assignment. */
+  assignWarden: async (
+    id: string,
+    data: { wardenId: string | null; wardenPhone?: string | null }
+  ) => unwrap(await api.patch(`/hostel/${id}/warden`, data)),
 
-  dischargeBoarder: async (studentId: string, academicYearId: string) => {
-    const response = await api.patch<{ success: boolean }>(`/hostel/boarders/${studentId}/discharge`, { academicYearId });
-    return ((response.data as any)?.data as any)?.items || (response.data as any)?.data || response.data;
-  }
+  getRooms: async (hostelId: string) =>
+    list(await api.get(`/hostel/${hostelId}/rooms`, { params: { limit: 100 } })),
+
+  createRoom: async (hostelId: string, data: RoomInput) =>
+    unwrap(await api.post(`/hostel/${hostelId}/rooms`, data)),
+
+  updateRoom: async (roomId: string, data: Partial<RoomInput>) =>
+    unwrap(await api.patch(`/hostel/rooms/${roomId}`, data)),
+
+  deleteRoom: async (roomId: string) => unwrap(await api.delete(`/hostel/rooms/${roomId}`)),
+
+  getBoarders: async () => list(await api.get('/hostel/boarders', { params: { limit: 100 } })),
+
+  /** hostelRoomId is accepted as an alias of roomId (used by the admissions form). */
+  admitBoarder: async (data: {
+    studentId: string;
+    roomId?: string;
+    hostelRoomId?: string;
+    academicYearId: string;
+    feeAmount?: number;
+  }) =>
+    unwrap(
+      await api.post('/hostel/boarders/admit', {
+        studentId: data.studentId,
+        roomId: data.roomId ?? data.hostelRoomId,
+        academicYearId: data.academicYearId,
+        feeAmount: data.feeAmount,
+      })
+    ),
+
+  dischargeBoarder: async (studentId: string, academicYearId: string) =>
+    unwrap(await api.patch(`/hostel/boarders/${studentId}/discharge`, { academicYearId })),
 };
-
-
-

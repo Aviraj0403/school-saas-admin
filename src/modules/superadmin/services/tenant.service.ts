@@ -1,5 +1,19 @@
 import { api } from '@/services/api';
-import { PaginatedResponse, Tenant, CreateTenantDto } from '@/types/api.types';
+import { PaginatedResponse, Tenant } from '@/types/api.types';
+
+/** Mirrors the backend CreateTenantDto (forbidNonWhitelisted: no extra keys). */
+export interface CreateTenantDto {
+  name: string;
+  subdomain: string;
+  adminEmail: string;
+  adminPhone?: string;
+  planSlug?: string;
+  trialDays?: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+}
 
 // Backend routes: /api/v1/tenants (SuperAdmin-only, guarded by @SuperAdminOnly())
 export const tenantService = {
@@ -43,12 +57,16 @@ export const tenantService = {
   },
 
   getTenantInvoices: async (id: string, page = 1, limit = 20) => {
-    const response = await api.get<PaginatedResponse<any>>(`/superadmin/schools/${id}/invoices?page=${page}&limit=${limit}`);
+    const response = await api.get<PaginatedResponse<any>>(
+      `/superadmin/schools/${id}/invoices?page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 
   getTenantActivityLogs: async (id: string, page = 1, limit = 20) => {
-    const response = await api.get<PaginatedResponse<any>>(`/superadmin/schools/${id}/activity-logs?page=${page}&limit=${limit}`);
+    const response = await api.get<PaginatedResponse<any>>(
+      `/superadmin/schools/${id}/activity-logs?page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 };

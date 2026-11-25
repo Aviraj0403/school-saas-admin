@@ -10,6 +10,7 @@ import { staffService } from '@/services/staff.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginScreen from '@/components/layout/LoginScreen';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import {
   BookOpen,
   CalendarDays,
@@ -62,6 +63,9 @@ function SetupWizard() {
   const [savedTeachers, setSavedTeachers] = useState<any[]>([]);
   const [savedSubjects, setSavedSubjects] = useState<any[]>([]);
 
+  // Items already created in a step that later failed — never re-submitted on retry.
+  const createdRef = React.useRef<Set<string>>(new Set());
+
   const handleNext = async () => {
     setIsLoading(true);
     try {
@@ -73,7 +77,14 @@ function SetupWizard() {
         // Create Subjects
         const validSubjects = subjects.filter((s) => s.name && s.code);
         for (const sub of validSubjects) {
-          await academicsService.createSubject({ name: sub.name, code: sub.code });
+          const key = `subject:${sub.code}`;
+          if (createdRef.current.has(key)) continue;
+          try {
+            await academicsService.createSubject({ name: sub.name, code: sub.code });
+            createdRef.current.add(key);
+          } catch (e) {
+            throw new Error(`Subject "${sub.name}": ${errorMessage(e)}`);
+          }
         }
         const fetchedSubjects = await academicsService.getSubjects();
         setSavedSubjects(fetchedSubjects);
@@ -81,15 +92,30 @@ function SetupWizard() {
       } else if (currentStep === 3) {
         // Create Teachers
         const validTeachers = teachers.filter((t) => t.name && t.email);
+        // CreateStaffDto takes roleIds, so resolve the teacher role from the school's roles.
+        const roles: any[] = (await staffService.getRoles()) ?? [];
+        const roleList = Array.isArray(roles) ? roles : [];
+        const teacherRole = roleList.find((r: any) => (r.slug || '').toLowerCase() === 'teacher');
+        if (validTeachers.length > 0 && !teacherRole) {
+          throw new Error(
+            'The "teacher" role was not found for this school. Create it under Settings > Roles first.'
+          );
+        }
         for (const t of validTeachers) {
-          await staffService.createStaff({
-            name: t.name,
-            email: t.email,
-            phone: t.phone || '',
-            role: 'TEACHER',
-            designation: 'Teacher',
-            departmentId: null,
-          } as any);
+          const key = `teacher:${t.email.toLowerCase()}`;
+          if (createdRef.current.has(key)) continue;
+          try {
+            await staffService.createStaff({
+              name: t.name,
+              email: t.email,
+              ...(t.phone ? { phone: t.phone } : {}),
+              designation: 'Teacher',
+              roleIds: [teacherRole.id],
+            });
+            createdRef.current.add(key);
+          } catch (e) {
+            throw new Error(`Teacher "${t.name}": ${errorMessage(e)}`);
+          }
         }
         const fetchedTeachers = await staffService.getStaffList(1, 100);
         setSavedTeachers(fetchedTeachers.items || []);
@@ -101,18 +127,25 @@ function SetupWizard() {
         if (!activeYear) throw new Error('No active academic year found. Please create one first.');
 
         for (const c of validClasses) {
-          const newClass = await academicsService.createClass({
-            name: c.name,
-            section: c.section,
-            classTeacherId: c.classTeacherId || undefined,
-            academicYearId: activeYear.id,
-          });
-          // Assign all created subjects to this class
-          if (savedSubjects.length > 0) {
-            await academicsService.assignSubjectsToClass(
-              newClass.id,
-              savedSubjects.map((s) => s.id)
-            );
+          const key = `class:${c.name}:${c.section}`;
+          if (createdRef.current.has(key)) continue;
+          try {
+            const newClass = await academicsService.createClass({
+              name: c.name,
+              section: c.section,
+              classTeacherId: c.classTeacherId || undefined,
+              academicYearId: activeYear.id,
+            });
+            createdRef.current.add(key);
+            // Assign all created subjects to this class
+            if (savedSubjects.length > 0) {
+              await academicsService.assignSubjectsToClass(
+                newClass.id,
+                savedSubjects.map((s) => s.id)
+              );
+            }
+          } catch (e) {
+            throw new Error(`Class ${c.name}-${c.section}: ${errorMessage(e)}`);
           }
         }
         setCurrentStep(5);
@@ -121,11 +154,7 @@ function SetupWizard() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message ||
-          err?.message ||
-          'Something went wrong while saving. Please try again.'
-      );
+      toast.error(errorMessage(err, 'Something went wrong while saving. Please try again.'));
     } finally {
       setIsLoading(false);
     }

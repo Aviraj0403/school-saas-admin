@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Unwraps the backend ResponseInterceptor envelope: { success, data } -> data. */
+export function unwrap<T = any>(res: { data?: any } | undefined | null): T {
+  const body = res?.data;
+  return (body && typeof body === 'object' && 'success' in body ? body.data : body) as T;
+}
+
 /**
  * Normalises the API's list shapes to a plain array. Services return a bare array,
  * `{ items }`, `{ data: [...] }` or `{ data: { items } }` depending on the endpoint.

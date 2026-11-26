@@ -42,7 +42,11 @@ export const apiKeyService = {
 export const webhookService = {
   list: async (): Promise<WebhookSummary[]> => asList(unwrap(await api.get('/webhooks'))),
 
-  listEvents: async (): Promise<string[]> => asList(unwrap(await api.get('/webhooks/events'))),
+  // the API answers { events: [...] }
+  listEvents: async (): Promise<string[]> => {
+    const d: any = unwrap(await api.get('/webhooks/events'));
+    return Array.isArray(d?.events) ? d.events : (asList(d) as string[]);
+  },
 
   register: async (body: { url: string; events: string[] }) =>
     unwrap(await api.post('/webhooks', body)),

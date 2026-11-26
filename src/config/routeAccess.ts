@@ -66,6 +66,8 @@ export function evaluateRoute(
     role: string;
     isSuperAdmin: boolean;
     isMirroring?: boolean;
+    /** superadmin not inside any school: only platform pages are meaningful */
+    outsideSchool?: boolean;
     activeModules: string[] | undefined;
     canRead?: (module: string) => boolean;
   }
@@ -73,7 +75,18 @@ export function evaluateRoute(
   const rule = matchRoute(pathname);
   if (!rule) return 'ok';
   // A mirrored preview is a layout preview of that role, so the role rules apply to it.
-  if (ctx.isSuperAdmin && !ctx.isMirroring) return 'ok';
+  if (ctx.isSuperAdmin && !ctx.isMirroring) {
+    if (
+      ctx.outsideSchool &&
+      !pathname.startsWith('/superadmin') &&
+      !pathname.startsWith('/dashboard') &&
+      !pathname.startsWith('/users') &&
+      !pathname.startsWith('/profile') &&
+      !pathname.startsWith('/settings')
+    )
+      return 'denied';
+    return 'ok';
+  }
   const grantedByRole =
     isCustomRole(ctx.role) &&
     !!ctx.canRead &&

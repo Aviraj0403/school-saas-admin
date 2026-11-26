@@ -57,7 +57,7 @@ export default function RoleAccessPage() {
           <p className="p-6 text-sm text-muted-foreground">No configurable roles found.</p>
         )}
         {data && data.roles.length > 0 && (
-          <table className="modern-table min-w-[720px]">
+          <table data-no-rt className="modern-table min-w-[720px]">
             <thead>
               <tr>
                 <th className="w-[260px]">Feature</th>

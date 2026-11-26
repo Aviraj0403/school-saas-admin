@@ -88,7 +88,7 @@ export default function StudentEditDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title="Edit student" className="max-w-2xl">
-      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {FIELDS.map((f) => (
             <label

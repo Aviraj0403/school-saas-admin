@@ -59,9 +59,17 @@ import {
   X,
   AlertCircle,
   Package,
+  LayoutDashboard,
+  Layers,
+  Sparkles,
+  Activity,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, React.ElementType> = {
+  LayoutDashboard,
+  Layers,
+  Sparkles,
+  Activity,
   AlertCircle,
   Package,
   Home,
@@ -107,7 +115,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Sliders,
 };
 
-function RenderIcon({ name, className }: { name?: string; className?: string }) {
+export function RenderIcon({ name, className }: { name?: string; className?: string }) {
   if (!name) return null;
   const IconComp = ICON_MAP[name];
   if (!IconComp) {

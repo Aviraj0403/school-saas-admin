@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Bus,
   ExternalLink,
   MapPin,
   Pencil,
@@ -15,6 +14,7 @@ import {
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -83,15 +83,15 @@ function LivePanel() {
   if (list.length === 0) return <EmptyState title="No vehicles registered" />;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      <div className="lg:col-span-2 flex flex-col gap-3">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="lg:col-span-2 flex flex-col gap-3 min-w-0">
         {list.map((v: any) => {
           const last = v.locations?.[0];
           return (
             <button
               key={v.id}
               onClick={() => setSelected(v.id)}
-              className={`text-left border rounded-xl p-4 flex flex-col gap-1 ${selected === v.id ? 'border-brand bg-brand/5' : 'border-zinc-200/80 dark:border-zinc-800/80'}`}
+              className={`text-left border rounded-2xl p-4 flex flex-col gap-1 min-h-14 ${selected === v.id ? 'border-brand bg-brand/5' : 'border-border bg-card'}`}
             >
               <div className="flex justify-between items-center">
                 <span className="font-bold text-sm">{v.vehicleNo}</span>
@@ -113,7 +113,7 @@ function LivePanel() {
           );
         })}
       </div>
-      <div className="lg:col-span-3 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 flex flex-col gap-3 min-h-[320px]">
+      <div className="lg:col-span-3 min-w-0 border border-border rounded-2xl p-3 sm:p-4 flex flex-col gap-3 min-h-[200px] sm:min-h-[320px]">
         {!selected ? (
           <EmptyState title="Select a vehicle" hint="Its last-known position will appear here." />
         ) : loc.isPending ? (
@@ -136,14 +136,14 @@ function LivePanel() {
                 href={mapsLink(Number(loc.data.lat), Number(loc.data.lng))}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-brand font-semibold"
+                className="inline-flex items-center gap-1 text-brand font-semibold min-h-10"
               >
                 Open in Maps <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
             <iframe
               title="Vehicle location"
-              className="w-full h-72 rounded-lg border border-zinc-200 dark:border-zinc-800"
+              className="w-full h-60 sm:h-72 rounded-lg border border-zinc-200 dark:border-zinc-800"
               src={embedSrc(Number(loc.data.lat), Number(loc.data.lng))}
               loading="lazy"
             />
@@ -429,30 +429,34 @@ export default function TransportPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Transport Management" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Bus className="w-6 h-6 text-brand" /> Transport Management
-            </h1>
-            <p className="text-sm text-zinc-500">
-              Vehicles, routes, stops, student assignments and live tracking
-            </p>
-          </div>
-          {isAdmin && (
-            <div className="flex items-center gap-3 flex-wrap">
-              <Button variant="outline" onClick={() => setAssignOpen(true)}>
-                <UserPlus className="w-4 h-4 mr-2" /> Assign Student
-              </Button>
-              <Button variant="outline" onClick={() => setRouteOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" /> Add Route
-              </Button>
-              <Button onClick={() => setVehicleOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" /> Add Vehicle
-              </Button>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="Transport Management"
+          description="Vehicles, routes, stops, student assignments and live tracking"
+          actions={
+            isAdmin && (
+              <>
+                <Button className="w-full sm:w-auto" onClick={() => setVehicleOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Vehicle
+                </Button>
+                <Button
+                  className="flex-1 sm:flex-none"
+                  variant="outline"
+                  onClick={() => setRouteOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add Route
+                </Button>
+                <Button
+                  className="flex-1 sm:flex-none"
+                  variant="outline"
+                  onClick={() => setAssignOpen(true)}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" /> Assign Student
+                </Button>
+              </>
+            )
+          }
+        />
 
         <TabBar
           tabs={tabs.map((t) => t.label)}
@@ -472,70 +476,131 @@ export default function TransportPage() {
             ) : vehicles.length === 0 ? (
               <EmptyState title="No vehicles registered" />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Vehicle</th>
-                      <th className="px-4 py-3">Type</th>
-                      <th className="px-4 py-3">Seats</th>
-                      <th className="px-4 py-3">Driver</th>
-                      <th className="px-4 py-3">Routes</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {vehicles.map((v: any) => {
-                      const d: any = driverByVehicle.get(v.id);
-                      return (
-                        <tr key={v.id}>
-                          <td className="px-4 py-3 font-semibold">{v.vehicleNo}</td>
-                          <td className="px-4 py-3">{v.type}</td>
-                          <td className="px-4 py-3 font-mono">{v.capacity}</td>
-                          <td className="px-4 py-3">
-                            {d?.driverName ?? <span className="text-zinc-400">Not assigned</span>}
-                            {d?.driverPhone && (
-                              <span className="block text-[10px] text-zinc-400 font-mono">
-                                {d.driverPhone}
-                              </span>
-                            )}
-                            {d?.hasLogin && <Badge variant="info">Has login</Badge>}
-                          </td>
-                          <td className="px-4 py-3">
-                            {(v.routes ?? []).map((r: any) => r.name).join(', ') || '—'}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              aria-label="Assign driver"
-                              onClick={() => startDriver(v)}
-                            >
-                              <UserCog className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              aria-label="Edit vehicle"
-                              onClick={() => startEditVehicle(v)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              aria-label="Delete vehicle"
-                              onClick={() => setVehicleToDelete(v)}
-                            >
-                              <Trash2 className="w-4 h-4 text-rose-500" />
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {vehicles.map((v: any) => {
+                    const d: any = driverByVehicle.get(v.id);
+                    return (
+                      <li
+                        key={v.id}
+                        className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">{v.vehicleNo}</p>
+                            <p className="text-caption capitalize">
+                              {v.type} · {v.capacity} seats
+                            </p>
+                          </div>
+                          {d?.hasLogin && <Badge variant="info">Has login</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          <p>
+                            Driver:{' '}
+                            <span className="text-foreground">
+                              {d?.driverName ?? 'Not assigned'}
+                            </span>
+                            {d?.driverPhone ? ` · ${d.driverPhone}` : ''}
+                          </p>
+                          <p className="truncate">
+                            Routes: {(v.routes ?? []).map((r: any) => r.name).join(', ') || '—'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startDriver(v)}
+                          >
+                            <UserCog className="w-4 h-4 mr-1" /> Driver
+                          </Button>
+                          <Button
+                            size="icon-sm"
+                            variant="outline"
+                            aria-label="Edit vehicle"
+                            onClick={() => startEditVehicle(v)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="icon-sm"
+                            variant="outline"
+                            aria-label="Delete vehicle"
+                            onClick={() => setVehicleToDelete(v)}
+                          >
+                            <Trash2 className="w-4 h-4 text-rose-500" />
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Vehicle</th>
+                        <th className="px-4 py-3">Type</th>
+                        <th className="px-4 py-3">Seats</th>
+                        <th className="px-4 py-3">Driver</th>
+                        <th className="px-4 py-3">Routes</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {vehicles.map((v: any) => {
+                        const d: any = driverByVehicle.get(v.id);
+                        return (
+                          <tr key={v.id}>
+                            <td className="px-4 py-3 font-semibold">{v.vehicleNo}</td>
+                            <td className="px-4 py-3">{v.type}</td>
+                            <td className="px-4 py-3 font-mono">{v.capacity}</td>
+                            <td className="px-4 py-3">
+                              {d?.driverName ?? <span className="text-zinc-400">Not assigned</span>}
+                              {d?.driverPhone && (
+                                <span className="block text-[10px] text-zinc-400 font-mono">
+                                  {d.driverPhone}
+                                </span>
+                              )}
+                              {d?.hasLogin && <Badge variant="info">Has login</Badge>}
+                            </td>
+                            <td className="px-4 py-3">
+                              {(v.routes ?? []).map((r: any) => r.name).join(', ') || '—'}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Assign driver"
+                                onClick={() => startDriver(v)}
+                              >
+                                <UserCog className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Edit vehicle"
+                                onClick={() => startEditVehicle(v)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Delete vehicle"
+                                onClick={() => setVehicleToDelete(v)}
+                              >
+                                <Trash2 className="w-4 h-4 text-rose-500" />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
 
           {activeKey === 'routes' &&
@@ -546,15 +611,15 @@ export default function TransportPage() {
             ) : routes.length === 0 ? (
               <EmptyState title="No routes yet" />
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
                 {routes.map((r: any) => (
                   <div
                     key={r.id}
-                    className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-3"
+                    className="border border-border rounded-2xl p-3.5 sm:p-5 flex flex-col gap-3 min-w-0 bg-card"
                   >
                     <div className="flex justify-between items-start gap-2">
-                      <div>
-                        <h3 className="font-bold text-base">{r.name}</h3>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-base break-words">{r.name}</h3>
                         <p className="text-xs text-zinc-500">
                           {r.vehicle?.vehicleNo ?? 'No vehicle'} · {r._count?.students ?? 0}{' '}
                           students
@@ -590,19 +655,19 @@ export default function TransportPage() {
                       {(r.stops ?? []).map((s: any) => (
                         <div
                           key={s.id}
-                          className="flex items-center justify-between text-xs border-b border-zinc-100 dark:border-zinc-800 py-1.5"
+                          className="flex items-center justify-between gap-2 text-xs border-b border-border py-1.5"
                         >
-                          <span className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center text-[10px] font-bold">
+                          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span className="w-5 h-5 shrink-0 rounded-full bg-brand/10 text-brand flex items-center justify-center text-[10px] font-bold">
                               {s.sequence}
                             </span>
                             <MapPin className="w-3 h-3 text-zinc-400" /> {s.name}
-                            <span className="text-zinc-400">
+                            <span className="text-muted-foreground">
                               {[s.morningTime, s.eveningTime].filter(Boolean).join(' / ')}
                             </span>
                           </span>
                           {isAdmin && (
-                            <span>
+                            <span className="flex shrink-0">
                               <Button
                                 size="icon-xs"
                                 variant="ghost"
@@ -644,45 +709,82 @@ export default function TransportPage() {
             ) : (assignmentsQ.data ?? []).length === 0 ? (
               <EmptyState title="No students assigned to transport" />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Student</th>
-                      <th className="px-4 py-3">Route</th>
-                      <th className="px-4 py-3">Vehicle</th>
-                      <th className="px-4 py-3">Pickup stop</th>
-                      <th className="px-4 py-3">Fee</th>
-                      {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {(assignmentsQ.data ?? []).map((a: any) => (
-                      <tr key={a.id}>
-                        <td className="px-4 py-3 font-semibold">
-                          {a.student?.name}
-                          <span className="block text-[10px] font-normal text-zinc-400">
-                            {a.student?.admissionNo}
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {(assignmentsQ.data ?? []).map((a: any) => (
+                    <li
+                      key={a.id}
+                      className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{a.student?.name}</p>
+                          <p className="text-caption">{a.student?.admissionNo}</p>
+                        </div>
+                        {a.feeAmount != null && (
+                          <span className="tabular font-bold text-sm shrink-0">
+                            {inr(a.feeAmount)}
                           </span>
-                        </td>
-                        <td className="px-4 py-3">{a.route?.name}</td>
-                        <td className="px-4 py-3">{a.route?.vehicle?.vehicleNo ?? '—'}</td>
-                        <td className="px-4 py-3">{a.pickupStop?.name ?? '—'}</td>
-                        <td className="px-4 py-3 font-mono">
-                          {a.feeAmount != null ? inr(a.feeAmount) : '—'}
-                        </td>
-                        {isAdmin && (
-                          <td className="px-4 py-3 text-center">
-                            <Button size="sm" variant="outline" onClick={() => setToUnassign(a)}>
-                              <UserMinus className="w-3.5 h-3.5 mr-1" /> Unassign
-                            </Button>
-                          </td>
                         )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {a.route?.name} · {a.route?.vehicle?.vehicleNo ?? '—'}
+                        <br />
+                        Pickup: {a.pickupStop?.name ?? '—'}
+                      </p>
+                      {isAdmin && (
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setToUnassign(a)}
+                        >
+                          <UserMinus className="w-3.5 h-3.5 mr-1" /> Unassign
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Student</th>
+                        <th className="px-4 py-3">Route</th>
+                        <th className="px-4 py-3">Vehicle</th>
+                        <th className="px-4 py-3">Pickup stop</th>
+                        <th className="px-4 py-3">Fee</th>
+                        {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {(assignmentsQ.data ?? []).map((a: any) => (
+                        <tr key={a.id}>
+                          <td className="px-4 py-3 font-semibold">
+                            {a.student?.name}
+                            <span className="block text-[10px] font-normal text-zinc-400">
+                              {a.student?.admissionNo}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">{a.route?.name}</td>
+                          <td className="px-4 py-3">{a.route?.vehicle?.vehicleNo ?? '—'}</td>
+                          <td className="px-4 py-3">{a.pickupStop?.name ?? '—'}</td>
+                          <td className="px-4 py-3 font-mono">
+                            {a.feeAmount != null ? inr(a.feeAmount) : '—'}
+                          </td>
+                          {isAdmin && (
+                            <td className="px-4 py-3 text-center">
+                              <Button size="sm" variant="outline" onClick={() => setToUnassign(a)}>
+                                <UserMinus className="w-3.5 h-3.5 mr-1" /> Unassign
+                              </Button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
 
           {activeKey === 'live' && <LivePanel />}
@@ -702,7 +804,7 @@ export default function TransportPage() {
               placeholder="MH-12-AB-1234"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Type">
               <Select
                 value={vehicleForm.type}
@@ -764,7 +866,7 @@ export default function TransportPage() {
             />
           </Field>
           {!driver.userId && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
               <Field label="Driver name">
                 <Input
                   value={driver.name}
@@ -779,7 +881,7 @@ export default function TransportPage() {
               </Field>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Attendant name">
               <Input
                 value={driver.attName}
@@ -830,7 +932,7 @@ export default function TransportPage() {
               onChange={(e) => setRouteForm({ ...routeForm, vehicleId: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Morning start">
               <Input
                 type="time"
@@ -869,7 +971,7 @@ export default function TransportPage() {
         title={editingStop ? 'Edit Stop' : `Add stop to ${stopRoute?.name ?? ''}`}
       >
         <div className="flex flex-col gap-4 py-2">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
             <div className="col-span-2">
               <Field label="Stop name *">
                 <Input
@@ -887,7 +989,7 @@ export default function TransportPage() {
               />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Morning pickup">
               <Input
                 type="time"
@@ -981,7 +1083,7 @@ export default function TransportPage() {
               onChange={(e) => setAssign({ ...assign, stopId: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Academic year *">
               <AcademicYearSelect
                 value={assign.academicYearId}

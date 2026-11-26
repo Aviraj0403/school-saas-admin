@@ -216,13 +216,13 @@ export default function OnlineClassesPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Online Classes" subtitle="Academics" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <Video className="w-6 h-6 text-brand" />
               Online Classrooms
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Schedule video lectures and mark live attendance
             </p>
           </div>
@@ -272,11 +272,11 @@ export default function OnlineClassesPage() {
           </div>
         )}
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+        <div className="surface-card p-5 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Classrooms</h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <h2 className="text-base font-bold text-foreground">Classrooms</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Hosts start and end their own classes; ending a class syncs attendance.
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function OnlineClassesPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center py-20 text-zinc-500 text-sm">
+            <div className="flex justify-center items-center py-20 text-muted-foreground text-sm">
               Loading classes...
             </div>
           ) : isError ? (
@@ -304,7 +304,7 @@ export default function OnlineClassesPage() {
             <div className="flex flex-col items-center justify-center py-16 text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
               <Video className="w-10 h-10 mb-2 opacity-50" />
               <p className="text-sm font-semibold">No Classes Found</p>
-              <p className="text-xs mt-0.5 text-zinc-500">
+              <p className="text-xs mt-0.5 text-muted-foreground">
                 Try a different search term or schedule a new class.
               </p>
             </div>
@@ -322,15 +322,15 @@ export default function OnlineClassesPage() {
                         <Badge variant="secondary">{c.subject?.name || 'Study Room'}</Badge>
                         {getStatusBadge(c.status)}
                       </div>
-                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1 leading-snug">
+                      <h3 className="font-semibold text-sm text-foreground mt-1 leading-snug">
                         {c.title}
                       </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
                         {c.description || 'No class summary description provided.'}
                       </p>
                     </div>
 
-                    <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-1 flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                    <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-1 flex flex-col gap-2 text-xs text-muted-foreground font-medium">
                       <div className="flex justify-between items-center">
                         <span>Class:</span>
                         <span className="text-zinc-900 dark:text-zinc-300 font-semibold">
@@ -434,7 +434,7 @@ export default function OnlineClassesPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Target Class *
@@ -461,7 +461,7 @@ export default function OnlineClassesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Schedule Date & Time *
@@ -538,18 +538,18 @@ export default function OnlineClassesPage() {
         className="max-w-2xl"
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Mark who attended and for how many minutes. Students present for 10 minutes or more
             count as present in the class register.
           </p>
           {loadingRoster ? (
-            <p className="text-sm text-zinc-500">Loading students...</p>
+            <p className="text-sm text-muted-foreground">Loading students...</p>
           ) : roster.length === 0 ? (
-            <p className="text-sm text-zinc-500">No students in this class.</p>
+            <p className="text-sm text-muted-foreground">No students in this class.</p>
           ) : (
             <div className="max-h-80 overflow-y-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
                   <tr>
                     <th className="py-2 pr-3">Student</th>
                     <th className="py-2 pr-3">Present</th>

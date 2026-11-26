@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { CreditCard, IndianRupee, Printer, Receipt } from 'lucide-react';
+import { CreditCard, Printer, Receipt } from 'lucide-react';
 import PortalShell from '@/components/portal/PortalShell';
 import { QueryState, errorMessage } from '@/components/portal/QueryState';
 import { loadRazorpay, openRazorpay, RazorpaySuccess } from '@/components/portal/razorpay';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { StatCard } from '@/components/ui/StatCard';
 import {
   useFamilyFees,
   useFamilyPayments,
@@ -121,107 +120,89 @@ function FeesView({ studentId, studentName }: { studentId: string; studentName: 
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       <QueryState query={fees}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Total due"
-            value={inr(totalDue)}
-            icon={IndianRupee}
-            gradientClass="from-pink-500 to-rose-500"
-            footerText={totalDue > 0 ? 'Outstanding balance' : 'All clear'}
-          />
-          <StatCard
-            label="Total paid"
-            value={inr(data?.totalPaid)}
-            icon={Receipt}
-            gradientClass="from-emerald-400 to-teal-500"
-            footerText="This session"
-          />
-          <StatCard
-            label="Fee heads pending"
-            value={data?.outstanding?.length ?? 0}
-            icon={CreditCard}
-            gradientClass="from-amber-400 to-orange-500"
-            footerText="Items with a balance"
-          />
-        </div>
-
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-card sm:p-6">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-display text-lg font-semibold">Dues</h3>
-            {totalDue > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  type="number"
-                  min={1}
-                  max={totalDue}
-                  placeholder={`Amount (default ${inr(totalDue)})`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-52"
-                />
-                <Button onClick={pay} isLoading={paying}>
-                  <CreditCard /> Pay online
-                </Button>
-              </div>
-            )}
-          </div>
-          {(data?.outstanding ?? []).length === 0 ? (
-            <p className="text-sm text-zinc-500">No fees are outstanding. 🎉</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-zinc-400">
-                    <th className="py-2 pr-3">Fee</th>
-                    <th className="py-2 pr-3">Amount</th>
-                    <th className="py-2 pr-3">Paid</th>
-                    <th className="py-2">Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.outstanding.map((o: any) => (
-                    <tr key={o.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-3">
-                        <div className="font-medium">{o.name}</div>
-                        {o.dueDate && (
-                          <div className="text-xs text-zinc-500">Due {formatDate(o.dueDate)}</div>
-                        )}
-                      </td>
-                      <td className="py-2.5 pr-3">{inr(o.amount)}</td>
-                      <td className="py-2.5 pr-3">{inr(o.paidAmount)}</td>
-                      <td className="py-2.5 font-semibold">{inr(o.remainingAmount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <section className="relative overflow-hidden rounded-3xl bg-brand-gradient p-5 text-white shadow-glow sm:p-6">
+          <p className="text-xs font-medium uppercase tracking-wider text-white/80">Amount due</p>
+          <p className="tabular mt-1 text-4xl font-semibold leading-tight">{inr(totalDue)}</p>
+          <p className="mt-1 text-sm text-white/80">
+            {totalDue > 0
+              ? `${data?.outstanding?.length ?? 0} fee item(s) pending · Paid so far ${inr(data?.totalPaid)}`
+              : `All clear · Paid so far ${inr(data?.totalPaid)}`}
+          </p>
+          {totalDue > 0 && (
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={totalDue}
+                placeholder={`Amount (default ${inr(totalDue)})`}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="h-12 w-full bg-white text-zinc-900 sm:max-w-64"
+              />
+              <button
+                onClick={pay}
+                disabled={paying}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white text-[15px] font-semibold text-zinc-900 shadow-lg transition active:scale-[0.98] disabled:opacity-60 sm:w-auto sm:px-8"
+              >
+                <CreditCard className="size-4" /> {paying ? 'Starting…' : 'Pay now'}
+              </button>
             </div>
           )}
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-card sm:p-6">
-          <h3 className="mb-4 font-display text-lg font-semibold">Receipts</h3>
+        {(data?.outstanding ?? []).length > 0 && (
+          <section className="surface-card p-4 sm:p-6">
+            <h3 className="text-card-title mb-3">Dues</h3>
+            <ul className="space-y-2">
+              {data.outstanding.map((o: any) => (
+                <li
+                  key={o.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{o.name}</div>
+                    <div className="text-caption tabular">
+                      {o.dueDate ? `Due ${formatDate(o.dueDate)} · ` : ''}
+                      {inr(o.paidAmount)} of {inr(o.amount)} paid
+                    </div>
+                  </div>
+                  <span className="tabular shrink-0 font-semibold text-rose-600">
+                    {inr(o.remainingAmount)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="surface-card p-4 sm:p-6">
+          <h3 className="text-card-title mb-3">Receipts</h3>
           {(data?.paid ?? []).length === 0 ? (
-            <p className="text-sm text-zinc-500">No payments recorded yet.</p>
+            <p className="text-caption">No payments recorded yet.</p>
           ) : (
             <ul className="space-y-2">
               {data.paid.map((p: any) => (
                 <li
                   key={p.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
                 >
                   <div className="min-w-0">
-                    <div className="font-semibold">{p.feeStructure?.name ?? 'Fee payment'}</div>
-                    <div className="text-xs text-zinc-500">
+                    <div className="truncate font-semibold">
+                      {p.feeStructure?.name ?? 'Fee payment'}
+                    </div>
+                    <div className="text-caption truncate">
                       {p.receiptNo} · {formatDate(p.paidAt ?? p.createdAt)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold">{inr(p.totalAmount)}</span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="tabular font-semibold">{inr(p.totalAmount)}</span>
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      aria-label="Print receipt"
                       onClick={() =>
                         printReceipt(
                           {
@@ -234,7 +215,7 @@ function FeesView({ studentId, studentName }: { studentId: string; studentName: 
                         )
                       }
                     >
-                      <Printer /> Receipt
+                      <Printer />
                     </Button>
                   </div>
                 </li>
@@ -244,26 +225,26 @@ function FeesView({ studentId, studentName }: { studentId: string; studentName: 
         </section>
       </QueryState>
 
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-card sm:p-6">
-        <h3 className="mb-4 font-display text-lg font-semibold">Online payment history</h3>
+      <section className="surface-card p-4 sm:p-6">
+        <h3 className="text-card-title mb-3">Payment history</h3>
         <QueryState
           query={payments}
           isEmpty={(payments.data ?? []).length === 0}
           emptyText="No online payments have been made yet."
-          emptyIcon={CreditCard}
+          emptyIcon={Receipt}
         >
           <ul className="space-y-2">
             {(payments.data ?? []).map((p: any) => (
               <li
                 key={p.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
               >
-                <div>
-                  <div className="font-semibold">{p.receiptNo}</div>
-                  <div className="text-xs text-zinc-500">{formatDate(p.paidAt ?? p.createdAt)}</div>
+                <div className="min-w-0">
+                  <div className="truncate font-semibold">{p.receiptNo}</div>
+                  <div className="text-caption">{formatDate(p.paidAt ?? p.createdAt)}</div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold">{inr(p.totalAmount)}</span>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="tabular font-semibold">{inr(p.totalAmount)}</span>
                   <Badge
                     variant={
                       p.status === 'PAID'

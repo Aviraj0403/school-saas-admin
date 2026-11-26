@@ -74,7 +74,7 @@ export default function StudentsPage() {
   };
 
   const actionsTemplate = (rowData: any) => (
-    <div className="flex gap-2 justify-center">
+    <div className="flex justify-center gap-2">
       <Link href={`/students/${rowData.id}`}>
         <button
           className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-md transition-all active:scale-95"
@@ -170,15 +170,15 @@ export default function StudentsPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Students" />
-      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-6 md:pb-10 w-full">
+      <div className="flex w-full min-w-0 flex-col gap-4 pb-4 sm:gap-6">
         {/* Header Block */}
         <PageHeader
           title="Students"
           description="Every enrolled student, their class and status in one directory."
           actions={
             canWriteStudent ? (
-              <Link href="/students/admissions">
-                <Button>
+              <Link href="/students/admissions" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto">
                   <Plus className="w-4 h-4" />
                   New admission
                 </Button>
@@ -188,14 +188,12 @@ export default function StudentsPage() {
         />
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           <StatCard
             label="Total Enrolled"
             value={isPending ? '...' : totalRecords}
             icon={Users}
             gradientClass="from-blue-500 to-blue-600"
-            iconBgClass="bg-blue-50 dark:bg-blue-900/20"
-            iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Total students in system"
           />
           <StatCard
@@ -203,8 +201,6 @@ export default function StudentsPage() {
             value={isPending ? '...' : studentsList.filter((s: any) => isStudentActive(s)).length}
             icon={CheckCircle}
             gradientClass="from-emerald-500 to-teal-500"
-            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
-            iconColorClass="text-emerald-600 dark:text-emerald-400"
             footerText="Currently active students"
           />
           <StatCard
@@ -212,8 +208,6 @@ export default function StudentsPage() {
             value={isPending ? '...' : studentsList.filter((s: any) => !isStudentActive(s)).length}
             icon={AlertTriangle}
             gradientClass="from-amber-500 to-orange-500"
-            iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
-            iconColorClass="text-amber-600 dark:text-amber-400"
             footerText="Inactive or suspended"
           />
           <StatCard
@@ -221,151 +215,182 @@ export default function StudentsPage() {
             value={isPending ? '...' : Math.min(totalRecords, 5)}
             icon={UserPlus}
             gradientClass="from-purple-500 to-purple-600"
-            iconBgClass="bg-purple-50 dark:bg-purple-900/20"
-            iconColorClass="text-purple-600 dark:text-purple-400"
             footerText="Recent enrollments"
           />
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
-              <Input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPagination((p) => ({ ...p, pageIndex: 0 }));
-                }}
-                placeholder="Search students..."
-                className="w-full pl-10"
-              />
-            </div>
+        <div className="surface-card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
+              placeholder="Search students..."
+              className="w-full pl-10"
+            />
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                viewMode === 'grid'
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="hidden sm:inline">Grid</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                viewMode === 'table'
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              <span className="hidden sm:inline">List</span>
-            </button>
+          <div className="hidden gap-1 rounded-xl bg-muted p-1 md:flex">
+            {(
+              [
+                ['grid', LayoutGrid, 'Grid'],
+                ['table', List, 'List'],
+              ] as const
+            ).map(([mode, Icon, label]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-semibold transition-all ${
+                  viewMode === mode
+                    ? 'bg-card text-brand shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="size-4" />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Dynamic Catalog Section */}
         {isError ? (
-          <div className="p-6 bg-red-50 text-red-600 rounded-md border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
-            <AlertCircle className="w-6 h-6" />
-            <div>
-              <h3 className="font-bold">Failed to load</h3>
-              <p className="text-sm opacity-80">{(error as any)?.message}</p>
+          <div className="flex items-center gap-4 rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-600 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400">
+            <AlertCircle className="size-6 shrink-0" />
+            <div className="min-w-0">
+              <h3 className="font-semibold">Failed to load</h3>
+              <p className="break-words text-sm opacity-80">{(error as any)?.message}</p>
             </div>
           </div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {isPending ? (
-              <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
-                <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
-              </div>
-            ) : studentsList.length === 0 ? (
-              <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
-                <p className="text-zinc-500 text-sm">No students found matching current filters.</p>
-              </div>
-            ) : (
-              studentsList.map((student: any) => {
-                const fullName =
-                  student.name ||
-                  `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
-                  'Unnamed student';
-                return (
-                  <div
-                    key={student.id}
-                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all duration-300 animate-fade-in group"
-                  >
-                    <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
-                      <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900">
-                        {student.firstName ? student.firstName[0] : '?'}
-                        {student.lastName ? student.lastName[0] : ''}
+        ) : (
+          <>
+            {/* Cards: always on phones, and on larger screens in grid mode */}
+            <div
+              className={`grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 ${
+                viewMode === 'table' ? 'md:hidden' : ''
+              }`}
+            >
+              {isPending ? (
+                <>
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="h-40 animate-pulse rounded-2xl bg-muted" />
+                  ))}
+                </>
+              ) : studentsList.length === 0 ? (
+                <div className="surface-card col-span-full flex flex-col items-center gap-3 p-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No students found matching current filters.
+                  </p>
+                  {canWriteStudent && (
+                    <Link href="/students/admissions">
+                      <Button size="sm">
+                        <Plus className="size-4" /> New admission
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                studentsList.map((student: any) => {
+                  const fullName =
+                    student.name ||
+                    `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
+                    'Unnamed student';
+                  return (
+                    <div
+                      key={student.id}
+                      className="surface-card animate-fade-in flex min-w-0 flex-col"
+                    >
+                      <div className="flex items-center gap-3 border-b border-border p-4">
+                        <div className="tone-indigo tone-chip flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase">
+                          {student.firstName ? student.firstName[0] : '?'}
+                          {student.lastName ? student.lastName[0] : ''}
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <h3 className="truncate text-sm font-semibold text-foreground">
+                            {fullName}
+                          </h3>
+                          <p className="tabular mt-0.5 truncate font-mono text-xs text-muted-foreground">
+                            {student.admissionNo}
+                          </p>
+                        </div>
+                        {statusTemplate(student)}
                       </div>
-                      <div className="flex flex-col flex-1">
-                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1">
-                          {fullName}
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
-                          {student.admissionNo}
-                        </p>
-                      </div>
-                      {statusTemplate(student)}
-                    </div>
 
-                    <div className="p-4 flex flex-col gap-3">
-                      <div className="flex items-center justify-between text-sm py-2 border-b border-zinc-100 dark:border-zinc-800">
-                        <span className="text-zinc-500">Class</span>
-                        <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                          {student.className ||
-                            (student.class
-                              ? `${student.class.name} ${student.class.section ?? ''}`.trim()
-                              : 'Not assigned')}
-                        </span>
-                      </div>
+                      <div className="flex flex-col gap-3 p-4">
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="text-muted-foreground">Class</span>
+                          <span className="truncate font-medium text-foreground">
+                            {student.className ||
+                              (student.class
+                                ? `${student.class.name} ${student.class.section ?? ''}`.trim()
+                                : 'Not assigned')}
+                          </span>
+                        </div>
 
-                      <div className="flex justify-end gap-2 mt-1">
-                        <Link href={`/students/${student.id}`} className="flex-1">
-                          <button className="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border border-transparent rounded-md transition-all flex justify-center items-center">
-                            View Profile
-                          </button>
-                        </Link>
-                        {canDeleteStudent && (
-                          <button
-                            onClick={() => handleDelete(student.id)}
-                            className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex items-center justify-center"
-                            title="Delete Student"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                        <div className="flex gap-2">
+                          <Link href={`/students/${student.id}`} className="flex-1">
+                            <button className="tone-indigo tone-chip flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-all active:scale-[0.98] sm:h-10">
+                              View Profile
+                            </button>
+                          </Link>
+                          {canDeleteStudent && (
+                            <button
+                              onClick={() => handleDelete(student.id)}
+                              className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20 sm:size-10"
+                              title="Delete Student"
+                              aria-label="Delete student"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })
+              )}
+            </div>
+
+            {viewMode === 'table' && (
+              <div className="hidden w-full md:block">
+                <TanstackTable
+                  data={studentsList}
+                  columns={columns}
+                  isLoading={isPending}
+                  pagination={pagination}
+                  setPagination={setPagination}
+                  pageCount={pageCount}
+                />
+              </div>
             )}
 
-            {/* Grid Pagination */}
+            {/* Pagination for card view (phones, and grid mode) */}
             {!isPending && studentsList.length > 0 && (
-              <div className="col-span-full flex justify-between items-center pt-4">
-                <span className="text-sm font-medium text-zinc-500">
+              <div
+                className={`flex items-center justify-between gap-3 ${
+                  viewMode === 'table' ? 'md:hidden' : ''
+                }`}
+              >
+                <span className="tabular text-sm font-medium text-muted-foreground">
                   Page {pagination.pageIndex + 1} of {pageCount}
                 </span>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() =>
                       setPagination((p) => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))
                     }
                     disabled={pagination.pageIndex === 0}
-                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Previous
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() =>
                       setPagination((p) => ({
                         ...p,
@@ -373,25 +398,13 @@ export default function StudentsPage() {
                       }))
                     }
                     disabled={pagination.pageIndex >= pageCount - 1}
-                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
-          </div>
-        ) : (
-          <div className="w-full">
-            <TanstackTable
-              data={studentsList}
-              columns={columns}
-              isLoading={isPending}
-              pagination={pagination}
-              setPagination={setPagination}
-              pageCount={pageCount}
-            />
-          </div>
+          </>
         )}
       </div>
     </DashboardLayout>

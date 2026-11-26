@@ -144,49 +144,55 @@ function FieldRow({
 // ── Step Indicator ───────────────────────────────────────────────────
 function StepIndicator({ steps, current }: { steps: typeof ALL_STEPS; current: number }) {
   return (
-    <div className="flex items-center gap-0">
-      {steps.map((step, idx) => {
-        const isDone = idx < current;
-        const isActive = idx === current;
-        const isLast = idx === steps.length - 1;
-        return (
-          <React.Fragment key={step.id}>
-            <div className="flex flex-col items-center gap-1">
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 ${
-                  isDone
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                    : isActive
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-300 dark:ring-blue-700'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500'
-                }`}
-              >
-                {isDone ? (
-                  <i className="pi pi-check text-[10px]"></i>
-                ) : (
-                  <i className={`pi ${step.icon} text-[10px]`}></i>
-                )}
+    <div className="flex flex-col gap-3">
+      <p className="text-sm font-semibold text-foreground md:hidden">
+        Step {current + 1} of {steps.length}
+        <span className="font-normal text-muted-foreground"> · {steps[current]?.label}</span>
+      </p>
+      <div className="flex items-center gap-0">
+        {steps.map((step, idx) => {
+          const isDone = idx < current;
+          const isActive = idx === current;
+          const isLast = idx === steps.length - 1;
+          return (
+            <React.Fragment key={step.id}>
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  className={`size-8 shrink-0 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 sm:size-9 ${
+                    isDone
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                      : isActive
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-300 dark:ring-blue-700'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500'
+                  }`}
+                >
+                  {isDone ? (
+                    <i className="pi pi-check text-[10px]"></i>
+                  ) : (
+                    <i className={`pi ${step.icon} text-[10px]`}></i>
+                  )}
+                </div>
+                <span
+                  className={`text-[9px] font-bold uppercase tracking-wider hidden md:block ${
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : isDone
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-zinc-400'
+                  }`}
+                >
+                  {step.label}
+                </span>
               </div>
-              <span
-                className={`text-[9px] font-bold uppercase tracking-wider hidden md:block ${
-                  isActive
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : isDone
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-zinc-400'
-                }`}
-              >
-                {step.label}
-              </span>
-            </div>
-            {!isLast && (
-              <div
-                className={`h-0.5 flex-1 mx-1 rounded-full transition-all duration-500 ${isDone ? 'bg-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800'}`}
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
+              {!isLast && (
+                <div
+                  className={`h-0.5 flex-1 mx-1 rounded-full transition-all duration-500 ${isDone ? 'bg-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800'}`}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -572,13 +578,13 @@ export default function AdmissionsPage() {
     return (
       <DashboardLayout>
         <PageBreadcrumb title="Admissions" subtitle="Students" />
-        <div className="flex flex-col gap-4 pb-10">
+        <div className="flex min-w-0 flex-col gap-4 pb-4">
           <PageHeader
             title="Admissions"
             description="Admit new students one by one, or bring existing students in from a spreadsheet."
           />
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col items-stretch justify-between gap-3 border-b border-border pb-4 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <Button onClick={() => setView('wizard')} className="shadow-md">
                 <i className="pi pi-user-plus"></i> New admission
               </Button>
@@ -597,8 +603,8 @@ export default function AdmissionsPage() {
 
           {/* Bulk Onboarding Modal Dialog */}
           {showBulkModal && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-5 animate-fade-in">
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4">
+              <div className="animate-slide-up flex max-h-[92dvh] w-full max-w-2xl flex-col gap-5 overflow-y-auto rounded-t-[28px] border border-border bg-card p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-2xl sm:p-6">
                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
@@ -616,14 +622,14 @@ export default function AdmissionsPage() {
                   </div>
                   <button
                     onClick={() => setShowBulkModal(false)}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm p-1"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                   >
                     <i className="pi pi-times"></i>
                   </button>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/40">
+                  <div className="flex flex-col gap-3 rounded-xl border border-blue-200/50 bg-blue-50/50 p-4 dark:border-blue-800/40 dark:bg-blue-950/20 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-blue-700 dark:text-blue-300">
                         Step 1: Download CSV Onboarding Template
@@ -683,7 +689,7 @@ export default function AdmissionsPage() {
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end sm:gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowBulkModal(false)}
@@ -729,7 +735,7 @@ export default function AdmissionsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             {[
               { label: 'Total Enrolled', val: totalStudents, color: 'indigo' },
               {
@@ -744,79 +750,120 @@ export default function AdmissionsPage() {
               },
               { label: 'Academic Year', val: currentYear?.name || '—', color: 'violet' },
             ].map((stat) => (
-              <div
-                key={stat.label}
-                className={`bg-${stat.color}-50/50 border border-${stat.color}-100/50 p-5 rounded-md shadow-sm`}
-              >
-                <span className={`text-xs font-semibold text-${stat.color}-600`}>{stat.label}</span>
-                <h2 className={`text-2xl font-extrabold text-${stat.color}-700 mt-1`}>
+              <div key={stat.label} className="surface-card min-w-0 p-4">
+                <span
+                  className={`tone-${stat.color} tone-chip inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold`}
+                >
+                  {stat.label}
+                </span>
+                <h2 className="tabular mt-2 truncate text-2xl font-semibold tracking-tight text-foreground">
                   {loadingStudents ? '...' : stat.val}
                 </h2>
               </div>
             ))}
           </div>
 
-          <div className="rounded-md border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-            <Table>
-              <TableHeader className="bg-zinc-50 dark:bg-zinc-900">
-                <TableRow>
-                  <TableHead>Adm. No.</TableHead>
-                  <TableHead>Student Name</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Year</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingStudents ? (
+          <div className="space-y-3 md:hidden">
+            {loadingStudents ? (
+              [0, 1, 2].map((i) => (
+                <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted" />
+              ))
+            ) : studentsList.length === 0 ? (
+              <p className="surface-card p-6 text-center text-sm text-muted-foreground">
+                No students found. Start with a new admission.
+              </p>
+            ) : (
+              studentsList.map((d: any) => (
+                <div key={d.id} className="surface-card flex items-center gap-3 p-3.5">
+                  <div className="tone-indigo tone-chip flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase">
+                    {(d.name || d.firstName || '?')[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {d.name || `${d.firstName || ''} ${d.lastName || ''}`.trim()}
+                    </p>
+                    <p className="tabular truncate text-xs text-muted-foreground">
+                      {d.admissionNo} · {d.className || d.class?.name || '—'}
+                    </p>
+                    <div className="mt-1">
+                      <Badge variant={isStudentActive(d) ? 'success' : 'warning'}>
+                        {isStudentActive(d) ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Link href={`/students/${d.id}`}>
+                    <Button variant="outline" size="sm">
+                      View
+                    </Button>
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-border bg-card max-md:border-0 max-md:bg-transparent">
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader className="bg-zinc-50 dark:bg-zinc-900">
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
-                      Loading...
-                    </TableCell>
+                    <TableHead>Adm. No.</TableHead>
+                    <TableHead>Student Name</TableHead>
+                    <TableHead>Class</TableHead>
+                    <TableHead>Year</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : studentsList.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
-                      No students found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  studentsList.map((d: any) => (
-                    <TableRow key={d.id}>
-                      <TableCell className="font-mono text-xs">{d.admissionNo}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 font-extrabold text-xs">
-                            {(d.name || d.firstName || '?')[0]}
-                          </div>
-                          <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-100">
-                            {d.name || `${d.firstName || ''} ${d.lastName || ''}`.trim()}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {d.className || d.class?.name || '—'}
-                      </TableCell>
-                      <TableCell className="text-xs">{d.academicYear?.name || '—'}</TableCell>
-                      <TableCell>
-                        <Badge variant={isStudentActive(d) ? 'success' : 'warning'}>
-                          {isStudentActive(d) ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/students/${d.id}`}>
-                          <Button variant="outline" size="sm" className="h-7 text-[10px]">
-                            View
-                          </Button>
-                        </Link>
+                </TableHeader>
+                <TableBody>
+                  {loadingStudents ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center h-24">
+                        Loading...
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-            <div className="flex items-center justify-end space-x-2 py-4 px-4 bg-zinc-50 dark:bg-zinc-900 border-t">
+                  ) : studentsList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center h-24">
+                        No students found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    studentsList.map((d: any) => (
+                      <TableRow key={d.id}>
+                        <TableCell className="font-mono text-xs">{d.admissionNo}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 font-extrabold text-xs">
+                              {(d.name || d.firstName || '?')[0]}
+                            </div>
+                            <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-100">
+                              {d.name || `${d.firstName || ''} ${d.lastName || ''}`.trim()}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {d.className || d.class?.name || '—'}
+                        </TableCell>
+                        <TableCell className="text-xs">{d.academicYear?.name || '—'}</TableCell>
+                        <TableCell>
+                          <Badge variant={isStudentActive(d) ? 'success' : 'warning'}>
+                            {isStudentActive(d) ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link href={`/students/${d.id}`}>
+                            <Button variant="outline" size="sm" className="h-7 text-[10px]">
+                              View
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex items-center justify-between gap-2 border-t bg-zinc-50 px-4 py-3 dark:bg-zinc-900 sm:justify-end sm:space-x-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -844,8 +891,8 @@ export default function AdmissionsPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Admissions" subtitle="Students" />
-      <div className="flex flex-col gap-4 pb-10">
-        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+      <div className="flex min-w-0 flex-col gap-4 pb-4">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <Button
             onClick={() => setView('list')}
             variant="ghost"
@@ -856,12 +903,12 @@ export default function AdmissionsPage() {
           </Button>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-5 shadow-sm">
+        <div className="surface-card p-4 sm:p-5">
           <StepIndicator steps={enabledSteps} current={currentStep} />
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md shadow-sm overflow-hidden">
-          <div className="bg-zinc-50 dark:bg-zinc-800/80 border-b px-6 py-4 flex items-center gap-3">
+        <div className="surface-card overflow-hidden">
+          <div className="flex items-center gap-3 border-b bg-zinc-50 px-4 py-3 dark:bg-zinc-800/80 sm:px-6 sm:py-4">
             <div className="w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center">
               <i className={`pi ${enabledSteps[currentStep]?.icon} text-blue-600`}></i>
             </div>
@@ -873,10 +920,10 @@ export default function AdmissionsPage() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {stepId === 'basic' && (
               <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                   {photoPreview ? (
                     <img
                       src={photoPreview}
@@ -1324,8 +1371,9 @@ export default function AdmissionsPage() {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center bg-white dark:bg-zinc-900 border border-zinc-100 rounded-md p-4 shadow-sm">
+        <div className="surface-card sticky bottom-24 z-10 flex items-center justify-between gap-3 p-3 shadow-lg sm:p-4 md:static md:shadow-none">
           <Button
+            className="flex-1 sm:flex-none"
             variant="outline"
             onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
             disabled={currentStep === 0}
@@ -1334,14 +1382,14 @@ export default function AdmissionsPage() {
           </Button>
 
           {currentStep < enabledSteps.length - 1 ? (
-            <Button onClick={() => setCurrentStep((s) => s + 1)}>
+            <Button className="flex-1 sm:flex-none" onClick={() => setCurrentStep((s) => s + 1)}>
               Next <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
             <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 sm:flex-none"
             >
               {createMutation.isPending ? 'Submitting...' : 'Confirm Admission'}
             </Button>

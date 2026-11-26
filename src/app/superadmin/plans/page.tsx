@@ -167,7 +167,7 @@ export default function PlansPage() {
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="flex items-center gap-2 text-page-title">
               <Layers className="h-6 w-6 text-brand" /> Subscription Plans
             </h1>
             <p className="mt-1 text-xs text-zinc-500">
@@ -257,7 +257,7 @@ export default function PlansPage() {
         title={editing ? `Edit plan — ${editing.name}` : 'New plan'}
         className="max-w-3xl"
       >
-        <form onSubmit={save} className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+        <form onSubmit={save} className="flex min-h-0 flex-col gap-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-xs font-semibold">
               Name *

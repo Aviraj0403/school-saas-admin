@@ -113,10 +113,10 @@ export default function LoginScreen() {
     'We couldn’t sign you in. Check your details and try again.';
 
   const fieldClass =
-    'w-full h-12 rounded-xl border border-zinc-200 bg-zinc-50/60 px-4 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-all hover:border-zinc-300 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/12';
+    'w-full h-12 rounded-xl border border-zinc-200 bg-zinc-50/60 px-4 text-base sm:text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-all hover:border-zinc-300 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/12';
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0b0819] font-sans text-white">
+    <div className="relative min-h-dvh overflow-hidden bg-[#0b0819] font-sans text-white">
       {/* Aurora + grid backdrop */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="animate-aurora absolute -left-40 -top-40 h-[560px] w-[560px] rounded-full bg-brand/45 blur-[140px]" />
@@ -125,7 +125,7 @@ export default function LoginScreen() {
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
       </div>
 
-      <div className="relative mx-auto grid min-h-screen max-w-[1320px] items-center gap-12 px-5 py-10 sm:px-8 lg:grid-cols-[1.1fr_minmax(0,460px)] lg:gap-16">
+      <div className="relative mx-auto grid min-h-dvh max-w-[1320px] items-center gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:gap-12 sm:px-8 sm:py-10 sm:px-8 lg:grid-cols-[1.1fr_minmax(0,460px)] lg:gap-16">
         {/* Story */}
         <section className="hidden lg:block">
           <div className="flex items-center gap-3">
@@ -220,20 +220,20 @@ export default function LoginScreen() {
 
         {/* Sign-in card */}
         <main className="mx-auto w-full max-w-[460px]">
-          <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
+          <div className="mb-6 flex items-center justify-center gap-2.5 lg:hidden">
             <span className="flex size-10 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
               <GraduationCap className="size-5" />
             </span>
             <span className="font-display text-xl font-semibold">EduNexus</span>
           </div>
 
-          <div className="animate-slide-up rounded-[28px] bg-white p-7 text-zinc-900 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.7)] sm:p-9">
-            <h2 className="font-display text-[28px] font-semibold leading-tight tracking-tight">
+          <div className="animate-slide-up rounded-3xl bg-white p-5 text-zinc-900 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.7)] sm:rounded-[28px] sm:p-9">
+            <h2 className="font-display text-2xl font-semibold leading-tight sm:text-[28px] tracking-tight">
               {detectedSchool ? `Welcome to ${detectedSchool}` : 'Welcome back 👋'}
             </h2>
             <p className="mt-1.5 text-sm text-zinc-500">Sign in to your school workspace.</p>
 
-            <form onSubmit={handleLogin} className="mt-7 flex flex-col gap-4">
+            <form onSubmit={handleLogin} className="mt-6 flex flex-col gap-4 sm:mt-7">
               {loginMutation.isError && (
                 <div
                   role="alert"
@@ -252,6 +252,9 @@ export default function LoginScreen() {
                     School code
                     <span className="font-normal text-zinc-400">Optional</span>
                   </label>
+                  <p className="-mt-0.5 text-xs text-zinc-500">
+                    Given by your school. Leave blank if you are not sure.
+                  </p>
                   <input
                     id="schoolCode"
                     type="text"
@@ -299,7 +302,7 @@ export default function LoginScreen() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                    className="absolute right-1.5 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
@@ -330,13 +333,13 @@ export default function LoginScreen() {
             </form>
 
             {showDemo && (
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <div className="flex items-center gap-3 text-xs font-medium text-zinc-400">
                   <span className="h-px flex-1 bg-zinc-200" />
                   Try a demo account
                   <span className="h-px flex-1 bg-zinc-200" />
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div className="scrollbar-none -mx-5 mt-4 flex snap-x gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
                   {[...(isLocal ? LOCAL_ONLY_ACCOUNTS : []), ...DEMO_ACCOUNTS].map((demo) => (
                     <button
                       key={demo.label}
@@ -345,7 +348,7 @@ export default function LoginScreen() {
                         setIdentifier(demo.email);
                         setPassword(demo.pass);
                       }}
-                      className={`h-9 rounded-xl border text-xs font-semibold transition-all ${
+                      className={`h-10 shrink-0 snap-start whitespace-nowrap rounded-xl border px-4 text-xs sm:px-2 font-semibold transition-all ${
                         identifier === demo.email
                           ? 'border-transparent bg-brand-gradient text-white shadow-glow'
                           : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'

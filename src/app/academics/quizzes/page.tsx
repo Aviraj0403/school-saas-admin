@@ -308,13 +308,13 @@ export default function QuizzesPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Quizzes" subtitle="Academics" />
       <div className="flex flex-col gap-6 animate-fade-in pb-10">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <HelpCircle className="w-6 h-6 text-brand" />
               Online Quizzes
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Create tests, manage question banks, and evaluate responses
             </p>
           </div>
@@ -324,7 +324,7 @@ export default function QuizzesPage() {
           </Button>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4">
+        <div className="surface-card p-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <Input
@@ -337,10 +337,10 @@ export default function QuizzesPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden shadow-sm">
+        <div className="surface-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                 <tr>
                   <th className="px-6 py-4">Quiz Title</th>
                   <th className="px-6 py-4">Class</th>
@@ -354,10 +354,7 @@ export default function QuizzesPage() {
               <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400"
-                    >
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                       Loading quizzes...
                     </td>
                   </tr>
@@ -369,10 +366,7 @@ export default function QuizzesPage() {
                   </tr>
                 ) : filteredQuizzes.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400"
-                    >
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                       No quizzes found.
                     </td>
                   </tr>
@@ -382,9 +376,7 @@ export default function QuizzesPage() {
                       key={quiz.id}
                       className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
                     >
-                      <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
-                        {quiz.title}
-                      </td>
+                      <td className="px-6 py-4 font-semibold text-foreground">{quiz.title}</td>
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">
                         {quiz.class ? `${quiz.class.name} ${quiz.class.section ?? ''}` : '-'}
                       </td>
@@ -408,7 +400,7 @@ export default function QuizzesPage() {
                             aria-label="Edit quiz"
                             title="Edit quiz"
                             onClick={() => openEdit(quiz)}
-                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-muted-foreground transition-colors"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
@@ -419,7 +411,7 @@ export default function QuizzesPage() {
                               resetQuestionForm();
                               setQuestionsQuiz(quiz);
                             }}
-                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-muted-foreground transition-colors"
                           >
                             <List className="w-4 h-4" />
                           </button>
@@ -427,7 +419,7 @@ export default function QuizzesPage() {
                             aria-label="View attempts"
                             title="Attempts & grading"
                             onClick={() => setAttemptsQuiz(quiz)}
-                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-muted-foreground transition-colors"
                           >
                             <Users className="w-4 h-4" />
                           </button>
@@ -475,7 +467,7 @@ export default function QuizzesPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Duration (Mins) *</label>
               <Input
@@ -503,7 +495,7 @@ export default function QuizzesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Class *</label>
               <Select
@@ -571,9 +563,11 @@ export default function QuizzesPage() {
       >
         <div className="flex flex-col gap-5">
           {loadingQuestions ? (
-            <p className="text-sm text-zinc-500">Loading questions...</p>
+            <p className="text-sm text-muted-foreground">Loading questions...</p>
           ) : (questions as any[]).length === 0 ? (
-            <p className="text-sm text-zinc-500">No questions yet. Add the first one below.</p>
+            <p className="text-sm text-muted-foreground">
+              No questions yet. Add the first one below.
+            </p>
           ) : (
             <ol className="flex flex-col gap-2">
               {(questions as any[]).map((q, idx) => (
@@ -586,7 +580,7 @@ export default function QuizzesPage() {
                       <p className="font-semibold">
                         {idx + 1}. {q.questionText}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {q.questionType} · {q.marks} mark(s)
                       </p>
                       {Array.isArray(q.options) && q.options.length > 0 && (
@@ -610,7 +604,7 @@ export default function QuizzesPage() {
                       <button
                         aria-label="Edit question"
                         onClick={() => startEditQuestion(q)}
-                        className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500"
+                        className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-muted-foreground"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
@@ -641,7 +635,7 @@ export default function QuizzesPage() {
                 className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className={labelCls}>Type</label>
                 <Select
@@ -709,7 +703,7 @@ export default function QuizzesPage() {
             )}
 
             {qForm.questionType === 'SHORT_ANSWER' && (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 Short answers are marked by you from the attempts list.
               </p>
             )}
@@ -736,13 +730,13 @@ export default function QuizzesPage() {
         className="max-w-3xl"
       >
         {loadingAttempts ? (
-          <p className="text-sm text-zinc-500">Loading attempts...</p>
+          <p className="text-sm text-muted-foreground">Loading attempts...</p>
         ) : (attempts as any[]).length === 0 ? (
-          <p className="text-sm text-zinc-500">No student has attempted this quiz yet.</p>
+          <p className="text-sm text-muted-foreground">No student has attempted this quiz yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+              <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
                   <th className="py-2 pr-3">Student</th>
                   <th className="py-2 pr-3">Started</th>

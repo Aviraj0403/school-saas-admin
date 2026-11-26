@@ -117,7 +117,7 @@ export default function RolesPermissionsPage() {
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <Shield className="w-6 h-6 text-brand" /> RBAC Authorization Matrix
             </h1>
             <p className="text-xs text-zinc-500 max-w-2xl mt-1">
@@ -131,9 +131,9 @@ export default function RolesPermissionsPage() {
           </Button>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
               <tr>
                 <th className="px-4 py-3.5">Role</th>
                 <th className="px-4 py-3.5">Type</th>
@@ -278,7 +278,7 @@ export default function RolesPermissionsPage() {
 
       {/* Edit role */}
       <Dialog isOpen={!!renaming} onClose={() => setRenaming(null)} title="Edit Role">
-        <div className="flex flex-col gap-4 py-2 px-7">
+        <div className="flex flex-col gap-4 py-2">
           <Input
             value={renameForm.name}
             onChange={(e) => setRenameForm({ ...renameForm, name: e.target.value })}
@@ -317,7 +317,7 @@ export default function RolesPermissionsPage() {
           {grouped.map(([mod, perms]) => (
             <div
               key={mod}
-              className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 bg-zinc-50/50 dark:bg-zinc-900/30"
+              className="border border-border rounded-xl p-3 bg-zinc-50/50 dark:bg-zinc-900/30"
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300">

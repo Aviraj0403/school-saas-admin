@@ -75,7 +75,7 @@ export default function TermsPage() {
         {/* Header Block */}
         <div className="flex flex-col items-start gap-4 pb-4">
           {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Academic Years & Terms</h1>
+            <h1 className="text-page-title">Academic Years & Terms</h1>
             <p className="text-slate-400 mt-1.5 text-sm md:text-base">
               Define the active school calendars, academic year timelines, and active term sessions.
             </p>
@@ -97,10 +97,8 @@ export default function TermsPage() {
         {/* Directory Layout Card */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-              Onboarding Academic Terms
-            </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h2 className="text-lg font-bold text-foreground">Onboarding Academic Terms</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Manage active academic years and session calendars for this school.
             </p>
           </div>
@@ -170,12 +168,12 @@ export default function TermsPage() {
         title={editingYear ? 'Edit Academic Term' : 'Add New Academic Term'}
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             The term name is generated automatically from start and end dates.
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">
+              <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
                 Start Date *
               </label>
               <Input
@@ -192,7 +190,7 @@ export default function TermsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-xs text-zinc-500 uppercase tracking-wider">
+              <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
                 End Date *
               </label>
               <Input

@@ -89,13 +89,13 @@ function SalaryStructurePanel() {
       {userId && isPending && <Spinner />}
       {userId && !isPending && error && !notSet && <ErrorState error={error} />}
       {userId && !isPending && (!error || notSet) && (
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3">
+        <div className="border border-border rounded-2xl p-3 sm:p-4 flex flex-col gap-3">
           {notSet && (
             <p className="text-xs text-amber-600">
               No salary structure has been set for this person yet.
             </p>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             {(
               [
                 ['baseSalary', 'Basic salary'],
@@ -107,6 +107,7 @@ function SalaryStructurePanel() {
               <Field key={k} label={`${label} (₹)`}>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   min={0}
                   disabled={!editing}
                   value={form[k]}
@@ -116,7 +117,7 @@ function SalaryStructurePanel() {
             ))}
           </div>
           {isAdmin ? (
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end [&>button]:w-full sm:[&>button]:w-auto">
               {editing ? (
                 <>
                   <Button variant="outline" onClick={() => setEditing(false)}>
@@ -191,8 +192,8 @@ export function PayrollTab() {
       {sub === 1 && <SalaryStructurePanel />}
       {sub === 0 && (
         <>
-          <div className="flex items-end gap-4 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 flex-wrap">
-            <div className="w-40">
+          <div className="grid grid-cols-2 sm:flex sm:items-end gap-3 sm:gap-4 bg-muted/40 p-3 sm:p-4 rounded-2xl border border-border sm:flex-wrap">
+            <div className="sm:w-40">
               <Field label="Month">
                 <Select
                   value={String(month)}
@@ -201,7 +202,7 @@ export function PayrollTab() {
                 />
               </Field>
             </div>
-            <div className="w-32">
+            <div className="sm:w-32">
               <Field label="Year">
                 <Select
                   value={String(year)}
@@ -211,7 +212,11 @@ export function PayrollTab() {
               </Field>
             </div>
             {canRun && (
-              <Button onClick={generate} isLoading={generateM.isPending}>
+              <Button
+                className="col-span-2 sm:col-span-1"
+                onClick={generate}
+                isLoading={generateM.isPending}
+              >
                 <Cog className="w-4 h-4 mr-2" /> Generate Payslips
               </Button>
             )}
@@ -227,34 +232,23 @@ export function PayrollTab() {
               hint="Generate payslips to create them from each salary structure."
             />
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                  <tr>
-                    <th className="px-4 py-3">Employee</th>
-                    <th className="px-4 py-3">Base</th>
-                    <th className="px-4 py-3">HRA</th>
-                    <th className="px-4 py-3">Allowances</th>
-                    <th className="px-4 py-3">Deductions</th>
-                    <th className="px-4 py-3 font-bold">Net</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                  {(payslips ?? []).map((d: any) => (
-                    <tr key={d.id}>
-                      <td className="px-4 py-3 font-semibold">{d.user?.name ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono">{inr(d.baseSalary)}</td>
-                      <td className="px-4 py-3 font-mono">{inr(d.hra)}</td>
-                      <td className="px-4 py-3 font-mono">{inr(d.allowance)}</td>
-                      <td className="px-4 py-3 font-mono text-rose-500">
-                        {inr(Number(d.deductions) + Number(d.leaveDeduction ?? 0))}
-                      </td>
-                      <td className="px-4 py-3 font-mono font-bold text-brand">
-                        {inr(d.netSalary)}
-                      </td>
-                      <td className="px-4 py-3">
+            <>
+              <ul className="md:hidden flex flex-col gap-2.5">
+                {(payslips ?? []).map((d: any) => (
+                  <li
+                    key={d.id}
+                    className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{d.user?.name ?? '—'}</p>
+                        <p className="text-caption">
+                          Base {inr(d.baseSalary)} · Ded.{' '}
+                          {inr(Number(d.deductions) + Number(d.leaveDeduction ?? 0))}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="tabular font-bold text-brand text-base">{inr(d.netSalary)}</p>
                         <Badge
                           variant={
                             d.status === 'PAID'
@@ -266,41 +260,113 @@ export function PayrollTab() {
                         >
                           {d.status}
                         </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex gap-1 justify-center items-center">
-                          {d.status === 'PENDING' && canRun && (
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                              onClick={() => setPayId(d.id)}
-                            >
-                              <CheckCircle className="w-3 h-3 mr-1" /> Pay
-                            </Button>
-                          )}
-                          {d.status === 'PAID' && (
-                            <span className="text-[10px] text-zinc-400 font-mono">
-                              {d.paymentMethod}
-                            </span>
-                          )}
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            aria-label="Print payslip"
-                            onClick={() => {
-                              if (!printPayslip(d, { schoolName }))
-                                toast.error('Allow pop-ups to print.');
-                            }}
-                          >
-                            <Printer className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {d.status === 'PENDING' && canRun && (
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => setPayId(d.id)}
+                        >
+                          <CheckCircle className="w-3 h-3 mr-1" /> Pay
+                        </Button>
+                      )}
+                      {d.status === 'PAID' && (
+                        <span className="self-center text-[11px] text-muted-foreground font-mono">
+                          {d.paymentMethod}
+                        </span>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          if (!printPayslip(d, { schoolName }))
+                            toast.error('Allow pop-ups to print.');
+                        }}
+                      >
+                        <Printer className="w-4 h-4 mr-1" /> Payslip
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <tr>
+                      <th className="px-4 py-3">Employee</th>
+                      <th className="px-4 py-3">Base</th>
+                      <th className="px-4 py-3">HRA</th>
+                      <th className="px-4 py-3">Allowances</th>
+                      <th className="px-4 py-3">Deductions</th>
+                      <th className="px-4 py-3 font-bold">Net</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                    {(payslips ?? []).map((d: any) => (
+                      <tr key={d.id}>
+                        <td className="px-4 py-3 font-semibold">{d.user?.name ?? '—'}</td>
+                        <td className="px-4 py-3 font-mono">{inr(d.baseSalary)}</td>
+                        <td className="px-4 py-3 font-mono">{inr(d.hra)}</td>
+                        <td className="px-4 py-3 font-mono">{inr(d.allowance)}</td>
+                        <td className="px-4 py-3 font-mono text-rose-500">
+                          {inr(Number(d.deductions) + Number(d.leaveDeduction ?? 0))}
+                        </td>
+                        <td className="px-4 py-3 font-mono font-bold text-brand">
+                          {inr(d.netSalary)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge
+                            variant={
+                              d.status === 'PAID'
+                                ? 'success'
+                                : d.status === 'CANCELLED'
+                                  ? 'secondary'
+                                  : 'warning'
+                            }
+                          >
+                            {d.status}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex gap-1 justify-center items-center">
+                            {d.status === 'PENDING' && canRun && (
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                                onClick={() => setPayId(d.id)}
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" /> Pay
+                              </Button>
+                            )}
+                            {d.status === 'PAID' && (
+                              <span className="text-[10px] text-zinc-400 font-mono">
+                                {d.paymentMethod}
+                              </span>
+                            )}
+                            <Button
+                              size="icon-sm"
+                              variant="ghost"
+                              aria-label="Print payslip"
+                              onClick={() => {
+                                if (!printPayslip(d, { schoolName }))
+                                  toast.error('Allow pop-ups to print.');
+                              }}
+                            >
+                              <Printer className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </>
       )}

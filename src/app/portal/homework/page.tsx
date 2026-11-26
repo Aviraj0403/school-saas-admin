@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { BookOpenCheck, Paperclip, Upload } from 'lucide-react';
+import { BookOpenCheck, CalendarClock, Paperclip, Upload } from 'lucide-react';
 import PortalShell from '@/components/portal/PortalShell';
 import { QueryState, errorMessage } from '@/components/portal/QueryState';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useFamilyHomework, useSubmitFamilyHomework } from '@/hooks/queries/useFamily';
 import { formatDate } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 const STATUS: Record<string, { label: string; variant: any }> = {
   pending: { label: 'Pending', variant: 'warning' },
@@ -67,47 +68,62 @@ function HomeworkView({ studentId, canSubmit }: { studentId: string; canSubmit: 
         emptyText="No homework has been assigned yet."
         emptyIcon={BookOpenCheck}
       >
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
           {list.map((a) => {
             const st = STATUS[a.status] ?? { label: a.status, variant: 'secondary' };
             const sub = a.submission;
             const overdue = !sub && new Date(a.dueDate) < new Date();
             return (
-              <article
-                key={a.id}
-                className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-card"
-              >
+              <article key={a.id} className="surface-card flex min-w-0 flex-col gap-3 p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="truncate font-display text-base font-semibold">{a.title}</h3>
-                    <p className="text-xs text-zinc-500">{a.subject}</p>
+                    <h3 className="text-card-title break-words">{a.title}</h3>
+                    <p className="text-caption">{a.subject}</p>
                   </div>
-                  <Badge variant={st.variant}>{st.label}</Badge>
+                  <Badge variant={st.variant} className="shrink-0">
+                    {st.label}
+                  </Badge>
                 </div>
-                <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500">
-                  <span className={overdue ? 'font-semibold text-rose-600' : undefined}>
-                    Due {formatDate(a.dueDate)}
+                <div className="flex flex-wrap gap-2">
+                  <span
+                    className={cn(
+                      'tone-chip inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold',
+                      overdue ? 'tone-rose' : 'tone-sky'
+                    )}
+                  >
+                    <CalendarClock className="size-3.5" /> Due {formatDate(a.dueDate)}
                   </span>
-                  {a.maxMarks != null && <span>Max marks {a.maxMarks}</span>}
-                  {sub?.submittedAt && <span>Submitted {formatDate(sub.submittedAt)}</span>}
+                  {a.maxMarks != null && (
+                    <span className="tone-chip tone-violet rounded-full px-3 py-1 text-xs font-semibold">
+                      Max {a.maxMarks}
+                    </span>
+                  )}
+                  {sub?.submittedAt && (
+                    <span className="tone-chip tone-emerald rounded-full px-3 py-1 text-xs font-semibold">
+                      Submitted {formatDate(sub.submittedAt)}
+                    </span>
+                  )}
                 </div>
                 {sub?.marksAwarded != null && (
-                  <p className="text-sm font-semibold text-emerald-600">
+                  <p className="tabular text-sm font-semibold text-emerald-600">
                     Marks: {sub.marksAwarded}
                     {a.maxMarks != null ? ` / ${a.maxMarks}` : ''}
                   </p>
                 )}
                 {sub?.feedback && (
-                  <p className="rounded-xl bg-zinc-50 p-3 text-xs text-zinc-600 dark:bg-white/[0.03] dark:text-zinc-300">
+                  <p className="text-caption rounded-xl bg-muted/60 p-3">
                     Teacher feedback: {sub.feedback}
                   </p>
                 )}
                 {canSubmit && sub?.marksAwarded == null && (
-                  <div>
-                    <Button size="sm" variant={sub ? 'outline' : 'default'} onClick={() => open(a)}>
-                      <Upload /> {sub ? 'Resubmit' : 'Submit'}
-                    </Button>
-                  </div>
+                  <Button
+                    size="lg"
+                    variant={sub ? 'outline' : 'default'}
+                    onClick={() => open(a)}
+                    className="w-full"
+                  >
+                    <Upload /> {sub ? 'Resubmit' : 'Submit'}
+                  </Button>
                 )}
               </article>
             );
@@ -120,7 +136,7 @@ function HomeworkView({ studentId, canSubmit }: { studentId: string; canSubmit: 
         onClose={() => setActive(null)}
         title={`Submit: ${active?.title ?? ''}`}
       >
-        <div className="space-y-4 px-7 pb-6">
+        <div className="space-y-4 overflow-y-auto px-5 pb-6 sm:px-7">
           <Textarea
             placeholder="Write your answer or a note for the teacher…"
             value={notes}
@@ -128,8 +144,8 @@ function HomeworkView({ studentId, canSubmit }: { studentId: string; canSubmit: 
             onChange={(e) => setNotes(e.target.value)}
             rows={5}
           />
-          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-sm text-zinc-600 dark:border-white/15 dark:text-zinc-300">
-            <Paperclip className="size-4" />
+          <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+            <Paperclip className="size-4 shrink-0" />
             <span className="truncate">
               {file ? file.name : `Attach a file (optional, max ${MAX_FILE_MB} MB)`}
             </span>
@@ -139,11 +155,11 @@ function HomeworkView({ studentId, canSubmit }: { studentId: string; canSubmit: 
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
           </label>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setActive(null)}>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" size="lg" onClick={() => setActive(null)}>
               Cancel
             </Button>
-            <Button onClick={onSubmit} isLoading={submit.isPending}>
+            <Button size="lg" onClick={onSubmit} isLoading={submit.isPending}>
               Submit
             </Button>
           </div>

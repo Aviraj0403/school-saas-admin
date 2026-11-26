@@ -108,7 +108,7 @@ export function StaffDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex flex-col gap-4 sm:gap-6 pb-6">
       <HeroCard
         eyebrow={
           <>
@@ -137,7 +137,7 @@ export function StaffDashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
         <StatCard
           label="Announcements"
           value={announcements.length}
@@ -164,7 +164,7 @@ export function StaffDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel
           className="xl:col-span-2"
           title="Announcements"
@@ -183,12 +183,12 @@ export function StaffDashboard() {
                     <Megaphone className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
-                      {a.title}
-                    </p>
-                    <p className="line-clamp-2 text-xs text-zinc-500">{a.content}</p>
+                    <p className="truncate text-[13px] font-semibold text-foreground">{a.title}</p>
+                    <p className="line-clamp-2 text-xs text-muted-foreground">{a.content}</p>
                   </div>
-                  <span className="shrink-0 text-xs text-zinc-400">{formatDate(a.createdAt)}</span>
+                  <span className="hidden min-[400px]:inline shrink-0 text-xs text-muted-foreground">
+                    {formatDate(a.createdAt)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -213,7 +213,7 @@ export function StaffDashboard() {
                     <p className="truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
                       {formatDate(l.startDate)} – {formatDate(l.endDate)}
                     </p>
-                    <p className="truncate text-xs text-zinc-500">{l.reason}</p>
+                    <p className="truncate text-xs text-muted-foreground">{l.reason}</p>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${

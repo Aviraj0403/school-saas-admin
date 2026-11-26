@@ -152,7 +152,7 @@ export default function SettingsPage() {
           title="Settings"
           description="Your school profile, subscription, enabled modules and sign-in options."
         />
-        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max overflow-x-auto max-w-full">
+        <div className="flex bg-card p-1.5 rounded-xl border border-border w-max overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
@@ -183,7 +183,7 @@ export default function SettingsPage() {
               }}
               className="flex flex-col gap-6"
             >
-              <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-6 backdrop-blur-xl">
+              <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
                 <div>
                   <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                     School Profile
@@ -237,7 +237,7 @@ export default function SettingsPage() {
               )}
             </form>
 
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-4 backdrop-blur-xl">
+            <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-brand" />
                 <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
@@ -289,7 +289,7 @@ export default function SettingsPage() {
         )}
 
         {activeTab === 'modules' && (
-          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-6 backdrop-blur-xl">
+          <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
             <div>
               <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                 Enabled Modules
@@ -311,7 +311,7 @@ export default function SettingsPage() {
                       className={`p-4 rounded-xl border flex items-start justify-between gap-3 ${
                         m.enabled
                           ? 'border-brand/50 bg-brand/5 dark:bg-brand/10'
-                          : 'border-zinc-200/80 dark:border-zinc-800/80 opacity-60'
+                          : 'border-border opacity-60'
                       }`}
                     >
                       <div className="min-w-0">
@@ -334,7 +334,7 @@ export default function SettingsPage() {
         )}
 
         {activeTab === 'users' && isAdmin && (
-          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm flex flex-col gap-4 backdrop-blur-xl">
+          <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
             <div>
               <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                 Active Login Credentials
@@ -342,9 +342,9 @@ export default function SettingsPage() {
               <p className="text-xs text-zinc-400 mt-1">Staff with login access to this school.</p>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Login Email</th>

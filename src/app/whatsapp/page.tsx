@@ -185,7 +185,7 @@ export default function WhatsAppPage() {
         {/* Header Block */}
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <MessageSquare className="w-6 h-6 text-emerald-500" /> WhatsApp & RAG AI Hub
             </h1>
             <p className="text-xs text-zinc-500 mt-1">
@@ -213,7 +213,7 @@ export default function WhatsAppPage() {
         {/* Credentials & Chatbot Console */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Credentials Card */}
-          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-5 shadow-sm flex flex-col justify-between gap-4">
+          <div className="border border-border rounded-xl bg-card p-5 shadow-sm flex flex-col justify-between gap-4">
             <div>
               <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                 Credentials & Agent Settings
@@ -232,7 +232,7 @@ export default function WhatsAppPage() {
                     Configure
                   </button>
                 </div>
-                <div className="font-mono text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 p-2.5 rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 truncate">
+                <div className="font-mono text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 p-2.5 rounded-lg border border-border truncate">
                   {((config as any)?.data || config)?.phoneNumberId || 'Masked (Not Seeded)'}
                 </div>
               </div>
@@ -325,8 +325,8 @@ export default function WhatsAppPage() {
         </div>
 
         {/* Tab Switcher & Data Tables */}
-        <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-5 shadow-sm space-y-4">
-          <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 gap-1 w-max">
+        <div className="border border-border rounded-xl bg-card p-5 shadow-sm space-y-4">
+          <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 gap-1 w-max max-w-full overflow-x-auto scrollbar-none [&>button]:shrink-0 [&>button]:whitespace-nowrap">
             <button
               onClick={() => setTab('templates')}
               className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
@@ -360,9 +360,9 @@ export default function WhatsAppPage() {
           </div>
 
           {activeTab === 'templates' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Template Name</th>
                     <th className="px-4 py-3">Category</th>
@@ -427,9 +427,9 @@ export default function WhatsAppPage() {
           )}
 
           {activeTab === 'conversations' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Contact Name</th>
                     <th className="px-4 py-3">WhatsApp Number</th>
@@ -466,9 +466,9 @@ export default function WhatsAppPage() {
           )}
 
           {activeTab === 'broadcasts' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Campaign Name</th>
                     <th className="px-4 py-3">Applied Template</th>

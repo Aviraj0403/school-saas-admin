@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 
 import {
   useDepartmentsList,
@@ -16,7 +17,7 @@ import {
 } from '@/hooks/queries/useAcademics';
 import { usePermissions } from '@/hooks/usePermissions';
 import { errorMessage } from '@/lib/errorMessage';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 
 export default function DepartmentsPage() {
   const [showDeptDialog, setShowDeptDialog] = useState(false);
@@ -69,32 +70,29 @@ export default function DepartmentsPage() {
       <PageBreadcrumb title="Departments" subtitle="Academics" />
       <div className="flex flex-col gap-4 pb-10 animate-fade-in">
         {/* Header Block */}
-        <div className="flex flex-col items-start gap-4 pb-4">
-          {/* <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Academic Departments</h1>
-            <p className="text-slate-400 mt-1.5 text-sm md:text-base">
-              Manage the curriculum departments and organizational structure of your academic institution.
-            </p>
-          </div> */}
-
-          <button
-            onClick={() => {
-              setEditing(null);
-              setDeptForm({ name: '' });
-              setShowDeptDialog(true);
-            }}
-            className="w-full md:w-auto bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-extrabold shadow-md border-0 ring-1 ring-black/5 dark:ring-white/10 uppercase tracking-wider text-[11px] px-5 py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-          >
-            <i className="pi pi-plus text-xs"></i>
-            Create Department
-          </button>
-        </div>
+        <PageHeader
+          title="Departments"
+          description="Curriculum departments configured in this school"
+          actions={
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setEditing(null);
+                setDeptForm({ name: '' });
+                setShowDeptDialog(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Department
+            </Button>
+          }
+        />
 
         {/* Directory Layout Card */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="bg-card border border-border rounded-2xl p-3.5 sm:p-5 flex flex-col gap-4 shadow-sm min-w-0">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Active Departments</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h2 className="text-card-title">Active Departments</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
               List of active course curriculum departments configured in this school.
             </p>
           </div>
@@ -127,16 +125,14 @@ export default function DepartmentsPage() {
                       key={dept.id || dept.name}
                       className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
                     >
-                      <td className="p-3 font-semibold text-slate-900 dark:text-slate-100">
-                        {dept.name}
-                      </td>
+                      <td className="p-3 font-semibold text-foreground">{dept.name}</td>
                       <td className="p-3">
                         <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold uppercase border border-emerald-500/20">
                           Active
                         </span>
                       </td>
                       {isAdmin && (
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3">
                           <div className="flex justify-end gap-1">
                             <Button
                               variant="outline"
@@ -148,7 +144,7 @@ export default function DepartmentsPage() {
                                 setShowDeptDialog(true);
                               }}
                             >
-                              <Pencil className="size-3.5" />
+                              <Pencil className="size-4" />
                             </Button>
                             <Button
                               variant="outline"
@@ -157,7 +153,7 @@ export default function DepartmentsPage() {
                               onClick={() => handleDelete(dept)}
                               disabled={deleteDeptMutation.isPending}
                             >
-                              <Trash2 className="size-3.5 text-rose-600" />
+                              <Trash2 className="size-4 text-rose-600" />
                             </Button>
                           </div>
                         </td>
@@ -191,7 +187,7 @@ export default function DepartmentsPage() {
               placeholder="e.g. Science, Languages"
             />
           </div>
-          <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4 pt-4 border-t border-border [&>button]:w-full sm:[&>button]:w-auto">
             <Button variant="outline" onClick={() => setShowDeptDialog(false)}>
               Cancel
             </Button>

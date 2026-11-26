@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-px before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
+          'bg-brand-gradient text-white shadow-glow hover:brightness-110 sm:hover:-translate-y-px before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
         primary:
           'bg-brand-gradient text-white shadow-glow hover:brightness-110 hover:-translate-y-px before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
         secondary: 'bg-brand-muted text-brand hover:bg-brand/15 dark:text-blue-300',
@@ -26,15 +26,15 @@ const buttonVariants = cva(
         link: 'text-brand underline-offset-4 hover:underline p-0 h-auto font-semibold',
       },
       size: {
-        xs: 'h-7 px-2.5 text-xs rounded-lg',
-        sm: 'h-8 px-3 text-xs rounded-lg',
-        md: 'h-10 px-4',
-        default: 'h-10 px-4',
+        xs: 'h-9 sm:h-7 px-2.5 text-xs rounded-lg',
+        sm: 'h-10 sm:h-8 px-3 text-xs rounded-lg',
+        md: 'h-11 sm:h-10 px-4',
+        default: 'h-11 sm:h-10 px-4',
         lg: 'h-12 px-6 text-sm',
         xl: 'h-13 px-7 text-[15px]',
-        icon: 'size-10 p-0',
-        'icon-sm': 'size-8 p-0 rounded-lg',
-        'icon-xs': 'size-7 p-0 rounded-lg',
+        icon: 'size-11 sm:size-10 p-0',
+        'icon-sm': 'size-10 sm:size-8 p-0 rounded-lg',
+        'icon-xs': 'size-9 sm:size-7 p-0 rounded-lg',
       },
     },
     defaultVariants: {

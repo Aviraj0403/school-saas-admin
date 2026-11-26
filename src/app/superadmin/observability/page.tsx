@@ -76,7 +76,7 @@ export default function ObservabilityPage() {
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <Activity className="w-6 h-6 text-brand" /> System Telemetry & Process Logs
             </h1>
             <p className="text-xs text-zinc-500 mt-1">
@@ -100,10 +100,7 @@ export default function ObservabilityPage() {
             { label: 'RSS Memory', value: fmtBytes(m.memory?.rss ?? m.process?.memory?.rss) },
             { label: 'Total Requests', value: m.http?.total ?? m.requests?.total ?? '—' },
           ].map((c) => (
-            <div
-              key={c.label}
-              className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 backdrop-blur-xl shadow-sm"
-            >
+            <div key={c.label} className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400">
                 {c.label}
               </span>
@@ -115,7 +112,7 @@ export default function ObservabilityPage() {
         </div>
 
         {/* Log Filters */}
-        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 backdrop-blur-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap flex-1">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
@@ -181,9 +178,9 @@ export default function ObservabilityPage() {
         </div>
 
         {/* Log Table */}
-        <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
               <tr>
                 <th className="px-4 py-3.5">Time</th>
                 <th className="px-4 py-3.5">Level</th>
@@ -232,7 +229,7 @@ export default function ObservabilityPage() {
           </table>
 
           {/* Simple Pagination */}
-          <div className="flex justify-between items-center p-3 border-t border-zinc-200/80 dark:border-zinc-800/80 font-sans">
+          <div className="flex justify-between items-center p-3 border-t border-border font-sans">
             <span className="text-xs text-zinc-500 font-mono">Page {page}</span>
             <div className="flex gap-2">
               <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>

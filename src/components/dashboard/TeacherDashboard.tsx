@@ -153,10 +153,10 @@ export function TeacherDashboard() {
                     <Users className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                    <span className="block truncate text-[13px] font-semibold text-foreground">
                       {c.label}
                     </span>
-                    <span className="block text-xs text-zinc-500">
+                    <span className="block text-xs text-muted-foreground">
                       {c.classTeacherId === activeUser?.id ? 'Class teacher' : 'Subject teacher'}
                       {c.roomNo ? ` · Room ${c.roomNo}` : ''}
                     </span>
@@ -188,10 +188,10 @@ export function TeacherDashboard() {
                     {s.startTime}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                    <span className="block truncate text-[13px] font-semibold text-foreground">
                       {s.subject?.name}
                     </span>
-                    <span className="block text-xs text-zinc-500">
+                    <span className="block text-xs text-muted-foreground">
                       {s.class?.name} {s.class?.section} · until {s.endTime}
                       {s.roomNo ? ` · ${s.roomNo}` : ''}
                     </span>
@@ -225,10 +225,10 @@ export function TeacherDashboard() {
                       <ClipboardCheck className="size-4" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                      <span className="block truncate text-[13px] font-semibold text-foreground">
                         {a.title}
                       </span>
-                      <span className="block text-xs text-zinc-500">
+                      <span className="block text-xs text-muted-foreground">
                         {a._count?.submissions} submission(s) · {a.class?.name} {a.class?.section}
                       </span>
                     </span>
@@ -306,10 +306,12 @@ export function TeacherDashboard() {
                     <BookOpenCheck className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                    <span className="block truncate text-[13px] font-semibold text-foreground">
                       {a.title}
                     </span>
-                    <span className="block text-xs text-zinc-500">Due {formatDate(a.dueDate)}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      Due {formatDate(a.dueDate)}
+                    </span>
                   </span>
                 </li>
               ))}
@@ -330,11 +332,9 @@ export function TeacherDashboard() {
           {announcements.length > 0 ? (
             <ul className="space-y-2.5">
               {announcements.slice(0, 4).map((n: any) => (
-                <li key={n.id} className="rounded-2xl bg-zinc-50 p-3.5 dark:bg-white/[0.03]">
-                  <p className="text-[13px] font-semibold text-zinc-900 dark:text-white">
-                    {n.title}
-                  </p>
-                  <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">
+                <li key={n.id} className="rounded-2xl bg-muted/50 p-3.5">
+                  <p className="text-[13px] font-semibold text-foreground">{n.title}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                     {n.content || n.description}
                   </p>
                 </li>
@@ -359,10 +359,8 @@ export function TeacherDashboard() {
             {upcomingExams.slice(0, 4).map((e: any) => (
               <div key={e.id} className="rounded-2xl border border-border p-4">
                 <p className="text-xs font-medium text-pink-600">{formatDate(e.startDate)}</p>
-                <p className="mt-1 font-display text-base font-semibold text-zinc-900 dark:text-white">
-                  {e.name}
-                </p>
-                <p className="text-xs text-zinc-500">Ends {formatDate(e.endDate)}</p>
+                <p className="mt-1 text-base font-semibold text-foreground">{e.name}</p>
+                <p className="text-xs text-muted-foreground">Ends {formatDate(e.endDate)}</p>
               </div>
             ))}
           </div>

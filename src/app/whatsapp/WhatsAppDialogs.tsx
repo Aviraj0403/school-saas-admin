@@ -88,7 +88,7 @@ export function TemplateDialog({
       onClose={onClose}
       title={template ? `Edit template - ${template.name}` : 'New template'}
     >
-      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
         {!template && (
           <label className="flex flex-col gap-1.5 text-xs font-semibold">
             Template name * (letters, numbers, underscore)
@@ -100,7 +100,7 @@ export function TemplateDialog({
             />
           </label>
         )}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
           <label className="flex flex-col gap-1.5 text-xs font-semibold">
             Category
             <Select
@@ -186,7 +186,7 @@ export function DeliveriesDialog({
       title={broadcast ? `Deliveries - ${broadcast.name}` : 'Deliveries'}
       className="max-w-2xl"
     >
-      <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-7 pb-6">
+      <div className="flex min-h-0 flex-col gap-3">
         {isPending && <p className="text-sm text-zinc-500">Loading deliveries...</p>}
         {error && <p className="text-sm text-rose-600">{errorMessage(error)}</p>}
         {!isPending && !error && rows.length === 0 && (

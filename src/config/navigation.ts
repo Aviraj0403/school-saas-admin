@@ -63,49 +63,44 @@ const STAFF: Role[] = [
 const FAMILY: Role[] = ['Parent', 'Student'];
 
 export const navigationConfig: NavItem[] = [
-  { label: 'Overview', isSection: true },
-  { label: 'Dashboard', icon: 'Home', path: '/dashboard' },
-
-  // ── Platform owner ──────────────────────────────────────────
-  { label: 'System Admin Registry', isSection: true, roles: ['SuperAdmin'] },
+  // ── Platform owner: the control panel comes first ───────────
+  { label: 'Platform', isSection: true },
+  { label: 'Control Panel', icon: 'LayoutDashboard', path: '/superadmin', roles: ['SuperAdmin'] },
+  { label: 'Schools', icon: 'Building', path: '/superadmin/tenants', roles: ['SuperAdmin'] },
+  { label: 'Plans & Pricing', icon: 'Star', path: '/superadmin/plans', roles: ['SuperAdmin'] },
+  { label: 'Module Catalog', icon: 'Package', path: '/superadmin/modules', roles: ['SuperAdmin'] },
   {
-    label: 'SaaS Control Plane',
-    icon: 'Shield',
-    path: '/superadmin',
+    label: 'Billing & Invoices',
+    icon: 'CreditCard',
+    path: '/superadmin/billing',
     roles: ['SuperAdmin'],
-    children: [
-      {
-        label: 'Tenant Schools',
-        icon: 'Building',
-        path: '/superadmin/tenants',
-        roles: ['SuperAdmin'],
-      },
-      {
-        label: 'Module Catalog',
-        icon: 'Package',
-        path: '/superadmin/modules',
-        roles: ['SuperAdmin'],
-      },
-      { label: 'SaaS Plans', icon: 'Star', path: '/superadmin/plans', roles: ['SuperAdmin'] },
-      {
-        label: 'Billing & Invoices',
-        icon: 'CreditCard',
-        path: '/superadmin/billing',
-        roles: ['SuperAdmin'],
-      },
-      { label: 'Global Users', icon: 'Users', path: '/users', roles: ['SuperAdmin'] },
-      {
-        label: 'Tenant Roadmap',
-        icon: 'Compass',
-        path: '/superadmin/roadmap',
-        roles: ['SuperAdmin'],
-      },
-      {
-        label: 'Observability',
-        icon: 'TrendingUp',
-        path: '/superadmin/observability',
-        roles: ['SuperAdmin'],
-      },
+  },
+  { label: 'School Users', icon: 'Users', path: '/users', roles: ['SuperAdmin'] },
+  {
+    label: 'System Health',
+    icon: 'TrendingUp',
+    path: '/superadmin/observability',
+    roles: ['SuperAdmin'],
+  },
+
+  { label: 'Overview', isSection: true },
+  {
+    label: 'Dashboard',
+    icon: 'Home',
+    path: '/dashboard',
+    // the platform owner lands on the Control Panel instead
+    roles: [
+      'Principal',
+      'school_admin',
+      'Teacher',
+      'Accountant',
+      'Librarian',
+      'clerk',
+      'lab_assistant',
+      'support_staff',
+      'Parent',
+      'Student',
+      'Warden',
     ],
   },
 
@@ -584,7 +579,7 @@ export function filterNavForUser(
 /** Accent colour per section heading (stable across roles, themed via CSS tone classes). */
 export const SECTION_TONES: Record<string, string> = {
   Overview: 'rose',
-  'System Admin Registry': 'violet',
+  Platform: 'violet',
   'School Setup (Steps 1-6)': 'indigo',
   'School Directories': 'sky',
   'Academics & Learning': 'violet',

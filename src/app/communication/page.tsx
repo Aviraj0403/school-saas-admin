@@ -219,7 +219,7 @@ export default function CommunicationPage() {
         {/* Header Block */}
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <Megaphone className="w-6 h-6 text-brand" />
               School Communication
             </h1>
@@ -247,7 +247,7 @@ export default function CommunicationPage() {
         </div>
 
         {/* Navigation & Controls */}
-        <div className="flex justify-between items-center flex-wrap gap-4 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="flex justify-between items-center flex-wrap gap-4 bg-card p-3 rounded-xl border border-border">
           <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('announcements')}
@@ -309,7 +309,7 @@ export default function CommunicationPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           {activeTab === 'announcements' && (
             <div>
               {loadingAnnouncements ? (
@@ -326,7 +326,7 @@ export default function CommunicationPage() {
                   {activeAnnouncements.map((bulletin: any) => (
                     <div
                       key={bulletin.id}
-                      className="border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                      className="border border-border p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start gap-2">
@@ -378,7 +378,7 @@ export default function CommunicationPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-border">
                       <tr>
                         <th className="px-6 py-4">Title</th>
                         <th className="px-6 py-4">Message Content</th>
@@ -456,7 +456,7 @@ export default function CommunicationPage() {
                   {activeEvents.map((evt: any) => (
                     <div
                       key={evt.id}
-                      className="border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+                      className="border border-border p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
                     >
                       <div>
                         <div className="flex items-center gap-2.5">
@@ -512,7 +512,7 @@ export default function CommunicationPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-border">
                       <tr>
                         <th className="px-6 py-4">Event Title</th>
                         <th className="px-6 py-4">Description</th>
@@ -666,7 +666,7 @@ export default function CommunicationPage() {
               onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Start Date *

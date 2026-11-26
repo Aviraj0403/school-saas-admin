@@ -141,17 +141,14 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
           hint={can('fee:create') ? 'Use "Add Structure Slab" to create the first one.' : undefined}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {structures.map((s: any) => (
-            <div
-              key={s.id}
-              className="border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl bg-white dark:bg-zinc-900 flex flex-col gap-3 shadow-sm"
-            >
+            <div key={s.id} className="surface-card p-4 sm:p-5 flex flex-col gap-3 min-w-0">
               <div className="flex justify-between items-start gap-2">
-                <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base leading-snug">
+                <h3 className="font-semibold text-foreground text-base leading-snug min-w-0 break-words">
                   {s.name}
                 </h3>
-                <Badge variant={s.isActive === false ? 'secondary' : 'info'}>
+                <Badge className="shrink-0" variant={s.isActive === false ? 'secondary' : 'info'}>
                   {s.isActive === false
                     ? 'Retired'
                     : s.applicableTo === 'class'
@@ -168,12 +165,10 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
                 <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">
                   Amount
                 </span>
-                <span className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">
-                  {inr(s.amount)}
-                </span>
+                <span className="tabular text-lg font-bold text-foreground">{inr(s.amount)}</span>
               </div>
               {(canEdit || canDelete) && (
-                <div className="flex justify-end gap-2">
+                <div className="grid grid-cols-2 sm:flex sm:justify-end gap-2">
                   {canEdit && (
                     <Button size="sm" variant="outline" onClick={() => startEdit(s)}>
                       <Pencil className="w-3.5 h-3.5 mr-1" /> Edit
@@ -204,10 +199,11 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
               placeholder="e.g. Tuition Fee Q1"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Amount (₹) *">
               <Input
                 type="number"
+                inputMode="decimal"
                 min={0}
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -216,6 +212,7 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
             <Field label="Late fee (₹)">
               <Input
                 type="number"
+                inputMode="decimal"
                 min={0}
                 value={form.lateFee}
                 onChange={(e) => setForm({ ...form, lateFee: e.target.value })}
@@ -249,11 +246,11 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
             />
           </Field>
           {form.applicableTo === 'class' && (
-            <div className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 grid grid-cols-2 gap-1">
+            <div className="max-h-48 overflow-y-auto border border-border rounded-xl p-2 grid grid-cols-1 min-[420px]:grid-cols-2 gap-1">
               {classes.map((c: any) => (
                 <label
                   key={c.id}
-                  className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2.5 text-sm sm:text-xs text-foreground/80 cursor-pointer min-h-10 sm:min-h-0 px-1"
                 >
                   <input
                     type="checkbox"
@@ -272,8 +269,9 @@ export function SlabsTab({ addOpen, onAddClose }: { addOpen: boolean; onAddClose
             />
           </Field>
           {editing && (
-            <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+            <label className="flex items-center gap-2.5 text-sm text-foreground/80 min-h-10">
               <input
+                className="size-5 shrink-0"
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) => setForm({ ...form, isActive: e.target.checked })}

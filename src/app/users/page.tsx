@@ -230,7 +230,7 @@ export default function UsersRegistryPage() {
 
         {/* Identity & Account KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between shadow-sm">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 Faculty & Staff
@@ -244,7 +244,7 @@ export default function UsersRegistryPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between shadow-sm">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 Enrolled Students
@@ -258,7 +258,7 @@ export default function UsersRegistryPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between shadow-sm">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 Registered Parents
@@ -292,9 +292,9 @@ export default function UsersRegistryPage() {
         </div>
 
         {/* Main Data Registry Card */}
-        <div className="rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl p-6 shadow-sm space-y-5">
+        <div className="rounded-xl bg-card border border-border p-6 shadow-sm space-y-5">
           {/* Search & Tabs Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 pb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-border pb-4">
             <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 gap-1 w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab('staff')}
@@ -341,9 +341,9 @@ export default function UsersRegistryPage() {
 
           {/* Tab Content: Staff */}
           {activeTab === 'staff' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Employee ID</th>
                     <th className="px-4 py-3">Name</th>
@@ -416,9 +416,9 @@ export default function UsersRegistryPage() {
 
           {/* Tab Content: Students */}
           {activeTab === 'students' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Admission No</th>
                     <th className="px-4 py-3">Student Name</th>
@@ -495,9 +495,9 @@ export default function UsersRegistryPage() {
 
           {/* Tab Content: Parents */}
           {activeTab === 'parents' && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3">Parent Name</th>
                     <th className="px-4 py-3">Username Email</th>

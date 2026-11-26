@@ -56,12 +56,12 @@ export default function BiometricDevicesPage() {
       <PageBreadcrumb title="Biometric Devices" subtitle="Attendance" />
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <Cpu className="w-6 h-6 text-brand" /> Biometric Hardware Terminals
             </h1>
-            <p className="text-xs text-zinc-500 max-w-2xl mt-1">
+            <p className="text-xs text-muted-foreground max-w-2xl mt-1">
               Units authenticate with a device key. Heartbeats under 15 minutes report ONLINE.
               Revoking is immediate and permanent.
             </p>
@@ -74,7 +74,7 @@ export default function BiometricDevicesPage() {
 
         <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
               <tr>
                 <th className="px-4 py-3.5">Unit</th>
                 <th className="px-4 py-3.5">Location</th>
@@ -87,7 +87,7 @@ export default function BiometricDevicesPage() {
             <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
               {isPending ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                     <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
                     <p className="text-xs">Loading hardware units...</p>
                   </td>
@@ -103,9 +103,7 @@ export default function BiometricDevicesPage() {
                   <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
-                          {d.deviceId}
-                        </span>
+                        <span className="font-mono font-bold text-foreground">{d.deviceId}</span>
                         <span className="text-[10px] text-zinc-400">{d.name || '—'}</span>
                       </div>
                     </td>
@@ -117,10 +115,10 @@ export default function BiometricDevicesPage() {
                         {d.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-zinc-500 font-mono">
+                    <td className="px-4 py-3 text-muted-foreground font-mono">
                       {d.lastSeenAt ? new Date(d.lastSeenAt).toLocaleString() : 'never'}
                     </td>
-                    <td className="px-4 py-3 font-mono text-zinc-500">{d.lastIp || '—'}</td>
+                    <td className="px-4 py-3 font-mono text-muted-foreground">{d.lastIp || '—'}</td>
                     <td className="px-4 py-3 text-right">
                       {d.isActive ? (
                         <Button

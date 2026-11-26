@@ -28,7 +28,7 @@ export function StatCard({
   loading,
 }: StatCardProps) {
   return (
-    <div className="surface-card group relative flex w-full min-w-[200px] flex-col overflow-hidden p-4 hover:-translate-y-px">
+    <div className="surface-card group relative flex w-full min-w-0 flex-col overflow-hidden p-4 hover:-translate-y-px">
       <div className="flex items-center gap-3">
         {icon && (
           <div

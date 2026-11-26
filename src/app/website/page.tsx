@@ -177,7 +177,7 @@ export default function WebsiteCMSPage() {
         {/* Header */}
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <ImageIcon className="w-6 h-6 text-brand" /> Portal Website & Lead Manager
             </h1>
             <p className="text-xs text-zinc-500 mt-1">
@@ -206,7 +206,7 @@ export default function WebsiteCMSPage() {
         </div>
 
         {/* Tab Menu */}
-        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max">
+        <div className="flex bg-card p-1.5 rounded-xl border border-border w-max max-w-full overflow-x-auto scrollbar-none [&>button]:shrink-0 [&>button]:whitespace-nowrap">
           <button
             onClick={() => selectTab('banners')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
@@ -252,7 +252,7 @@ export default function WebsiteCMSPage() {
               banners.map((banner) => (
                 <div
                   key={banner.id}
-                  className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden shadow-sm flex flex-col justify-between backdrop-blur-xl"
+                  className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col justify-between"
                 >
                   <div className="h-44 w-full relative overflow-hidden bg-zinc-950">
                     <img
@@ -310,9 +310,9 @@ export default function WebsiteCMSPage() {
 
         {/* Downloads Tab */}
         {activeTab === 'downloads' && (
-          <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                 <tr>
                   <th className="px-4 py-3.5">Document Title</th>
                   <th className="px-4 py-3.5">Category</th>
@@ -360,9 +360,9 @@ export default function WebsiteCMSPage() {
 
         {/* Admission Inquiries Tab */}
         {activeTab === 'inquiries' && (
-          <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                 <tr>
                   <th className="px-4 py-3.5">Student Name</th>
                   <th className="px-4 py-3.5">Applying Class</th>

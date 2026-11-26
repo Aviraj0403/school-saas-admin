@@ -49,7 +49,7 @@ export function LibrarianDashboard() {
   const [now] = React.useState(() => Date.now());
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex flex-col gap-4 sm:gap-6 pb-6">
       <HeroCard
         eyebrow={
           <>
@@ -74,7 +74,7 @@ export function LibrarianDashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Books in catalogue"
           value={totalBooks}
@@ -109,7 +109,7 @@ export function LibrarianDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel title="Loan health" subtitle="Books out right now">
           <Donut
             data={[
@@ -121,12 +121,12 @@ export function LibrarianDashboard() {
           />
           <div className="mt-5 grid grid-cols-2 gap-3 text-center">
             <div className="rounded-2xl bg-brand-soft p-3 dark:bg-white/5">
-              <p className="font-display text-xl font-semibold">{onTime}</p>
-              <p className="text-xs text-zinc-500">On time</p>
+              <p className="tabular text-xl font-semibold">{onTime}</p>
+              <p className="text-xs text-muted-foreground">On time</p>
             </div>
             <div className="rounded-2xl bg-rose-500/[0.08] p-3">
-              <p className="font-display text-xl font-semibold">{overdue.length}</p>
-              <p className="text-xs text-zinc-500">Overdue</p>
+              <p className="tabular text-xl font-semibold">{overdue.length}</p>
+              <p className="text-xs text-muted-foreground">Overdue</p>
             </div>
           </div>
         </Panel>
@@ -142,17 +142,19 @@ export function LibrarianDashboard() {
               {overdue.slice(0, 6).map((i: any) => {
                 const days = Math.max(1, Math.round((now - +new Date(i.dueDate)) / 86400000));
                 return (
-                  <div key={i.id} className="flex items-center gap-3 py-3">
+                  <div key={i.id} className="flex items-center gap-3 py-3 min-w-0">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600">
                       <AlarmClock className="size-4" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                      <p className="truncate text-[13px] font-semibold text-foreground">
                         {i.book?.title || 'Book'}
                       </p>
-                      <p className="text-xs text-zinc-500">Was due {formatDate(i.dueDate)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Was due {formatDate(i.dueDate)}
+                      </p>
                     </div>
-                    <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600">
+                    <span className="shrink-0 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600">
                       {days} day{days === 1 ? '' : 's'} late
                     </span>
                   </div>

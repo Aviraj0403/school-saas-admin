@@ -34,7 +34,7 @@ const STATUS_OPTIONS = [
 ];
 
 const textareaCls =
-  'w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none';
+  'w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-foreground placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none';
 
 const blankForm = () => ({
   date: localDateISO(),
@@ -203,13 +203,13 @@ export default function LessonPlansPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Lesson Plans" subtitle="Academics" />
       <div className="flex flex-col gap-6 animate-fade-in pb-10">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-brand" />
               Lesson Plans
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Track and plan curriculum topics, teaching logs, and homework
             </p>
           </div>
@@ -225,7 +225,7 @@ export default function LessonPlansPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4">
+        <div className="surface-card p-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <Input
@@ -238,10 +238,10 @@ export default function LessonPlansPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden shadow-sm">
+        <div className="surface-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                 <tr>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4">Class</th>
@@ -255,10 +255,7 @@ export default function LessonPlansPage() {
               <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                 {isPending ? (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400"
-                    >
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                       Loading lesson plans...
                     </td>
                   </tr>
@@ -270,10 +267,7 @@ export default function LessonPlansPage() {
                   </tr>
                 ) : filteredPlans.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400"
-                    >
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                       No lesson plans found.
                     </td>
                   </tr>
@@ -294,7 +288,7 @@ export default function LessonPlansPage() {
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">
                         {plan.topic?.subject?.name || '-'}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                      <td className="px-6 py-4 font-semibold text-foreground">
                         {plan.topic?.title || '-'}
                       </td>
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">
@@ -309,7 +303,7 @@ export default function LessonPlansPage() {
                             <button
                               aria-label="Edit lesson plan"
                               onClick={() => openEdit(plan)}
-                              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-muted-foreground transition-colors"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
@@ -339,7 +333,7 @@ export default function LessonPlansPage() {
         title={editing ? 'Edit Lesson Plan' : 'Create Lesson Plan'}
       >
         <div className="flex flex-col gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Date *
@@ -362,7 +356,7 @@ export default function LessonPlansPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Class *
@@ -488,16 +482,16 @@ export default function LessonPlansPage() {
       >
         <div className="flex flex-col gap-3">
           {loadingTopics ? (
-            <p className="text-sm text-zinc-500">Loading topics...</p>
+            <p className="text-sm text-muted-foreground">Loading topics...</p>
           ) : (orphanTopics as any[]).length === 0 ? (
-            <p className="text-sm text-zinc-500">No unused topics. Nothing to clean up.</p>
+            <p className="text-sm text-muted-foreground">No unused topics. Nothing to clean up.</p>
           ) : (
             <ul className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-80 overflow-y-auto">
               {(orphanTopics as any[]).map((t) => (
                 <li key={t.id} className="py-2 flex items-center justify-between gap-3 text-sm">
                   <span>
                     <b>{t.title}</b>
-                    <span className="block text-xs text-zinc-500">
+                    <span className="block text-xs text-muted-foreground">
                       {t.class?.name} {t.class?.section} · {t.subject?.name}
                     </span>
                   </span>

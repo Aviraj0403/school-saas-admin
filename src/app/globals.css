@@ -888,3 +888,56 @@ textarea:focus {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
 }
+
+/* ════════════ Mobile polish ════════════ */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+/* iOS zooms the page when a focused field is under 16px */
+@media (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(
+      [type='color']
+    ),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  .page-container {
+    padding-inline: 14px;
+    padding-block-start: 12px;
+  }
+  .text-page-title {
+    font-size: 19px;
+  }
+}
+/* comfortable tap targets for icon buttons */
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  a.snav-item {
+    min-height: 40px;
+  }
+}
+/* long ids / emails never force sideways page scroll */
+#main-content {
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+}
+#main-content table {
+  overflow-wrap: normal;
+}
+/* wide tables scroll inside their card instead of the page */
+.surface-card:has(> table),
+.surface-card:has(> .overflow-x-auto) {
+  overflow-x: auto;
+}
+/* print: hide chrome */
+@media print {
+  .shell-panel,
+  header,
+  nav[aria-label='Quick navigation'],
+  .shell-scrim {
+    display: none !important;
+  }
+}

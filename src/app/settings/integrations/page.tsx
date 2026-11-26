@@ -100,7 +100,7 @@ export default function IntegrationsPage() {
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Navigation Tabs */}
-        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max">
+        <div className="flex bg-card p-1.5 rounded-xl border border-border w-max max-w-full overflow-x-auto scrollbar-none [&>button]:shrink-0 [&>button]:whitespace-nowrap">
           <button
             onClick={() => setActiveTab('keys')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
@@ -136,9 +136,9 @@ export default function IntegrationsPage() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3.5">Key Name</th>
                     <th className="px-4 py-3.5">Prefix Token</th>
@@ -204,9 +204,9 @@ export default function IntegrationsPage() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3.5">Endpoint URL</th>
                     <th className="px-4 py-3.5">Subscribed Events</th>
@@ -362,7 +362,7 @@ export default function IntegrationsPage() {
             <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
               Subscribed Events *
             </label>
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-zinc-200/80 dark:border-zinc-800/80 rounded-lg p-3 bg-zinc-50/50 dark:bg-zinc-900/30">
+            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-zinc-50/50 dark:bg-zinc-900/30">
               {(events as string[]).length === 0 ? (
                 <span className="text-xs text-zinc-400 col-span-2">
                   No event definitions advertised by server.

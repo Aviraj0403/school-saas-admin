@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -243,32 +244,84 @@ export default function LeavePage() {
     );
   };
 
+  const leaveCards = (cls: string) => (
+    <div className={cls}>
+      {activeLeaves.map((leave: any) => (
+        <div
+          key={leave.id}
+          className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-sm">
+                {leave.applicantName ? leave.applicantName[0].toUpperCase() : 'L'}
+              </div>
+              <div>
+                <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug">
+                  {leave.applicantName}
+                </h3>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
+                  {leave.applicantType} · {leave.leaveType}
+                </p>
+              </div>
+            </div>
+            {statusBadge(leave.status)}
+          </div>
+
+          <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg text-xs flex flex-col gap-1.5 border border-zinc-100 dark:border-zinc-800 text-muted-foreground dark:text-zinc-400">
+            <div className="flex justify-between">
+              <span>Start Date:</span>
+              <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
+                {dateTemplate(leave.startDate ?? leave.fromDate)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>End Date:</span>
+              <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
+                {dateTemplate(leave.endDate ?? leave.toDate)}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-xs text-zinc-600 dark:text-zinc-300">
+            <span className="font-semibold text-zinc-400 block text-[10px] uppercase tracking-wider mb-0.5">
+              Reason:
+            </span>
+            {leave.reason}
+          </div>
+
+          {leave.status === 'PENDING' && (
+            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
+              {rowActions(leave, false)}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Leave Management" />
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-brand" />
-              Leave Requests & Applications
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {isAdmin
-                ? 'Process student and staff leave applications and review absence records'
-                : 'Apply for leave and track the status of your applications'}
-            </p>
-          </div>
-
-          <Button onClick={openApply}>
-            <Plus className="w-4 h-4 mr-2" /> Apply Leave
-          </Button>
-        </div>
+        <PageHeader
+          title="Leave Requests & Applications"
+          description={
+            isAdmin
+              ? 'Process student and staff leave applications and review absence records'
+              : 'Apply for leave and track the status of your applications'
+          }
+          actions={
+            <Button className="h-11 w-full sm:h-10 sm:w-auto" onClick={openApply}>
+              <Plus className="w-4 h-4 mr-2" /> Apply Leave
+            </Button>
+          }
+        />
 
         {balance && (
-          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm">
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+          <div className="surface-card p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               My leave taken in {balance.year}
             </p>
             <div className="flex flex-wrap gap-3 items-center text-sm">
@@ -283,9 +336,9 @@ export default function LeavePage() {
           </div>
         )}
 
-        <div className="flex justify-between items-center flex-wrap gap-4 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
-          <div className="flex items-center gap-3 w-64">
-            <label className="text-xs font-semibold text-zinc-500">Status:</label>
+        <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-3">
+          <div className="flex w-full items-center gap-3 sm:w-64">
+            <label className="text-xs font-semibold text-muted-foreground">Status:</label>
             <Select
               value={statusFilter}
               options={statusOptions}
@@ -296,7 +349,7 @@ export default function LeavePage() {
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+          <div className="hidden items-center gap-1 rounded-lg bg-muted p-1 md:flex">
             <button
               onClick={() => setViewMode('grid')}
               aria-label="Grid view"
@@ -314,9 +367,9 @@ export default function LeavePage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm">
+        <div className="surface-card p-3 sm:p-6">
           {isLoading ? (
-            <div className="p-12 text-center text-zinc-500">
+            <div className="p-12 text-center text-muted-foreground">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent mb-2" />
               <p className="text-xs">Loading leave requests...</p>
             </div>
@@ -330,105 +383,56 @@ export default function LeavePage() {
               <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                 No Leave Applications
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 There are no leave requests matching your current filter.
               </p>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {activeLeaves.map((leave: any) => (
-                <div
-                  key={leave.id}
-                  className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-sm">
-                        {leave.applicantName ? leave.applicantName[0].toUpperCase() : 'L'}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-snug">
-                          {leave.applicantName}
-                        </h3>
-                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
-                          {leave.applicantType} · {leave.leaveType}
-                        </p>
-                      </div>
-                    </div>
-                    {statusBadge(leave.status)}
-                  </div>
-
-                  <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg text-xs flex flex-col gap-1.5 border border-zinc-100 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400">
-                    <div className="flex justify-between">
-                      <span>Start Date:</span>
-                      <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.startDate ?? leave.fromDate)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>End Date:</span>
-                      <span className="text-zinc-900 dark:text-zinc-100 font-mono font-medium">
-                        {dateTemplate(leave.endDate ?? leave.toDate)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-zinc-600 dark:text-zinc-300">
-                    <span className="font-semibold text-zinc-400 block text-[10px] uppercase tracking-wider mb-0.5">
-                      Reason:
-                    </span>
-                    {leave.reason}
-                  </div>
-
-                  {leave.status === 'PENDING' && (
-                    <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-1">
-                      {rowActions(leave, false)}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            leaveCards('grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3')
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
-                  <tr>
-                    <th className="px-4 py-3">Applicant Name</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Start Date</th>
-                    <th className="px-4 py-3">End Date</th>
-                    <th className="px-4 py-3">Reason</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                  {activeLeaves.map((d: any) => (
-                    <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
-                      <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
-                        {d.applicantName}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="secondary">{d.applicantType}</Badge>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
-                        {dateTemplate(d.startDate ?? d.fromDate)}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
-                        {dateTemplate(d.endDate ?? d.toDate)}
-                      </td>
-                      <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{d.reason}</td>
-                      <td className="px-4 py-3">{statusBadge(d.status)}</td>
-                      <td className="px-4 py-3 text-center">{rowActions(d, true)}</td>
+            <>
+              {leaveCards('grid grid-cols-1 gap-3 sm:grid-cols-2 md:hidden')}
+              <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <tr>
+                      <th className="px-4 py-3">Applicant Name</th>
+                      <th className="px-4 py-3">Type</th>
+                      <th className="px-4 py-3">Start Date</th>
+                      <th className="px-4 py-3">End Date</th>
+                      <th className="px-4 py-3">Reason</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                    {activeLeaves.map((d: any) => (
+                      <tr key={d.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                        <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                          {d.applicantName}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant="secondary">{d.applicantType}</Badge>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
+                          {dateTemplate(d.startDate ?? d.fromDate)}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
+                          {dateTemplate(d.endDate ?? d.toDate)}
+                        </td>
+                        <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{d.reason}</td>
+                        <td className="px-4 py-3">{statusBadge(d.status)}</td>
+                        <td className="px-4 py-3 text-center">{rowActions(d, true)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {totalRecords > limit && (
-            <div className="flex items-center justify-between mt-4 text-xs text-zinc-500">
+            <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
               <span>
                 Page {page} of {totalPages} · {totalRecords} applications
               </span>
@@ -526,7 +530,7 @@ export default function LeavePage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Start Date *
@@ -580,7 +584,7 @@ export default function LeavePage() {
         title="Reject Leave Application"
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Rejecting the application of <b>{rejectTarget?.applicantName}</b>. The applicant will
             see this reason.
           </p>

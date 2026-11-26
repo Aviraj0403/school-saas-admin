@@ -92,11 +92,11 @@ export default function AnalyticsPage() {
         {/* Dynamic Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Revenue chart */}
-          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-6 shadow-sm">
+          <div className="border border-border rounded-xl bg-card p-6 shadow-sm">
             <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-brand" /> Revenue Inflow Trend (₹)
             </h3>
-            <div className="relative flex items-end justify-between h-52 px-4 mt-6 border-b border-zinc-200/80 dark:border-zinc-800/80 pb-2">
+            <div className="relative flex items-end justify-between h-52 px-4 mt-6 border-b border-border pb-2">
               <div className="absolute inset-x-0 bottom-8 top-0 flex flex-col justify-between pointer-events-none opacity-20">
                 <div className="border-t border-zinc-400 w-full" />
                 <div className="border-t border-zinc-400 w-full" />
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Occupancy chart */}
-          <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-6 shadow-sm">
+          <div className="border border-border rounded-xl bg-card p-6 shadow-sm">
             <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base flex items-center gap-2">
               <Activity className="w-5 h-5 text-purple-500" /> Hostels Occupancy Rate
             </h3>
@@ -163,14 +163,14 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Audit Log table */}
-        <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-6 shadow-sm">
+        <div className="border border-border rounded-xl bg-card p-6 shadow-sm">
           <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base mb-4">
             System Operations Audit Log
           </h3>
 
-          <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+          <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                 <tr>
                   <th className="px-4 py-3">Operator Email</th>
                   <th className="px-4 py-3">Action</th>
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
 
           {/* Simple Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
               <span className="text-xs text-zinc-500 font-mono">
                 Page {page} of {totalPages}
               </span>

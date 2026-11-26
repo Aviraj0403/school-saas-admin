@@ -92,7 +92,7 @@ export default function WebsiteContentPage() {
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Navigation Tabs */}
-        <div className="flex bg-white dark:bg-zinc-900/60 p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-xl w-max">
+        <div className="flex bg-card p-1.5 rounded-xl border border-border w-max max-w-full overflow-x-auto scrollbar-none [&>button]:shrink-0 [&>button]:whitespace-nowrap">
           <button
             onClick={() => setActiveTab('pages')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
@@ -123,9 +123,9 @@ export default function WebsiteContentPage() {
               <code className="font-mono text-brand">/website/pages/&lt;slug&gt;</code>.
             </p>
 
-            <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
                   <tr>
                     <th className="px-4 py-3.5">Title</th>
                     <th className="px-4 py-3.5">Slug</th>
@@ -186,7 +186,7 @@ export default function WebsiteContentPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 p-4 shadow-sm backdrop-blur-xl">
+              <div className="md:col-span-1 border border-border rounded-xl bg-card p-4 shadow-sm">
                 <h3 className="font-bold text-xs uppercase tracking-wider text-zinc-400 mb-3">
                   Photo Albums
                 </h3>
@@ -211,7 +211,7 @@ export default function WebsiteContentPage() {
                 )}
               </div>
 
-              <div className="md:col-span-2 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl bg-white dark:bg-zinc-900/60 p-4 shadow-sm backdrop-blur-xl">
+              <div className="md:col-span-2 border border-border rounded-xl bg-card p-4 shadow-sm">
                 {!activeCategory ? (
                   <div className="p-12 text-center text-zinc-400">
                     Select an album to view photos.
@@ -236,7 +236,7 @@ export default function WebsiteContentPage() {
                         (media as any[]).map((m: any) => (
                           <div
                             key={m.id}
-                            className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden bg-zinc-950"
+                            className="border border-border rounded-xl overflow-hidden bg-zinc-950"
                           >
                             <img
                               src={m.url}

@@ -101,7 +101,7 @@ export default function RoleMatrixDialog({
       title={role ? `Module access - ${role.name}` : 'Module access'}
       className="max-w-3xl"
     >
-      <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-7 pb-6">
+      <div className="flex min-h-0 flex-col gap-3">
         {loading && <p className="text-sm text-zinc-500">Loading matrix...</p>}
         {(modErr || rowErr) && (
           <p className="text-sm text-rose-600">{errorMessage(modErr || rowErr)}</p>

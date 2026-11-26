@@ -56,7 +56,7 @@ export function MemberPicker({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <Select
           value={kind}
           options={[
@@ -69,7 +69,7 @@ export function MemberPicker({
             onChange(null);
           }}
         />
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -94,7 +94,7 @@ export function MemberPicker({
               key={m.id}
               type="button"
               onClick={() => onChange(m)}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-800/40 ${value?.id === m.id ? 'bg-brand/10' : ''}`}
+              className={`w-full text-left px-3 py-3 sm:py-2 text-sm sm:text-xs hover:bg-zinc-50 dark:hover:bg-zinc-800/40 ${value?.id === m.id ? 'bg-brand/10' : ''}`}
             >
               <span className="font-semibold">{m.name}</span>
               {m.detail && <span className="text-zinc-500"> · {m.detail}</span>}

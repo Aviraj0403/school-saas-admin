@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Building, LogOut, Pencil, Plus, Trash2, UserPlus } from 'lucide-react';
+import { LogOut, Pencil, Plus, Trash2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -241,29 +242,29 @@ export default function HostelPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Hostels & Residences" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Building className="w-6 h-6 text-brand" /> Hostels &amp; Residential Blocks
-            </h1>
-            <p className="text-sm text-zinc-500">
-              Manage hostel blocks, rooms, boarders and wardens
-            </p>
-          </div>
-          {isAdmin && (
-            <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => setAdmitOpen(true)}>
-                <UserPlus className="w-4 h-4 mr-2" /> Admit Boarder
-              </Button>
-              <Button onClick={() => setHostelOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" /> Add Hostel Block
-              </Button>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="Hostels & Residential Blocks"
+          description="Manage hostel blocks, rooms, boarders and wardens"
+          actions={
+            isAdmin && (
+              <>
+                <Button className="w-full sm:w-auto" onClick={() => setHostelOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Hostel Block
+                </Button>
+                <Button
+                  className="w-full sm:w-auto"
+                  variant="outline"
+                  onClick={() => setAdmitOpen(true)}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" /> Admit Boarder
+                </Button>
+              </>
+            )
+          }
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
           <StatCard
             label="Hostel blocks"
             value={hostels.length}
@@ -314,11 +315,9 @@ export default function HostelPage() {
 
         <Panel>
           {tab === 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-3 flex flex-col gap-3">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                  Hostel Blocks
-                </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+              <div className="lg:col-span-3 min-w-0 flex flex-col gap-3">
+                <h2 className="text-card-title">Hostel Blocks</h2>
                 {hostelsQ.isPending ? (
                   <Spinner />
                 ) : hostelsQ.error ? (
@@ -326,65 +325,109 @@ export default function HostelPage() {
                 ) : hostels.length === 0 ? (
                   <EmptyState title="No hostel blocks registered" />
                 ) : (
-                  <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                        <tr>
-                          <th className="px-4 py-3">Block</th>
-                          <th className="px-4 py-3">Type</th>
-                          <th className="px-4 py-3">Beds</th>
-                          <th className="px-4 py-3">Rooms</th>
-                          {isAdmin && <th className="px-4 py-3 text-right">Actions</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                        {hostels.map((h: any) => (
-                          <tr
-                            key={h.id}
-                            onClick={() => setSelectedId(h.id)}
-                            className={`cursor-pointer ${selectedId === h.id ? 'bg-brand/10 text-brand font-semibold' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
-                          >
-                            <td className="px-4 py-3 font-semibold">{h.name}</td>
-                            <td className="px-4 py-3">
-                              <Badge variant="secondary">{h.type}</Badge>
-                            </td>
-                            <td className="px-4 py-3 font-mono">{h.capacity}</td>
-                            <td className="px-4 py-3 font-mono">{h._count?.rooms ?? 0}</td>
-                            {isAdmin && (
-                              <td
-                                className="px-4 py-3 text-right"
-                                onClick={(e) => e.stopPropagation()}
+                  <>
+                    <ul className="md:hidden flex flex-col gap-2.5">
+                      {hostels.map((h: any) => (
+                        <li
+                          key={h.id}
+                          onClick={() => setSelectedId(h.id)}
+                          className={`rounded-2xl border p-3.5 flex flex-col gap-2.5 cursor-pointer ${selectedId === h.id ? 'border-brand bg-brand/5' : 'border-border bg-card'}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm truncate">{h.name}</p>
+                              <p className="text-caption">
+                                {h.capacity} beds · {h._count?.rooms ?? 0} rooms
+                              </p>
+                            </div>
+                            <Badge variant="secondary">{h.type}</Badge>
+                          </div>
+                          {isAdmin && (
+                            <div
+                              className="flex justify-end gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Edit hostel"
+                                onClick={() => startEditHostel(h)}
                               >
-                                <Button
-                                  size="icon-sm"
-                                  variant="ghost"
-                                  aria-label="Edit hostel"
-                                  onClick={() => startEditHostel(h)}
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon-sm"
-                                  variant="ghost"
-                                  aria-label="Delete hostel"
-                                  onClick={() => setHostelToDelete(h)}
-                                >
-                                  <Trash2 className="w-4 h-4 text-rose-500" />
-                                </Button>
-                              </td>
-                            )}
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Delete hostel"
+                                onClick={() => setHostelToDelete(h)}
+                              >
+                                <Trash2 className="w-4 h-4 text-rose-500" />
+                              </Button>
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                          <tr>
+                            <th className="px-4 py-3">Block</th>
+                            <th className="px-4 py-3">Type</th>
+                            <th className="px-4 py-3">Beds</th>
+                            <th className="px-4 py-3">Rooms</th>
+                            {isAdmin && <th className="px-4 py-3 text-right">Actions</th>}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                          {hostels.map((h: any) => (
+                            <tr
+                              key={h.id}
+                              onClick={() => setSelectedId(h.id)}
+                              className={`cursor-pointer ${selectedId === h.id ? 'bg-brand/10 text-brand font-semibold' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
+                            >
+                              <td className="px-4 py-3 font-semibold">{h.name}</td>
+                              <td className="px-4 py-3">
+                                <Badge variant="secondary">{h.type}</Badge>
+                              </td>
+                              <td className="px-4 py-3 font-mono">{h.capacity}</td>
+                              <td className="px-4 py-3 font-mono">{h._count?.rooms ?? 0}</td>
+                              {isAdmin && (
+                                <td
+                                  className="px-4 py-3 text-right"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Button
+                                    size="icon-sm"
+                                    variant="ghost"
+                                    aria-label="Edit hostel"
+                                    onClick={() => startEditHostel(h)}
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon-sm"
+                                    variant="ghost"
+                                    aria-label="Delete hostel"
+                                    onClick={() => setHostelToDelete(h)}
+                                  >
+                                    <Trash2 className="w-4 h-4 text-rose-500" />
+                                  </Button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
               </div>
 
-              <div className="lg:col-span-2 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-4">
-                <div className="flex justify-between items-start">
+              <div className="lg:col-span-2 min-w-0 border border-border rounded-2xl p-3.5 sm:p-5 flex flex-col gap-4">
+                <div className="flex justify-between items-start gap-2">
                   <div>
-                    <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    <h2 className="text-card-title">
                       {selected ? `Rooms — ${selected.name}` : 'Rooms'}
                     </h2>
                     <p className="text-xs text-zinc-500">
@@ -411,10 +454,10 @@ export default function HostelPage() {
                         return (
                           <div
                             key={r.id}
-                            className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-lg p-3 flex flex-col gap-2"
+                            className="border border-border rounded-xl p-3 flex flex-col gap-2 bg-card"
                           >
-                            <div className="flex justify-between items-center">
-                              <span className="font-semibold text-sm">
+                            <div className="flex justify-between items-center gap-2">
+                              <span className="font-semibold text-sm min-w-0">
                                 Room {r.roomNo}{' '}
                                 <span className="text-xs text-zinc-400 font-normal">
                                   · floor {r.floor} · {r.type}
@@ -472,45 +515,77 @@ export default function HostelPage() {
                 hint='Use "Admit Boarder" to allocate a room.'
               />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Student</th>
-                      <th className="px-4 py-3">Hostel</th>
-                      <th className="px-4 py-3">Room</th>
-                      <th className="px-4 py-3">Academic year</th>
-                      <th className="px-4 py-3">Joined</th>
-                      {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {(boardersQ.data ?? []).map((b: any) => (
-                      <tr key={b.id}>
-                        <td className="px-4 py-3 font-semibold">
-                          {b.student?.name}
-                          <span className="block text-[10px] font-normal text-zinc-400">
-                            {b.student?.admissionNo}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">{b.room?.hostel?.name}</td>
-                        <td className="px-4 py-3 font-mono">{b.room?.roomNo}</td>
-                        <td className="px-4 py-3">{b.academicYear?.name}</td>
-                        <td className="px-4 py-3 font-mono">
-                          {fmtDate(b.joinDate ?? b.createdAt)}
-                        </td>
-                        {isAdmin && (
-                          <td className="px-4 py-3 text-center">
-                            <Button size="sm" variant="outline" onClick={() => setToDischarge(b)}>
-                              <LogOut className="w-3.5 h-3.5 mr-1" /> Discharge
-                            </Button>
-                          </td>
-                        )}
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {(boardersQ.data ?? []).map((b: any) => (
+                    <li
+                      key={b.id}
+                      className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{b.student?.name}</p>
+                          <p className="text-caption">{b.student?.admissionNo}</p>
+                        </div>
+                        <Badge variant="info">Room {b.room?.roomNo}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {b.room?.hostel?.name} · {b.academicYear?.name} · Joined{' '}
+                        {fmtDate(b.joinDate ?? b.createdAt)}
+                      </p>
+                      {isAdmin && (
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setToDischarge(b)}
+                        >
+                          <LogOut className="w-3.5 h-3.5 mr-1" /> Discharge
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Student</th>
+                        <th className="px-4 py-3">Hostel</th>
+                        <th className="px-4 py-3">Room</th>
+                        <th className="px-4 py-3">Academic year</th>
+                        <th className="px-4 py-3">Joined</th>
+                        {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {(boardersQ.data ?? []).map((b: any) => (
+                        <tr key={b.id}>
+                          <td className="px-4 py-3 font-semibold">
+                            {b.student?.name}
+                            <span className="block text-[10px] font-normal text-zinc-400">
+                              {b.student?.admissionNo}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">{b.room?.hostel?.name}</td>
+                          <td className="px-4 py-3 font-mono">{b.room?.roomNo}</td>
+                          <td className="px-4 py-3">{b.academicYear?.name}</td>
+                          <td className="px-4 py-3 font-mono">
+                            {fmtDate(b.joinDate ?? b.createdAt)}
+                          </td>
+                          {isAdmin && (
+                            <td className="px-4 py-3 text-center">
+                              <Button size="sm" variant="outline" onClick={() => setToDischarge(b)}>
+                                <LogOut className="w-3.5 h-3.5 mr-1" /> Discharge
+                              </Button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
 
           {tab === 2 &&
@@ -524,51 +599,92 @@ export default function HostelPage() {
                 hint="Add a hostel block before assigning a warden."
               />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Hostel</th>
-                      <th className="px-4 py-3">Warden</th>
-                      <th className="px-4 py-3">Email</th>
-                      <th className="px-4 py-3">Contact</th>
-                      {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {(wardensQ.data ?? []).map((w: any) => (
-                      <tr key={w.hostelId}>
-                        <td className="px-4 py-3 font-semibold">
-                          {w.hostelName}
-                          <span className="block text-[10px] font-normal text-zinc-400">
-                            {w.hostelType}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {w.warden?.name ?? <Badge variant="warning">Unassigned</Badge>}
-                        </td>
-                        <td className="px-4 py-3">{w.warden?.email ?? '—'}</td>
-                        <td className="px-4 py-3 font-mono">{w.contactPhone ?? '—'}</td>
-                        {isAdmin && (
-                          <td className="px-4 py-3 text-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setWardenFor(w);
-                                setWardenId(w.warden?.id ?? '');
-                                setWardenPhone(w.contactPhone ?? '');
-                              }}
-                            >
-                              {w.warden ? 'Change' : 'Assign'}
-                            </Button>
-                          </td>
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {(wardensQ.data ?? []).map((w: any) => (
+                    <li
+                      key={w.hostelId}
+                      className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{w.hostelName}</p>
+                          <p className="text-caption">{w.hostelType}</p>
+                        </div>
+                        {w.warden ? (
+                          <Badge variant="success">Assigned</Badge>
+                        ) : (
+                          <Badge variant="warning">Unassigned</Badge>
                         )}
+                      </div>
+                      <p className="text-xs text-muted-foreground break-words">
+                        {w.warden?.name ?? 'No warden'}
+                        {w.warden?.email ? ` · ${w.warden.email}` : ''}
+                        {w.contactPhone ? ` · ${w.contactPhone}` : ''}
+                      </p>
+                      {isAdmin && (
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setWardenFor(w);
+                            setWardenId(w.warden?.id ?? '');
+                            setWardenPhone(w.contactPhone ?? '');
+                          }}
+                        >
+                          {w.warden ? 'Change' : 'Assign'}
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Hostel</th>
+                        <th className="px-4 py-3">Warden</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Contact</th>
+                        {isAdmin && <th className="px-4 py-3 text-center">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {(wardensQ.data ?? []).map((w: any) => (
+                        <tr key={w.hostelId}>
+                          <td className="px-4 py-3 font-semibold">
+                            {w.hostelName}
+                            <span className="block text-[10px] font-normal text-zinc-400">
+                              {w.hostelType}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {w.warden?.name ?? <Badge variant="warning">Unassigned</Badge>}
+                          </td>
+                          <td className="px-4 py-3">{w.warden?.email ?? '—'}</td>
+                          <td className="px-4 py-3 font-mono">{w.contactPhone ?? '—'}</td>
+                          {isAdmin && (
+                            <td className="px-4 py-3 text-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setWardenFor(w);
+                                  setWardenId(w.warden?.id ?? '');
+                                  setWardenPhone(w.contactPhone ?? '');
+                                }}
+                              >
+                                {w.warden ? 'Change' : 'Assign'}
+                              </Button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
         </Panel>
       </div>
@@ -586,7 +702,7 @@ export default function HostelPage() {
               placeholder="e.g. Boys Hostel Block A"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Type">
               <Select
                 value={hostelForm.type}
@@ -648,7 +764,7 @@ export default function HostelPage() {
               placeholder="e.g. 101"
             />
           </Field>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
             <Field label="Floor">
               <Input
                 type="number"

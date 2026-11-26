@@ -40,13 +40,16 @@ export function TanstackTable<T>({
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+      <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-card shadow-sm overscroll-x-contain">
         <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
           <thead className="text-[11px] text-slate-400 dark:text-slate-400 uppercase font-extrabold tracking-wider bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200/60 dark:border-slate-800/80">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="px-6 py-4 font-extrabold whitespace-nowrap">
+                  <th
+                    key={header.id}
+                    className="px-3 sm:px-6 py-3 sm:py-4 font-extrabold whitespace-nowrap"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -76,7 +79,7 @@ export function TanstackTable<T>({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200 font-medium"
+                      className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200 font-medium"
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
@@ -99,20 +102,20 @@ export function TanstackTable<T>({
 
       {/* Pagination Controls */}
       {pagination && setPagination && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-zinc-500 font-medium">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-sm text-zinc-500 font-medium tabular-nums">
             Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <button
-              className="px-3 py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              className="px-4 h-10 sm:h-auto sm:px-3 sm:py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               Previous
             </button>
             <button
-              className="px-3 py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              className="px-4 h-10 sm:h-auto sm:px-3 sm:py-1.5 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

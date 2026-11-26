@@ -290,7 +290,7 @@ export function AdminDashboard() {
     collected + outstanding > 0 ? Math.round((collected / (collected + outstanding)) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex min-w-0 flex-col gap-4 pb-6 sm:gap-6">
       {/* Hero + today's attendance */}
       <HeroCard
         eyebrow={
@@ -319,7 +319,7 @@ export function AdminDashboard() {
         }
         aside={
           isModuleActive(modules, 'attendance') && (
-            <div className="glass flex items-center gap-5 rounded-3xl p-4 pr-6">
+            <div className="glass flex w-full items-center gap-4 rounded-3xl p-4 sm:w-auto sm:gap-5 sm:pr-6">
               <RadialGauge value={todayRate} light size={124} sublabel="present" />
               <div className="space-y-2 text-sm">
                 <p className="font-display text-base font-semibold">Today’s attendance</p>
@@ -373,16 +373,16 @@ export function AdminDashboard() {
           <button
             type="button"
             onClick={toggleChecklist}
-            className="flex w-full items-center gap-4 p-5 text-left sm:p-6"
+            className="flex min-h-[64px] w-full items-center gap-3 p-4 text-left sm:gap-4 sm:p-6"
           >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-orange-500/25">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-orange-500/25 sm:size-12">
               <Rocket className="size-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-display text-lg font-semibold text-zinc-900 dark:text-white">
+              <span className="block text-base font-semibold text-foreground sm:text-lg">
                 Finish setting up your school
               </span>
-              <span className="block text-[13px] text-zinc-500">
+              <span className="block text-[13px] text-muted-foreground">
                 {completedSteps} of {totalSteps} steps done — complete the rest to unlock every
                 feature.
               </span>
@@ -397,11 +397,11 @@ export function AdminDashboard() {
               <span className="font-display w-10 text-sm font-semibold">{progressPct}%</span>
             </span>
             <ChevronDown
-              className={`size-4 text-zinc-400 transition-transform ${isChecklistCollapsed ? '' : 'rotate-180'}`}
+              className={`size-4 shrink-0 text-muted-foreground transition-transform ${isChecklistCollapsed ? '' : 'rotate-180'}`}
             />
           </button>
           {!isChecklistCollapsed && (
-            <div className="grid grid-cols-1 gap-3 border-t border-border p-5 sm:p-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 border-t border-border p-4 sm:p-6 md:grid-cols-2 lg:grid-cols-3">
               {setupSteps.map((step, idx) => {
                 const Icon = step.icon;
                 return (
@@ -436,7 +436,7 @@ export function AdminDashboard() {
       )}
 
       {/* Key metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         {isModuleActive(modules, 'student') && (
           <StatCard
             label="Total students"
@@ -489,7 +489,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Trends */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel
           className="xl:col-span-2"
           title="Fee collection"
@@ -516,25 +516,25 @@ export function AdminDashboard() {
             center={`${collectedPct}%`}
             caption="collected"
           />
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-6 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
             <div className="rounded-2xl bg-brand-soft p-3 dark:bg-white/5">
               <p className="flex items-center gap-1.5 text-xs text-zinc-500">
                 <span className="size-2 rounded-full bg-brand" /> Collected
               </p>
-              <p className="font-display tabular mt-1 text-lg font-semibold">{inr(collected)}</p>
+              <p className="tabular mt-1 truncate text-lg font-semibold">{inr(collected)}</p>
             </div>
             <div className="rounded-2xl bg-amber-500/[0.08] p-3">
               <p className="flex items-center gap-1.5 text-xs text-zinc-500">
                 <span className="size-2 rounded-full bg-[#ffb547]" /> Outstanding
               </p>
-              <p className="font-display tabular mt-1 text-lg font-semibold">{inr(outstanding)}</p>
+              <p className="tabular mt-1 truncate text-lg font-semibold">{inr(outstanding)}</p>
             </div>
           </div>
         </Panel>
       </div>
 
       {/* Actions, attendance, glance */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel title="Quick actions" subtitle="Jump straight into the daily tasks">
           <QuickActions actions={quickActions} columns={2} />
         </Panel>

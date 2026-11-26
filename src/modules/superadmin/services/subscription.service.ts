@@ -111,7 +111,19 @@ export interface SuperDashboard {
     activeTenants: number;
     trialTenants: number;
     suspendedTenants: number;
+    pastDueTenants?: number;
+    trialEndingSoon?: number;
+    totalStudents?: number;
   };
+  revenue?: { mrr: number; arr: number; payingSchools: number };
+  attention?: Array<{
+    tenantId: string;
+    name: string;
+    subdomain: string;
+    status: string;
+    plan: string | null;
+    endsAt?: string | null;
+  }>;
   planBreakdown: Array<{ plan: string; count: number }>;
   recentSignups: SchoolRow[];
   pendingInvoices: number;

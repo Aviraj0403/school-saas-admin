@@ -89,7 +89,7 @@ export function StudentParentDashboard() {
   const who = isParent ? child?.name || 'your child' : 'you';
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex min-w-0 flex-col gap-4 pb-4 sm:gap-6">
       <HeroCard
         eyebrow={
           <>
@@ -114,7 +114,7 @@ export function StudentParentDashboard() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             <StatCard
               label="Attendance this month"
               value={att && att.total > 0 ? `${att.percentage}%` : '—'}
@@ -170,7 +170,7 @@ export function StudentParentDashboard() {
                   {nextPeriods.map((s: any) => (
                     <li
                       key={s.id}
-                      className="flex items-center gap-3 rounded-2xl border border-border p-3"
+                      className="flex min-h-14 items-center gap-3 rounded-2xl border border-border p-3"
                     >
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
                         <Clock className="size-4" />
@@ -205,7 +205,7 @@ export function StudentParentDashboard() {
                   {dueSoon.map((h: any) => (
                     <li
                       key={h.id}
-                      className="flex items-center gap-3 rounded-2xl border border-border p-3"
+                      className="flex min-h-14 items-center gap-3 rounded-2xl border border-border p-3"
                     >
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
                         <BookOpenCheck className="size-4" />
@@ -230,17 +230,19 @@ export function StudentParentDashboard() {
             </Panel>
 
             <Panel title="Fees" subtitle="Balance for the session">
-              <div className="flex flex-col items-start gap-4">
-                <p className="font-display text-3xl font-semibold text-zinc-900 dark:text-white">
-                  {inr(totalDue)}
-                </p>
+              <div className="flex flex-col items-stretch gap-4 sm:items-start">
+                <p className="tabular text-3xl font-semibold text-foreground">{inr(totalDue)}</p>
                 <p className="text-sm text-zinc-500">
                   {totalDue > 0
                     ? `Paid so far ${inr(fees.data?.totalPaid)}`
                     : 'There are no outstanding fees.'}
                 </p>
-                <Link href="/portal/fees">
-                  <Button variant={totalDue > 0 ? 'default' : 'outline'}>
+                <Link href="/portal/fees" className="block w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    variant={totalDue > 0 ? 'default' : 'outline'}
+                  >
                     <IndianRupee /> {totalDue > 0 ? 'Pay now' : 'View receipts'}
                   </Button>
                 </Link>

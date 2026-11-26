@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
 import AppFooter from './AppFooter';
+import BottomTabBar from './BottomTabBar';
 import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginScreen from './LoginScreen';
@@ -128,7 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             id="main-content"
             className="min-w-0 flex-1 overflow-y-auto scroll-smooth overscroll-contain"
           >
-            <div className="page-container flex min-h-full min-w-0 flex-col">
+            <div className="page-container flex min-h-full min-w-0 flex-col pb-28 lg:pb-8">
               <div className="page-enter min-w-0 flex-1">
                 {routeStatus === 'ok' ? children : <AccessState status={routeStatus} />}
               </div>
@@ -137,6 +138,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </main>
         </div>
       </div>
+
+      {/* Mobile: floating bottom tabs for the role's main destinations */}
+      <BottomTabBar onMore={() => setMobileOpen((p) => !p)} moreOpen={mobileOpen} />
     </div>
   );
 }

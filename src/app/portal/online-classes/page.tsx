@@ -20,31 +20,31 @@ const fmt = (v: string) =>
 function ClassCard({ c, past }: { c: any; past?: boolean }) {
   const live = c.status === 'LIVE';
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-card">
+    <article className="surface-card flex min-w-0 flex-col gap-3 p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate font-display text-base font-semibold">{c.title}</h3>
-          <p className="text-xs text-zinc-500">{c.subject?.name ?? 'General'}</p>
+          <h3 className="text-card-title break-words">{c.title}</h3>
+          <p className="text-caption">{c.subject?.name ?? 'General'}</p>
         </div>
         <Badge variant={live ? 'success' : past ? 'secondary' : 'info'}>
           {live ? 'Live now' : past ? c.status?.toLowerCase() : 'Scheduled'}
         </Badge>
       </div>
-      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      <p className="tabular text-sm text-muted-foreground">
         {fmt(c.scheduledAt)} · {c.duration} min
       </p>
-      {c.description && <p className="line-clamp-2 text-xs text-zinc-500">{c.description}</p>}
-      <div className="flex flex-wrap gap-2">
+      {c.description && <p className="text-caption line-clamp-2">{c.description}</p>}
+      <div className="flex flex-col gap-2 sm:flex-row">
         {!past && c.joinUrl && (
-          <a href={c.joinUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant={live ? 'default' : 'outline'}>
+          <a href={c.joinUrl} target="_blank" rel="noopener noreferrer" className="block">
+            <Button size="lg" className="w-full" variant={live ? 'default' : 'outline'}>
               <Video /> Join class
             </Button>
           </a>
         )}
         {c.recordingUrl && (
-          <a href={c.recordingUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant="outline">
+          <a href={c.recordingUrl} target="_blank" rel="noopener noreferrer" className="block">
+            <Button size="lg" className="w-full" variant="outline">
               Recording
             </Button>
           </a>
@@ -80,11 +80,11 @@ function OnlineClassesView({ classId }: { classId?: string | null }) {
     >
       <div className="flex flex-col gap-8">
         <section>
-          <h3 className="mb-3 font-display text-lg font-semibold">Upcoming</h3>
+          <h3 className="text-card-title mb-3">Upcoming</h3>
           {upcoming.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nothing scheduled right now.</p>
+            <p className="text-caption">Nothing scheduled right now.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
               {upcoming.map((c) => (
                 <ClassCard key={c.id} c={c} />
               ))}
@@ -93,8 +93,8 @@ function OnlineClassesView({ classId }: { classId?: string | null }) {
         </section>
         {past.length > 0 && (
           <section>
-            <h3 className="mb-3 font-display text-lg font-semibold">Earlier</h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <h3 className="text-card-title mb-3">Earlier</h3>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
               {past.map((c) => (
                 <ClassCard key={c.id} c={c} past />
               ))}

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -23,7 +24,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { apiMessage } from '@/lib/apiMessage';
 import { asList } from '@/lib/utils';
 import { toast } from 'sonner';
-import { FileText, Plus, Edit3, Trash2, Users, ClipboardCheck } from 'lucide-react';
+import { Plus, Edit3, Trash2, Users, ClipboardCheck } from 'lucide-react';
 
 const emptyForm = {
   title: '',
@@ -211,42 +212,40 @@ export default function AssignmentsPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Assignments" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-brand" />
-              Assignments & Homework
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Post tasks, review submissions, and grade student work
-            </p>
-          </div>
-          <Button onClick={openCreate} disabled={classes.length === 0}>
-            <Plus className="w-4 h-4 mr-2" /> Post Assignment
-          </Button>
-        </div>
+        <PageHeader
+          title="Assignments & Homework"
+          description="Post tasks, review submissions, and grade student work"
+          actions={
+            <Button
+              className="h-11 w-full sm:h-10 sm:w-auto"
+              onClick={openCreate}
+              disabled={classes.length === 0}
+            >
+              <Plus className="w-4 h-4 mr-2" /> Post Assignment
+            </Button>
+          }
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {[
             { label: 'Assignments', value: assignments.length },
             { label: 'Upcoming (not yet due)', value: upcoming },
             { label: 'Total Submissions', value: totalSubmissions },
           ].map((s) => (
-            <div
-              key={s.label}
-              className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl shadow-sm"
-            >
-              <span className="text-xs font-medium text-zinc-500">{s.label}</span>
-              <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+            <div key={s.label} className="surface-card min-w-0 p-3 sm:p-5">
+              <span className="block text-[11px] font-medium leading-tight text-muted-foreground sm:text-xs">
+                {s.label}
+              </span>
+              <h3 className="mt-1 text-xl font-semibold tabular-nums text-foreground sm:text-2xl">
                 {isPending ? '...' : s.value}
               </h3>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
-          <div className="flex items-center gap-3 w-72">
-            <label className="text-xs font-semibold text-zinc-500">Class:</label>
+        <div className="surface-card flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <div className="flex w-full items-center gap-3 sm:w-72">
+            <label className="text-xs font-semibold text-muted-foreground">Class:</label>
             <Select
               value={filterClassId}
               options={[
@@ -257,7 +256,7 @@ export default function AssignmentsPage() {
               disabled={loadingClasses}
             />
           </div>
-          <label className="flex items-center gap-2 text-xs font-semibold text-zinc-500 cursor-pointer">
+          <label className="flex h-10 cursor-pointer items-center gap-2 text-sm font-semibold text-muted-foreground">
             <input
               type="checkbox"
               checked={mineOnly}
@@ -267,78 +266,127 @@ export default function AssignmentsPage() {
           </label>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm">
+        <div className="surface-card p-3 sm:p-6">
           {isPending ? (
-            <div className="p-10 text-center text-sm text-zinc-500">Loading assignments...</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">
+              Loading assignments...
+            </div>
           ) : isError ? (
             <div className="p-10 text-center text-sm text-rose-600">
               {apiMessage(error, 'Could not load assignments.')}
             </div>
           ) : assignments.length === 0 ? (
-            <div className="p-10 text-center text-sm text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+            <div className="p-10 text-center text-sm text-muted-foreground border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
               {classes.length === 0 && isTeacher
                 ? 'No classes are assigned to you yet.'
                 : 'No assignments yet. Post the first one.'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-                  <tr>
-                    <th className="py-3 pr-4">Title</th>
-                    <th className="py-3 pr-4">Class</th>
-                    <th className="py-3 pr-4">Subject</th>
-                    <th className="py-3 pr-4">Due</th>
-                    <th className="py-3 pr-4 text-center">Submissions</th>
-                    <th className="py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {assignments.map((a) => {
-                    const overdue = new Date(a.dueDate).getTime() < now;
-                    return (
-                      <tr key={a.id}>
-                        <td className="py-3 pr-4 font-semibold text-zinc-900 dark:text-zinc-100">
-                          {a.title}
-                        </td>
-                        <td className="py-3 pr-4">
-                          {a.class?.name} {a.class?.section}
-                        </td>
-                        <td className="py-3 pr-4">{a.subject?.name}</td>
-                        <td className="py-3 pr-4">
-                          <Badge variant={overdue ? 'secondary' : 'warning'}>
-                            {fmt(a.dueDate)}
-                          </Badge>
-                        </td>
-                        <td className="py-3 pr-4 text-center">{a._count?.submissions ?? 0}</td>
-                        <td className="py-3">
-                          <div className="flex justify-end gap-2">
-                            <Button size="sm" variant="outline" onClick={() => setViewing(a)}>
-                              <Users className="w-3.5 h-3.5 mr-1" /> Submissions
+            <>
+              {/* Phones: card list */}
+              <ul className="flex flex-col gap-2.5 md:hidden">
+                {assignments.map((a) => {
+                  const overdue = new Date(a.dueDate).getTime() < now;
+                  return (
+                    <li key={a.id} className="rounded-2xl border border-border bg-card p-3.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {a.class?.name} {a.class?.section} · {a.subject?.name}
+                          </p>
+                        </div>
+                        <Badge variant={overdue ? 'secondary' : 'warning'}>{fmt(a.dueDate)}</Badge>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        <span className="font-semibold tabular-nums text-foreground">
+                          {a._count?.submissions ?? 0}
+                        </span>{' '}
+                        submissions
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2 [&>button]:h-10">
+                        <Button size="sm" variant="outline" onClick={() => setViewing(a)}>
+                          <Users className="w-3.5 h-3.5 mr-1" /> Submissions
+                        </Button>
+                        {canModify(a) && (
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => openEdit(a)}>
+                              <Edit3 className="w-3.5 h-3.5 mr-1" /> Edit
                             </Button>
-                            {canModify(a) && (
-                              <>
-                                <Button size="sm" variant="outline" onClick={() => openEdit(a)}>
-                                  <Edit3 className="w-3.5 h-3.5 mr-1" /> Edit
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-rose-600 border-rose-200"
-                                  onClick={() => setDeleteTarget(a)}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-rose-600 border-rose-200"
+                              onClick={() => setDeleteTarget(a)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
+                    <tr>
+                      <th className="py-3 pr-4">Title</th>
+                      <th className="py-3 pr-4">Class</th>
+                      <th className="py-3 pr-4">Subject</th>
+                      <th className="py-3 pr-4">Due</th>
+                      <th className="py-3 pr-4 text-center">Submissions</th>
+                      <th className="py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {assignments.map((a) => {
+                      const overdue = new Date(a.dueDate).getTime() < now;
+                      return (
+                        <tr key={a.id}>
+                          <td className="py-3 pr-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                            {a.title}
+                          </td>
+                          <td className="py-3 pr-4">
+                            {a.class?.name} {a.class?.section}
+                          </td>
+                          <td className="py-3 pr-4">{a.subject?.name}</td>
+                          <td className="py-3 pr-4">
+                            <Badge variant={overdue ? 'secondary' : 'warning'}>
+                              {fmt(a.dueDate)}
+                            </Badge>
+                          </td>
+                          <td className="py-3 pr-4 text-center">{a._count?.submissions ?? 0}</td>
+                          <td className="py-3">
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setViewing(a)}>
+                                <Users className="w-3.5 h-3.5 mr-1" /> Submissions
+                              </Button>
+                              {canModify(a) && (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => openEdit(a)}>
+                                    <Edit3 className="w-3.5 h-3.5 mr-1" /> Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-rose-600 border-rose-200"
+                                    onClick={() => setDeleteTarget(a)}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -360,7 +408,7 @@ export default function AssignmentsPage() {
               placeholder="e.g. Chapter 4 exercises"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Class *
@@ -408,7 +456,7 @@ export default function AssignmentsPage() {
                 → Classes).
               </p>
             )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Due Date *
@@ -463,13 +511,13 @@ export default function AssignmentsPage() {
         className="max-w-3xl"
       >
         {loadingDetail ? (
-          <p className="text-sm text-zinc-500">Loading submissions...</p>
+          <p className="text-sm text-muted-foreground">Loading submissions...</p>
         ) : submissions.length === 0 ? (
-          <p className="text-sm text-zinc-500">No submissions yet.</p>
+          <p className="text-sm text-muted-foreground">No submissions yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+              <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
                   <th className="py-2 pr-3">Student</th>
                   <th className="py-2 pr-3">Submitted</th>

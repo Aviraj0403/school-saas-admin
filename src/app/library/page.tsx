@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   BookmarkPlus,
-  BookOpen,
   CheckCircle,
   LayoutGrid,
   List,
@@ -16,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog } from '@/components/ui/dialog';
@@ -71,41 +71,73 @@ function MemberHistory({ member }: { member: Member }) {
   const rows = data ?? [];
   if (rows.length === 0) return <EmptyState title="No borrowing history" />;
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-      <table className="w-full text-left text-xs">
-        <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-          <tr>
-            <th className="px-4 py-3">Book</th>
-            <th className="px-4 py-3">Issued</th>
-            <th className="px-4 py-3">Due</th>
-            <th className="px-4 py-3">Returned</th>
-            <th className="px-4 py-3">Fine</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-          {rows.map((r: any) => (
-            <tr key={r.id}>
-              <td className="px-4 py-3 font-semibold">
-                {r.book?.title}
-                <span className="block text-[10px] font-normal text-zinc-400">
-                  {r.book?.author}
-                </span>
-              </td>
-              <td className="px-4 py-3 font-mono">{fmtDate(r.issueDate)}</td>
-              <td className="px-4 py-3 font-mono">{fmtDate(r.dueDate)}</td>
-              <td className="px-4 py-3">
-                {r.returnDate ? fmtDate(r.returnDate) : <Badge variant="warning">On loan</Badge>}
-              </td>
-              <td className="px-4 py-3 font-mono">
-                {Number(r.fineAmount) > 0
-                  ? `${inr(r.fineAmount)} ${r.finePaid ? '(paid)' : r.fineWaived ? '(waived)' : '(due)'}`
-                  : '—'}
-              </td>
+    <>
+      <ul className="md:hidden flex flex-col gap-2.5">
+        {rows.map((r: any) => (
+          <li
+            key={r.id}
+            className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-1.5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">{r.book?.title}</p>
+                <p className="text-caption truncate">{r.book?.author}</p>
+              </div>
+              {r.returnDate ? (
+                <Badge variant="success">Returned</Badge>
+              ) : (
+                <Badge variant="warning">On loan</Badge>
+              )}
+            </div>
+            <p className="text-caption">
+              Issued {fmtDate(r.issueDate)} · Due {fmtDate(r.dueDate)}
+              {r.returnDate ? ` · Returned ${fmtDate(r.returnDate)}` : ''}
+            </p>
+            {Number(r.fineAmount) > 0 && (
+              <p className="text-xs font-semibold text-rose-600 tabular">
+                Fine {inr(r.fineAmount)}{' '}
+                {r.finePaid ? '(paid)' : r.fineWaived ? '(waived)' : '(due)'}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <tr>
+              <th className="px-4 py-3">Book</th>
+              <th className="px-4 py-3">Issued</th>
+              <th className="px-4 py-3">Due</th>
+              <th className="px-4 py-3">Returned</th>
+              <th className="px-4 py-3">Fine</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+            {rows.map((r: any) => (
+              <tr key={r.id}>
+                <td className="px-4 py-3 font-semibold">
+                  {r.book?.title}
+                  <span className="block text-[10px] font-normal text-zinc-400">
+                    {r.book?.author}
+                  </span>
+                </td>
+                <td className="px-4 py-3 font-mono">{fmtDate(r.issueDate)}</td>
+                <td className="px-4 py-3 font-mono">{fmtDate(r.dueDate)}</td>
+                <td className="px-4 py-3">
+                  {r.returnDate ? fmtDate(r.returnDate) : <Badge variant="warning">On loan</Badge>}
+                </td>
+                <td className="px-4 py-3 font-mono">
+                  {Number(r.fineAmount) > 0
+                    ? `${inr(r.fineAmount)} ${r.finePaid ? '(paid)' : r.fineWaived ? '(waived)' : '(due)'}`
+                    : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -293,30 +325,30 @@ export default function LibraryPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Library & Resources" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-brand" /> Library Catalog &amp; Loans
-            </h1>
-            <p className="text-sm text-zinc-500">
-              {canCreate
-                ? 'Catalogue books, register loans and process fines'
-                : 'Browse the school library catalogue'}
-            </p>
-          </div>
-          {canCreate && activeKey === 'books' && (
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setBookForm({ ...blankBook });
-                setBookOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" /> Add New Book
-            </Button>
-          )}
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="Library Catalog & Loans"
+          description={
+            canCreate
+              ? 'Catalogue books, register loans and process fines'
+              : 'Browse the school library catalogue'
+          }
+          actions={
+            canCreate &&
+            activeKey === 'books' && (
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  setEditing(null);
+                  setBookForm({ ...blankBook });
+                  setBookOpen(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add New Book
+              </Button>
+            )
+          }
+        />
 
         <TabBar
           tabs={tabs.map((t) => t.label)}
@@ -330,11 +362,11 @@ export default function LibraryPage() {
         <Panel>
           {activeKey === 'books' && (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center flex-wrap gap-3">
-                <div className="relative w-72">
+              <div className="flex justify-between items-center gap-3">
+                <div className="relative flex-1 sm:flex-none sm:w-72 min-w-0">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                   <Input
-                    className="pl-9 h-9"
+                    className="pl-9"
                     value={search}
                     onChange={(e) => {
                       setSearch(e.target.value);
@@ -343,7 +375,7 @@ export default function LibraryPage() {
                     placeholder="Search title, author or ISBN..."
                   />
                 </div>
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+                <div className="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
                   <button
                     aria-label="Grid view"
                     onClick={() => setViewMode('grid')}
@@ -367,7 +399,7 @@ export default function LibraryPage() {
               ) : bookList.length === 0 ? (
                 <EmptyState title="No books found" />
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                   {bookList.map((b: any) => (
                     <div
                       key={b.id}
@@ -391,39 +423,67 @@ export default function LibraryPage() {
                   ))}
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                      <tr>
-                        <th className="px-4 py-3">Title</th>
-                        <th className="px-4 py-3">Author</th>
-                        <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3">ISBN</th>
-                        <th className="px-4 py-3">Availability</th>
-                        {hasActions && <th className="px-4 py-3 text-right">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                      {bookList.map((b: any) => (
-                        <tr key={b.id}>
-                          <td className="px-4 py-3 font-semibold">{b.title}</td>
-                          <td className="px-4 py-3">{b.author}</td>
-                          <td className="px-4 py-3">{b.category ?? '—'}</td>
-                          <td className="px-4 py-3 font-mono text-zinc-500">{b.isbn || '—'}</td>
-                          <td className="px-4 py-3">
-                            <Badge variant={avail(b) ? 'success' : 'warning'}>
-                              {b.available}/{b.totalCopies} available
-                            </Badge>
-                          </td>
-                          {hasActions && <td className="px-4 py-3">{bookActions(b)}</td>}
+                <>
+                  <ul className="md:hidden flex flex-col gap-2.5">
+                    {bookList.map((b: any) => (
+                      <li
+                        key={b.id}
+                        className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm line-clamp-2">{b.title}</p>
+                          <p className="text-caption truncate">
+                            By {b.author}
+                            {b.category ? ` · ${b.category}` : ''}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">
+                            ISBN {b.isbn || '—'}
+                            {b.shelfNo ? ` · Shelf ${b.shelfNo}` : ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Badge variant={avail(b) ? 'success' : 'warning'}>
+                            {b.available}/{b.totalCopies} available
+                          </Badge>
+                          {hasActions && bookActions(b)}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                        <tr>
+                          <th className="px-4 py-3">Title</th>
+                          <th className="px-4 py-3">Author</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th className="px-4 py-3">ISBN</th>
+                          <th className="px-4 py-3">Availability</th>
+                          {hasActions && <th className="px-4 py-3 text-right">Actions</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                        {bookList.map((b: any) => (
+                          <tr key={b.id}>
+                            <td className="px-4 py-3 font-semibold">{b.title}</td>
+                            <td className="px-4 py-3">{b.author}</td>
+                            <td className="px-4 py-3">{b.category ?? '—'}</td>
+                            <td className="px-4 py-3 font-mono text-zinc-500">{b.isbn || '—'}</td>
+                            <td className="px-4 py-3">
+                              <Badge variant={avail(b) ? 'success' : 'warning'}>
+                                {b.available}/{b.totalCopies} available
+                              </Badge>
+                            </td>
+                            {hasActions && <td className="px-4 py-3">{bookActions(b)}</td>}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
               {bookMeta && bookMeta.totalPages > 1 && (
-                <div className="flex items-center justify-end gap-2 text-xs text-zinc-500">
+                <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 text-xs text-muted-foreground">
                   <span>
                     Page {bookMeta.page} of {bookMeta.totalPages}
                   </span>
@@ -456,51 +516,92 @@ export default function LibraryPage() {
             ) : (active.data ?? []).length === 0 ? (
               <EmptyState title="No outstanding loans" />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Book</th>
-                      <th className="px-4 py-3">Issued to</th>
-                      <th className="px-4 py-3">Issued</th>
-                      <th className="px-4 py-3">Due</th>
-                      <th className="px-4 py-3 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {(active.data ?? []).map((d: any) => {
-                      const overdue = new Date(d.dueDate).getTime() < now;
-                      return (
-                        <tr key={d.id}>
-                          <td className="px-4 py-3 font-semibold">{d.book?.title}</td>
-                          <td className="px-4 py-3">{nameOf(d.issuedTo)}</td>
-                          <td className="px-4 py-3 font-mono">{fmtDate(d.issueDate)}</td>
-                          <td
-                            className={`px-4 py-3 font-mono font-bold ${overdue ? 'text-rose-500' : ''}`}
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {(active.data ?? []).map((d: any) => {
+                    const overdue = new Date(d.dueDate).getTime() < now;
+                    return (
+                      <li
+                        key={d.id}
+                        className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">{d.book?.title}</p>
+                            <p className="text-caption truncate">{nameOf(d.issuedTo)}</p>
+                          </div>
+                          <Badge variant={overdue ? 'danger' : 'success'}>
+                            {overdue ? 'Overdue' : 'On time'}
+                          </Badge>
+                        </div>
+                        <p className="text-caption">
+                          Issued {fmtDate(d.issueDate)} ·{' '}
+                          <span className={overdue ? 'font-semibold text-rose-500' : ''}>
+                            Due {fmtDate(d.dueDate)}
+                          </span>
+                        </p>
+                        {canUpdate && (
+                          <Button
+                            className="w-full"
+                            variant="outline"
+                            onClick={() => {
+                              setReturning(d);
+                              setFineAmt('0');
+                            }}
                           >
-                            {fmtDate(d.dueDate)}
-                            {overdue && ' (overdue)'}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            {canUpdate && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setReturning(d);
-                                  setFineAmt('0');
-                                }}
-                              >
-                                <RotateCcw className="w-3.5 h-3.5 mr-1" /> Return
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            <RotateCcw className="w-3.5 h-3.5 mr-1" /> Return
+                          </Button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Book</th>
+                        <th className="px-4 py-3">Issued to</th>
+                        <th className="px-4 py-3">Issued</th>
+                        <th className="px-4 py-3">Due</th>
+                        <th className="px-4 py-3 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {(active.data ?? []).map((d: any) => {
+                        const overdue = new Date(d.dueDate).getTime() < now;
+                        return (
+                          <tr key={d.id}>
+                            <td className="px-4 py-3 font-semibold">{d.book?.title}</td>
+                            <td className="px-4 py-3">{nameOf(d.issuedTo)}</td>
+                            <td className="px-4 py-3 font-mono">{fmtDate(d.issueDate)}</td>
+                            <td
+                              className={`px-4 py-3 font-mono font-bold ${overdue ? 'text-rose-500' : ''}`}
+                            >
+                              {fmtDate(d.dueDate)}
+                              {overdue && ' (overdue)'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {canUpdate && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setReturning(d);
+                                    setFineAmt('0');
+                                  }}
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 mr-1" /> Return
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
 
           {activeKey === 'fines' &&
@@ -512,11 +613,61 @@ export default function LibraryPage() {
               <EmptyState title="No outstanding fines" />
             ) : (
               <div className="flex flex-col gap-3">
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                  Total outstanding: <b>{inr(fines.data?.total)}</b> across {fines.data?.count}{' '}
-                  fine(s)
+                <p className="text-sm text-muted-foreground">
+                  Total outstanding:{' '}
+                  <b className="tabular text-foreground">{inr(fines.data?.total)}</b> across{' '}
+                  {fines.data?.count} fine(s)
                 </p>
-                <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {(fines.data?.issues ?? []).map((d: any) => (
+                    <li
+                      key={d.id}
+                      className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{nameOf(d.issuedTo)}</p>
+                          <p className="text-caption truncate">
+                            {d.book?.title} · Returned {fmtDate(d.returnDate)}
+                          </p>
+                        </div>
+                        <span className="tabular font-bold text-base text-rose-600 shrink-0">
+                          {inr(d.fineAmount)}
+                        </span>
+                      </div>
+                      {canUpdate && (
+                        <div className="flex gap-2">
+                          {isLibrarian && (
+                            <Button
+                              className="flex-1"
+                              variant="outline"
+                              onClick={() => {
+                                setWaiving(d);
+                                setWaiveNote('');
+                              }}
+                            >
+                              Waive
+                            </Button>
+                          )}
+                          <Button
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            isLoading={payM.isPending && payM.variables === d.id}
+                            onClick={() =>
+                              payM.mutate(d.id, {
+                                onSuccess: () => toast.success('Fine recorded as paid.'),
+                                onError: (e: any) =>
+                                  toast.error(errMsg(e, 'Could not record the payment.')),
+                              })
+                            }
+                          >
+                            <CheckCircle className="w-3.5 h-3.5 mr-1" /> Mark paid
+                          </Button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
                       <tr>
@@ -576,7 +727,7 @@ export default function LibraryPage() {
 
           {activeKey === 'members' && (
             <div className="flex flex-col gap-4 max-w-2xl">
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Look up a student or staff member to see everything they have borrowed.
               </p>
               <MemberPicker value={lookup} onChange={setLookup} />
@@ -604,7 +755,7 @@ export default function LibraryPage() {
               onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="ISBN">
               <Input
                 value={bookForm.isbn}
@@ -632,6 +783,7 @@ export default function LibraryPage() {
             <Field label="Total copies *">
               <Input
                 type="number"
+                inputMode="numeric"
                 min={1}
                 value={bookForm.totalCopies}
                 onChange={(e) => setBookForm({ ...bookForm, totalCopies: e.target.value })}
@@ -691,6 +843,7 @@ export default function LibraryPage() {
           <Field label="Late fine (₹)">
             <Input
               type="number"
+              inputMode="decimal"
               min={0}
               value={fineAmt}
               onChange={(e) => setFineAmt(e.target.value)}

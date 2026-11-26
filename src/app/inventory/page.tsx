@@ -1,19 +1,11 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import {
-  ArrowDownToLine,
-  FolderPlus,
-  Package,
-  Pencil,
-  Plus,
-  Search,
-  Send,
-  Trash2,
-} from 'lucide-react';
+import { ArrowDownToLine, FolderPlus, Pencil, Plus, Search, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -214,46 +206,48 @@ export default function InventoryPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Inventory & Assets" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Package className="w-6 h-6 text-brand" /> Inventory &amp; Assets
-            </h1>
-            <p className="text-sm text-zinc-500">
-              {canManage
-                ? 'Stock, categories and item checkouts'
-                : 'Stock levels and checkouts (view only)'}
-            </p>
-          </div>
-          {canManage && (
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setCategoryOpen(true)}>
-                <FolderPlus className="w-4 h-4 mr-2" /> New Category
-              </Button>
-              <Button onClick={() => setItemOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" /> Add Item
-              </Button>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="Inventory & Assets"
+          description={
+            canManage
+              ? 'Stock, categories and item checkouts'
+              : 'Stock levels and checkouts (view only)'
+          }
+          actions={
+            canManage && (
+              <>
+                <Button className="w-full sm:w-auto" onClick={() => setItemOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Item
+                </Button>
+                <Button
+                  className="w-full sm:w-auto"
+                  variant="outline"
+                  onClick={() => setCategoryOpen(true)}
+                >
+                  <FolderPlus className="w-4 h-4 mr-2" /> New Category
+                </Button>
+              </>
+            )
+          }
+        />
 
         <TabBar tabs={['Items', 'Checkouts']} active={tab} onChange={setTab} />
 
         <Panel>
           {tab === 0 && (
             <div className="flex flex-col gap-4">
-              <div className="flex gap-3 flex-wrap">
-                <div className="relative w-72">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative w-full sm:w-72">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                   <Input
-                    className="pl-9 h-9"
+                    className="pl-9"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search name or SKU..."
                   />
                 </div>
-                <div className="w-56">
+                <div className="w-full sm:w-56">
                   <Select
                     value={categoryFilter}
                     options={[
@@ -274,72 +268,134 @@ export default function InventoryPage() {
                   hint={canManage ? 'Add an item to start tracking stock.' : undefined}
                 />
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                      <tr>
-                        <th className="px-4 py-3">Item</th>
-                        <th className="px-4 py-3">SKU</th>
-                        <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3">In stock</th>
-                        <th className="px-4 py-3">Location</th>
-                        <th className="px-4 py-3">Status</th>
-                        {canManage && <th className="px-4 py-3 text-right">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                      {filtered.map((i) => (
-                        <tr key={i.id}>
-                          <td className="px-4 py-3 font-semibold">{i.name}</td>
-                          <td className="px-4 py-3 font-mono text-zinc-500">{i.sku ?? '—'}</td>
-                          <td className="px-4 py-3">{i.category?.name ?? '—'}</td>
-                          <td className="px-4 py-3 font-mono">
-                            {i.quantity} {i.unit}
-                          </td>
-                          <td className="px-4 py-3">{i.location ?? '—'}</td>
-                          <td className="px-4 py-3">
+                <>
+                  <ul className="md:hidden flex flex-col gap-2.5">
+                    {filtered.map((i) => (
+                      <li
+                        key={i.id}
+                        className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">{i.name}</p>
+                            <p className="text-caption truncate">
+                              {[i.sku, i.category?.name, i.location].filter(Boolean).join(' · ') ||
+                                '—'}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="tabular font-bold text-sm">
+                              {i.quantity} {i.unit}
+                            </p>
                             <Badge variant={statusVariant(i.status)}>{i.status}</Badge>
-                          </td>
-                          {canManage && (
-                            <td className="px-4 py-3 text-right">
-                              {i.status === 'ACTIVE' && i.quantity > 0 && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setCheckoutFor(i);
-                                    setMember(null);
-                                    setCo({ quantity: '1', expectedReturn: '', notes: '' });
-                                  }}
-                                >
-                                  <Send className="w-3.5 h-3.5 mr-1" /> Checkout
-                                </Button>
-                              )}
+                          </div>
+                        </div>
+                        {canManage && (
+                          <div className="flex gap-2">
+                            {i.status === 'ACTIVE' && i.quantity > 0 && (
+                              <Button
+                                className="flex-1"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setCheckoutFor(i);
+                                  setMember(null);
+                                  setCo({ quantity: '1', expectedReturn: '', notes: '' });
+                                }}
+                              >
+                                <Send className="w-3.5 h-3.5 mr-1" /> Checkout
+                              </Button>
+                            )}
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+                              aria-label="Edit item"
+                              onClick={() => startEdit(i)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            {i.status !== 'RETIRED' && (
                               <Button
                                 size="icon-sm"
-                                variant="ghost"
-                                aria-label="Edit item"
-                                onClick={() => startEdit(i)}
+                                variant="outline"
+                                aria-label="Retire item"
+                                onClick={() => setToRetire(i)}
                               >
-                                <Pencil className="w-4 h-4" />
+                                <Trash2 className="w-4 h-4 text-rose-500" />
                               </Button>
-                              {i.status !== 'RETIRED' && (
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                        <tr>
+                          <th className="px-4 py-3">Item</th>
+                          <th className="px-4 py-3">SKU</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th className="px-4 py-3">In stock</th>
+                          <th className="px-4 py-3">Location</th>
+                          <th className="px-4 py-3">Status</th>
+                          {canManage && <th className="px-4 py-3 text-right">Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                        {filtered.map((i) => (
+                          <tr key={i.id}>
+                            <td className="px-4 py-3 font-semibold">{i.name}</td>
+                            <td className="px-4 py-3 font-mono text-zinc-500">{i.sku ?? '—'}</td>
+                            <td className="px-4 py-3">{i.category?.name ?? '—'}</td>
+                            <td className="px-4 py-3 font-mono">
+                              {i.quantity} {i.unit}
+                            </td>
+                            <td className="px-4 py-3">{i.location ?? '—'}</td>
+                            <td className="px-4 py-3">
+                              <Badge variant={statusVariant(i.status)}>{i.status}</Badge>
+                            </td>
+                            {canManage && (
+                              <td className="px-4 py-3 text-right">
+                                {i.status === 'ACTIVE' && i.quantity > 0 && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setCheckoutFor(i);
+                                      setMember(null);
+                                      setCo({ quantity: '1', expectedReturn: '', notes: '' });
+                                    }}
+                                  >
+                                    <Send className="w-3.5 h-3.5 mr-1" /> Checkout
+                                  </Button>
+                                )}
                                 <Button
                                   size="icon-sm"
                                   variant="ghost"
-                                  aria-label="Retire item"
-                                  onClick={() => setToRetire(i)}
+                                  aria-label="Edit item"
+                                  onClick={() => startEdit(i)}
                                 >
-                                  <Trash2 className="w-4 h-4 text-rose-500" />
+                                  <Pencil className="w-4 h-4" />
                                 </Button>
-                              )}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                                {i.status !== 'RETIRED' && (
+                                  <Button
+                                    size="icon-sm"
+                                    variant="ghost"
+                                    aria-label="Retire item"
+                                    onClick={() => setToRetire(i)}
+                                  >
+                                    <Trash2 className="w-4 h-4 text-rose-500" />
+                                  </Button>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -352,57 +408,102 @@ export default function InventoryPage() {
             ) : checkouts.length === 0 ? (
               <EmptyState title="No checkouts recorded" />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                    <tr>
-                      <th className="px-4 py-3">Item</th>
-                      <th className="px-4 py-3">Issued to</th>
-                      <th className="px-4 py-3">Qty</th>
-                      <th className="px-4 py-3">Out</th>
-                      <th className="px-4 py-3">Expected back</th>
-                      <th className="px-4 py-3">Status</th>
-                      {canManage && <th className="px-4 py-3 text-center">Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                    {checkouts.map((c) => (
-                      <tr key={c.id}>
-                        <td className="px-4 py-3 font-semibold">{c.item?.name}</td>
-                        <td className="px-4 py-3">
-                          {nameOf(c.issuedToId)}{' '}
-                          <span className="text-zinc-400">({c.issuedType.toLowerCase()})</span>
-                        </td>
-                        <td className="px-4 py-3 font-mono">{c.quantity}</td>
-                        <td className="px-4 py-3 font-mono">{fmtDate(c.checkoutDate)}</td>
-                        <td className="px-4 py-3 font-mono">{fmtDate(c.expectedReturn)}</td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={
-                              c.status === 'ISSUED'
-                                ? 'warning'
-                                : c.status === 'LOST'
-                                  ? 'danger'
-                                  : 'success'
-                            }
-                          >
-                            {c.status}
-                          </Badge>
-                        </td>
-                        {canManage && (
-                          <td className="px-4 py-3 text-center">
-                            {c.status === 'ISSUED' && (
-                              <Button size="sm" variant="outline" onClick={() => setCheckin(c)}>
-                                <ArrowDownToLine className="w-3.5 h-3.5 mr-1" /> Check in
-                              </Button>
-                            )}
-                          </td>
-                        )}
+              <>
+                <ul className="md:hidden flex flex-col gap-2.5">
+                  {checkouts.map((c) => (
+                    <li
+                      key={c.id}
+                      className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">
+                            {c.item?.name} × {c.quantity}
+                          </p>
+                          <p className="text-caption truncate">
+                            {nameOf(c.issuedToId)} ({c.issuedType.toLowerCase()})
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            c.status === 'ISSUED'
+                              ? 'warning'
+                              : c.status === 'LOST'
+                                ? 'danger'
+                                : 'success'
+                          }
+                        >
+                          {c.status}
+                        </Badge>
+                      </div>
+                      <p className="text-caption">
+                        Out {fmtDate(c.checkoutDate)} · Back by {fmtDate(c.expectedReturn)}
+                      </p>
+                      {canManage && c.status === 'ISSUED' && (
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setCheckin(c)}
+                        >
+                          <ArrowDownToLine className="w-3.5 h-3.5 mr-1" /> Check in
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                      <tr>
+                        <th className="px-4 py-3">Item</th>
+                        <th className="px-4 py-3">Issued to</th>
+                        <th className="px-4 py-3">Qty</th>
+                        <th className="px-4 py-3">Out</th>
+                        <th className="px-4 py-3">Expected back</th>
+                        <th className="px-4 py-3">Status</th>
+                        {canManage && <th className="px-4 py-3 text-center">Actions</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                      {checkouts.map((c) => (
+                        <tr key={c.id}>
+                          <td className="px-4 py-3 font-semibold">{c.item?.name}</td>
+                          <td className="px-4 py-3">
+                            {nameOf(c.issuedToId)}{' '}
+                            <span className="text-zinc-400">({c.issuedType.toLowerCase()})</span>
+                          </td>
+                          <td className="px-4 py-3 font-mono">{c.quantity}</td>
+                          <td className="px-4 py-3 font-mono">{fmtDate(c.checkoutDate)}</td>
+                          <td className="px-4 py-3 font-mono">{fmtDate(c.expectedReturn)}</td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              variant={
+                                c.status === 'ISSUED'
+                                  ? 'warning'
+                                  : c.status === 'LOST'
+                                    ? 'danger'
+                                    : 'success'
+                              }
+                            >
+                              {c.status}
+                            </Badge>
+                          </td>
+                          {canManage && (
+                            <td className="px-4 py-3 text-center">
+                              {c.status === 'ISSUED' && (
+                                <Button size="sm" variant="outline" onClick={() => setCheckin(c)}>
+                                  <ArrowDownToLine className="w-3.5 h-3.5 mr-1" /> Check in
+                                </Button>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ))}
         </Panel>
       </div>
@@ -412,7 +513,7 @@ export default function InventoryPage() {
           <Field label="Name *">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="SKU">
               <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
             </Field>
@@ -504,7 +605,7 @@ export default function InventoryPage() {
           <Field label="Issue to *">
             <MemberPicker value={member} onChange={setMember} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label={`Quantity (max ${checkoutFor?.quantity ?? 0})`}>
               <Input
                 type="number"

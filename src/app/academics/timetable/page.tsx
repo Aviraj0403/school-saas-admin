@@ -5,6 +5,7 @@ import { localDateISO } from '@/lib/format';
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -124,6 +125,10 @@ export default function TimetablePage() {
   const deleteOverrideMutation = useDeleteTimetableOverride();
 
   const [showDialog, setShowDialog] = useState(false);
+  const [mobileDay, setMobileDay] = useState<number>(() => {
+    const d = new Date().getDay();
+    return d === 0 ? 1 : d;
+  });
   const [editingSlot, setEditingSlot] = useState<any | null>(null);
   const [form, setForm] = useState(blankForm());
   const [deleteSlotTarget, setDeleteSlotTarget] = useState<any | null>(null);
@@ -305,17 +310,17 @@ export default function TimetablePage() {
   const slotCard = (entry: any, opts: { editable: boolean; showClass?: boolean }) => (
     <div
       key={entry.id}
-      className="relative group/slot flex flex-col gap-1.5 p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60 hover:border-brand/40 transition-all"
+      className="relative group/slot flex flex-col gap-1.5 rounded-xl border border-border bg-muted/40 p-3 transition-all hover:border-brand/40"
     >
       <div className="flex justify-between items-start gap-2">
         <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
           {entry.subject?.name || 'Subject'}
         </span>
         {opts.editable && (
-          <span className="flex gap-1 opacity-0 group-hover/slot:opacity-100 focus-within:opacity-100 transition-all">
+          <span className="flex shrink-0 gap-1 transition-all md:opacity-0 md:group-hover/slot:opacity-100 md:focus-within:opacity-100">
             <button
               onClick={() => openEdit(entry)}
-              className="p-1 text-zinc-400 hover:text-brand hover:bg-brand/10 rounded"
+              className="rounded p-2 text-muted-foreground hover:bg-brand/10 hover:text-brand md:p-1"
               title="Edit period"
               aria-label="Edit period"
             >
@@ -323,7 +328,7 @@ export default function TimetablePage() {
             </button>
             <button
               onClick={() => setDeleteSlotTarget(entry)}
-              className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+              className="rounded p-2 text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 md:p-1"
               title="Delete period"
               aria-label="Delete period"
             >
@@ -332,7 +337,7 @@ export default function TimetablePage() {
           </span>
         )}
       </div>
-      <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-1.5 text-muted-foreground dark:text-zinc-400">
         <Clock className="w-3 h-3 text-brand" />
         <span className="text-xs font-mono">
           {entry.startTime} – {entry.endTime}
@@ -362,60 +367,79 @@ export default function TimetablePage() {
     loadingState: boolean,
     opts: { editable: boolean; showClass?: boolean; addPeriod?: boolean }
   ) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-      {[1, 2, 3, 4, 5, 6].map((day) => (
-        <div
-          key={day}
-          className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl flex flex-col shadow-sm overflow-hidden"
-        >
-          <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/40 flex justify-between items-center">
-            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">{DAY_MAP[day]}</h3>
-            <Badge variant="secondary">{g[day]?.length || 0} slots</Badge>
-          </div>
-          <div className="p-3 flex-1 flex flex-col gap-3 min-h-[200px]">
-            {loadingState ? (
-              <div className="flex items-center justify-center h-full py-10 text-xs text-zinc-400">
-                Loading...
-              </div>
-            ) : g[day]?.length ? (
-              [...g[day]]
-                .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                .map((e) => slotCard(e, opts))
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
-                <Calendar className="w-8 h-8 mb-1" />
-                <span className="text-xs font-medium">Free Day</span>
-              </div>
-            )}
-          </div>
-          {opts.addPeriod && isAdmin && (
-            <div className="p-3 border-t border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/30 dark:bg-zinc-900/30 flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openCreate(day)}
-                className="flex-1 text-xs"
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" /> Add
-              </Button>
-              {g[day]?.length ? (
+    <div className="flex flex-col gap-3">
+      {/* Phones: day tabs, one day at a time */}
+      <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 md:hidden">
+        {[1, 2, 3, 4, 5, 6].map((day) => (
+          <button
+            key={day}
+            onClick={() => setMobileDay(day)}
+            className={`h-10 shrink-0 rounded-full border px-4 text-sm font-semibold transition-colors ${
+              mobileDay === day
+                ? 'border-transparent bg-brand-gradient text-white'
+                : 'border-border bg-card text-muted-foreground'
+            }`}
+          >
+            {DAY_MAP[day].slice(0, 3)}
+            <span className="ml-1.5 text-xs tabular-nums opacity-80">{g[day]?.length || 0}</span>
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((day) => (
+          <div
+            key={day}
+            className={`surface-card flex-col overflow-hidden ${day === mobileDay ? 'flex' : 'hidden md:flex'}`}
+          >
+            <div className="flex items-center justify-between border-b border-border bg-muted/40 p-4">
+              <h3 className="text-card-title">{DAY_MAP[day]}</h3>
+              <Badge variant="secondary">{g[day]?.length || 0} slots</Badge>
+            </div>
+            <div className="flex flex-1 flex-col gap-3 p-3 md:min-h-[200px]">
+              {loadingState ? (
+                <div className="flex items-center justify-center h-full py-10 text-xs text-zinc-400">
+                  Loading...
+                </div>
+              ) : g[day]?.length ? (
+                [...g[day]]
+                  .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                  .map((e) => slotCard(e, opts))
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
+                  <Calendar className="w-8 h-8 mb-1" />
+                  <span className="text-xs font-medium">Free Day</span>
+                </div>
+              )}
+            </div>
+            {opts.addPeriod && isAdmin && (
+              <div className="flex gap-2 border-t border-border bg-muted/30 p-3">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setCopyFromDay(day);
-                    setCopyToDays([]);
-                  }}
-                  className="text-xs"
-                  title="Copy this day to other days"
+                  onClick={() => openCreate(day)}
+                  className="flex-1 text-xs"
                 >
-                  <Copy className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Add
                 </Button>
-              ) : null}
-            </div>
-          )}
-        </div>
-      ))}
+                {g[day]?.length ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setCopyFromDay(day);
+                      setCopyToDays([]);
+                    }}
+                    className="text-xs"
+                    title="Copy this day to other days"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                ) : null}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 
@@ -423,34 +447,33 @@ export default function TimetablePage() {
     <DashboardLayout>
       <PageBreadcrumb title="Timetable" subtitle="Academics" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-brand" />
-              Timetable
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {isAdmin
-                ? 'Structure weekly class schedules and teacher allocations'
-                : 'View class schedules and your own teaching periods'}
-            </p>
-          </div>
-          {isAdmin && view === 'class' && mode === 'weekly' && (
-            <Button disabled={!selectedClassId} onClick={() => openCreate()}>
-              <Plus className="w-4 h-4 mr-2" /> Add Period
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title="Timetable"
+          description={
+            isAdmin
+              ? 'Structure weekly class schedules and teacher allocations'
+              : 'View class schedules and your own teaching periods'
+          }
+          actions={
+            isAdmin && view === 'class' && mode === 'weekly' ? (
+              <Button
+                className="h-11 sm:h-10"
+                disabled={!selectedClassId}
+                onClick={() => openCreate()}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Period
+              </Button>
+            ) : undefined
+          }
+        />
 
-        <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg w-fit">
+        <div className="flex w-fit rounded-xl bg-muted p-1">
           {(['class', 'teacher'] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                view === v
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500'
+              className={`h-10 px-4 text-xs font-semibold rounded-lg transition-all ${
+                view === v ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
               }`}
             >
               {v === 'class' ? 'By Class' : 'By Teacher'}
@@ -460,7 +483,7 @@ export default function TimetablePage() {
 
         {view === 'teacher' ? (
           <>
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col gap-1.5 w-full md:w-96">
+            <div className="surface-card flex w-full flex-col gap-1.5 p-4 sm:p-5 md:w-96">
               <label className={labelCls}>Teacher</label>
               {isTeacher ? (
                 <Input value="My timetable" disabled readOnly />
@@ -475,16 +498,16 @@ export default function TimetablePage() {
             {teacherId ? (
               weekGrid(teacherGrouped, loadingTeacher, { editable: false, showClass: true })
             ) : (
-              <div className="p-16 text-center text-sm text-zinc-500 bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl">
+              <div className="surface-card p-10 text-center text-sm text-muted-foreground sm:p-16">
                 Choose a teacher to see their weekly periods.
               </div>
             )}
           </>
         ) : (
           <>
-            <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
-              <div className="flex flex-wrap gap-4 items-end">
-                <div className="flex flex-col gap-1.5 w-72">
+            <div className="surface-card flex flex-col items-start justify-between gap-4 p-4 sm:p-5 lg:flex-row lg:items-center">
+              <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:flex-wrap sm:items-end">
+                <div className="flex w-full flex-col gap-1.5 sm:w-72">
                   <label className={labelCls}>Class</label>
                   <Select
                     value={selectedClassId}
@@ -492,15 +515,13 @@ export default function TimetablePage() {
                     onChange={(e) => setSelectedClassId(e.target.value)}
                   />
                 </div>
-                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+                <div className="scrollbar-none flex max-w-full overflow-x-auto rounded-xl bg-muted p-1">
                   {(['weekly', 'date'] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => setMode(m)}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-md ${
-                        mode === m
-                          ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100'
-                          : 'text-zinc-500'
+                      className={`h-10 shrink-0 px-3 text-xs font-semibold rounded-lg ${
+                        mode === m ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
                       }`}
                     >
                       {m === 'weekly' ? 'Weekly' : 'On a date (with overrides)'}
@@ -514,33 +535,33 @@ export default function TimetablePage() {
                       type="date"
                       value={date}
                       onChange={(e) => e.target.value && setDate(e.target.value)}
-                      className="w-44"
+                      className="w-full sm:w-44"
                     />
                   </div>
                 )}
               </div>
 
               {selectedClassId && mode === 'weekly' && (
-                <div className="flex gap-4 flex-wrap text-center">
-                  <div className="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="grid w-full grid-cols-3 gap-2 text-center sm:flex sm:w-auto sm:gap-4">
+                  <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-muted/40 px-2 py-3 sm:flex-row sm:gap-3 sm:px-4">
                     <Calendar className="w-5 h-5 text-brand" />
                     <div>
                       <p className="text-lg font-bold leading-none">{timetable.length}</p>
-                      <p className="text-xs text-zinc-500 font-medium">Weekly Periods</p>
+                      <p className="text-xs text-muted-foreground font-medium">Weekly Periods</p>
                     </div>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-muted/40 px-2 py-3 sm:flex-row sm:gap-3 sm:px-4">
                     <BookOpen className="w-5 h-5 text-emerald-500" />
                     <div>
                       <p className="text-lg font-bold leading-none">{uniqueSubjects}</p>
-                      <p className="text-xs text-zinc-500 font-medium">Subjects</p>
+                      <p className="text-xs text-muted-foreground font-medium">Subjects</p>
                     </div>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-muted/40 px-2 py-3 sm:flex-row sm:gap-3 sm:px-4">
                     <User className="w-5 h-5 text-amber-500" />
                     <div>
                       <p className="text-lg font-bold leading-none">{uniqueTeachers}</p>
-                      <p className="text-xs text-zinc-500 font-medium">Teachers</p>
+                      <p className="text-xs text-muted-foreground font-medium">Teachers</p>
                     </div>
                   </div>
                 </div>
@@ -548,7 +569,7 @@ export default function TimetablePage() {
             </div>
 
             {!selectedClassId ? (
-              <div className="p-16 text-center bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl shadow-sm">
+              <div className="surface-card p-10 text-center sm:p-16">
                 <Calendar className="w-12 h-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3" />
                 <p className="text-zinc-600 dark:text-zinc-400 font-semibold text-sm">
                   {classes.length === 0 && isTeacher
@@ -557,9 +578,9 @@ export default function TimetablePage() {
                 </p>
               </div>
             ) : mode === 'date' ? (
-              <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-col gap-3">
+              <div className="surface-card flex flex-col gap-3 p-4 sm:p-5">
                 {loadingEffective ? (
-                  <p className="text-sm text-zinc-500">Loading...</p>
+                  <p className="text-sm text-muted-foreground">Loading...</p>
                 ) : (effective as any)?.isHoliday ? (
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm">
                     <CalendarOff className="w-5 h-5" /> Holiday
@@ -576,7 +597,7 @@ export default function TimetablePage() {
                       </div>
                     ))}
                     {((effective as any)?.slots ?? []).length === 0 ? (
-                      <p className="text-sm text-zinc-500">No periods on this date.</p>
+                      <p className="text-sm text-muted-foreground">No periods on this date.</p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {[...(effective as any).slots]
@@ -596,7 +617,7 @@ export default function TimetablePage() {
                 {weekGrid(grouped, isPending, { editable: isAdmin, addPeriod: true })}
 
                 {timetable.length > 0 && (
-                  <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm">
+                  <div className="surface-card p-4 sm:p-5">
                     <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
                       <User className="w-4 h-4 text-brand" /> Teacher — Subject Allocation Summary
                     </h3>
@@ -630,8 +651,8 @@ export default function TimetablePage() {
                 )}
 
                 {/* Overrides: holidays, cancelled and special periods */}
-                <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="surface-card p-4 sm:p-5">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-bold text-sm flex items-center gap-2">
                       <CalendarOff className="w-4 h-4 text-brand" /> Upcoming overrides (next 90
                       days)
@@ -643,13 +664,13 @@ export default function TimetablePage() {
                     )}
                   </div>
                   {(overrides as any[]).length === 0 ? (
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted-foreground">
                       No holidays, cancellations or special periods are scheduled.
                     </p>
                   ) : (
                     <ul className="divide-y divide-zinc-100 dark:divide-zinc-800 text-sm">
                       {(overrides as any[]).map((o) => (
-                        <li key={o.id} className="py-2 flex items-center justify-between gap-3">
+                        <li key={o.id} className="flex items-start justify-between gap-3 py-2.5">
                           <span>
                             <b>{new Date(o.date).toLocaleDateString()}</b>{' '}
                             <Badge
@@ -663,7 +684,7 @@ export default function TimetablePage() {
                             >
                               {o.type}
                             </Badge>
-                            <span className="ml-2 text-zinc-500 text-xs">
+                            <span className="ml-2 text-muted-foreground text-xs">
                               {o.description}
                               {o.class ? ` · ${o.class.name} ${o.class.section}` : ' · school-wide'}
                               {o.substituteTeacher
@@ -674,7 +695,7 @@ export default function TimetablePage() {
                           {isAdmin && (
                             <button
                               aria-label="Delete override"
-                              className="p-1.5 text-zinc-400 hover:text-red-500"
+                              className="shrink-0 p-2.5 text-muted-foreground hover:text-red-500"
                               onClick={() =>
                                 deleteOverrideMutation.mutate(o.id, {
                                   onSuccess: () => toast.success('Override removed.'),
@@ -756,7 +777,7 @@ export default function TimetablePage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Start Time *</label>
               <Input
@@ -775,7 +796,7 @@ export default function TimetablePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Period no.</label>
               <Input
@@ -850,7 +871,7 @@ export default function TimetablePage() {
         title={`Copy ${copyFromDay ? DAY_MAP[copyFromDay] : ''} to other days`}
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             The periods of this day are copied onto the selected days, replacing whatever those days
             contain now. This rewrites the class timetable in one step.
           </p>
@@ -894,7 +915,7 @@ export default function TimetablePage() {
         title="Add Timetable Override"
       >
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Date *</label>
               <Input

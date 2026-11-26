@@ -6,12 +6,13 @@ export function ToastProvider() {
   return (
     <SonnerToaster
       position="top-right"
+      // keep toasts clear of the notch / bottom tabs on phones
+      offset={{ top: 16, right: 16 }}
+      mobileOffset={{ top: 12, right: 12, left: 12 }}
       toastOptions={{
         className:
-          'bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/90 text-slate-900 dark:text-slate-100 shadow-2xl rounded-2xl p-4 text-xs font-medium',
-        style: {
-          borderRadius: '1rem',
-        },
+          'bg-card/95 backdrop-blur-xl border border-border text-foreground shadow-pop rounded-2xl p-4 text-[13px] font-medium',
+        style: { borderRadius: '1rem' },
       }}
     />
   );

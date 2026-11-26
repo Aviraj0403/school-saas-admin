@@ -63,7 +63,7 @@ export default function BillingPage() {
       <PageBreadcrumb title="Billing" subtitle="Superadmin" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <h1 className="flex items-center gap-2 text-page-title">
             <CreditCard className="h-6 w-6 text-brand" /> Billing &amp; Subscriptions
           </h1>
           <p className="mt-1 text-xs text-zinc-500">

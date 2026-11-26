@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import { useAuthStore } from '@/store/useAuthStore';
 import { normalizeRole } from '@/config/navigation';
-import { SuperAdminDashboard } from '@/components/dashboard/SuperAdminDashboard';
+import { useRouter } from 'next/navigation';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
 import { AccountantDashboard } from '@/components/dashboard/AccountantDashboard';
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const renderRoleDashboard = () => {
     switch (role) {
       case 'superadmin':
-        return <SuperAdminDashboard />;
+        return <SuperAdminRedirect />;
       case 'teacher':
         return <TeacherDashboard />;
       case 'accountant':
@@ -47,4 +47,13 @@ export default function DashboardPage() {
       {renderRoleDashboard()}
     </DashboardLayout>
   );
+}
+
+/** The platform owner's home is the Control Panel. */
+function SuperAdminRedirect() {
+  const router = useRouter();
+  React.useEffect(() => {
+    router.replace('/superadmin');
+  }, [router]);
+  return null;
 }

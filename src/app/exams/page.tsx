@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/format';
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -443,32 +444,27 @@ export default function ExamsPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Exams" />
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Award className="w-6 h-6 text-brand" />
-              Exams & Results
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Schedule exams, enter marks, arrange seating and publish results
-            </p>
-          </div>
-          {isAdmin && (
-            <Button onClick={openCreateExam}>
-              <Plus className="w-4 h-4 mr-2" /> Schedule Exam
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title="Exams & Results"
+          description="Schedule exams, enter marks, arrange seating and publish results"
+          actions={
+            isAdmin ? (
+              <Button className="h-11 sm:h-10" onClick={openCreateExam}>
+                <Plus className="w-4 h-4 mr-2" /> Schedule Exam
+              </Button>
+            ) : undefined
+          }
+        />
 
-        <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg flex-wrap w-fit">
+        <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              className={`h-10 shrink-0 rounded-full border px-4 text-sm font-semibold transition-colors ${
                 activeTab === t.key
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500'
+                  ? 'border-transparent bg-brand-gradient text-white'
+                  : 'border-border bg-card text-muted-foreground'
               }`}
             >
               {t.label}
@@ -476,43 +472,43 @@ export default function ExamsPage() {
           ))}
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm">
+        <div className="surface-card p-3 sm:p-5">
           {/* Schedules */}
           {activeTab === 'schedules' &&
             (loadingExams ? (
-              <div className="p-12 text-center text-xs text-zinc-500">Loading schedules...</div>
+              <div className="p-12 text-center text-xs text-muted-foreground">
+                Loading schedules...
+              </div>
             ) : examsError ? (
               <div className="p-12 text-center text-sm text-rose-600">
                 {apiMessage(examsErr, 'Could not load exams.')}
               </div>
             ) : activeExams.length === 0 ? (
-              <div className="p-12 text-center text-zinc-500 dark:text-zinc-400">
+              <div className="p-12 text-center text-muted-foreground">
                 No examinations configured yet.{isAdmin ? ' Use "Schedule Exam" to add one.' : ''}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
                 {activeExams.map((exam: any) => (
                   <div
                     key={exam.id}
-                    className="border border-zinc-200/80 dark:border-zinc-800/80 p-5 rounded-xl bg-white dark:bg-zinc-900 shadow-sm flex flex-col justify-between gap-4"
+                    className="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-4 sm:p-5"
                   >
                     <div className="flex justify-between items-start gap-2">
                       <div>
-                        <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base leading-snug">
+                        <h3 className="font-bold text-foreground text-base leading-snug">
                           {exam.name}
                         </h3>
-                        <p className="text-[11px] text-zinc-500 uppercase tracking-wide mt-0.5">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide mt-0.5">
                           {exam.type}
                         </p>
                       </div>
                       {statusBadge(exam)}
                     </div>
-                    <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg text-xs font-medium flex flex-col gap-1.5 border border-zinc-200/60 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400">
+                    <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg text-xs font-medium flex flex-col gap-1.5 border border-zinc-200/60 dark:border-zinc-800/60 text-muted-foreground">
                       <div className="flex justify-between">
                         <span>Academic year:</span>
-                        <span className="text-zinc-900 dark:text-zinc-100">
-                          {exam.academicYear?.name ?? '-'}
-                        </span>
+                        <span className="text-foreground">{exam.academicYear?.name ?? '-'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Starts:</span>
@@ -528,12 +524,12 @@ export default function ExamsPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Subjects / results:</span>
-                        <span className="text-zinc-900 dark:text-zinc-100">
+                        <span className="text-foreground">
                           {exam._count?.subjects ?? 0} / {exam._count?.results ?? 0}
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 [&>button]:h-10 sm:[&>button]:h-8">
                       <Button size="sm" variant="outline" onClick={() => setSubjectExam(exam)}>
                         <BookPlus className="w-3.5 h-3.5 mr-1" />{' '}
                         {isAdmin ? 'Subjects' : 'View Subjects'}
@@ -571,15 +567,15 @@ export default function ExamsPage() {
           {/* Marks entry */}
           {activeTab === 'marks' && (
             <div className="flex flex-col gap-5">
-              <div className="flex flex-wrap gap-4 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl">
-                <div className="flex flex-col gap-1.5 w-60">
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:flex-wrap sm:gap-4 sm:p-4">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>Exam *</label>
                   {examPicker(marksExamId, (v) => {
                     setMarksExamId(v);
                     setMarksSubjectId('');
                   })}
                 </div>
-                <div className="flex flex-col gap-1.5 w-60">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>Class *</label>
                   <Select
                     value={marksClassId}
@@ -590,7 +586,7 @@ export default function ExamsPage() {
                     }}
                   />
                 </div>
-                <div className="flex flex-col gap-1.5 w-60">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>Subject *</label>
                   <Select
                     value={marksSubjectId}
@@ -617,17 +613,16 @@ export default function ExamsPage() {
 
               {marksSubject && (
                 <>
-                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500">
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                     <span>
-                      Max marks{' '}
-                      <b className="text-zinc-900 dark:text-zinc-100">{marksSubject.maxMarks}</b> ·
-                      Pass marks{' '}
-                      <b className="text-zinc-900 dark:text-zinc-100">{marksSubject.passMarks}</b>
+                      Max marks <b className="text-foreground">{marksSubject.maxMarks}</b> · Pass
+                      marks <b className="text-foreground">{marksSubject.passMarks}</b>
                       {(marksExam as any)?.isPublished && (
                         <span className="ml-2 text-amber-600">Results already published.</span>
                       )}
                     </span>
                     <Button
+                      className="hidden md:inline-flex"
                       onClick={saveMarks}
                       isLoading={enterMutation.isPending}
                       disabled={marksStudents.length === 0}
@@ -636,64 +631,135 @@ export default function ExamsPage() {
                     </Button>
                   </div>
                   {loadingMarksStudents ? (
-                    <p className="text-sm text-zinc-500">Loading students...</p>
+                    <p className="text-sm text-muted-foreground">Loading students...</p>
                   ) : marksStudents.length === 0 ? (
-                    <p className="text-sm text-zinc-500">No students in this class.</p>
+                    <p className="text-sm text-muted-foreground">No students in this class.</p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
-                        <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-                          <tr>
-                            <th className="py-2 pr-3">Roll</th>
-                            <th className="py-2 pr-3">Student</th>
-                            <th className="py-2 pr-3 w-32">Marks</th>
-                            <th className="py-2 pr-3">Absent</th>
-                            <th className="py-2">Remarks</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                          {marksStudents.map((s: any) => {
-                            const d = marksDraft[s.id] ?? { marks: '', absent: false, remarks: '' };
-                            const set = (patch: Partial<typeof d>) =>
-                              setMarksDraft((prev) => ({ ...prev, [s.id]: { ...d, ...patch } }));
-                            return (
-                              <tr key={s.id}>
-                                <td className="py-2 pr-3 font-mono text-zinc-500">
-                                  {s.rollNo ?? '-'}
-                                </td>
-                                <td className="py-2 pr-3 font-semibold">{s.name}</td>
-                                <td className="py-2 pr-3">
+                    <>
+                      {/* Phones: one card per student */}
+                      <ul className="flex flex-col gap-2.5 md:hidden">
+                        {marksStudents.map((s: any) => {
+                          const d = marksDraft[s.id] ?? { marks: '', absent: false, remarks: '' };
+                          const set = (patch: Partial<typeof d>) =>
+                            setMarksDraft((prev) => ({ ...prev, [s.id]: { ...d, ...patch } }));
+                          return (
+                            <li key={s.id} className="rounded-2xl border border-border bg-card p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                                  {s.name}
+                                </span>
+                                <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                                  Roll {s.rollNo ?? '-'}
+                                </span>
+                              </div>
+                              <div className="mt-2.5 flex items-center gap-2">
+                                <div className="relative min-w-0 flex-1">
                                   <Input
                                     type="number"
+                                    inputMode="decimal"
                                     min={0}
                                     max={marksSubject.maxMarks}
                                     value={d.marks}
                                     disabled={d.absent}
                                     onChange={(e) => set({ marks: e.target.value })}
-                                    className="h-9 w-28"
+                                    className="h-11 w-full pr-14 text-base tabular-nums"
+                                    placeholder="Marks"
                                   />
-                                </td>
-                                <td className="py-2 pr-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={d.absent}
-                                    onChange={(e) => set({ absent: e.target.checked })}
-                                  />
-                                </td>
-                                <td className="py-2">
-                                  <Input
-                                    value={d.remarks}
-                                    onChange={(e) => set({ remarks: e.target.value })}
-                                    className="h-9"
-                                    placeholder="Optional"
-                                  />
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground">
+                                    / {marksSubject.maxMarks}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => set({ absent: !d.absent })}
+                                  className={`h-11 shrink-0 rounded-xl border px-4 text-sm font-semibold transition active:scale-95 ${
+                                    d.absent
+                                      ? 'border-rose-500 bg-rose-500 text-white'
+                                      : 'border-border bg-card text-muted-foreground'
+                                  }`}
+                                >
+                                  Absent
+                                </button>
+                              </div>
+                              <Input
+                                value={d.remarks}
+                                onChange={(e) => set({ remarks: e.target.value })}
+                                className="mt-2 h-10 w-full"
+                                placeholder="Remarks (optional)"
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <div className="sticky bottom-24 z-20 md:hidden">
+                        <Button
+                          className="h-12 w-full shadow-lg"
+                          onClick={saveMarks}
+                          isLoading={enterMutation.isPending}
+                          disabled={marksStudents.length === 0}
+                        >
+                          Save Marks
+                        </Button>
+                      </div>
+                      <div className="hidden overflow-x-auto md:block">
+                        <table className="w-full text-left text-xs">
+                          <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
+                            <tr>
+                              <th className="py-2 pr-3">Roll</th>
+                              <th className="py-2 pr-3">Student</th>
+                              <th className="py-2 pr-3 w-32">Marks</th>
+                              <th className="py-2 pr-3">Absent</th>
+                              <th className="py-2">Remarks</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            {marksStudents.map((s: any) => {
+                              const d = marksDraft[s.id] ?? {
+                                marks: '',
+                                absent: false,
+                                remarks: '',
+                              };
+                              const set = (patch: Partial<typeof d>) =>
+                                setMarksDraft((prev) => ({ ...prev, [s.id]: { ...d, ...patch } }));
+                              return (
+                                <tr key={s.id}>
+                                  <td className="py-2 pr-3 font-mono text-muted-foreground">
+                                    {s.rollNo ?? '-'}
+                                  </td>
+                                  <td className="py-2 pr-3 font-semibold">{s.name}</td>
+                                  <td className="py-2 pr-3">
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      max={marksSubject.maxMarks}
+                                      value={d.marks}
+                                      disabled={d.absent}
+                                      onChange={(e) => set({ marks: e.target.value })}
+                                      className="h-9 w-28"
+                                    />
+                                  </td>
+                                  <td className="py-2 pr-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={d.absent}
+                                      onChange={(e) => set({ absent: e.target.checked })}
+                                    />
+                                  </td>
+                                  <td className="py-2">
+                                    <Input
+                                      value={d.remarks}
+                                      onChange={(e) => set({ remarks: e.target.value })}
+                                      className="h-9"
+                                      placeholder="Optional"
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
                   )}
                 </>
               )}
@@ -703,8 +769,8 @@ export default function ExamsPage() {
           {/* Seating */}
           {activeTab === 'seating' && (
             <div className="flex flex-col gap-5">
-              <div className="flex items-end gap-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl flex-wrap">
-                <div className="flex flex-col gap-1.5 w-64">
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:flex-wrap sm:items-end sm:p-4">
+                <div className="flex w-full flex-col gap-1.5 sm:w-64">
                   <label className={labelCls}>Exam</label>
                   {examPicker(seatingExamId, setSeatingExamId)}
                 </div>
@@ -735,15 +801,17 @@ export default function ExamsPage() {
               )}
 
               {!seatingExamId ? (
-                <div className="p-10 text-center text-sm text-zinc-500">
+                <div className="p-10 text-center text-sm text-muted-foreground">
                   Choose an exam to see its seating plan.
                 </div>
               ) : loadingSeating ? (
-                <div className="p-10 text-center text-xs text-zinc-500">Loading seating...</div>
+                <div className="p-10 text-center text-xs text-muted-foreground">
+                  Loading seating...
+                </div>
               ) : seatingChart && seatingChart.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground border-b border-zinc-200/80 dark:border-zinc-800/80">
                       <tr>
                         <th className="px-4 py-3">Student</th>
                         <th className="px-4 py-3">Adm. No.</th>
@@ -772,7 +840,7 @@ export default function ExamsPage() {
                     No seating allocated yet.
                   </p>
                   {isAdmin && (
-                    <p className="text-xs mt-1 text-zinc-500">
+                    <p className="text-xs mt-1 text-muted-foreground">
                       Add a hall, then run "Assign Seatings".
                     </p>
                   )}
@@ -784,12 +852,12 @@ export default function ExamsPage() {
           {/* Admit cards */}
           {activeTab === 'admit-cards' && (
             <div className="flex flex-col gap-6">
-              <div className="flex flex-wrap gap-4 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl">
-                <div className="flex flex-col gap-1.5 w-60">
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:flex-wrap sm:gap-4 sm:p-4">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>1. Exam *</label>
                   {examPicker(admitExamId, setAdmitExamId)}
                 </div>
-                <div className="flex flex-col gap-1.5 w-52">
+                <div className="flex w-full flex-col gap-1.5 sm:w-52">
                   <label className={labelCls}>2. Class *</label>
                   <Select
                     value={admitClassId}
@@ -800,7 +868,7 @@ export default function ExamsPage() {
                     }}
                   />
                 </div>
-                <div className="flex flex-col gap-1.5 w-64">
+                <div className="flex w-full flex-col gap-1.5 sm:w-64">
                   <label className={labelCls}>3. Student *</label>
                   <Select
                     value={admitStudentId}
@@ -831,15 +899,13 @@ export default function ExamsPage() {
                       </div>
                       <Award className="w-10 h-10 opacity-30" />
                     </div>
-                    <div className="p-6 flex flex-col gap-5">
+                    <div className="flex flex-col gap-5 p-4 sm:p-6">
                       <div className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
-                        <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                          {admitStudent.name}
-                        </h4>
-                        <div className="flex gap-4 text-xs text-zinc-500 mt-1 font-medium">
+                        <h4 className="text-base font-bold text-foreground">{admitStudent.name}</h4>
+                        <div className="flex gap-4 text-xs text-muted-foreground mt-1 font-medium">
                           <span>
                             ADM:{' '}
-                            <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                            <span className="font-mono font-bold text-foreground">
                               {admitStudent.admissionNo}
                             </span>
                           </span>
@@ -854,7 +920,7 @@ export default function ExamsPage() {
                           <span className="text-[10px] font-semibold text-zinc-400 uppercase block">
                             Hall
                           </span>
-                          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
+                          <span className="text-xs font-bold text-foreground mt-1 block">
                             {admitSeat?.hallName ?? 'Not allotted yet'}
                           </span>
                         </div>
@@ -872,19 +938,19 @@ export default function ExamsPage() {
                           Examination Timetable
                         </span>
                         <div className="border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl overflow-hidden divide-y divide-zinc-200/80 dark:divide-zinc-800/80 text-xs">
-                          <div className="p-3 flex justify-between bg-zinc-50 dark:bg-zinc-800/40 font-semibold text-zinc-500">
+                          <div className="p-3 flex justify-between bg-zinc-50 dark:bg-zinc-800/40 font-semibold text-muted-foreground">
                             <span>Subject</span>
                             <span>Date · Time</span>
                           </div>
                           {admitSubjects.length === 0 ? (
-                            <div className="p-3 text-zinc-500">
+                            <div className="p-3 text-muted-foreground">
                               No subjects scheduled for this class yet.
                             </div>
                           ) : (
                             admitSubjects.map((s: any) => (
                               <div key={s.id} className="p-3 flex justify-between">
                                 <span>{s.subject?.name}</span>
-                                <span className="font-mono text-zinc-500">
+                                <span className="font-mono text-muted-foreground">
                                   {formatDate(s.date)} · {s.startTime}
                                 </span>
                               </div>
@@ -906,7 +972,7 @@ export default function ExamsPage() {
                   <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                     Admit Card
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Select an exam, class and student to build the admit card.
                   </p>
                 </div>
@@ -917,12 +983,12 @@ export default function ExamsPage() {
           {/* Report sheets */}
           {activeTab === 'reports' && (
             <div className="flex flex-col gap-6">
-              <div className="flex flex-wrap gap-4 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl">
-                <div className="flex flex-col gap-1.5 w-60">
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:flex-wrap sm:gap-4 sm:p-4">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>Exam *</label>
                   {examPicker(reportExamId, setReportExamId)}
                 </div>
-                <div className="flex flex-col gap-1.5 w-60">
+                <div className="flex w-full flex-col gap-1.5 sm:w-60">
                   <label className={labelCls}>Class *</label>
                   <Select
                     value={reportClassId}
@@ -938,24 +1004,24 @@ export default function ExamsPage() {
                   <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                     Class Result Sheet
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Select an exam and class to see marks for every student.
                   </p>
                 </div>
               ) : loadingReport ? (
-                <p className="text-sm text-zinc-500">Loading results...</p>
+                <p className="text-sm text-muted-foreground">Loading results...</p>
               ) : reportError ? (
                 <p className="text-sm text-rose-600">
                   {apiMessage(reportErr, 'Could not load results.')}
                 </p>
               ) : reportStudents.length === 0 ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-muted-foreground">
                   No marks have been entered for this class yet.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                    <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
                       <tr>
                         <th className="py-2 pr-3">Roll</th>
                         <th className="py-2 pr-3">Student</th>
@@ -971,7 +1037,9 @@ export default function ExamsPage() {
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                       {reportStudents.map((s) => (
                         <tr key={s.id}>
-                          <td className="py-2 pr-3 font-mono text-zinc-500">{s.rollNo ?? '-'}</td>
+                          <td className="py-2 pr-3 font-mono text-muted-foreground">
+                            {s.rollNo ?? '-'}
+                          </td>
                           <td className="py-2 pr-3 font-semibold">{s.name}</td>
                           {reportSubjects.map(([id]) => {
                             const r = s.bySubject[id];
@@ -1034,7 +1102,7 @@ export default function ExamsPage() {
               onChange={(e) => setExamForm({ ...examForm, type: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Start Date *</label>
               <Input
@@ -1052,7 +1120,7 @@ export default function ExamsPage() {
               />
             </div>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Classes and subjects are attached to the exam afterwards using "Subjects".
           </p>
           <div className="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
@@ -1080,7 +1148,7 @@ export default function ExamsPage() {
           {(subjectExamDetails as any)?.subjects?.length ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                <thead className="text-muted-foreground border-b border-zinc-200 dark:border-zinc-800">
                   <tr>
                     <th className="py-2 pr-3">Class</th>
                     <th className="py-2 pr-3">Subject</th>
@@ -1107,13 +1175,13 @@ export default function ExamsPage() {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">No subjects scheduled yet.</p>
+            <p className="text-sm text-muted-foreground">No subjects scheduled yet.</p>
           )}
 
           {isAdmin && (
             <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 flex flex-col gap-3">
               <h4 className="text-sm font-bold">Add subject</h4>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <label className={labelCls}>Class *</label>
                   <Select
@@ -1246,7 +1314,7 @@ export default function ExamsPage() {
         title="Auto-Allocate Seating Chart"
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Students of the selected classes are placed into the exam's halls. Create halls first.
           </p>
           <div className="flex flex-col gap-1.5">

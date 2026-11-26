@@ -96,7 +96,7 @@ export default function StaffAttendancePage() {
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Header Control Bar */}
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
@@ -143,9 +143,9 @@ export default function StaffAttendancePage() {
         </div>
 
         {/* Staff Table */}
-        <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 backdrop-blur-xl shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-border">
               <tr>
                 <th className="px-4 py-3.5">Employee</th>
                 <th className="px-4 py-3.5">Designation</th>

@@ -170,7 +170,7 @@ function SetupWizard() {
           placeholder="e.g. 2026-2027"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
         <div className="space-y-2">
           <Label>Start Date</Label>
           <Input

@@ -73,7 +73,7 @@ export function AccountantDashboard() {
   }));
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex flex-col gap-4 sm:gap-6 pb-6">
       <HeroCard
         eyebrow={
           <>
@@ -97,9 +97,9 @@ export function AccountantDashboard() {
           </>
         }
         aside={
-          <div className="glass rounded-3xl p-5">
+          <div className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-5">
             <p className="text-xs text-white/70">Collected all time</p>
-            <p className="font-display tabular mt-1 text-3xl font-semibold">{inr(totalRevenue)}</p>
+            <p className="tabular mt-1 text-2xl sm:text-3xl font-semibold">{inr(totalRevenue)}</p>
             <p className="mt-1 text-xs text-white/70">
               {summary?.transactionCount ?? 0} receipts issued
             </p>
@@ -107,7 +107,7 @@ export function AccountantDashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Collected today"
           value={inr(todayTotal)}
@@ -142,7 +142,7 @@ export function AccountantDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel
           className="xl:col-span-2"
           title="Collection trend"
@@ -155,7 +155,7 @@ export function AccountantDashboard() {
             <EmptyState
               icon={BarChart3}
               text="No collections yet — they’ll chart here month by month."
-              className="h-[260px]"
+              className="h-[200px] sm:h-[260px]"
             />
           )}
         </Panel>
@@ -163,20 +163,20 @@ export function AccountantDashboard() {
           <Donut data={byMethod} center={inr(totalRevenue)} caption="total" size={190} />
           <div className="mt-5 space-y-2">
             {byMethod.length === 0 && (
-              <p className="text-center text-xs text-zinc-500">No payments recorded yet.</p>
+              <p className="text-center text-xs text-muted-foreground">No payments recorded yet.</p>
             )}
             {byMethod.map((m) => (
               <div key={m.name} className="flex items-center gap-2 text-[13px]">
                 <span className="size-2.5 rounded-full" style={{ background: m.color }} />
-                <span className="flex-1 text-zinc-600 dark:text-zinc-300">{m.name}</span>
-                <span className="font-display tabular font-semibold">{inr(m.value)}</span>
+                <span className="flex-1 min-w-0 truncate text-muted-foreground">{m.name}</span>
+                <span className="tabular font-semibold">{inr(m.value)}</span>
               </div>
             ))}
           </div>
         </Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <Panel title="Finance desk" subtitle="Shortcuts">
           <QuickActions
             columns={2}
@@ -239,23 +239,23 @@ export function AccountantDashboard() {
           {recent.length > 0 ? (
             <div className="divide-y divide-border">
               {recent.map((c: any) => (
-                <div key={c.id} className="flex items-center gap-3 py-3">
+                <div key={c.id} className="flex items-center gap-3 py-3 min-w-0">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
                     <Receipt className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-semibold text-zinc-900 dark:text-white">
+                    <p className="truncate text-[13px] font-semibold text-foreground">
                       {c.student?.name || 'Student'}{' '}
                       <span className="font-normal text-zinc-400">
                         · {c.feeStructure?.name || 'Fee'}
                       </span>
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="truncate text-xs text-muted-foreground">
                       {c.receiptNo} · {formatDate(c.paidAt || c.createdAt)} ·{' '}
                       {String(c.paymentMethod || '').toLowerCase()}
                     </p>
                   </div>
-                  <span className="font-display tabular text-[15px] font-semibold text-zinc-900 dark:text-white">
+                  <span className="tabular shrink-0 text-[15px] font-semibold text-foreground">
                     {inr(c.totalAmount ?? c.amount)}
                   </span>
                 </div>

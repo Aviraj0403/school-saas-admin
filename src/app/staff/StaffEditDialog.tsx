@@ -78,12 +78,12 @@ export default function StaffEditDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title="Edit staff member">
-      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+      <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-xs font-semibold">
           Name *
           <Input value={f.name} required onChange={(e) => setF({ ...f, name: e.target.value })} />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
           <label className="flex flex-col gap-1.5 text-xs font-semibold">
             Phone
             <Input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />

@@ -37,10 +37,10 @@ export function FormFilterBar({
     filters.some((f) => f.value !== undefined && f.value !== '' && f.value !== null);
 
   return (
-    <div className="w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-sm mb-6 transition-all">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+    <div className="w-full bg-card border border-border rounded-2xl p-3 sm:p-4 shadow-sm mb-4 sm:mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
         {/* Search Input Box */}
-        <div className="relative flex-1 min-w-[200px] max-w-md">
+        <div className="relative w-full lg:flex-1 min-w-0 lg:max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
           <Input
             type="text"
@@ -52,7 +52,8 @@ export function FormFilterBar({
           {searchValue && (
             <button
               onClick={() => onSearchChange?.('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              aria-label="Clear search"
+              className="absolute right-1 top-1/2 -translate-y-1/2 size-9 grid place-items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="size-4" />
             </button>
@@ -60,9 +61,9 @@ export function FormFilterBar({
         </div>
 
         {/* Dropdown Filters & Actions */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 sm:flex sm:items-center gap-2.5 sm:flex-wrap min-w-0">
           {filters.map((filter) => (
-            <div key={filter.id} className="min-w-[140px] sm:min-w-[160px]">
+            <div key={filter.id} className="min-w-0 sm:min-w-[160px]">
               <Select value={filter.value || ''} onChange={(e) => filter.onChange(e.target.value)}>
                 <option value="">{filter.label}</option>
                 {filter.options.map((opt) => (
@@ -77,7 +78,7 @@ export function FormFilterBar({
           {hasActiveFilters && onClearFilters && (
             <button
               onClick={onClearFilters}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all active:scale-95"
+              className="flex items-center justify-center gap-1.5 px-3 h-11 sm:h-10 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all active:scale-95"
             >
               <FilterX className="size-4" />
               <span>Clear</span>
@@ -86,10 +87,10 @@ export function FormFilterBar({
 
           {/* Toggle View Mode Buttons */}
           {onViewModeChange && (
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/50">
+            <div className="flex items-center justify-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/50">
               <button
                 onClick={() => onViewModeChange('grid')}
-                className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`p-2.5 sm:p-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'grid'
                     ? 'bg-white dark:bg-brand text-brand dark:text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -100,7 +101,7 @@ export function FormFilterBar({
               </button>
               <button
                 onClick={() => onViewModeChange('table')}
-                className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`p-2.5 sm:p-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'table'
                     ? 'bg-white dark:bg-brand text-brand dark:text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'

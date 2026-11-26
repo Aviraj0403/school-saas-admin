@@ -248,12 +248,12 @@ export default function ClassesPage() {
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
         {/* Header Block */}
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-brand" /> Academic Classrooms Directory
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Configure section divisions, capacity limits, class instructors, and subject
               curricula.
             </p>
@@ -282,19 +282,17 @@ export default function ClassesPage() {
         {/* Directory Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Classes Column (Left 3 columns) */}
-          <div className="lg:col-span-3 bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-4 shadow-sm backdrop-blur-xl">
+          <div className="lg:col-span-3 surface-card p-5 flex flex-col gap-4 shadow-sm backdrop-blur-xl">
             <div>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Active Classrooms
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="text-base font-bold text-foreground">Active Classrooms</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Select a class row to inspect its subject curriculum.
               </p>
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                   <tr>
                     <th className="px-3 py-2.5">Class</th>
                     <th className="px-3 py-2.5">Section</th>
@@ -330,13 +328,11 @@ export default function ClassesPage() {
                               : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
                           }`}
                         >
-                          <td className="px-3 py-2.5 text-zinc-900 dark:text-zinc-100 font-bold">
-                            {c.name}
-                          </td>
+                          <td className="px-3 py-2.5 text-foreground font-bold">{c.name}</td>
                           <td className="px-3 py-2.5 font-mono text-zinc-600 dark:text-zinc-300">
                             {c.section}
                           </td>
-                          <td className="px-3 py-2.5 text-zinc-500">{c.roomNo || '—'}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground">{c.roomNo || '—'}</td>
                           <td className="px-3 py-2.5 font-mono">{c.maxStrength}</td>
                           <td className="px-3 py-2.5 font-mono text-brand font-bold">
                             {c._count?.students ?? 0}
@@ -346,7 +342,7 @@ export default function ClassesPage() {
                               <button
                                 type="button"
                                 aria-label="Edit class"
-                                className="p-1.5 text-zinc-500 hover:text-brand"
+                                className="p-1.5 text-muted-foreground hover:text-brand"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openEditClass(c);
@@ -357,7 +353,7 @@ export default function ClassesPage() {
                               <button
                                 type="button"
                                 aria-label="Delete class"
-                                className="p-1.5 text-zinc-500 hover:text-rose-600"
+                                className="p-1.5 text-muted-foreground hover:text-rose-600"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setDeleteClassTarget(c);
@@ -377,15 +373,15 @@ export default function ClassesPage() {
           </div>
 
           {/* Subjects Column (Right 2 columns) */}
-          <div className="lg:col-span-2 bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-5 flex flex-col gap-4 shadow-sm backdrop-blur-xl">
+          <div className="lg:col-span-2 surface-card p-5 flex flex-col gap-4 shadow-sm backdrop-blur-xl">
             <div className="flex justify-between items-start flex-wrap gap-2">
               <div>
-                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-base font-bold text-foreground">
                   {selectedClass
                     ? `${selectedClass.name} — ${selectedClass.section}`
                     : 'Subject Catalog'}
                 </h2>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {selectedClass
                     ? 'Subjects linked to this class.'
                     : 'Select a class to view its subjects.'}
@@ -429,7 +425,7 @@ export default function ClassesPage() {
               ) : (
                 <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                       <tr>
                         <th className="px-3 py-2.5">Subject</th>
                         <th className="px-3 py-2.5">Code</th>
@@ -441,16 +437,14 @@ export default function ClassesPage() {
                     <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                       {subjectList.map((s: any) => (
                         <tr key={s.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
-                          <td className="px-3 py-2.5 font-semibold text-zinc-900 dark:text-zinc-100">
-                            {s.name}
-                          </td>
-                          <td className="px-3 py-2.5 font-mono text-zinc-500">{s.code}</td>
+                          <td className="px-3 py-2.5 font-semibold text-foreground">{s.name}</td>
+                          <td className="px-3 py-2.5 font-mono text-muted-foreground">{s.code}</td>
                           <td className="px-3 py-2.5">
                             <Badge variant={s.type === 'practical' ? 'warning' : 'info'}>
                               {s.type}
                             </Badge>
                           </td>
-                          <td className="px-3 py-2.5 font-mono text-zinc-500">
+                          <td className="px-3 py-2.5 font-mono text-muted-foreground">
                             {s.maxMarks}/{s.passMarks}
                           </td>
                           {isAdmin && (
@@ -487,7 +481,7 @@ export default function ClassesPage() {
         title={editingClass ? 'Edit Classroom' : 'Create New Classroom'}
       >
         <form onSubmit={handleCreateClass} className="flex flex-col gap-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Class Name *
@@ -512,7 +506,7 @@ export default function ClassesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Room Number
@@ -558,7 +552,7 @@ export default function ClassesPage() {
         title="Create New Subject"
       >
         <form onSubmit={handleCreateSubject} className="flex flex-col gap-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Subject Name *
@@ -585,7 +579,7 @@ export default function ClassesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Department
@@ -608,7 +602,7 @@ export default function ClassesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
                 Max Marks

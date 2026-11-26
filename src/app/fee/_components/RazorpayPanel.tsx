@@ -52,10 +52,8 @@ export function RazorpayPanel() {
 
   return (
     <div className="max-w-xl flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-          Online payment gateway (Razorpay)
-        </h3>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground">Online payment gateway (Razorpay)</h3>
         <Badge variant={data?.isActive ? 'success' : 'secondary'}>
           {data?.isActive ? 'Active' : 'Inactive'}
         </Badge>
@@ -94,12 +92,17 @@ export function RazorpayPanel() {
       <Field label="Name shown at checkout">
         <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
       </Field>
-      <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
-        <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+      <label className="flex items-center gap-3 text-sm text-foreground min-h-11">
+        <input
+          className="size-5"
+          type="checkbox"
+          checked={isActive}
+          onChange={(e) => setIsActive(e.target.checked)}
+        />
         Accept online payments from parents
       </label>
       <div>
-        <Button onClick={save} isLoading={saveM.isPending}>
+        <Button className="w-full sm:w-auto" onClick={save} isLoading={saveM.isPending}>
           Save settings
         </Button>
       </div>

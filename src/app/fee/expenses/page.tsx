@@ -5,6 +5,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -115,23 +116,21 @@ export default function ExpensesPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Expenses" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">School Expenses</h1>
-            <p className="text-sm text-zinc-500">
-              Rent, utilities, maintenance, supplies and other spending
-            </p>
-          </div>
-          {canManage && (
-            <Button onClick={startAdd}>
-              <Plus className="w-4 h-4 mr-2" /> Log Expense
-            </Button>
-          )}
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="School Expenses"
+          description="Rent, utilities, maintenance, supplies and other spending"
+          actions={
+            canManage && (
+              <Button className="w-full sm:w-auto" onClick={startAdd}>
+                <Plus className="w-4 h-4 mr-2" /> Log Expense
+              </Button>
+            )
+          }
+        />
 
         {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
             <StatCard
               label={`Revenue ${summary.year}`}
               value={inr(summary.totals.totalRevenue)}
@@ -175,60 +174,106 @@ export default function ExpensesPage() {
               hint='Use "Log Expense" to add the first one.'
             />
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                  <tr>
-                    <th className="px-4 py-3">Date</th>
-                    <th className="px-4 py-3">Title</th>
-                    <th className="px-4 py-3">Category</th>
-                    <th className="px-4 py-3">Vendor</th>
-                    <th className="px-4 py-3">Ref</th>
-                    <th className="px-4 py-3 text-right">Amount</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
-                  {items.map((x) => (
-                    <tr key={x.id}>
-                      <td className="px-4 py-3 font-mono text-zinc-500">{fmtDate(x.date)}</td>
-                      <td className="px-4 py-3 font-semibold">{x.title}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant="info">{x.category}</Badge>
-                      </td>
-                      <td className="px-4 py-3">{x.vendor ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono">{x.referenceNo ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono font-bold text-right">{inr(x.amount)}</td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex gap-1 justify-center">
+            <>
+              <ul className="md:hidden flex flex-col gap-2.5">
+                {items.map((x) => (
+                  <li
+                    key={x.id}
+                    className="rounded-2xl border border-border bg-card p-3.5 flex flex-col gap-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{x.title}</p>
+                        <p className="text-caption">
+                          {fmtDate(x.date)}
+                          {x.vendor ? ` · ${x.vendor}` : ''}
+                        </p>
+                      </div>
+                      <span className="tabular font-bold text-base shrink-0">{inr(x.amount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="info">{x.category}</Badge>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          aria-label="Edit expense"
+                          onClick={() => startEdit(x)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        {isAdmin && (
                           <Button
                             size="icon-sm"
                             variant="ghost"
-                            aria-label="Edit expense"
-                            onClick={() => startEdit(x)}
+                            aria-label="Delete expense"
+                            onClick={() => setToDelete(x)}
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4 text-rose-500" />
                           </Button>
-                          {isAdmin && (
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <tr>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Title</th>
+                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">Vendor</th>
+                      <th className="px-4 py-3">Ref</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
+                    {items.map((x) => (
+                      <tr key={x.id}>
+                        <td className="px-4 py-3 font-mono text-zinc-500">{fmtDate(x.date)}</td>
+                        <td className="px-4 py-3 font-semibold">{x.title}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="info">{x.category}</Badge>
+                        </td>
+                        <td className="px-4 py-3">{x.vendor ?? '—'}</td>
+                        <td className="px-4 py-3 font-mono">{x.referenceNo ?? '—'}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-right">
+                          {inr(x.amount)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex gap-1 justify-center">
                             <Button
                               size="icon-sm"
                               variant="ghost"
-                              aria-label="Delete expense"
-                              onClick={() => setToDelete(x)}
+                              aria-label="Edit expense"
+                              onClick={() => startEdit(x)}
                             >
-                              <Trash2 className="w-4 h-4 text-rose-500" />
+                              <Pencil className="w-4 h-4" />
                             </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                            {isAdmin && (
+                              <Button
+                                size="icon-sm"
+                                variant="ghost"
+                                aria-label="Delete expense"
+                                onClick={() => setToDelete(x)}
+                              >
+                                <Trash2 className="w-4 h-4 text-rose-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
           {meta && meta.totalPages > 1 && (
-            <div className="flex items-center justify-end gap-2 text-xs text-zinc-500 mt-4">
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 text-xs text-muted-foreground mt-4">
               <span>
                 Page {meta.page} of {meta.totalPages}
               </span>
@@ -262,7 +307,7 @@ export default function ExpensesPage() {
               placeholder="e.g. Broadband bill"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Category *">
               <Select
                 value={form.category}
@@ -273,6 +318,7 @@ export default function ExpensesPage() {
             <Field label="Amount (₹) *">
               <Input
                 type="number"
+                inputMode="decimal"
                 min={0}
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -286,7 +332,7 @@ export default function ExpensesPage() {
               onChange={(e) => setForm({ ...form, date: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <Field label="Vendor">
               <Input
                 value={form.vendor}

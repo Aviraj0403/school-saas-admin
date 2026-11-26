@@ -362,14 +362,14 @@ export default function StaffPage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Staff" />
-      <div className="flex flex-col gap-6 lg:gap-8 pb-10 w-full">
+      <div className="flex w-full min-w-0 flex-col gap-4 pb-4 sm:gap-6">
         {/* Header Block */}
         <PageHeader
           title="Staff"
           description="Teachers, office staff and their roles, salaries and profiles."
           actions={
             canWriteStaff ? (
-              <Button onClick={() => setShowAddDialog(true)}>
+              <Button className="w-full sm:w-auto" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
                 Add staff member
               </Button>
@@ -378,14 +378,12 @@ export default function StaffPage() {
         />
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           <StatCard
             label="Total Registered"
             value={isPending ? '...' : totalRecords}
             icon={Users}
             gradientClass="from-blue-500 to-blue-500"
-            iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
-            iconColorClass="text-blue-600 dark:text-blue-400"
             footerText="Total faculty and staff"
           />
           <StatCard
@@ -393,8 +391,6 @@ export default function StaffPage() {
             value={isPending ? '...' : staffList.filter((s: any) => hasRole(s, 'teacher')).length}
             icon={Briefcase}
             gradientClass="from-emerald-500 to-teal-500"
-            iconBgClass="bg-emerald-500/10 dark:bg-emerald-500/20"
-            iconColorClass="text-emerald-600 dark:text-emerald-400"
             footerText="Active teaching staff"
           />
           <StatCard
@@ -402,8 +398,6 @@ export default function StaffPage() {
             value={isPending ? '...' : staffList.filter((s: any) => !hasRole(s, 'teacher')).length}
             icon={IdCard}
             gradientClass="from-amber-500 to-orange-500"
-            iconBgClass="bg-amber-500/10 dark:bg-amber-500/20"
-            iconColorClass="text-amber-600 dark:text-amber-400"
             footerText="Admin & support roles"
           />
           <StatCard
@@ -418,17 +412,15 @@ export default function StaffPage() {
             }
             icon={Network}
             gradientClass="from-violet-500 to-purple-500"
-            iconBgClass="bg-violet-500/10 dark:bg-violet-500/20"
-            iconColorClass="text-violet-600 dark:text-violet-400"
             footerText="Configured departments"
           />
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <div className="surface-card flex flex-col gap-3 p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center md:w-auto">
             <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => {
@@ -447,156 +439,183 @@ export default function StaffPage() {
                 setPagination((p: PaginationState) => ({ ...p, pageIndex: 0 }));
               }}
               placeholder="Category"
-              className="w-full sm:w-52 text-sm"
+              className="w-full sm:w-52"
             />
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                viewMode === 'grid'
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="hidden sm:inline">Grid</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-2 px-4 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                viewMode === 'table'
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              <span className="hidden sm:inline">List</span>
-            </button>
+          <div className="hidden gap-1 rounded-xl bg-muted p-1 md:flex">
+            {(
+              [
+                ['grid', LayoutGrid, 'Grid'],
+                ['table', List, 'List'],
+              ] as const
+            ).map(([mode, Icon, label]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-semibold transition-all ${
+                  viewMode === mode
+                    ? 'bg-card text-brand shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="size-4" />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Dynamic Display Section */}
         {isError ? (
-          <div className="p-6 bg-red-50 text-red-600 rounded-md border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 flex items-center gap-4 shadow-sm">
-            <AlertCircle className="w-6 h-6" />
-            <div>
-              <h3 className="font-bold">Failed to load</h3>
-              <p className="text-sm opacity-80">{(error as any)?.message}</p>
+          <div className="flex items-center gap-4 rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-400">
+            <AlertCircle className="size-6 shrink-0" />
+            <div className="min-w-0">
+              <h3 className="font-semibold">Failed to load</h3>
+              <p className="break-words text-sm opacity-80">{(error as any)?.message}</p>
             </div>
           </div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {isPending ? (
-              <div className="col-span-full py-12 flex flex-col items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
-                <span className="text-sm font-medium text-zinc-500">Loading directory...</span>
-              </div>
-            ) : staffList.length === 0 ? (
-              <div className="col-span-full py-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950">
-                <p className="text-zinc-500 text-sm">No staff members found.</p>
-              </div>
-            ) : (
-              staffList.map((member: any) => {
-                const initials = member.name
-                  ? member.name
-                      .split(' ')
-                      .map((n: string) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase()
-                  : 'ST';
-                return (
-                  <div
-                    key={member.id}
-                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-all animate-fade-in group"
-                  >
-                    <div className="p-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
-                      {resolveMediaUrl(member.avatarUrl) ? (
-                        <img
-                          src={resolveMediaUrl(member.avatarUrl)!}
-                          alt={member.name || 'Staff'}
-                          className="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-lg uppercase ring-2 ring-white dark:ring-zinc-900 group-hover:scale-105 transition-transform">
-                          {initials}
-                        </div>
-                      )}
-                      <div className="flex flex-col">
-                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-white line-clamp-1">
-                          {member.name}
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          {member.designation || 'Faculty Member'} ·{' '}
-                          <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                            {getDeptName(member.departmentId)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        {roleBodyTemplate(member)}
-                      </div>
-
-                      <div className="py-2 flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
-                        <div className="flex items-center gap-2 truncate">
-                          <Mail className="w-4 h-4 text-zinc-400" />
-                          <span>{member.email}</span>
-                        </div>
-                        {member.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 text-zinc-400" />
-                            <span>{member.phone}</span>
+        ) : (
+          <>
+            {/* Cards: always on phones, and on larger screens in grid mode */}
+            <div
+              className={`grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 ${
+                viewMode === 'table' ? 'md:hidden' : ''
+              }`}
+            >
+              {isPending ? (
+                <>
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="h-48 animate-pulse rounded-2xl bg-muted" />
+                  ))}
+                </>
+              ) : staffList.length === 0 ? (
+                <div className="surface-card col-span-full flex flex-col items-center gap-3 p-8 text-center">
+                  <p className="text-sm text-muted-foreground">No staff members found.</p>
+                  {canWriteStaff && (
+                    <Button size="sm" onClick={() => setShowAddDialog(true)}>
+                      <Plus className="size-4" /> Add staff member
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                staffList.map((member: any) => {
+                  const initials = member.name
+                    ? member.name
+                        .split(' ')
+                        .map((n: string) => n[0])
+                        .join('')
+                        .substring(0, 2)
+                        .toUpperCase()
+                    : 'ST';
+                  return (
+                    <div
+                      key={member.id}
+                      className="surface-card animate-fade-in group flex min-w-0 flex-col"
+                    >
+                      <div className="flex items-center gap-3 border-b border-border p-4">
+                        {resolveMediaUrl(member.avatarUrl) ? (
+                          <img
+                            src={resolveMediaUrl(member.avatarUrl)!}
+                            alt={member.name || 'Staff'}
+                            className="size-12 shrink-0 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="tone-indigo tone-chip flex size-12 shrink-0 items-center justify-center rounded-full text-base font-semibold uppercase">
+                            {initials}
                           </div>
                         )}
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <h3 className="truncate text-sm font-semibold text-foreground">
+                            {member.name}
+                          </h3>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {member.designation || 'Faculty Member'} ·{' '}
+                            <span className="font-medium text-foreground/80">
+                              {getDeptName(member.departmentId)}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="shrink-0">{roleBodyTemplate(member)}</div>
                       </div>
 
-                      <div className="flex justify-end gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800 mt-2">
-                        <button
-                          onClick={() => {
-                            setSelectedProfile(member);
-                            setShowProfileDialog(true);
-                          }}
-                          className="flex-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 rounded-md transition-all flex justify-center items-center gap-2 mt-2"
-                        >
-                          <User className="w-3.5 h-3.5" />
-                          Profile
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedUserForSalary(member.id);
-                            setShowSalaryStructureDialog(true);
-                          }}
-                          className="flex-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-md transition-all flex justify-center items-center gap-2 mt-2"
-                        >
-                          <DollarSign className="w-3.5 h-3.5" />
-                          Salary
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStaff(member.id)}
-                          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors flex justify-center items-center mt-2"
-                          title="Delete Staff"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex flex-col gap-3 p-4">
+                        <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Mail className="size-4 shrink-0" />
+                            <span className="truncate">{member.email}</span>
+                          </div>
+                          {member.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="size-4 shrink-0" />
+                              <span className="tabular">{member.phone}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2 border-t border-border pt-3">
+                          <button
+                            onClick={() => {
+                              setSelectedProfile(member);
+                              setShowProfileDialog(true);
+                            }}
+                            className="tone-indigo tone-chip flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] sm:h-10"
+                          >
+                            <User className="size-3.5" />
+                            Profile
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedUserForSalary(member.id);
+                              setShowSalaryStructureDialog(true);
+                            }}
+                            className="tone-sky tone-chip flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] sm:h-10"
+                          >
+                            <DollarSign className="size-3.5" />
+                            Salary
+                          </button>
+                          <button
+                            onClick={() => handleDeleteStaff(member.id)}
+                            className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20 sm:size-10"
+                            title="Delete Staff"
+                            aria-label="Delete staff member"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })
+              )}
+            </div>
+
+            {viewMode === 'table' && (
+              <div className="hidden w-full md:block">
+                <TanstackTable
+                  data={staffList}
+                  columns={columns}
+                  isLoading={isPending}
+                  pagination={pagination}
+                  setPagination={setPagination}
+                  pageCount={pageCount}
+                />
+              </div>
             )}
 
-            {/* Grid Pagination */}
+            {/* Pagination for card view (phones, and grid mode) */}
             {!isPending && staffList.length > 0 && (
-              <div className="col-span-full flex justify-between items-center pt-4">
-                <span className="text-sm font-medium text-zinc-500">
+              <div
+                className={`flex items-center justify-between gap-3 ${
+                  viewMode === 'table' ? 'md:hidden' : ''
+                }`}
+              >
+                <span className="tabular text-sm font-medium text-muted-foreground">
                   Page {pagination.pageIndex + 1} of {pageCount}
                 </span>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() =>
                       setPagination((p: PaginationState) => ({
                         ...p,
@@ -604,11 +623,12 @@ export default function StaffPage() {
                       }))
                     }
                     disabled={pagination.pageIndex === 0}
-                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Previous
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() =>
                       setPagination((p: PaginationState) => ({
                         ...p,
@@ -616,25 +636,13 @@ export default function StaffPage() {
                       }))
                     }
                     disabled={pagination.pageIndex >= pageCount - 1}
-                    className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors text-zinc-700 dark:text-zinc-300"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
-          </div>
-        ) : (
-          <div className="w-full">
-            <TanstackTable
-              data={staffList}
-              columns={columns}
-              isLoading={isPending}
-              pagination={pagination}
-              setPagination={setPagination}
-              pageCount={pageCount}
-            />
-          </div>
+          </>
         )}
       </div>
 
@@ -686,7 +694,7 @@ export default function StaffPage() {
               placeholder="Select a Role"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-xs text-zinc-500 dark:text-zinc-400">
                 Department
@@ -709,7 +717,7 @@ export default function StaffPage() {
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
@@ -781,7 +789,7 @@ export default function StaffPage() {
                 }
               />
             </div>
-            <div className="flex justify-end gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={() => setShowSalaryStructureDialog(false)}>
                 Cancel
               </Button>
@@ -803,7 +811,7 @@ export default function StaffPage() {
         title={selectedProfile ? `${selectedProfile.name}'s Profile` : 'Staff Profile'}
       >
         {selectedProfile && (
-          <div className="flex flex-col gap-6 p-2">
+          <div className="flex flex-col gap-5">
             <div className="flex items-center gap-4">
               <label
                 className={`relative ${canEditPhoto ? 'cursor-pointer' : ''}`}
@@ -896,7 +904,7 @@ export default function StaffPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+            <div className="grid grid-cols-1 gap-2 border-t border-border pt-4 min-[420px]:flex min-[420px]:flex-wrap">
               <Button variant="outline" size="sm" onClick={() => setEditStaff(selectedProfile)}>
                 Edit
               </Button>
@@ -973,7 +981,7 @@ export default function StaffPage() {
                   selectedProfile.subjectsTaught.map((sub: any) => (
                     <div
                       key={sub.id}
-                      className="flex flex-col gap-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-2 min-w-[120px]"
+                      className="flex min-w-[120px] flex-col gap-1 rounded-lg border border-border bg-card p-2"
                     >
                       <span className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">
                         {sub.name}

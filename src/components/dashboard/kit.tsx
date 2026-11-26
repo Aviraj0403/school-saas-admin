@@ -38,7 +38,7 @@ export function HeroCard({
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-[28px] bg-brand-gradient p-6 text-white shadow-glow sm:p-8',
+        'relative overflow-hidden rounded-3xl bg-brand-gradient p-5 text-white shadow-glow sm:p-8',
         className
       )}
     >
@@ -67,7 +67,7 @@ export function HeroCard({
               {eyebrow}
             </div>
           )}
-          <h1 className="font-display text-[30px] font-semibold leading-[1.1] sm:text-[38px]">
+          <h1 className="text-[26px] font-semibold leading-[1.15] tracking-tight sm:text-[34px]">
             {title}
           </h1>
           {subtitle && <p className="mt-2 text-sm text-white/80 sm:text-[15px]">{subtitle}</p>}
@@ -128,9 +128,7 @@ export function Panel({
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             {title && (
-              <h3 className="font-display text-lg font-semibold text-zinc-900 dark:text-white">
-                {title}
-              </h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
             )}
             {subtitle && (
               <p className="mt-0.5 text-[13px] text-zinc-500 dark:text-zinc-400">{subtitle}</p>
@@ -245,9 +243,7 @@ export function GlanceRow({
         <Icon className="size-4" />
       </span>
       <span className="flex-1 text-[13px] text-zinc-600 dark:text-zinc-300">{label}</span>
-      <span className="font-display tabular text-base font-semibold text-zinc-900 dark:text-white">
-        {value}
-      </span>
+      <span className="tabular text-base font-semibold text-zinc-900 dark:text-white">{value}</span>
     </>
   );
   return href ? (

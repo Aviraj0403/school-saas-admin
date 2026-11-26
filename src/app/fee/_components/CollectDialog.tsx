@@ -207,10 +207,12 @@ export function CollectDialog({
           ) : (
             <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl text-xs flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-zinc-500 uppercase tracking-widest text-[9px]">
+                <span className="font-bold text-muted-foreground uppercase tracking-widest text-[10px]">
                   Total outstanding
                 </span>
-                <span className="text-sm font-extrabold text-brand">{inr(dues?.totalDue)}</span>
+                <span className="tabular text-base font-extrabold text-brand">
+                  {inr(dues?.totalDue)}
+                </span>
               </div>
               {outstanding.length === 0 && (
                 <p className="text-emerald-600 font-semibold">
@@ -242,10 +244,11 @@ export function CollectDialog({
                 }}
               />
             </Field>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
               <Field label="Amount (₹) *">
                 <Input
                   type="number"
+                  inputMode="decimal"
                   min={0}
                   max={remaining}
                   value={amount}
@@ -255,6 +258,7 @@ export function CollectDialog({
               <Field label="Late fee">
                 <Input
                   type="number"
+                  inputMode="decimal"
                   min={0}
                   value={late}
                   onChange={(e) => setLate(e.target.value)}
@@ -263,15 +267,21 @@ export function CollectDialog({
               <Field label="Discount">
                 <Input
                   type="number"
+                  inputMode="decimal"
                   min={0}
                   value={discount}
                   onChange={(e) => setDiscount(e.target.value)}
                 />
               </Field>
             </div>
-            <p className="text-[11px] text-zinc-500">
-              Maximum for this fee: {inr(remaining)} · Total to receive: <b>{inr(total)}</b>
-            </p>
+            <div className="rounded-xl bg-muted/60 px-3 py-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                Max for this fee: <b className="tabular text-foreground">{inr(remaining)}</b>
+              </span>
+              <span>
+                Total to receive: <b className="tabular text-base text-foreground">{inr(total)}</b>
+              </span>
+            </div>
             <Field label="Payment mode *">
               <Select
                 value={method}

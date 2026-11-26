@@ -2,6 +2,7 @@
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import PageHeader from '@/components/layout/PageHeader';
 import { ChildSwitcher } from './ChildSwitcher';
 import { EmptyBlock, LoadingBlock } from './QueryState';
@@ -29,7 +30,8 @@ export default function PortalShell({ title, description, actions, children }: P
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 pb-6">
+      <PageBreadcrumb title={title} subtitle="My portal" />
+      <div className="flex min-w-0 flex-col gap-4 pb-4 sm:gap-6">
         <PageHeader
           title={title}
           description={

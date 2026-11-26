@@ -62,7 +62,10 @@ function Segmented({
     ['off', 'Off'],
   ];
   return (
-    <div className="inline-flex rounded-lg border border-border p-0.5" role="group">
+    <div
+      className="inline-flex w-full rounded-xl border border-border p-0.5 sm:w-auto"
+      role="group"
+    >
       {opts.map(([k, label]) => (
         <button
           key={k}
@@ -71,7 +74,7 @@ function Segmented({
           aria-pressed={value === k}
           onClick={() => value !== k && onChange(k)}
           className={cn(
-            'rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+            'flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:flex-none sm:py-1 disabled:cursor-not-allowed disabled:opacity-60',
             value === k
               ? k === 'off'
                 ? 'bg-rose-600 text-white'
@@ -113,21 +116,28 @@ export function SchoolModuleMatrix({ tenantId }: { tenantId: string }) {
     );
   };
 
-  if (isPending) return <p className="text-sm text-zinc-500">Loading modules...</p>;
+  if (isPending)
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
+        ))}
+      </div>
+    );
   if (error)
     return <p className="text-sm text-rose-600">{errorMessage(error, 'Could not load modules')}</p>;
   if (!data) return null;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="surface-card flex flex-wrap items-center justify-between gap-2 p-4">
+      <div className="surface-card flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-4">
         <div>
           <p className="text-eyebrow">Active modules</p>
           <p className="text-card-title">
             {activeCount} of {total} modules active
           </p>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <p className="text-eyebrow">Plan</p>
           <p className="text-card-title">{data.plan?.name ?? 'No plan'}</p>
         </div>
@@ -142,8 +152,11 @@ export function SchoolModuleMatrix({ tenantId }: { tenantId: string }) {
                 m.override === true ? 'on' : m.override === false ? 'off' : 'default';
               const src = SOURCE_UI[m.source] ?? SOURCE_UI.off;
               return (
-                <div key={m.key} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3">
-                  <div className="min-w-0 flex-1 basis-56">
+                <div
+                  key={m.key}
+                  className="flex flex-col gap-3 p-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2 sm:p-3"
+                >
+                  <div className="min-w-0 sm:flex-1 sm:basis-56">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-sm font-semibold">{m.label}</span>
                       {m.tier && <Chip tone={TIER_TONE[m.tier] ?? 'tone-indigo'}>{m.tier}</Chip>}
@@ -160,27 +173,32 @@ export function SchoolModuleMatrix({ tenantId }: { tenantId: string }) {
                       </p>
                     )}
                   </div>
-                  <span
-                    className={cn(
-                      'w-14 text-xs font-semibold',
-                      m.effective ? 'text-emerald-600' : 'text-zinc-400'
-                    )}
-                  >
-                    {m.effective ? 'Active' : 'Inactive'}
-                  </span>
-                  <Segmented
-                    value={m.core ? 'on' : choice}
-                    disabled={m.core || setOverride.isPending}
-                    onChange={(c) => choose(m, c)}
-                  />
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    disabled={m.core}
-                    onClick={() => setAddonFor(m)}
-                  >
-                    <Plus className="h-3 w-3" /> Add-on
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 sm:contents">
+                    <span
+                      className={cn(
+                        'text-xs font-semibold sm:w-14',
+                        m.effective ? 'text-emerald-600' : 'text-muted-foreground'
+                      )}
+                    >
+                      {m.effective ? 'Active' : 'Inactive'}
+                    </span>
+                    <div className="order-last w-full sm:order-none sm:w-auto">
+                      <Segmented
+                        value={m.core ? 'on' : choice}
+                        disabled={m.core || setOverride.isPending}
+                        onChange={(c) => choose(m, c)}
+                      />
+                    </div>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      className="ml-auto sm:ml-0"
+                      disabled={m.core}
+                      onClick={() => setAddonFor(m)}
+                    >
+                      <Plus className="h-3 w-3" /> Add-on
+                    </Button>
+                  </div>
                 </div>
               );
             })}
@@ -279,7 +297,7 @@ function AddonDialog({
             <Input value={note} onChange={(e) => setNote(e.target.value)} />
           </label>
         )}
-        <div className="flex justify-end gap-2 border-t border-border pt-4">
+        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>

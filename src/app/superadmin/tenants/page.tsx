@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,6 @@ import {
   Plus,
   Eye,
   ArrowRightLeft,
-  Building,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -153,96 +153,99 @@ export default function TenantsPage() {
     <DashboardLayout>
       <PageBreadcrumb title="Tenants Directory" subtitle="Superadmin" />
 
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              <Building className="h-6 w-6 text-brand" /> Tenant Schools Directory
-            </h1>
-            <p className="mt-1 text-xs text-zinc-500">
-              Onboard schools, manage plans, modules, limits, billing and lifecycle.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              options={[
-                { label: 'All statuses', value: '' },
-                { label: 'Trial', value: 'TRIAL' },
-                { label: 'Active', value: 'ACTIVE' },
-                { label: 'Past due', value: 'PAST_DUE' },
-                { label: 'Suspended', value: 'SUSPENDED' },
-                { label: 'Cancelled', value: 'CANCELLED' },
-              ]}
-            />
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Onboard New School
-            </Button>
-          </div>
-        </div>
+      <div className="flex min-w-0 flex-col gap-5 pb-6 animate-fade-in">
+        <PageHeader
+          title="Tenant Schools"
+          description="Onboard schools, manage plans, modules, limits, billing and lifecycle."
+          actions={
+            <>
+              <Select
+                className="w-full sm:w-44"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                options={[
+                  { label: 'All statuses', value: '' },
+                  { label: 'Trial', value: 'TRIAL' },
+                  { label: 'Active', value: 'ACTIVE' },
+                  { label: 'Past due', value: 'PAST_DUE' },
+                  { label: 'Suspended', value: 'SUSPENDED' },
+                  { label: 'Cancelled', value: 'CANCELLED' },
+                ]}
+              />
+              <Button className="w-full sm:w-auto" onClick={() => setShowCreate(true)}>
+                <Plus className="h-4 w-4" /> Onboard New School
+              </Button>
+            </>
+          }
+        />
 
-        {isPending && <p className="text-sm text-zinc-500">Loading schools...</p>}
+        {isPending && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-44 animate-pulse rounded-2xl bg-muted" />
+            ))}
+          </div>
+        )}
         {error && (
           <p className="text-sm text-rose-600">{errorMessage(error, 'Could not load schools')}</p>
         )}
         {!isPending && !error && schools.length === 0 && (
-          <p className="rounded-xl border border-dashed p-8 text-center text-sm text-zinc-500">
-            No schools match this filter.
+          <p className="surface-card p-8 text-center text-sm text-muted-foreground">
+            No schools match this filter. Try another status or onboard a new school.
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {schools.map((t) => (
             <div
               key={t.id}
-              className={`flex flex-col justify-between gap-4 rounded-xl border bg-card p-5 shadow-sm ${
-                t.isSuspended ? 'border-rose-200 dark:border-rose-950/40' : 'border-border'
+              className={`surface-card flex min-w-0 flex-col justify-between gap-4 p-4 sm:p-5 ${
+                t.isSuspended ? 'border-rose-300 dark:border-rose-900/60' : ''
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="block font-mono text-[10px] font-bold uppercase text-zinc-400">
-                    {t.projectCode || 'NO CODE'}
-                  </span>
-                  <h4 className="mt-0.5 text-base font-bold text-zinc-900 dark:text-zinc-100">
-                    {t.name}
-                  </h4>
-                  <p className="mt-1 flex items-center gap-1 font-mono text-xs text-brand">
+                <div className="min-w-0">
+                  <span className="text-eyebrow block font-mono">{t.projectCode || 'NO CODE'}</span>
+                  <h4 className="text-card-title mt-0.5 break-words">{t.name}</h4>
+                  <p className="mt-1 flex items-center gap-1 break-all font-mono text-xs text-brand">
                     {t.subdomain}
                     {baseDomain} <ExternalLink className="h-3 w-3" />
                   </p>
                 </div>
-                <Badge variant={statusVariant(status(t))}>{status(t)}</Badge>
+                <Badge className="shrink-0" variant={statusVariant(status(t))}>
+                  {status(t)}
+                </Badge>
               </div>
-              <div className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-zinc-500">
+              <div className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted-foreground">
                 <div>
-                  Plan:{' '}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                    {planLabel(t)}
-                  </span>
+                  Plan: <span className="font-semibold text-foreground">{planLabel(t)}</span>
                   {t.subscription?.status === 'TRIAL' && t.subscription.trialEndsAt && (
                     <span> - trial ends {formatDate(t.subscription.trialEndsAt)}</span>
                   )}
                 </div>
                 <div>
-                  Admin:{' '}
-                  <span className="font-mono text-zinc-900 dark:text-zinc-100">{t.adminEmail}</span>
+                  Admin: <span className="break-all font-mono text-foreground">{t.adminEmail}</span>
                 </div>
                 <div>
                   {t._count?.students ?? 0} students - {t._count?.users ?? 0} users -{' '}
                   {t.activeModules?.length ?? 0} modules
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-1 border-t border-border pt-3">
-                <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
+              <div className="flex items-center gap-2 border-t border-border pt-3 sm:justify-end">
+                <Button
+                  className="flex-1 sm:flex-none"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelected(t)}
+                >
                   <Eye className="h-3.5 w-3.5" /> Manage
                 </Button>
                 {activeTenant?.id !== t.id ? (
                   <Button
+                    className="flex-1 sm:flex-none"
                     variant="outline"
                     size="sm"
                     onClick={() => switchInto(t)}
@@ -259,8 +262,8 @@ export default function TenantsPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <span className="font-mono text-xs text-zinc-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <span className="tabular text-xs text-muted-foreground">
               Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
@@ -281,8 +284,8 @@ export default function TenantsPage() {
 
       {/* Onboard */}
       <Dialog isOpen={showCreate} onClose={() => setShowCreate(false)} title="Onboard New School">
-        <form onSubmit={handleCreate} className="flex flex-col gap-4 overflow-y-auto px-7 pb-6">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleCreate} className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-xs font-semibold">
               School name *
               <Input
@@ -371,7 +374,7 @@ export default function TenantsPage() {
           {plans.length === 0 && (
             <p className="text-xs text-amber-600">No plans exist yet. Create one in Plans first.</p>
           )}
-          <div className="flex justify-end gap-2 border-t border-border pt-4">
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <Button variant="outline" type="button" onClick={() => setShowCreate(false)}>
               Cancel
             </Button>
@@ -385,17 +388,17 @@ export default function TenantsPage() {
       {/* One-time credentials */}
       <Dialog isOpen={!!created} onClose={() => setCreated(null)} title="School created">
         {created && (
-          <div className="flex flex-col gap-4 px-7 pb-6">
+          <div className="flex flex-col gap-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-300">
               <b>{created.schoolName}</b> is ready. Share these temporary credentials with the
               school admin now - they are shown only once. The admin must change the password on
               first login.
             </p>
-            <div className="rounded-xl border border-border bg-zinc-50 p-4 font-mono text-sm dark:bg-white/5">
+            <div className="break-all rounded-xl border border-border bg-muted/50 p-4 font-mono text-sm">
               <div>Email: {created.adminEmail}</div>
               <div>Password: {created.password}</div>
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -503,13 +506,13 @@ function SchoolDrawer({
 
   return (
     <Dialog isOpen onClose={onClose} title={school.name} className="max-w-3xl">
-      <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-7 pb-6">
+      <div className="flex min-h-0 min-w-0 flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="font-mono text-xs font-bold text-brand">
+          <span className="break-all font-mono text-xs font-bold text-brand">
             {school.subdomain}
             {baseDomain}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {sub && <Badge variant={statusVariant(sub.status)}>{sub.status}</Badge>}
             <Button size="sm" variant="outline" onClick={onSwitch}>
               <ArrowRightLeft className="h-3.5 w-3.5" /> Switch into school
@@ -517,15 +520,15 @@ function SchoolDrawer({
           </div>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border p-1">
+        <div className="scrollbar-none -mx-5 flex gap-1 overflow-x-auto px-5 sm:mx-0 sm:px-0">
           {tabs.map(([k, label]) => (
             <button
               key={k}
               onClick={() => setTab(k)}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold ${
+              className={`h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-xs font-semibold ${
                 tab === k
                   ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'text-zinc-500'
+                  : 'bg-muted text-muted-foreground'
               }`}
             >
               {label}
@@ -533,13 +536,13 @@ function SchoolDrawer({
           ))}
         </div>
 
-        {subPending && <p className="text-sm text-zinc-500">Loading subscription...</p>}
+        {subPending && <div className="h-28 animate-pulse rounded-xl bg-muted" />}
         {subError && <p className="text-sm text-rose-600">{errorMessage(subError)}</p>}
 
         {tab === 'overview' && !subPending && (
           <div className="flex flex-col gap-5">
             {sub ? (
-              <div className="grid grid-cols-2 gap-3 rounded-xl border border-border p-4 text-xs sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border p-4 text-xs sm:grid-cols-3">
                 <Info label="Plan" value={sub.plan?.name} />
                 <Info label="Status" value={sub.status} />
                 <Info label="Amount" value={`${money(sub.amount)} / ${sub.billingCycle}`} />
@@ -564,7 +567,7 @@ function SchoolDrawer({
               </p>
             )}
 
-            <div className="flex flex-col gap-3 rounded-xl border border-border p-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
               <p className="text-xs font-semibold">Assign / change plan</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Select
@@ -594,13 +597,18 @@ function SchoolDrawer({
                 Assigning resets custom module and limit overrides to the plan defaults.
               </p>
               <div>
-                <Button size="sm" onClick={doAssign} isLoading={assign.isPending}>
+                <Button
+                  className="w-full sm:w-auto"
+                  size="sm"
+                  onClick={doAssign}
+                  isLoading={assign.isPending}
+                >
                   Assign plan
                 </Button>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-xl border border-border p-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
               <p className="text-xs font-semibold">Lifecycle</p>
               <Textarea
                 className="min-h-16"
@@ -608,7 +616,7 @@ function SchoolDrawer({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason (required to suspend)"
               />
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                 {!isSuspended ? (
                   <Button
                     size="sm"
@@ -689,12 +697,17 @@ function SchoolDrawer({
             </div>
             <p className="text-xs font-semibold">Per-school override (JSON, -1 = unlimited)</p>
             <Textarea
-              className="font-mono text-xs"
+              className="min-h-40 font-mono text-base sm:text-xs"
               value={limitsJson}
               onChange={(e) => setLimitsJson(e.target.value)}
             />
             <div>
-              <Button size="sm" onClick={saveLimits} isLoading={overrideLimits.isPending}>
+              <Button
+                className="w-full sm:w-auto"
+                size="sm"
+                onClick={saveLimits}
+                isLoading={overrideLimits.isPending}
+              >
                 Save limits
               </Button>
             </div>
@@ -710,9 +723,9 @@ function SchoolDrawer({
 
 function Info({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div>
-      <p className="text-[10px] uppercase tracking-wider text-zinc-400">{label}</p>
-      <p className="font-semibold text-zinc-900 dark:text-zinc-100">{value || '-'}</p>
+    <div className="min-w-0">
+      <p className="text-eyebrow">{label}</p>
+      <p className="break-words font-semibold text-foreground">{value || '-'}</p>
     </div>
   );
 }
@@ -786,8 +799,9 @@ function InvoicesTab({
   const invoices = data?.items ?? [];
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-end">
+      <div className="flex sm:justify-end">
         <Button
+          className="w-full sm:w-auto"
           size="sm"
           onClick={() => setShow(!show)}
           disabled={!hasSubscription}
@@ -821,7 +835,12 @@ function InvoicesTab({
             onChange={(e) => setF({ ...f, description: e.target.value })}
           />
           <div className="sm:col-span-3">
-            <Button type="submit" size="sm" isLoading={create.isPending}>
+            <Button
+              className="w-full sm:w-auto"
+              type="submit"
+              size="sm"
+              isLoading={create.isPending}
+            >
               Create invoice
             </Button>
           </div>
@@ -834,11 +853,13 @@ function InvoicesTab({
       )}
       <div className="divide-y divide-border rounded-xl border border-border">
         {invoices.map((inv) => (
-          <div key={inv.id} className="flex flex-wrap items-center gap-3 p-3 text-xs">
+          <div key={inv.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-xs">
             <span className="font-mono font-semibold">{inv.invoiceNo}</span>
-            <span className="flex-1 text-zinc-500">{inv.description || '-'}</span>
-            <span className="font-semibold">{money(inv.amount)}</span>
-            <span className="text-zinc-500">due {formatDate(inv.dueDate)}</span>
+            <span className="tabular ml-auto font-semibold sm:ml-0">{money(inv.amount)}</span>
+            <span className="min-w-0 basis-full text-muted-foreground sm:flex-1 sm:basis-0">
+              {inv.description || '-'}
+            </span>
+            <span className="text-muted-foreground">due {formatDate(inv.dueDate)}</span>
             <Badge
               variant={
                 inv.status === 'PAID'

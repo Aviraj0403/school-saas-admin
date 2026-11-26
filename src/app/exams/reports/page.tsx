@@ -69,13 +69,13 @@ export default function ExamReportsPage() {
       <PageBreadcrumb title="Exam Reports" subtitle="Exams" />
 
       <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <h1 className="text-page-title flex items-center gap-2">
               <FileSpreadsheet className="w-6 h-6 text-brand" />
               Examination Analytics & Reports
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Audit teacher-class coverage and recent test performance
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function ExamReportsPage() {
               className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 tab === t.key
                   ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  : 'text-muted-foreground hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               <t.icon className="w-4 h-4" /> {t.label}
@@ -97,15 +97,17 @@ export default function ExamReportsPage() {
           ))}
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm">
+        <div className="surface-card p-6 shadow-sm">
           {tab === 'coverage' && (
             <div className="flex flex-col gap-4">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-2xl">
+              <p className="text-xs text-muted-foreground max-w-2xl">
                 Class teacher and subject teachers for each class.
               </p>
 
               {loadingCoverage ? (
-                <div className="p-12 text-center text-xs text-zinc-500">Loading coverage...</div>
+                <div className="p-12 text-center text-xs text-muted-foreground">
+                  Loading coverage...
+                </div>
               ) : coverageError ? (
                 <div className="p-8 text-center text-sm text-rose-600">
                   {apiMessage(coverageError, 'Could not load coverage report.')}
@@ -113,7 +115,7 @@ export default function ExamReportsPage() {
               ) : (
                 <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                       <tr>
                         <th className="px-6 py-4">Class</th>
                         <th className="px-6 py-4">Class Teacher</th>
@@ -124,7 +126,7 @@ export default function ExamReportsPage() {
                     <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                       {coverage.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">
+                          <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
                             No coverage data available.
                           </td>
                         </tr>
@@ -134,9 +136,9 @@ export default function ExamReportsPage() {
                             key={r.id}
                             className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
                           >
-                            <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                            <td className="px-6 py-4 font-semibold text-foreground">
                               {r.name}
-                              <span className="block text-[11px] font-normal text-zinc-500">
+                              <span className="block text-[11px] font-normal text-muted-foreground">
                                 {r.academicYear}
                               </span>
                             </td>
@@ -174,7 +176,7 @@ export default function ExamReportsPage() {
           {tab === 'weekly' && (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-1.5 max-w-xs">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Class *
                 </label>
                 <Select
@@ -185,11 +187,11 @@ export default function ExamReportsPage() {
               </div>
 
               {!classId ? (
-                <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-12 text-center text-sm text-zinc-500">
+                <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-12 text-center text-sm text-muted-foreground">
                   Select a class to see tests published in the last 7 days.
                 </div>
               ) : loadingWeekly ? (
-                <div className="p-12 text-center text-xs text-zinc-500">
+                <div className="p-12 text-center text-xs text-muted-foreground">
                   Fetching weekly summaries...
                 </div>
               ) : weeklyError ? (
@@ -199,7 +201,7 @@ export default function ExamReportsPage() {
               ) : (
                 <div className="overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
+                    <thead className="bg-zinc-50/50 dark:bg-zinc-800/40 text-muted-foreground font-medium border-b border-zinc-200/80 dark:border-zinc-800/80">
                       <tr>
                         <th className="px-6 py-4">Test</th>
                         <th className="px-6 py-4">Date</th>
@@ -211,7 +213,7 @@ export default function ExamReportsPage() {
                     <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80">
                       {weeklyRows.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                          <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
                             No published weekly tests for this class in the last 7 days.
                           </td>
                         </tr>
@@ -221,7 +223,7 @@ export default function ExamReportsPage() {
                             key={idx}
                             className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
                           >
-                            <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                            <td className="px-6 py-4 font-semibold text-foreground">
                               {r.examName}
                             </td>
                             <td className="px-6 py-4">{formatDate(r.date)}</td>

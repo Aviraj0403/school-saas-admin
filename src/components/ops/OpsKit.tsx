@@ -21,7 +21,7 @@ export const fmtDate = (d?: string | Date | null) =>
 
 export function Spinner({ label }: { label?: string }) {
   return (
-    <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-500">
+    <div className="p-8 sm:p-12 flex flex-col items-center justify-center gap-3 text-muted-foreground">
       <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       {label && <span className="text-xs">{label}</span>}
     </div>
@@ -30,16 +30,16 @@ export function Spinner({ label }: { label?: string }) {
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="p-10 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
-      <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{title}</p>
-      {hint && <p className="text-xs text-zinc-500 mt-1">{hint}</p>}
+    <div className="p-6 sm:p-10 text-center border border-dashed border-border rounded-2xl">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
     </div>
   );
 }
 
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   return (
-    <div className="p-8 text-center border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 rounded-xl">
+    <div className="p-6 sm:p-8 text-center border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 rounded-2xl">
       <p className="text-sm font-semibold text-rose-700 dark:text-rose-400">
         Could not load this data
       </p>
@@ -63,12 +63,12 @@ export function TabBar({
   onChange: (i: number) => void;
 }) {
   return (
-    <div className="flex flex-wrap bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 w-fit max-w-full print:hidden">
+    <div className="flex overflow-x-auto scrollbar-none bg-card p-1.5 rounded-xl border border-border w-fit max-w-full print:hidden">
       {tabs.map((t, i) => (
         <button
           key={t}
           onClick={() => onChange(i)}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+          className={`shrink-0 whitespace-nowrap px-4 h-10 sm:h-9 text-xs font-semibold rounded-lg transition-all ${
             active === i
               ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
               : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -90,7 +90,7 @@ export function Panel({
 }) {
   return (
     <div
-      className={`bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 shadow-sm ${className}`}
+      className={`bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm min-w-0 ${className}`}
     >
       {children}
     </div>
@@ -100,7 +100,7 @@ export function Panel({
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">{label}</label>
+      <label className="font-semibold text-xs text-foreground/80">{label}</label>
       {children}
     </div>
   );
@@ -108,7 +108,7 @@ export function Field({ label, children }: { label: string; children: React.Reac
 
 export function DialogFooter({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6 pt-4 border-t border-border [&>button]:w-full sm:[&>button]:w-auto">
       {children}
     </div>
   );

@@ -74,63 +74,82 @@ function ResultsView({ studentId, studentName }: { studentId: string; studentNam
       emptyText="No exam results have been published yet."
       emptyIcon={Trophy}
     >
-      <div className="flex flex-col gap-6">
-        {groups.map((g) => (
-          <section
-            key={g.exam?.id}
-            className="rounded-2xl border border-border bg-card p-5 shadow-card sm:p-6"
-          >
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="font-display text-lg font-semibold">{g.exam?.name}</h3>
-                <p className="text-xs text-zinc-500">
-                  {formatDate(g.exam?.startDate)}
-                  {g.exam?.type ? ` · ${g.exam.type}` : ''}
-                </p>
+      <div className="flex flex-col gap-4 sm:gap-6">
+        {groups.map((g) => {
+          const pct = g.hasMax && g.max > 0 ? (g.obtained / g.max) * 100 : null;
+          return (
+            <section key={g.exam?.id} className="surface-card min-w-0 p-4 sm:p-6">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-card-title break-words">{g.exam?.name}</h3>
+                  <p className="text-caption">
+                    {formatDate(g.exam?.startDate)}
+                    {g.exam?.type ? ` · ${g.exam.type}` : ''}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="tabular text-2xl font-semibold leading-none">
+                    {pct != null ? `${pct.toFixed(1)}%` : g.obtained}
+                  </p>
+                  {g.hasMax && (
+                    <p className="text-caption tabular mt-1">
+                      {g.obtained} / {g.max}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="primary">
-                  {g.obtained}
-                  {g.hasMax ? ` / ${g.max}` : ''}
-                  {g.hasMax && g.max > 0 ? ` · ${((g.obtained / g.max) * 100).toFixed(1)}%` : ''}
-                </Badge>
-                <Button variant="outline" size="sm" onClick={() => printGroup(g, studentName)}>
-                  <Printer /> Print
-                </Button>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[420px] text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-zinc-400">
-                    <th className="py-2 pr-3">Subject</th>
-                    <th className="py-2 pr-3">Marks</th>
-                    <th className="py-2 pr-3">Max</th>
-                    <th className="py-2 pr-3">Grade</th>
-                    <th className="py-2">Remarks</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {g.rows.map((r) => (
-                    <tr key={r.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-3 font-medium">{r.subject?.name ?? '—'}</td>
-                      <td className="py-2.5 pr-3">
-                        {r.isAbsent ? (
-                          <Badge variant="danger">Absent</Badge>
-                        ) : (
-                          Number(r.marksObtained)
-                        )}
-                      </td>
-                      <td className="py-2.5 pr-3">{r.maxMarks ?? '—'}</td>
-                      <td className="py-2.5 pr-3">{r.grade ?? '—'}</td>
-                      <td className="py-2.5 text-zinc-500">{r.remarks ?? ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ))}
+
+              <ul className="flex flex-col gap-3">
+                {g.rows.map((r) => {
+                  const max = r.maxMarks != null ? Number(r.maxMarks) : 0;
+                  const got = Number(r.marksObtained ?? 0);
+                  const p = max > 0 && !r.isAbsent ? Math.min(100, (got / max) * 100) : 0;
+                  const bar = p >= 75 ? 'bg-emerald-500' : p >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+                  return (
+                    <li key={r.id}>
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="min-w-0 truncate font-medium">
+                          {r.subject?.name ?? '—'}
+                        </span>
+                        <span className="tabular flex shrink-0 items-center gap-2">
+                          {r.isAbsent ? (
+                            <Badge variant="danger">Absent</Badge>
+                          ) : (
+                            <span className="font-semibold">
+                              {got}
+                              {max > 0 && (
+                                <span className="font-normal text-muted-foreground"> / {max}</span>
+                              )}
+                            </span>
+                          )}
+                          {r.grade && <Badge variant="primary">{r.grade}</Badge>}
+                        </span>
+                      </div>
+                      {max > 0 && (
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className={`h-full rounded-full ${bar}`}
+                            style={{ width: `${p}%` }}
+                          />
+                        </div>
+                      )}
+                      {r.remarks && <p className="text-caption mt-1">{r.remarks}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="mt-5 w-full sm:w-auto"
+                onClick={() => printGroup(g, studentName)}
+              >
+                <Printer /> Print result card
+              </Button>
+            </section>
+          );
+        })}
       </div>
     </QueryState>
   );

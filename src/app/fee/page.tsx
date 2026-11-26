@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { DollarSign, Plus, Wallet } from 'lucide-react';
+import { DollarSign, Plus } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
+import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/StatCard';
 import { EmptyState, Panel, TabBar, inr, tabFromLocation } from '@/components/ops/OpsKit';
@@ -56,37 +57,35 @@ export default function FeePage() {
   return (
     <DashboardLayout>
       <PageBreadcrumb title="Fee & Finance" />
-      <div className="flex flex-col gap-6 pb-10 animate-fade-in">
-        <div className="flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Wallet className="w-6 h-6 text-brand" /> School Finance Console
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Fee structures, collections and staff payroll
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {canFinance && (
-              <Link href="/fee/dues">
-                <Button variant="outline">Fee Dues &amp; Defaulters</Button>
-              </Link>
-            )}
-            {activeKey === 'slabs' && can('fee:create') && (
-              <Button onClick={() => setAddOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" /> Add Structure Slab
-              </Button>
-            )}
-            {activeKey === 'ledgers' && can('fee:create') && (
-              <Button onClick={() => setCollectOpen(true)}>
-                <DollarSign className="w-4 h-4 mr-2" /> Record Fee Receipt
-              </Button>
-            )}
-          </div>
-        </div>
+      <div className="flex flex-col gap-4 sm:gap-6 pb-10 animate-fade-in">
+        <PageHeader
+          title="School Finance Console"
+          description="Fee structures, collections and staff payroll"
+          actions={
+            <>
+              {activeKey === 'ledgers' && can('fee:create') && (
+                <Button className="w-full sm:w-auto" onClick={() => setCollectOpen(true)}>
+                  <DollarSign className="w-4 h-4 mr-2" /> Record Fee Receipt
+                </Button>
+              )}
+              {activeKey === 'slabs' && can('fee:create') && (
+                <Button className="w-full sm:w-auto" onClick={() => setAddOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Structure Slab
+                </Button>
+              )}
+              {canFinance && (
+                <Link href="/fee/dues" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    Fee Dues &amp; Defaulters
+                  </Button>
+                </Link>
+              )}
+            </>
+          }
+        />
 
         {canFinance && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
             <StatCard
               label="Total Revenue Collected"
               value={inr(totalRevenue)}

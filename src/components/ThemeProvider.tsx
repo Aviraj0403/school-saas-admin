@@ -43,9 +43,9 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       activeModules: tenant.activeModules?.length
         ? tenant.activeModules
         : activeTenant.activeModules,
-      projectCode: tenant.projectCode,
+      projectCode: tenant.projectCode ?? activeTenant.projectCode,
       subdomain: tenant.subdomain,
-      prefix: (tenant as any).prefix,
+      prefix: (tenant as any).prefix ?? activeTenant.prefix,
       theme: tenant.theme ?? undefined,
     });
   }, [tenant, activeTenant]);

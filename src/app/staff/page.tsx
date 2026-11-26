@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 
 import { useSalaryStructure, useUpsertSalaryStructure } from '@/hooks/queries/usePayroll';
+import { usePermission } from '@/hooks/usePermission';
 
 const hasRole = (s: any, slug: string) =>
   Array.isArray(s?.roles) && s.roles.some((r: any) => (r?.role?.slug ?? '').toLowerCase() === slug);
@@ -68,7 +69,22 @@ export default function StaffPage() {
   const [uploadingStaffPhoto, setUploadingStaffPhoto] = useState(false);
   const queryClient = useQueryClient();
   const activeUser = useAuthStore((s) => s.activeUser);
-  const canEditPhoto = canManageProfilePhotos(activeUser?.role, activeUser?.isSuperAdmin ?? false);
+  const { hasPermission, isSchoolAdmin, isSuperAdmin } = usePermission();
+  const canEditPhoto = canManageProfilePhotos(
+    activeUser?.role,
+    activeUser?.isSuperAdmin ?? false,
+    hasPermission
+  );
+  const canWriteStaff =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('staff', 'write') ||
+    hasPermission('staff_directory', 'write');
+  const canDeleteStaff =
+    isSuperAdmin ||
+    isSchoolAdmin ||
+    hasPermission('staff', 'delete') ||
+    hasPermission('staff_directory', 'delete');
 
   const handleStaffPhotoChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -255,18 +271,20 @@ export default function StaffPage() {
         >
           <User className="w-4 h-4" />
         </button>
-        <button
-          onClick={() => handleDeleteStaff(rowData.id)}
-          disabled={deleteMutation.isPending}
-          className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
-          title="Delete Staff"
-        >
-          {deleteMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Trash2 className="w-4 h-4" />
-          )}
-        </button>
+        {canDeleteStaff && (
+          <button
+            onClick={() => handleDeleteStaff(rowData.id)}
+            disabled={deleteMutation.isPending}
+            className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 rounded-md transition-all active:scale-95 disabled:opacity-50"
+            title="Delete Staff"
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+          </button>
+        )}
       </div>
     );
   };
@@ -350,10 +368,12 @@ export default function StaffPage() {
           title="Staff"
           description="Teachers, office staff and their roles, salaries and profiles."
           actions={
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="w-4 h-4" />
-              Add staff member
-            </Button>
+            canWriteStaff ? (
+              <Button onClick={() => setShowAddDialog(true)}>
+                <Plus className="w-4 h-4" />
+                Add staff member
+              </Button>
+            ) : undefined
           }
         />
 

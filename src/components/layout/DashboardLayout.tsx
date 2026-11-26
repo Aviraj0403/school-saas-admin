@@ -87,6 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         isSuperAdmin: !!useAuthStore.getState().user?.isSuperAdmin,
         isMirroring,
         activeModules: activeTenant?.activeModules,
+        canRead: (m) => useAuthStore.getState().permissions.includes(`${m}:read`),
       })
     : 'ok';
 

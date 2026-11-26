@@ -1,4 +1,4 @@
-import { navigationConfig, NavItem, canAccessNav, normalizeRole } from './navigation';
+import { navigationConfig, NavItem, canAccessNav, normalizeRole, isCustomRole } from './navigation';
 import type { Role } from '@/store/useAuthStore';
 import { isModuleActive } from '@/lib/moduleAccess';
 
@@ -67,13 +67,24 @@ export function evaluateRoute(
     isSuperAdmin: boolean;
     isMirroring?: boolean;
     activeModules: string[] | undefined;
+    canRead?: (module: string) => boolean;
   }
 ): RouteStatus {
   const rule = matchRoute(pathname);
   if (!rule) return 'ok';
   // A mirrored preview is a layout preview of that role, so the role rules apply to it.
   if (ctx.isSuperAdmin && !ctx.isMirroring) return 'ok';
-  if (!canAccessNav(rule.roles, ctx.role) && normalizeRole(ctx.role) !== 'superadmin')
+  const grantedByRole =
+    isCustomRole(ctx.role) &&
+    !!ctx.canRead &&
+    !!rule.module &&
+    rule.module !== 'core' &&
+    ctx.canRead(rule.module);
+  if (
+    !canAccessNav(rule.roles, ctx.role) &&
+    !grantedByRole &&
+    normalizeRole(ctx.role) !== 'superadmin'
+  )
     return 'denied';
   if (rule.module && !isModuleActive(ctx.activeModules, rule.module)) return 'off';
   return 'ok';

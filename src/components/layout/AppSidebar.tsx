@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePermissions } from '@/hooks/usePermissions';
 import { filterNavForUser, NavItem, SECTION_TONES } from '@/config/navigation';
 import { clsx } from 'clsx';
 import { formatRole, initials } from '@/lib/format';
@@ -164,11 +165,14 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { activeUser, activeTenant, logout } = useAuthStore();
+  const { can } = usePermissions();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   if (!activeUser || !activeTenant) return null;
 
-  const nav = filterNavForUser(activeUser.role, activeTenant.activeModules);
+  const nav = filterNavForUser(activeUser.role, activeTenant.activeModules, (m) =>
+    can(`${m}:read`)
+  );
   const groups = groupNav(nav);
 
   // The single most specific nav entry for this URL is the active one

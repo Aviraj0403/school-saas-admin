@@ -514,11 +514,38 @@ export const navigationConfig: NavItem[] = [
 ];
 
 /** The navigation tree a user may see: role-filtered and limited to the tenant's active modules. */
-export function filterNavForUser(role: string, activeModules: string[]): NavItem[] {
+/** Roles every school gets. Anything else is a school-defined custom role. */
+const SYSTEM_ROLES = new Set([
+  'superadmin',
+  'school_admin',
+  'teacher',
+  'accountant',
+  'librarian',
+  'lab_assistant',
+  'support_staff',
+  'clerk',
+  'parent',
+  'student',
+]);
+export const isCustomRole = (role: string) => !SYSTEM_ROLES.has(normalizeRole(role));
+
+/**
+ * @param canRead  optional: lets a CUSTOM role see the modules it was granted read access to
+ *                 (built-in roles ignore it, so a parent's school-wide reads never open staff pages).
+ */
+export function filterNavForUser(
+  role: string,
+  activeModules: string[],
+  canRead?: (module: string) => boolean
+): NavItem[] {
+  const custom = isCustomRole(role);
   const filterItem = (item: NavItem): NavItem | null => {
     // A heading's visibility comes only from the items under it (see below), never from its own roles
     if (item.isSection) return item;
-    if (!canAccessNav(item.roles, role)) return null;
+    const byRole = canAccessNav(item.roles, role);
+    const byGrant =
+      custom && !!canRead && !!item.module && item.module !== 'core' && canRead(item.module);
+    if (!byRole && !byGrant) return null;
     if (item.module && !isModuleActive(activeModules, item.module)) return null;
     if (item.children) {
       const children = item.children

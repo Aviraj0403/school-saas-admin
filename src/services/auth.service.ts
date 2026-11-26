@@ -1,4 +1,5 @@
 import { api } from './api';
+import { useAuthStore } from '@/store/useAuthStore';
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -35,6 +36,16 @@ export const authService = {
   /** PATCH /auth/change-password */
   changePassword: async (body: { currentPassword: string; newPassword: string }) => {
     const response = await api.patch('/auth/change-password', body);
+    // the server rotates this device's refresh token: keep it, or the next refresh would sign us out
+    const d = (response.data as any)?.data ?? response.data;
+    if (d?.refreshToken && typeof window !== 'undefined') {
+      localStorage.setItem('refresh_token', d.refreshToken);
+      if (d.accessToken) localStorage.setItem('auth_token', d.accessToken);
+      useAuthStore.setState({
+        refreshToken: d.refreshToken,
+        ...(d.accessToken ? { token: d.accessToken } : {}),
+      });
+    }
     return response.data;
   },
 

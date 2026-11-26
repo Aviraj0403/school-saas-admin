@@ -133,7 +133,7 @@ export default function ExpensesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
             <StatCard
               label={`Revenue ${summary.year}`}
-              value={inr(summary.totals.totalRevenue)}
+              value={inr(summary?.totals?.totalRevenue)}
               icon="pi pi-wallet"
               gradientClass="from-emerald-500 to-teal-500"
               iconBgClass="bg-emerald-500/10"
@@ -142,7 +142,7 @@ export default function ExpensesPage() {
             />
             <StatCard
               label={`Expenses ${summary.year}`}
-              value={inr(summary.totals.totalExpense)}
+              value={inr(summary?.totals?.totalExpense)}
               icon="pi pi-credit-card"
               gradientClass="from-rose-500 to-red-500"
               iconBgClass="bg-rose-500/10"
@@ -151,7 +151,7 @@ export default function ExpensesPage() {
             />
             <StatCard
               label="Net"
-              value={inr(summary.totals.netProfit)}
+              value={inr(summary?.totals?.netProfit)}
               icon="pi pi-chart-line"
               gradientClass="from-blue-500 to-blue-500"
               iconBgClass="bg-blue-500/10"

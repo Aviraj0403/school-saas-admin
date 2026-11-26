@@ -211,7 +211,7 @@ export default function WebsiteCMSPage() {
             onClick={() => selectTab('banners')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'banners'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                ? 'bg-brand-gradient text-white shadow-glow'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
@@ -221,7 +221,7 @@ export default function WebsiteCMSPage() {
             onClick={() => selectTab('downloads')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'downloads'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                ? 'bg-brand-gradient text-white shadow-glow'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
@@ -231,7 +231,7 @@ export default function WebsiteCMSPage() {
             onClick={() => selectTab('inquiries')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'inquiries'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                ? 'bg-brand-gradient text-white shadow-glow'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >

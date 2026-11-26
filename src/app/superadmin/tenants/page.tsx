@@ -527,7 +527,7 @@ function SchoolDrawer({
               onClick={() => setTab(k)}
               className={`h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-xs font-semibold ${
                 tab === k
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  ? 'bg-brand-gradient text-white shadow-glow'
                   : 'bg-muted text-muted-foreground'
               }`}
             >

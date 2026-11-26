@@ -186,7 +186,7 @@ export default function LibraryPage() {
     const m = new Map<string, string>();
     asList<any>(students.data).forEach((s) => m.set(s.id, s.name));
     (staffLite.data ?? []).forEach((s) => m.set(s.id, s.name));
-    return (id: string) => m.get(id) ?? `Member ${id.slice(0, 6)}`;
+    return (id: string) => m.get(id) ?? `Member ${String(id ?? '').slice(0, 6)}`;
   }, [students.data, staffLite.data]);
 
   const createM = useCreateBook();

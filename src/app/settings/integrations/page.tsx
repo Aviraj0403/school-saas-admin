@@ -105,7 +105,7 @@ export default function IntegrationsPage() {
             onClick={() => setActiveTab('keys')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'keys'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                ? 'bg-brand-gradient text-white shadow-glow'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
@@ -115,7 +115,7 @@ export default function IntegrationsPage() {
             onClick={() => setActiveTab('webhooks')}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold text-xs transition-all ${
               activeTab === 'webhooks'
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                ? 'bg-brand-gradient text-white shadow-glow'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >

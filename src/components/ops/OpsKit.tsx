@@ -70,7 +70,7 @@ export function TabBar({
           onClick={() => onChange(i)}
           className={`shrink-0 whitespace-nowrap px-4 h-10 sm:h-9 text-xs font-semibold rounded-lg transition-all ${
             active === i
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+              ? 'bg-brand-gradient text-white shadow-glow'
               : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
           }`}
         >

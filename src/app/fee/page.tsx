@@ -107,12 +107,12 @@ export default function FeePage() {
             {finance ? (
               <StatCard
                 label={`Net Cashflow ${finance.year}`}
-                value={inr(finance.totals.netProfit)}
+                value={inr(finance?.totals?.netProfit)}
                 icon="pi pi-chart-line"
                 gradientClass="from-blue-500 to-blue-500"
                 iconBgClass="bg-blue-500/10 dark:bg-blue-500/20"
                 iconColorClass="text-blue-600 dark:text-blue-400"
-                footerText={`Expenses ${inr(finance.totals.totalExpense)}`}
+                footerText={`Expenses ${inr(finance?.totals?.totalExpense)}`}
               />
             ) : (
               <StatCard

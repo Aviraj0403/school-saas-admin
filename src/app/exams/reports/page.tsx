@@ -88,7 +88,7 @@ export default function ExamReportsPage() {
               onClick={() => setActiveTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 tab === t.key
-                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                  ? 'bg-brand-gradient text-white shadow-glow'
                   : 'text-muted-foreground hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >

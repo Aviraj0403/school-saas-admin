@@ -80,6 +80,12 @@ export const navigationConfig: NavItem[] = [
         path: '/superadmin/tenants',
         roles: ['SuperAdmin'],
       },
+      {
+        label: 'Module Catalog',
+        icon: 'Package',
+        path: '/superadmin/modules',
+        roles: ['SuperAdmin'],
+      },
       { label: 'SaaS Plans', icon: 'Star', path: '/superadmin/plans', roles: ['SuperAdmin'] },
       {
         label: 'Billing & Invoices',
@@ -502,6 +508,13 @@ export const navigationConfig: NavItem[] = [
     path: '/analytics',
     module: 'analytics',
     roles: [...ADMIN, 'Accountant'],
+  },
+  {
+    label: 'Role Access',
+    icon: 'Sliders',
+    path: '/settings/role-access',
+    module: 'core',
+    roles: ADMIN,
   },
   {
     label: 'Roles & Permissions',

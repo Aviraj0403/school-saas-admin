@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
@@ -19,12 +19,10 @@ import {
   useSchools,
   useSchoolDetail,
   usePlans,
-  useModuleRegistry,
   useSchoolSubscription,
   useSchoolInvoices,
   useSchoolActivity,
   useAssignPlan,
-  useToggleSchoolModule,
   useOverrideLimits,
   useSuspendSchool,
   useReactivateSchool,
@@ -32,6 +30,7 @@ import {
   useCreateInvoice,
   useMarkInvoicePaid,
 } from '@/modules/superadmin/hooks/useSubscriptions';
+import { SchoolModuleMatrix } from '@/modules/superadmin/components/SchoolModuleMatrix';
 import type { SchoolRow } from '@/modules/superadmin/services/subscription.service';
 import { statusVariant, money } from '@/modules/superadmin/statusUi';
 import {
@@ -442,10 +441,8 @@ function SchoolDrawer({
   const { data: detail } = useSchoolDetail(school.id);
   const live = detail ?? school;
   const { data: plans = [] } = usePlans();
-  const { data: registry } = useModuleRegistry();
 
   const assign = useAssignPlan();
-  const toggle = useToggleSchoolModule();
   const overrideLimits = useOverrideLimits();
   const suspend = useSuspendSchool();
   const reactivate = useReactivateSchool();
@@ -464,9 +461,6 @@ function SchoolDrawer({
     }
   }, [sub]);
 
-  const effectiveModules = useMemo(() => new Set(live.activeModules ?? []), [live.activeModules]);
-  const planModules = new Set(sub?.plan?.modules ?? []);
-  const customModules = new Set(sub?.customModules ?? []);
   const effectiveLimits = { ...(sub?.plan?.limits ?? {}), ...(sub?.customLimits ?? {}) };
 
   const ok = (msg: string) => () => toast.success(msg);
@@ -506,13 +500,6 @@ function SchoolDrawer({
   ];
 
   const isSuspended = sub?.status === 'SUSPENDED' || live.isSuspended;
-
-  const modulesByGroup = (registry?.modules ?? []).reduce<
-    Record<string, NonNullable<typeof registry>['modules']>
-  >((acc, m) => {
-    (acc[m.group] ??= []).push(m);
-    return acc;
-  }, {});
 
   return (
     <Dialog isOpen onClose={onClose} title={school.name} className="max-w-3xl">
@@ -680,60 +667,7 @@ function SchoolDrawer({
           </div>
         )}
 
-        {tab === 'modules' && (
-          <div className="flex flex-col gap-4">
-            <p className="text-xs text-zinc-500">
-              Effective modules = plan modules, or the school&apos;s override. Toggle to enable or
-              disable a module for this school only.
-            </p>
-            {Object.entries(modulesByGroup).map(([group, mods]) => (
-              <div key={group}>
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-                  {registry?.groups?.[group] ?? group}
-                </p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {mods.map((m) => {
-                    const on = effectiveModules.has(m.key);
-                    const inPlan = planModules.has(m.key);
-                    const overridden =
-                      customModules.size > 0 && customModules.has(m.key) !== inPlan;
-                    return (
-                      <button
-                        type="button"
-                        key={m.key}
-                        disabled={!!m.core || toggle.isPending}
-                        onClick={() =>
-                          toggle.mutate(
-                            { id: school.id, module: m.key, enabled: !on },
-                            {
-                              onSuccess: ok(`${m.label} ${on ? 'disabled' : 'enabled'}`),
-                              onError: fail('Could not toggle module'),
-                            }
-                          )
-                        }
-                        className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs ${
-                          on ? 'border-brand bg-brand/10 text-brand' : 'border-border text-zinc-500'
-                        }`}
-                      >
-                        <span className="min-w-0">
-                          <span className="block font-semibold">{m.label}</span>
-                          <span className="block truncate text-[10px] opacity-70">
-                            {inPlan ? 'in plan' : 'not in plan'}
-                            {overridden ? ' - overridden' : ''}
-                            {m.core ? ' - core' : ''}
-                          </span>
-                        </span>
-                        <span
-                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${on ? 'bg-emerald-500' : 'bg-zinc-300'}`}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {tab === 'modules' && <SchoolModuleMatrix tenantId={school.id} />}
 
         {tab === 'limits' && (
           <div className="flex flex-col gap-3">

@@ -90,10 +90,6 @@ export const useAssignPlan = () =>
     (v: { id: string; body: Parameters<typeof subscriptionService.assignPlan>[1] }) =>
       subscriptionService.assignPlan(v.id, v.body)
   );
-export const useToggleSchoolModule = () =>
-  useSuperMutation((v: { id: string; module: string; enabled: boolean }) =>
-    subscriptionService.toggleModule(v.id, v.module, v.enabled)
-  );
 export const useOverrideLimits = () =>
   useSuperMutation((v: { id: string; limits: Record<string, number> }) =>
     subscriptionService.overrideLimits(v.id, v.limits)

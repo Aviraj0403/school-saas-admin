@@ -162,8 +162,6 @@ export const subscriptionService = {
       notes?: string;
     }
   ) => unwrap(await api.post(`/superadmin/schools/${id}/assign-plan`, body)),
-  toggleModule: async (id: string, module: string, enabled: boolean) =>
-    unwrap(await api.patch(`/superadmin/schools/${id}/modules/toggle`, { module, enabled })),
   overrideLimits: async (id: string, limits: Record<string, number>) =>
     unwrap(await api.patch(`/superadmin/schools/${id}/limits`, { limits })),
   suspend: async (id: string, reason: string) =>

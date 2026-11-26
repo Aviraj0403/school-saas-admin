@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { filterNavForUser, NavItem } from '@/config/navigation';
+import { filterNavForUser, NavItem, SECTION_TONES } from '@/config/navigation';
 import { clsx } from 'clsx';
 import { formatRole, initials } from '@/lib/format';
 import {
@@ -54,6 +54,8 @@ import {
   LifeBuoy,
   PanelLeftClose,
   PanelLeftOpen,
+  LogOut,
+  X,
   AlertCircle,
   Package,
 } from 'lucide-react';
@@ -114,280 +116,296 @@ function RenderIcon({ name, className }: { name?: string; className?: string }) 
 }
 
 interface AppSidebarProps {
+  /** mobile drawer */
   isOpen: boolean;
   onClose?: () => void;
-  size?: 'default' | 'collapsed';
-  onToggleSize?: () => void;
+  /** desktop icon rail */
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+}
+
+interface Group {
+  title?: string;
+  tone: string;
+  items: NavItem[];
+}
+
+function groupNav(nav: NavItem[]): Group[] {
+  const groups: Group[] = [];
+  let cur: Group | null = null;
+  for (const item of nav) {
+    if (item.isSection) {
+      cur = { title: item.label, tone: SECTION_TONES[item.label] ?? 'indigo', items: [] };
+      groups.push(cur);
+    } else {
+      if (!cur) {
+        cur = { tone: 'indigo', items: [] };
+        groups.push(cur);
+      }
+      cur.items.push(item);
+    }
+  }
+  return groups.filter((g) => g.items.length > 0);
+}
+
+function leafPaths(items: NavItem[], out: string[] = []): string[] {
+  for (const it of items) {
+    if (it.path && !it.isSection) out.push(it.path);
+    if (it.children) leafPaths(it.children, out);
+  }
+  return out;
 }
 
 export default function AppSidebar({
   isOpen,
   onClose,
-  size = 'default',
-  onToggleSize,
+  collapsed,
+  onToggleCollapsed,
 }: AppSidebarProps) {
   const pathname = usePathname();
-  const { activeUser, activeTenant } = useAuthStore();
+  const { activeUser, activeTenant, logout } = useAuthStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const isCollapsed = size === 'collapsed';
 
   if (!activeUser || !activeTenant) return null;
 
-  const filteredNav = filterNavForUser(activeUser.role, activeTenant.activeModules);
+  const nav = filterNavForUser(activeUser.role, activeTenant.activeModules);
+  const groups = groupNav(nav);
 
-  const toggleExpand = (path: string) => {
+  // The single most specific nav entry for this URL is the active one
+  const activePath =
+    leafPaths(nav)
+      .filter((p) => pathname === p || pathname.startsWith(p + '/'))
+      .sort((a, b) => b.length - a.length)[0] ?? '';
+
+  const toggleExpand = (key: string) =>
     setExpandedItems((prev) =>
-      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
+      prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]
     );
-  };
-
-  const isPathActive = (item: NavItem): boolean => {
-    if (item.path && pathname === item.path) return true;
-    if (item.children) return item.children.some((child) => isPathActive(child));
-    return false;
-  };
 
   const closeOnMobile = () => {
-    if (window.innerWidth < 1024) onClose?.();
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose?.();
   };
 
-  const renderNavItem = (item: NavItem, index: number, isChild = false) => {
-    if (item.isSection) {
-      if (isCollapsed) {
-        return index > 0 ? (
-          <li
-            key={item.label + index}
-            className="mx-auto my-3 hidden h-px w-6 bg-sidebar-section-divider lg:block"
-          />
-        ) : null;
-      }
-      return (
-        <li
-          key={item.label + index}
-          className="px-3 pb-2 pt-6 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-sidebar-muted/70"
-        >
-          {item.label}
-        </li>
-      );
-    }
-
-    const active = isPathActive(item);
+  const renderItem = (item: NavItem, tone: string) => {
     const hasChildren = Boolean(item.children && item.children.length > 0);
-    const expanded = (item.path && expandedItems.includes(item.path)) || (hasChildren && active);
-    const exact = !!item.path && pathname === item.path && !hasChildren;
+    const key = item.path || item.label;
+    const childActive = hasChildren && item.children!.some((c) => c.path === activePath);
+    const open = expandedItems.includes(key) || childActive;
+    const active = !hasChildren && item.path === activePath;
 
-    const rowClass = clsx(
-      'group relative flex w-full items-center gap-3 rounded-xl text-left text-[13.5px] no-underline transition-all duration-200',
-      isChild ? 'h-9 pl-3 pr-3' : 'h-10 px-3',
-      isCollapsed && 'lg:justify-center lg:px-0',
-      exact
-        ? 'bg-brand-gradient font-semibold text-white shadow-glow'
-        : active
-          ? 'font-semibold text-sidebar-nav-active-text'
-          : 'font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground'
-    );
-
-    const icon = !isChild && (
-      <RenderIcon
-        name={item.icon}
-        className={clsx(
-          'size-[18px] shrink-0 transition-colors',
-          exact
-            ? 'text-white'
-            : active
-              ? 'text-sidebar-nav-active-text'
-              : 'text-sidebar-nav-icon-muted group-hover:text-sidebar-foreground'
+    const row = (
+      <>
+        <span className="snav-well">
+          <RenderIcon name={item.icon} className="size-[18px]" />
+        </span>
+        <span className="snav-label truncate">{item.label}</span>
+        {hasChildren ? (
+          <ChevronDown
+            className={clsx(
+              'snav-chevron ml-auto size-3.5 opacity-60 transition-transform',
+              open && 'rotate-180'
+            )}
+          />
+        ) : (
+          <span className="snav-dot" aria-hidden="true" />
         )}
-      />
+      </>
     );
 
     return (
-      <li key={item.path || item.label} className="mb-0.5">
+      <li key={key}>
         {hasChildren ? (
           <button
+            type="button"
+            title={collapsed ? item.label : undefined}
+            aria-expanded={open}
             onClick={() => {
-              if (isCollapsed && onToggleSize) onToggleSize();
-              toggleExpand(item.path!);
+              if (collapsed) onToggleCollapsed();
+              toggleExpand(key);
             }}
-            className={rowClass}
-            title={isCollapsed ? item.label : undefined}
+            className={clsx('snav-item tone-' + tone, childActive && 'is-active')}
           >
-            {icon}
-            <span className={clsx('flex-1 truncate', isCollapsed && 'lg:hidden')}>
-              {item.label}
-            </span>
-            <ChevronDown
-              className={clsx(
-                'size-3.5 opacity-60 transition-transform',
-                expanded && 'rotate-180',
-                isCollapsed && 'lg:hidden'
-              )}
-            />
+            {row}
           </button>
         ) : (
           <Link
             href={item.path!}
+            title={collapsed ? item.label : undefined}
+            aria-label={item.label}
             onClick={closeOnMobile}
-            className={rowClass}
-            title={isCollapsed ? item.label : undefined}
+            className={clsx('snav-item tone-' + tone, active && 'is-active')}
           >
-            {isChild && (
-              <span
-                className={clsx(
-                  'size-1.5 shrink-0 rounded-full',
-                  exact ? 'bg-white' : 'bg-sidebar-child-dot group-hover:bg-sidebar-foreground'
-                )}
-              />
-            )}
-            {icon}
-            <span className={clsx('truncate', isCollapsed && 'lg:hidden')}>{item.label}</span>
+            {row}
           </Link>
         )}
-
-        {hasChildren && expanded && (
+        {hasChildren && open && (
           <ul
             className={clsx(
-              'ml-[22px] mt-0.5 border-l border-sidebar-child-border pl-2',
-              isCollapsed && 'lg:hidden'
+              'ml-[22px] mt-1 space-y-0.5 border-l border-sidebar-child-border pl-2',
+              collapsed && 'lg:hidden'
             )}
           >
-            {item.children!.map((child, idx) => renderNavItem(child, idx, true))}
+            {item.children!.map((c) => (
+              <li key={c.path || c.label}>
+                <Link
+                  href={c.path!}
+                  onClick={closeOnMobile}
+                  className={clsx(
+                    'snav-item snav-sub tone-' + tone,
+                    c.path === activePath && 'is-active'
+                  )}
+                >
+                  <span className="truncate">{c.label}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </li>
     );
   };
 
+  const logo = activeTenant.theme?.logo;
+  const hide = collapsed ? 'lg:hidden' : '';
+
   return (
     <aside
+      aria-label="Primary"
       className={clsx(
-        'fixed bottom-3 left-3 top-3 z-50 flex flex-col overflow-hidden rounded-[28px] bg-sidebar text-sidebar-foreground transition-all duration-300 ease-out',
-        isCollapsed ? 'w-[268px] lg:w-[84px]' : 'w-[268px]',
-        isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+24px)]'
+        'fixed inset-y-3 left-3 z-40 flex w-[min(280px,calc(100vw-24px))] shrink-0 flex-col transition-[transform,width] duration-200 ease-out',
+        'lg:static lg:inset-auto lg:my-3 lg:ml-3 lg:translate-x-0',
+        collapsed ? 'snav-rail lg:w-[72px]' : 'lg:w-[240px]',
+        isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+24px)] max-lg:invisible'
       )}
-      style={{
-        boxShadow: 'var(--sidebar-shadow)',
-      }}
     >
-      {/* Ambient glow — uses CSS variable opacity so light mode has subtle glow, dark has strong */}
-      <div
-        className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full blur-3xl"
-        style={{
-          background: `var(--sidebar-glow-1-color)`,
-          opacity: `var(--sidebar-glow-1-opacity)`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 -right-20 size-72 rounded-full blur-3xl"
-        style={{
-          background: `var(--sidebar-glow-2-color)`,
-          opacity: `var(--sidebar-glow-2-opacity)`,
-        }}
-      />
-
-      {/* Logo */}
-      <div
-        className={clsx(
-          'relative flex h-[72px] shrink-0 items-center gap-3 px-5',
-          isCollapsed && 'lg:justify-center lg:px-0'
-        )}
-      >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
-          <GraduationCap className="size-5 text-white" />
-        </span>
-        <span
-          className={clsx(
-            'font-display text-[20px] font-semibold tracking-tight text-sidebar-foreground',
-            isCollapsed && 'lg:hidden'
-          )}
-        >
-          EduNexus
-        </span>
-        {onToggleSize && (
-          <button
-            onClick={onToggleSize}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className={clsx(
-              'ml-auto hidden size-8 items-center justify-center rounded-lg text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground lg:flex',
-              isCollapsed && 'lg:hidden'
-            )}
-          >
-            <PanelLeftClose className="size-4" />
-          </button>
-        )}
-      </div>
-
-      {/* School card */}
-      <div className={clsx('relative px-3 pb-2', isCollapsed && 'lg:px-2')}>
+      <div className="shell-panel rounded-shell flex min-h-0 flex-1 flex-col overflow-hidden">
+        {/* Brand / school */}
         <div
           className={clsx(
-            'flex items-center gap-3 rounded-2xl border p-2.5',
-            isCollapsed && 'lg:justify-center lg:p-1.5'
+            'flex shrink-0 items-center gap-3 px-4 pb-3 pt-4',
+            collapsed && 'lg:justify-center lg:px-0'
           )}
-          style={{
-            background: 'var(--sidebar-school-card-bg)',
-            borderColor: 'var(--sidebar-school-card-border)',
-          }}
         >
-          <span
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold"
-            style={{
-              background: 'var(--sidebar-school-card-initials-bg)',
-              color: 'var(--sidebar-school-card-initials-text)',
-            }}
-          >
-            {initials(activeTenant.name)}
-          </span>
-          <span className={clsx('min-w-0 flex-1', isCollapsed && 'lg:hidden')}>
-            <span
-              className="block truncate text-[13px] font-semibold leading-tight"
-              style={{ color: 'var(--sidebar-school-card-name)' }}
+          {logo ? (
+            <img
+              src={logo}
+              alt=""
+              className="size-10 shrink-0 rounded-2xl object-contain ring-1 ring-inset ring-border"
+            />
+          ) : (
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-sm ring-1 ring-inset ring-white/20">
+              <GraduationCap className="size-[18px]" />
+            </span>
+          )}
+          <div className={clsx('min-w-0 flex-1', hide)}>
+            <p
+              className="text-card-title truncate !text-sm leading-tight"
+              title={activeTenant.name}
             >
               {activeTenant.name}
-            </span>
-            <span className="mt-0.5 block truncate text-xs leading-tight text-sidebar-muted">
+            </p>
+            <span className="tone-brand tone-chip mt-1 inline-flex max-w-full items-center truncate rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize leading-none">
               {formatRole(activeUser.role)}
             </span>
-          </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="snav-icon-btn lg:hidden"
+          >
+            <X className="size-[18px]" />
+          </button>
+        </div>
+        <div className="mx-4 h-px bg-border" />
+
+        {/* Navigation: only what this role can open */}
+        <nav
+          aria-label="Main navigation"
+          className="scrollbar-none scroll-hover flex-1 overflow-y-auto px-3 pb-3 pt-4"
+        >
+          {groups.map((g, gi) => (
+            <div key={(g.title ?? '') + gi} className="mb-4">
+              {g.title && (
+                <p
+                  className={clsx(
+                    'text-eyebrow mb-1.5 flex items-center gap-2 px-3 !text-[11px] !font-medium opacity-90',
+                    hide
+                  )}
+                >
+                  <span
+                    className={clsx(
+                      'inline-block size-1.5 rounded-full tone-dot',
+                      'tone-' + g.tone
+                    )}
+                  />
+                  {g.title}
+                </p>
+              )}
+              {collapsed && gi > 0 && (
+                <div className="mx-auto mb-2 hidden h-px w-6 rounded-full bg-border lg:block" />
+              )}
+              <ul className="space-y-1">{g.items.map((item) => renderItem(item, g.tone))}</ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* User card */}
+        <div className="shrink-0 p-3">
+          <div
+            className={clsx(
+              'flex items-center gap-3 rounded-2xl bg-muted p-2 ring-1 ring-inset ring-border',
+              collapsed && 'lg:justify-center lg:bg-transparent lg:p-0 lg:ring-0'
+            )}
+          >
+            <span
+              title={collapsed ? activeUser.name : undefined}
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white ring-2 ring-card"
+            >
+              {initials(activeUser.name)}
+            </span>
+            <div className={clsx('min-w-0 flex-1', hide)}>
+              <p
+                className="truncate text-[13px] font-semibold text-foreground"
+                title={activeUser.name}
+              >
+                {activeUser.name}
+              </p>
+              <p className="text-caption truncate !text-[11px]" title={activeUser.email}>
+                {activeUser.email}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            aria-label="Sign out"
+            title="Sign out"
+            className={clsx(
+              'snav-icon-btn snav-logout mt-2 w-full gap-2 bg-muted/60 px-4 text-[13px] font-medium ring-1 ring-inset ring-border',
+              collapsed && 'lg:mx-auto lg:w-11 lg:px-0'
+            )}
+          >
+            <LogOut className="size-[18px]" />
+            <span className={hide}>Sign out</span>
+          </button>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="scrollbar-none relative flex-1 overflow-y-auto px-3 pb-4">
-        <ul>{filteredNav.map((item, index) => renderNavItem(item, index))}</ul>
-      </nav>
-
-      {/* Help card */}
-      <div className="relative p-3">
-        {isCollapsed ? (
-          <div className="hidden justify-center lg:flex">
-            <button
-              onClick={onToggleSize}
-              aria-label="Expand sidebar"
-              className="flex size-10 items-center justify-center rounded-xl text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            >
-              <PanelLeftOpen className="size-[18px]" />
-            </button>
-          </div>
-        ) : null}
-        <Link
-          href="/academics/guide"
-          onClick={closeOnMobile}
-          className={clsx(
-            'relative block overflow-hidden rounded-2xl bg-brand-gradient p-4 no-underline shadow-glow',
-            isCollapsed && 'lg:hidden'
-          )}
-        >
-          <div className="bg-dots pointer-events-none absolute inset-0 opacity-60" />
-          <LifeBuoy className="relative size-5 text-white" />
-          <p className="relative mt-2 font-display text-[15px] font-semibold text-white">
-            Need a hand?
-          </p>
-          <p className="relative text-xs text-white/80">
-            Step-by-step guide to set up your school.
-          </p>
-        </Link>
-      </div>
+      <button
+        type="button"
+        onClick={onToggleCollapsed}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-expanded={!collapsed}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="rail-toggle hidden lg:flex"
+      >
+        {collapsed ? (
+          <PanelLeftOpen className="size-3.5" />
+        ) : (
+          <PanelLeftClose className="size-3.5" />
+        )}
+      </button>
     </aside>
   );
 }

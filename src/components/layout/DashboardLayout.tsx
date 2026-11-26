@@ -14,62 +14,71 @@ import { evaluateRoute } from '@/config/routeAccess';
 import { AccessState } from './AccessState';
 
 let globalMounted = false;
+const COLLAPSE_KEY = 'admin_sidebar_collapsed';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // Lazy initializer: synchronously detect mobile so the first render is correct
-  // — no flash, and hamburger toggle works from the very first frame.
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window !== 'undefined') return window.innerWidth >= 1024;
-    return true; // SSR fallback: desktop
-  });
-  const [sidebarSize, setSidebarSize] = useState<'default' | 'collapsed'>('default');
+  // mobile drawer + desktop icon rail (remembered between visits)
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const { isAuthenticated, activeUser, activeTenant, isMirroring, setContext } = useAuthStore();
+  const [mounted, setMounted] = useState(globalMounted);
   const pathname = usePathname();
+
   // Refresh who-I-am (modules, permissions, scope) from the server on every load
   const me = useGetMe();
   useEffect(() => {
     if (me.data) setContext(me.data);
   }, [me.data, setContext]);
-  const [mounted, setMounted] = useState(globalMounted);
-
-  const handleToggleMenu = () => {
-    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-      setSidebarSize((s) => (s === 'default' ? 'collapsed' : 'default'));
-    } else {
-      setSidebarOpen(!sidebarOpen);
-    }
-  };
 
   useEffect(() => {
     globalMounted = true;
     setMounted(true);
-
-    if (typeof window !== 'undefined') {
-      const handleShowToast = (e: Event) => {
-        const customEvent = e as CustomEvent;
-        if (customEvent.detail) {
-          const { severity, summary, detail } = customEvent.detail;
-          if (severity === 'success') {
-            toast.success(summary, { description: detail });
-          } else if (severity === 'error') {
-            toast.error(summary, { description: detail });
-          } else if (severity === 'warn') {
-            toast.warning(summary, { description: detail });
-          } else {
-            toast.info(summary, { description: detail });
-          }
-        }
-      };
-
-      window.addEventListener('show-toast', handleShowToast);
-      return () => {
-        window.removeEventListener('show-toast', handleShowToast);
-      };
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1');
+    } catch {
+      /* storage unavailable */
     }
+
+    const handleShowToast = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail) return;
+      const { severity, summary, detail: description } = detail;
+      if (severity === 'success') toast.success(summary, { description });
+      else if (severity === 'error') toast.error(summary, { description });
+      else if (severity === 'warn') toast.warning(summary, { description });
+      else toast.info(summary, { description });
+    };
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false);
+    window.addEventListener('show-toast', handleShowToast);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('show-toast', handleShowToast);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKey);
+    };
   }, []);
 
-  if (!mounted) return null;
+  // Close the drawer after navigating
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
+  const toggleCollapsed = () =>
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
+
+  if (!mounted) return null;
   if (!isAuthenticated) return <LoginScreen />;
 
   const routeStatus = activeUser
@@ -81,40 +90,51 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       })
     : 'ok';
 
-  const desktopPad = sidebarSize === 'collapsed' ? 'lg:pl-[108px]' : 'lg:pl-[292px]';
-
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background font-sans">
-      {/* Aurora canvas */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="animate-aurora absolute -top-40 left-[20%] h-[420px] w-[620px] rounded-full bg-brand/[0.13] blur-[110px] dark:bg-brand/20" />
-        <div className="animate-aurora absolute -top-24 right-[-8%] h-[380px] w-[520px] rounded-full bg-brand-2/[0.12] blur-[110px] [animation-delay:-6s] dark:bg-brand-2/15" />
-      </div>
-
-      <MirroringBanner />
-      <AppSidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        size={sidebarSize}
-        onToggleSize={() => setSidebarSize((s) => (s === 'default' ? 'collapsed' : 'default'))}
-      />
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-[#140f2d]/50 backdrop-blur-sm transition-opacity lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <div
-        className={`relative flex min-h-screen w-full flex-col transition-[padding] duration-300 ease-out ${sidebarOpen ? desktopPad : 'lg:pl-0'}`}
+    <div className="bg-mesh relative isolate flex h-dvh w-full flex-col overflow-hidden font-sans text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:text-white"
       >
-        <AppTopbar onToggleMenu={handleToggleMenu} />
-        <main className="page-enter mx-auto w-full max-w-[1480px] flex-1 overflow-x-hidden px-4 pb-8 pt-2 sm:px-6 lg:pr-8 lg:pl-0">
-          {routeStatus === 'ok' ? children : <AccessState status={routeStatus} />}
-        </main>
-        <AppFooter />
+        Skip to content
+      </a>
+      <MirroringBanner />
+
+      <div className="relative z-10 flex min-h-0 w-full flex-1 overflow-hidden">
+        {/* Mobile backdrop */}
+        <div
+          aria-hidden="true"
+          onClick={() => setMobileOpen(false)}
+          className={`shell-scrim fixed inset-0 z-30 transition-opacity duration-150 lg:hidden ${
+            mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+        />
+
+        <AppSidebar
+          isOpen={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          collapsed={collapsed}
+          onToggleCollapsed={toggleCollapsed}
+        />
+
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+          <AppTopbar
+            onToggleMenu={() => setMobileOpen((p) => !p)}
+            collapsed={collapsed}
+            onToggleCollapsed={toggleCollapsed}
+          />
+          <main
+            id="main-content"
+            className="min-w-0 flex-1 overflow-y-auto scroll-smooth overscroll-contain"
+          >
+            <div className="page-container flex min-h-full min-w-0 flex-col">
+              <div className="page-enter min-w-0 flex-1">
+                {routeStatus === 'ok' ? children : <AccessState status={routeStatus} />}
+              </div>
+            </div>
+            <AppFooter />
+          </main>
+        </div>
       </div>
     </div>
   );

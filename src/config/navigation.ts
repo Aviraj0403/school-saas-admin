@@ -138,7 +138,7 @@ export const navigationConfig: NavItem[] = [
     icon: 'Ticket',
     path: '/fee/slabs',
     module: 'fee',
-    roles: [...ADMIN, 'Accountant'],
+    roles: ADMIN,
   },
   {
     label: '6. Setup & Integrations',
@@ -313,11 +313,18 @@ export const navigationConfig: NavItem[] = [
   // ── Finance & HR ────────────────────────────────────────────
   { label: 'Finance & HR', isSection: true, roles: [...ADMIN, 'Accountant', 'clerk'] },
   {
+    label: 'Fee Structures & Collection',
+    icon: 'Ticket',
+    path: '/fee/slabs',
+    module: 'fee',
+    roles: ['Accountant', 'clerk'],
+  },
+  {
     label: 'Online Collections',
     icon: 'CreditCard',
     path: '/fee/ledgers',
     module: 'fee',
-    roles: [...ADMIN, 'Accountant', 'clerk'],
+    roles: [...ADMIN, 'Accountant'],
   },
   {
     label: 'Fee Dues & Defaulters',
@@ -509,6 +516,8 @@ export const navigationConfig: NavItem[] = [
 /** The navigation tree a user may see: role-filtered and limited to the tenant's active modules. */
 export function filterNavForUser(role: string, activeModules: string[]): NavItem[] {
   const filterItem = (item: NavItem): NavItem | null => {
+    // A heading's visibility comes only from the items under it (see below), never from its own roles
+    if (item.isSection) return item;
     if (!canAccessNav(item.roles, role)) return null;
     if (item.module && !isModuleActive(activeModules, item.module)) return null;
     if (item.children) {
@@ -520,5 +529,28 @@ export function filterNavForUser(role: string, activeModules: string[]): NavItem
     }
     return item;
   };
-  return navigationConfig.map(filterItem).filter((item): item is NavItem => item !== null);
+  const visible = navigationConfig.map(filterItem).filter((item): item is NavItem => item !== null);
+  // A section heading is only worth showing when something it introduces is visible.
+  return visible.filter((item, i) => {
+    if (!item.isSection) return true;
+    for (let j = i + 1; j < visible.length; j++) {
+      if (visible[j].isSection) return false;
+      return true;
+    }
+    return false;
+  });
 }
+
+/** Accent colour per section heading (stable across roles, themed via CSS tone classes). */
+export const SECTION_TONES: Record<string, string> = {
+  Overview: 'rose',
+  'System Admin Registry': 'violet',
+  'School Setup (Steps 1-6)': 'indigo',
+  'School Directories': 'sky',
+  'Academics & Learning': 'violet',
+  'My Child / My School': 'indigo',
+  'Finance & HR': 'amber',
+  'My Work': 'teal',
+  'Operations & Outreach': 'emerald',
+  'Settings & Analytics': 'teal',
+};

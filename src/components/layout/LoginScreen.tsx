@@ -125,7 +125,7 @@ export default function LoginScreen() {
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
       </div>
 
-      <div className="relative mx-auto grid min-h-dvh max-w-[1320px] items-center gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:gap-12 sm:px-8 sm:py-10 sm:px-8 lg:grid-cols-[1.1fr_minmax(0,460px)] lg:gap-16">
+      <div className="relative mx-auto grid min-h-dvh max-w-[1320px] grid-cols-[minmax(0,1fr)] items-center gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:gap-12 sm:px-8 sm:py-10 sm:px-8 lg:grid-cols-[1.1fr_minmax(0,460px)] lg:gap-16">
         {/* Story */}
         <section className="hidden lg:block">
           <div className="flex items-center gap-3">
@@ -219,7 +219,7 @@ export default function LoginScreen() {
         </section>
 
         {/* Sign-in card */}
-        <main className="mx-auto w-full max-w-[460px]">
+        <main className="mx-auto w-full min-w-0 max-w-[460px]">
           <div className="mb-6 flex items-center justify-center gap-2.5 lg:hidden">
             <span className="flex size-10 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
               <GraduationCap className="size-5" />

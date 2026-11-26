@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, CornerDownLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { filterNavForUser, NavItem } from '@/config/navigation';
+import { filterNavForUser, platformOnlyNav, NavItem } from '@/config/navigation';
 
 interface PageEntry {
   label: string;
@@ -44,7 +44,11 @@ export default function NavSearch() {
   const pages = useMemo(
     () =>
       activeUser && activeTenant
-        ? flatten(filterNavForUser(activeUser.role, activeTenant.activeModules))
+        ? flatten(
+            activeUser.isSuperAdmin && activeTenant.id === 'superadmin'
+              ? platformOnlyNav(filterNavForUser(activeUser.role, activeTenant.activeModules))
+              : filterNavForUser(activeUser.role, activeTenant.activeModules)
+          )
         : [],
     [activeUser, activeTenant]
   );

@@ -378,7 +378,7 @@ export default function StaffPage() {
         />
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
           <StatCard
             label="Total Registered"
             value={isPending ? '...' : totalRecords}

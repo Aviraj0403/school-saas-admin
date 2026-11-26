@@ -576,6 +576,20 @@ export function filterNavForUser(
   });
 }
 
+/**
+ * A platform owner who has not switched into a school has no use for school menus
+ * (setup steps, attendance, fees…): show the Platform section only.
+ */
+export function platformOnlyNav(nav: NavItem[]): NavItem[] {
+  const out: NavItem[] = [];
+  let inPlatform = false;
+  for (const item of nav) {
+    if (item.isSection) inPlatform = item.label === 'Platform';
+    if (inPlatform) out.push(item);
+  }
+  return out;
+}
+
 /** Accent colour per section heading (stable across roles, themed via CSS tone classes). */
 export const SECTION_TONES: Record<string, string> = {
   Overview: 'rose',

@@ -28,7 +28,7 @@ export function StatCard({
   loading,
 }: StatCardProps) {
   return (
-    <div className="surface-card group relative flex w-full min-w-0 flex-col overflow-hidden p-4 hover:-translate-y-px">
+    <div className="surface-card group relative flex w-full min-w-0 flex-col overflow-hidden p-3 hover:-translate-y-px sm:p-4">
       <div className="flex items-center gap-3">
         {icon && (
           <div
@@ -55,7 +55,7 @@ export function StatCard({
         <div className="mt-4 h-8 w-24 animate-pulse rounded-lg bg-muted" />
       ) : (
         <div className="mt-3 flex flex-wrap items-end gap-2">
-          <span className="tabular truncate text-[26px] font-semibold leading-none tracking-tight text-foreground">
+          <span className="tabular truncate text-[22px] sm:text-[26px] font-semibold leading-none tracking-tight text-foreground">
             {value}
           </span>
           {trendPercentage && (
@@ -77,7 +77,7 @@ export function StatCard({
         </div>
       )}
 
-      <p className="mt-2 truncate text-xs text-muted-foreground">{footerText}</p>
+      <p className="mt-2 hidden truncate text-xs text-muted-foreground sm:block">{footerText}</p>
     </div>
   );
 }

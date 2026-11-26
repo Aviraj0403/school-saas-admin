@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { LayoutGrid } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePermissions } from '@/hooks/usePermissions';
-import { filterNavForUser, NavItem, normalizeRole } from '@/config/navigation';
+import { filterNavForUser, platformOnlyNav, NavItem, normalizeRole } from '@/config/navigation';
 import { RenderIcon } from './AppSidebar';
 
 /** Most useful destinations per role, in order. Only those the user can actually open are shown. */
@@ -70,9 +70,11 @@ export default function BottomTabBar({
   const { can } = usePermissions();
   if (!activeUser || !activeTenant) return null;
 
-  const items = flat(
-    filterNavForUser(activeUser.role, activeTenant.activeModules, (m) => can(`${m}:read`))
+  const full = filterNavForUser(activeUser.role, activeTenant.activeModules, (m) =>
+    can(`${m}:read`)
   );
+  const outsideSchool = activeUser.isSuperAdmin && activeTenant.id === 'superadmin';
+  const items = flat(outsideSchool ? platformOnlyNav(full) : full);
   const byPath = new Map(items.map((i) => [i.path!, i]));
   const wanted = PRIORITY[normalizeRole(activeUser.role)] ?? ['/dashboard'];
 

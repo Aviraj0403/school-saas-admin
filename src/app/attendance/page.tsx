@@ -10,6 +10,7 @@ import { apiMessage } from '@/lib/apiMessage';
 import { Dialog } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useStudentsList } from '@/hooks/queries/useStudents';
+import { Users, CheckCircle2, XCircle, TrendingUp } from 'lucide-react';
 import {
   useAttendance,
   useMarkBulkAttendance,
@@ -220,13 +221,29 @@ export default function AttendancePage() {
   ];
 
   const statTiles = [
-    { label: 'Students', value: loadingStudents ? '...' : totalCount, tone: 'tone-sky' },
-    { label: 'Present', value: loadingStudents ? '...' : presentCount, tone: 'tone-emerald' },
-    { label: 'Absent', value: loadingStudents ? '...' : absentCount, tone: 'tone-rose' },
+    {
+      label: 'Students',
+      value: loadingStudents ? '...' : totalCount,
+      tone: 'tone-sky',
+      Icon: Users,
+    },
+    {
+      label: 'Present',
+      value: loadingStudents ? '...' : presentCount,
+      tone: 'tone-emerald',
+      Icon: CheckCircle2,
+    },
+    {
+      label: 'Absent',
+      value: loadingStudents ? '...' : absentCount,
+      tone: 'tone-rose',
+      Icon: XCircle,
+    },
     {
       label: 'Rate',
       value: loadingStudents ? '...' : `${attendanceRate}%`,
       tone: 'tone-violet',
+      Icon: TrendingUp,
     },
   ];
 
@@ -475,7 +492,11 @@ export default function AttendancePage() {
             <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
               {statTiles.map((s) => (
                 <div key={s.label} className="surface-card flex items-center gap-3 p-3 sm:p-4">
-                  <span className={`tone-chip ${s.tone} size-9 shrink-0 rounded-xl`} />
+                  <span
+                    className={`tone-chip ${s.tone} flex size-9 shrink-0 items-center justify-center rounded-xl`}
+                  >
+                    <s.Icon className="size-[18px]" />
+                  </span>
                   <div className="min-w-0">
                     <p className="text-lg font-semibold leading-tight tabular-nums text-foreground">
                       {s.value}

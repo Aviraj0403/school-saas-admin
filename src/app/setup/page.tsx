@@ -345,7 +345,7 @@ function SetupWizard() {
     <div className="min-h-screen bg-background p-3 lg:p-4">
       <div className="mx-auto grid min-h-[calc(100vh-1.5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-border bg-card shadow-pop lg:min-h-[calc(100vh-2rem)] lg:grid-cols-[320px_1fr]">
         {/* Step rail */}
-        <aside className="relative overflow-hidden bg-sidebar p-7 text-white">
+        <aside className="relative overflow-hidden bg-slate-900 p-7 text-white">
           <div className="pointer-events-none absolute -left-20 -top-20 size-64 rounded-full bg-brand/40 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -right-16 size-64 rounded-full bg-brand-2/25 blur-3xl" />
           <div className="relative flex items-center gap-3">

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePermissions } from '@/hooks/usePermissions';
-import { filterNavForUser, NavItem, SECTION_TONES } from '@/config/navigation';
+import { filterNavForUser, platformOnlyNav, NavItem, SECTION_TONES } from '@/config/navigation';
 import { clsx } from 'clsx';
 import { formatRole, initials } from '@/lib/format';
 import {
@@ -178,9 +178,12 @@ export default function AppSidebar({
 
   if (!activeUser || !activeTenant) return null;
 
-  const nav = filterNavForUser(activeUser.role, activeTenant.activeModules, (m) =>
+  const full = filterNavForUser(activeUser.role, activeTenant.activeModules, (m) =>
     can(`${m}:read`)
   );
+  // a platform owner outside any school only needs the Platform menu
+  const outsideSchool = activeUser.isSuperAdmin && activeTenant.id === 'superadmin';
+  const nav = outsideSchool ? platformOnlyNav(full) : full;
   const groups = groupNav(nav);
 
   // The single most specific nav entry for this URL is the active one
@@ -284,7 +287,7 @@ export default function AppSidebar({
     <aside
       aria-label="Primary"
       className={clsx(
-        'fixed inset-y-3 left-3 z-40 flex w-[min(280px,calc(100vw-24px))] shrink-0 flex-col transition-[transform,width] duration-200 ease-out',
+        'fixed bottom-[6.25rem] top-3 left-3 z-40 flex w-[min(280px,calc(100vw-24px))] shrink-0 flex-col transition-[transform,width] duration-200 ease-out',
         'lg:static lg:inset-auto lg:my-3 lg:ml-3 lg:translate-x-0',
         collapsed ? 'snav-rail lg:w-[72px]' : 'lg:w-[240px]',
         isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+24px)] max-lg:invisible'

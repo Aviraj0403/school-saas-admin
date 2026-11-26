@@ -338,7 +338,9 @@ export default function LeavePage() {
 
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-3">
           <div className="flex w-full items-center gap-3 sm:w-64">
-            <label className="text-xs font-semibold text-muted-foreground">Status:</label>
+            <label className="shrink-0 whitespace-nowrap text-xs font-semibold text-muted-foreground">
+              Status:
+            </label>
             <Select
               value={statusFilter}
               options={statusOptions}

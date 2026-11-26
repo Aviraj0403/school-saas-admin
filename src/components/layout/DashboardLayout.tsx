@@ -5,6 +5,7 @@ import AppTopbar from './AppTopbar';
 import AppSidebar from './AppSidebar';
 import AppFooter from './AppFooter';
 import BottomTabBar from './BottomTabBar';
+import ResponsiveTables from './ResponsiveTables';
 import { MirroringBanner } from './MirroringBanner';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginScreen from './LoginScreen';
@@ -135,6 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             <AppFooter />
+            <ResponsiveTables />
           </main>
         </div>
       </div>

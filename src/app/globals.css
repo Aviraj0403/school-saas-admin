@@ -942,4 +942,79 @@ textarea:-webkit-autofill {
       display: none !important;
     }
   }
+
+  /* ── Phones: tables become cards (see ResponsiveTables.tsx) ── */
+  @media (max-width: 639px) {
+    table.rt,
+    table.rt tbody {
+      display: block;
+      width: 100%;
+    }
+    table.rt thead {
+      display: none;
+    }
+    table.rt tr {
+      display: block;
+      margin: 0 0 10px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow-card);
+    }
+    table.rt td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+      height: auto;
+      min-height: 36px;
+      padding: 8px 0 !important;
+      border: 0 !important;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
+      text-align: right;
+      font-size: 13px;
+      background: transparent !important;
+      overflow-wrap: anywhere;
+    }
+    table.rt td:last-child {
+      border-bottom: 0 !important;
+    }
+    table.rt td[data-label]::before {
+      content: attr(data-label);
+      flex: 0 0 auto;
+      max-width: 45%;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+    }
+    table.rt td[data-actions] {
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 10px !important;
+    }
+    table.rt td[data-actions]::before {
+      display: none;
+    }
+    table.rt td[data-span] {
+      justify-content: center;
+      text-align: center;
+    }
+    /* the card list needs no extra clipping box */
+    .surface-card:has(> table.rt),
+    .surface-card:has(> div > table.rt) {
+      overflow: visible;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+    div:has(> table.rt) {
+      overflow: visible !important;
+    }
+  }
 }

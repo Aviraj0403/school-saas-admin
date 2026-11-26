@@ -245,7 +245,9 @@ export default function AssignmentsPage() {
 
         <div className="surface-card flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
           <div className="flex w-full items-center gap-3 sm:w-72">
-            <label className="text-xs font-semibold text-muted-foreground">Class:</label>
+            <label className="shrink-0 whitespace-nowrap text-xs font-semibold text-muted-foreground">
+              Class:
+            </label>
             <Select
               value={filterClassId}
               options={[
